@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
+
+    <subclass name="DelegateDeclaration" extends="Declaration" discriminator-value="19"> 
+	<list name="m_typeParams" where="T_ROLE=0">
+		<key column="F_PARENT" foreign-key="none"/>
+		<list-index column="F_ORDINAL_INDEX"/>
+		<one-to-many class="TypeParameter"/>
+	</list>
+	<set name="m_constraints" where="T_ROLE=1">
+		<key column="F_PARENT" foreign-key="none"/>
+		<one-to-many class="Constraint"/>
+	</set>
+	<list name="m_parameters" where="T_ROLE=2">
+		<key column="F_PARENT" foreign-key="none"/>
+		<list-index column="F_ORDINAL_INDEX"/>
+		<one-to-many class="Parameter"/>
+	</list>
+	<set name="m_modifiers" where="T_ROLE=3">
+		<key column="F_PARENT" foreign-key="none"/>
+		<one-to-many class="Modifier"/>		
+	</set>
+	<set name="m_attributes" where="T_ROLE=4">
+		<key column="F_PARENT" foreign-key="none"/>
+		<one-to-many class="AttributeBlock"/>
+	</set>
+	<join table="T_DELEGATE_DECLARATION">
+		<key column="F_ID" foreign-key="none"/>
+		<property name="m_name" length="256" column="F_NAME"/>
+		<many-to-one name="m_type" column="F_TYPE" unique="true" foreign-key="none"/>
+	</join>
+    </subclass>
+
+</hibernate-mapping>

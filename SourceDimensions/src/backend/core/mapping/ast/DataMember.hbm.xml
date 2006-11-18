@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
+
+    <subclass name="DataMember" extends="Member" discriminator-value="17">
+	<set name="m_declarators" where="T_ROLE=2">
+		<key column="F_PARENT" foreign-key="none"/>
+		<one-to-many class="Declarator"/>
+	</set>
+	<join table="T_DATA_MEMBER">
+		<key column="F_ID" foreign-key="none"/>
+		<many-to-one name="m_type" column="F_TYPE" unique="true" foreign-key="none"/>
+		<property name="m_kind" column="F_KIND"/>
+	</join>
+    </subclass>
+
+</hibernate-mapping>

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.sourcedimensions.server.sys" default-cascade="save-update" default-access="field">
+
+    <class name="FileSystemElement" table="T_FILE_SYSTEM_ELEMENT" discriminator-value="0">
+        <id name="m_id" length="32" column="F_ID">
+            <generator class="uuid.hex"/>
+        </id>
+	<discriminator column="F_CLASS" type="integer"/>
+	<many-to-one name="m_parentFolder" column="F_PARENT_FOLDER" index="idx_file_system_element"/>
+       	<property name="m_name" length="256" column="F_NAME" index="idx_file_system_element"/>
+	<many-to-one name="m_project" column="F_PROJECT"/>
+    </class>
+
+</hibernate-mapping>

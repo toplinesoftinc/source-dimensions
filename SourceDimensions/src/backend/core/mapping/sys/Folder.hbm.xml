@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.sourcedimensions.server.sys" default-cascade="delete,save-update" default-access="field">
+
+    <subclass name="Folder" extends="FileSystemElement" discriminator-value="1">
+	<map name="m_children">
+		<key column="F_PARENT_FOLDER"/>
+		<map-key column="F_NAME" type="string"/>
+		<one-to-many class="FileSystemElement"/>	
+	</map>
+    </subclass>
+
+</hibernate-mapping>

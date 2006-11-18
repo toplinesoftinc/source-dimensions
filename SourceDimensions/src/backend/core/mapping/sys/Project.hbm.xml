@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.sourcedimensions.server.sys" default-cascade="save-update" default-access="field">
+
+    <class name="Project" table="T_PROJECT">
+        <id name="m_id" length="32" column="F_ID">
+            <generator class="uuid.hex"/>
+        </id>
+        <set name="m_parents" table="T_PROJECT_PARENTS">
+        	<key column="F_ID"/>
+        	<many-to-many column="F_PARENT_ID" class="Project"/>
+        </set>
+        <property name="m_rootPath" length="256" column="F_ROOT_PATH"/>
+	<property name="m_name" length="256" column="F_NAME"/>
+	<property name="m_language" column="F_LANGUAGE"/>
+	<property name="m_readOnly" column="F_READ_ONLY"/>
+	<many-to-one name="m_root" column="F_ROOT" cascade="save-update" unique="true" foreign-key="none"/>
+    </class>
+
+</hibernate-mapping>

@@ -1,0 +1,1154 @@
+/**************************************************************
+* This file describes abstract syntax tree using the following
+* extended BNF notation:
+* A - exactly one
+* A? - zero or one(optional)
+* A* - zero or more             
+* A+ - one or more
+* ABC - sequence
+* (A | B | C) - choice
+*
+* The following syntax provides macro support for reuse of
+* repeated text:
+*
+* @@MacroName {...} - definition of macro named "MacroName",
+* where text is provided in braces ("{}").
+*
+* @MacroExt - expansion of the macro named "MacroExt". 
+*
+**************************************************************/
+
+/*********************** DECLARATIONS *************************/
+
+CompUnit -> 
+	ExternAliasDir* 
+	(
+		UsingAliasDir | 
+		UsingNspDir
+	)* 
+	GblAttrs?
+	(
+		NspDecl  |
+		ClsDecl  |
+		StrDecl  |
+		IntfDecl |
+		EnumDecl |
+		DelegateDecl
+	)*
+	
+ExternAliasDir -> Id
+
+Id ->
+	ID       |
+	Assembly |
+	Add      |
+	Field    |
+	Get      |
+	Method   |
+	Param    |
+	Property |
+	Remove   |
+	Set      |
+	Typ      |
+	Module   |
+	Where    |
+	Yield    |
+	Partial  |
+	Alias
+
+UsingAliasDir -> Id QName
+
+UsingNspDir -> QName
+
+QName -> QAlias? (Id Type*)*
+
+QAlias -> Id Id
+
+Type ->
+	QName      |
+	SimpleType |
+	ArrType    |
+	OBJECT     |
+	STRING     |
+	PtrType    |
+	NullType
+	
+SimpleType ->
+	BOOL   |
+	SBYTE  |
+	BYTE   |
+	SHORT  |
+	USHORT |
+	INT    |
+	UINT   |
+	LONG   |
+	ULONG  |
+	CHAR   |
+	FLOAT  |
+	DOUBLE |
+	DECIMAL
+	
+ArrType ->
+	(
+		QName      |
+		SimpleType |
+		OBJECT     |
+		STRING     |
+		NullType
+	)
+	RankSpec+
+	
+RankSpec -> DimSep*
+
+PtrType -> 
+	(
+		QName      |
+		SimpleType |
+		ArrType    |
+		OBJECT     |
+		STRING     |
+		NullType   |
+		VOID
+	)
+	Ptr+
+	
+NullType -> QName | SimpleType
+
+GblAttrs -> AttrSec+ | GblAttrSec+
+
+AttrSec -> 
+	(
+		ID         |
+		Abstract   |
+		Add        |
+		Alias      |
+		As         |
+		Assembly   |
+		Base       |
+		Bool       |
+		Break      |
+		Byte       |
+		Case       |
+		Catch      |
+		Char       |
+		Checked    |
+		Class      |
+		Const      |
+		Continue   |
+		Decimal    |
+		Default    |
+		Delegate   |
+		Do         |
+		Double     | 
+		Else       |
+		Enum       |
+		Event      |
+		Explicit   |
+		Extern     |
+		False      |
+		Field      |
+		Finally    |
+		Fixed      |
+		Float      |
+		For        |
+		Foreach    |
+		Get        |
+		Goto       |
+		If         |
+		Implicit   |
+		In         |
+		Int        |
+		Interface  |
+		Internal   |
+		Is         |
+		Lock       |
+		Long       |
+		Method     |
+		Module     |
+		Namespace  |
+		New        |
+		Null       |
+		Object     |
+		Operator   |
+		Out        |
+		Override   |
+		Param      |
+		Params     |
+		Partial    |
+		Private    |
+		Property   |
+		Protected  |
+		Public     |
+		Readonly   |
+		Ref        |
+		Remove     |
+		Return     |
+		Sbyte      |
+		Sealed     |
+		Set        |
+		Short      | 
+		Sizeof     |
+		Stackalloc |
+		Static     |
+		String     |
+		Struct     |
+		Switch     |
+ 		This       |
+		Throw      |
+		True       |
+		Try        |
+		Typ        |
+		Typeof     |
+		Uint       |
+		Ulong      |
+		Unchecked  |
+		Unsafe     |
+		Ushort     |
+		Using      |
+		Virtual    |
+ 		Void       |
+		Volatile   |
+		While      |
+		Where      |
+		Yield
+	)?
+	Attr+
+
+Attr -> QName PosArg* NamedArg*
+
+GblAttrSec -> (Assembly | Module)? Attr+
+
+NamedArg -> Id Expr
+
+NspDecl -> QName NspBody
+
+NspBody -> 
+	ExternAliasDir* 
+	(
+		UsingAliasDir | 
+		UsingNspDir
+	)* 
+	(
+		NspDecl  |
+		ClsDecl  |
+		StrDecl  |
+		IntfDecl |
+		EnumDecl |
+		DelegateDecl
+	)*
+
+ClsDecl -> AttrSec* Modifiers? Partial? Id TypeParam* (ClsIntfType IntfType*)? Constraint* ClsBody
+	
+Modifiers ->
+	(
+		Abstract  |
+		Extern    | 
+		Internal  |
+		New       |
+		Override  |
+		Private   |
+		Protected |
+		Public    |
+		Readonly  |
+		Sealed    |
+		Static    |
+		Virtual   |
+		Volatile  |
+		Unsafe
+	)+
+	
+TypeParam -> AttrSec* Id
+
+ClsIntfType -> QName | OBJECT | STRING
+
+IntfType -> QName
+
+Constraint -> TypeParam (Class | Struct)? QName* ConstrCnrt?
+
+ClsBody -> 
+	(
+		ConstDecl  |
+		FldDecl    |
+		MethodDecl |
+		PropDecl   |
+		EvDecl     |
+		IdxrDecl   |
+		OperDecl   |
+		ConstrDecl |
+		DestrDecl  |
+		ClsDecl    |
+		StrDecl    | 
+		IntfDecl   |
+		EnumDecl   |
+		DelegateDecl
+	)*
+
+ConstDecl -> AttrSec* Modifiers? Type ConstDclr+
+
+ConstDclr -> Id Expr
+
+FldDecl -> AttrSec* Modifiers? Type VarDclr+
+
+VarDclr -> Id VarInit?
+
+VarInit -> Expr | ArrInit
+
+ArrInit -> VarInit*
+
+MethodDecl -> AttrSec* Modifiers? (Type | VOID) QName TypeParam* FixedParam* (ParamArr | ArgLstParam)? Constraint* Blk?
+
+FixedParam -> AttrSec* ParamModifier? Type Id
+
+ParamModifier -> REF | OUT
+
+ParamArr -> AttrSec* ArrType Id
+
+PropDecl -> AttrSec* Modifiers? Type QName (GetAcsrDecl SetAcsrDecl? | SetAcsrDecl GetAcsrDecl?)
+
+GetAcsrDecl -> AttrSec* Modifiers? Blk?
+
+SetAcsrDecl -> AttrSec* Modifiers? Blk?
+
+EvDecl -> 
+	AttrSec*
+	Modifiers?
+	Type 
+	(
+		QName   
+		(AddAcsrDecl RemoveAcsrDecl | RemoveAcsrDecl AddAcsrDecl)
+		|
+		VarDclr*	
+	)
+	
+AddAcsrDecl -> AttrSec* Blk
+
+RemoveAcsrDecl -> AttrSec* Blk
+
+IdxrDecl -> 
+	AttrSec* 
+	Modifiers? 
+	Type 
+	IntfType? 
+	FixedParam* 
+	(
+		ParamArr | ArgLstParam
+	)? 
+	(
+		GetAcsrDecl 
+		SetAcsrDecl? 
+		| 
+		SetAcsrDecl 
+		GetAcsrDecl?
+	)
+
+OperDecl ->  
+	AttrSec* 
+	Modifiers? 
+	(
+		PlusUnaryOper  |
+		MinusUnaryOper |
+		NotUnaryOper   |
+		InvUnaryOper   |
+		IncrUnaryOper  |
+		DecrUnaryOper  |
+		TrueUnaryOper  |
+		FalseUnaryOper |
+		PlusBinOper    |
+		MinusBinOper   |
+		MulBinOper     |
+		DivBinOper     |
+		ModBinOper     |
+		AndBinOper     |
+		OrBinOper      |
+		XorBinOper     |
+		LShBinOper     |
+		RShBinOper     |
+		EqBinOper      |
+		NotEqBinOper   |
+		GtBinOper      |
+		LessBinOper    |
+		GtEqBinOper    |
+		LessEqBinOper  |
+		ImplConvOper   |
+		ExplConvOper
+	)
+	Blk
+	
+PlusUnaryOper -> Type Type Id  
+
+MinusUnaryOper -> Type Type Id 
+
+NotUnaryOper -> Type Type Id   
+
+InvUnaryOper -> Type Type Id   
+
+IncrUnaryOper -> Type Type Id  
+
+DecrUnaryOper -> Type Type Id  
+
+TrueUnaryOper -> Type Type Id  
+
+FalseUnaryOper -> Type Type Id
+	
+PlusBinOper -> Type Type Id Type Id
+  
+MinusBinOper -> Type Type Id Type Id
+ 
+MulBinOper -> Type Type Id Type Id
+   
+DivBinOper -> Type Type Id Type Id
+   
+ModBinOper -> Type Type Id Type Id
+   
+AndBinOper -> Type Type Id Type Id
+   
+OrBinOper -> Type Type Id Type Id
+    
+XorBinOper -> Type Type Id Type Id
+   
+LShBinOper -> Type Type Id Type Id
+   
+RShBinOper -> Type Type Id Type Id
+   
+EqBinOper -> Type Type Id Type Id
+    
+NotEqBinOper -> Type Type Id Type Id
+ 
+GtBinOper -> Type Type Id Type Id
+    
+LessBinOper -> Type Type Id Type Id
+  
+GtEqBinOper -> Type Type Id Type Id
+  
+LessEqBinOper -> Type Type Id Type Id
+
+ImplConvOper -> Type Type Id
+	
+ExplConvOper -> Type Type Id	
+
+ConstrDecl -> AttrSec* Modifiers? Id FixedParam* (ParamArr | ArgLstParam)? ConstrInit? Blk?
+
+ConstrInit -> BaseInit | ThisInit
+
+BaseInit -> Arg* ArgLstExpr?
+
+ThisInit -> Arg* ArgLstExpr?
+
+Arg -> Expr | RefArg | OutArg
+
+RefArg -> REF Expr
+
+OutArg -> OUT Expr
+
+ArgLstExpr -> Expr*
+
+DestrDecl -> AttrSec* Modifiers? Id Blk?
+
+StrDecl -> AttrSec* Modifiers? Partial? Id TypeParam* IntfType* Constraint* StrBody
+
+StrBody ->
+	(
+		ConstDecl    |
+		FldDecl      |
+		MethodDecl   |
+		PropDecl     |
+		EvDecl       |
+		IdxrDecl     |
+		OperDecl     |
+		ConstrDecl   |
+		ClsDecl      |
+		StrDecl      | 
+		IntfDecl     |
+		EnumDecl     |
+		DelegateDecl |
+		FixedSizeBufDecl		
+	)*
+
+FixedSizeBufDecl -> AttrSec* Modifiers? Type FixedSizeBufDclr+
+
+FixedSizeBufDclr -> Id Expr
+
+IntfDecl -> AttrSec* Modifiers? Partial? Id TypeParam* IntfType* Constraint* IntfBody
+
+IntfBody ->
+	(
+		IntfMethodDecl |
+		IntfPropDecl   |
+		IntfEvDecl     |
+		IntfIdxrDecl	
+	)*
+
+IntfMethodDecl -> AttrSec* Modifiers? (Type | VOID) Id TypeParam* FixedParam* (ParamArr | ArgLstParam)? Constraint*
+
+IntfPropDecl -> AttrSec* Modifiers? Type Id (IntfGetAcsr IntfSetAcsr? | IntfSetAcsr IntfGetAcsr?)
+
+IntfGetAcsr -> AttrSec*
+
+IntfSetAcsr -> AttrSec*
+
+IntfEvDecl -> AttrSec* Modifiers? Type Id
+
+IntfIdxrDecl -> AttrSec* Modifiers? Type FixedParam* (ParamArr | ArgLstParam)? (IntfGetAcsr IntfSetAcsr? | IntfSetAcsr IntfGetAcsr?)
+
+EnumDecl -> 
+	AttrSec*
+	Modifiers?
+	Id
+	EnumBase?
+	EnumBody
+
+EnumBase -> 
+	SBYTE  |
+	BYTE   |
+	SHORT  |
+	USHORT |
+	INT    |
+	UINT   |
+	LONG   |
+	ULONG  |
+	CHAR	
+
+EnumBody -> EnumMemDecl*
+
+EnumMemDecl -> AttrSec* Id Expr?
+
+DelegateDecl -> AttrSec* Modifiers? (Type | VOID) Id TypeParam* FixedParam* (ParamArr | ArgLstParam)? Constraint*
+	
+	
+
+/*********************** STATEMENTS *************************/
+
+Blk -> Stmt*
+
+Stmt -> LblStmt | DeclStmt | EmbedStmt
+
+LblStmt -> Id Stmt
+
+DeclStmt -> LocalVarDecl | LocalConstDecl
+
+LocalVarDecl -> Type LocalVarDclr+
+
+LocalVarDclr -> Id LocalVarInit?
+
+LocalVarInit -> Expr | ArrInit | StackallocInit
+
+StackallocInit -> Type Expr
+
+LocalConstDecl -> Type ConstDclr+
+
+EmbedStmt ->
+  Blk           |
+  EmptyStmt     |
+  StmtExpr      |
+  IfStmt        |
+  SwitchStmt    |
+  WhileStmt     |
+  DoStmt        |
+  ForStmt       |
+  ForeachStmt   |
+  BreakStmt     |
+  ContinueStmt  |
+  GotoId        |
+  GotoCase      |
+  GotoDefault   |
+  ReturnStmt    |
+  ThrowStmt     |
+  TryStmt       |
+  CheckedStmt   |
+  UncheckedStmt |
+  LockStmt      |
+  UsingStmt     |
+  UnsafeStmt    |
+  FixedStmt     |
+  YieldStmt
+
+IfStmt -> Expr EmbedStmt EmbedStmt?
+
+SwitchStmt -> Expr SwitchSec*
+
+SwitchSec -> SwitchLbl+ Stmt+
+
+SwitchLbl -> Expr?
+
+WhileStmt -> Expr EmbedStmt
+
+DoStmt -> EmbedStmt Expr
+
+ForStmt -> ForInit? Expr? ForIter? EmbedStmt
+
+ForInit -> LocalVarDecl | StmtExpr+
+
+ForIter -> StmtExpr+
+
+ForeachStmt -> Type Id Expr EmbedStmt
+
+GotoId -> Id
+
+GotoCase -> Expr
+
+ReturnStmt -> Expr?
+
+ThrowStmt -> Expr?
+
+TryStmt -> Blk ((SpecificCatch+ GeneralCatch? | GeneralCatch) FinallyBlk? | FinallyBlk)
+
+SpecificCatch -> ClsType Id? Blk
+
+ClsType -> QName | OBJECT | STRING
+
+GeneralCatch -> Blk
+
+FinallyBlk -> Blk
+
+CheckedStmt -> Blk
+
+UncheckedStmt -> Blk
+
+LockStmt -> Expr EmbedStmt
+
+UsingStmt -> (LocalVarDecl | Expr) EmbedStmt
+
+UnsafeStmt -> Blk
+
+FixedStmt -> PtrType FixedPtrDclr+ EmbedStmt
+
+FixedPtrDclr -> Id Expr
+
+YieldStmt -> Expr?
+
+
+/*********************** EXPRESSIONS *************************/
+
+@@PRIMARY_EXPR
+{
+	ArrCreatExpr   |
+	ArrCreInitExpr |
+	@PRIMARY_NO_ARR_CREAT_EXPR
+}
+
+@@PRIMARY_NO_ARR_CREAT_EXPR
+{
+	CHAR_LITERAL     |
+	STR_LITERAL      |
+	INT_LITERAL      |
+	REAL_LITERAL     |
+	True             |
+	False            |
+	NULL             |
+	ParenExpr        |
+	MemAccess        |
+	InvocExpr        |
+	ElemAccess       |
+	ThisAccess       |
+	BaseAccess       |
+	PostIncrExpr     |
+	PostDecrExpr     |
+	ObjCreatExpr     |
+	TypeofExpr       |
+	CheckedExpr      |
+	UncheckedExpr    |
+	PtrMemAccess     |
+	SizeofExpr       |
+	DefaultValExpr   |
+	AnonymMethodExpr |
+	MakeRefExpr      |
+	RefTypeExpr      |
+	RefValExpr
+}
+
+@@UNARY_EXPR
+{
+	@PRIMARY_EXPR |
+	QName         |	
+	PlusExpr      | 
+	MinusExpr     |  
+	NotExpr       |
+	InvExpr       |
+	PreIncrExpr   |
+	PreDecrExpr   |
+	CastExpr      |
+	PtrIndirExpr  |
+	AddrofExpr
+}
+
+@@MULT_GROUP
+{
+	MultExpr |
+	DivExpr  |
+	ModExpr
+}
+
+@@ADD_GROUP
+{
+	AddExpr |
+	SubExpr
+}
+
+@@SHIFT_GROUP
+{
+	LShiftExpr |
+	RShiftExpr 
+}
+
+@@REL_GROUP
+{
+	LessExpr |
+	GtExpr   |
+	LsEqExpr |
+	GtEqExpr |
+	IsExpr   |
+	AsExpr
+}
+
+@@EQ_GROUP
+{
+	EqExpr |
+	NotEqExpr
+}
+
+@@ASSN_GROUP
+{
+	Assn      |
+	PlusAssn  |
+	MinusAssn |
+	MultAssn  |
+	DivAssn   |
+	ModAssn   |
+	AndAssn   |
+	OrAssn    |
+	XorAssn   |
+	LShAssn   | 
+	RShAssn
+}
+
+Expr -> 
+	@UNARY_EXPR    |
+	@MULT_GROUP    |
+	@ADD_GROUP     |
+	@SHIFT_GROUP   |
+	@REL_GROUP     |
+	@EQ_GROUP      |	
+	AndExpr        |
+	ExclOrExpr     |
+	InclOrExpr     |
+	CondAndExpr    |
+	CondOrExpr     |
+	NullCoalesExpr |
+	CondExpr       |
+	@ASSN_GROUP
+
+Assn -> (@UNARY_EXPR) Expr
+
+PlusAssn -> (@UNARY_EXPR) Expr
+
+MinusAssn -> (@UNARY_EXPR) Expr
+
+MultAssn -> (@UNARY_EXPR) Expr
+
+DivAssn -> (@UNARY_EXPR) Expr
+
+ModAssn -> (@UNARY_EXPR) Expr
+
+AndAssn -> (@UNARY_EXPR) Expr
+
+OrAssn -> (@UNARY_EXPR) Expr
+
+XorAssn -> (@UNARY_EXPR) Expr
+
+LShAssn -> (@UNARY_EXPR) Expr
+
+RShAssn -> (@UNARY_EXPR) Expr
+
+CondExpr -> 
+	(
+		@UNARY_EXPR    |
+		@MULT_GROUP    |
+		@ADD_GROUP     |
+		@SHIFT_GROUP   |
+		@REL_GROUP     |
+		@EQ_GROUP      |	
+		AndExpr        |
+		ExclOrExpr     |
+		InclOrExpr     |
+		CondAndExpr    |
+		CondOrExpr     |
+		NullCoalesExpr
+	)
+	Expr
+	Expr
+
+NullCoalesExpr ->
+	(
+		@UNARY_EXPR    |
+		@MULT_GROUP    |
+		@ADD_GROUP     |
+		@SHIFT_GROUP   |
+		@REL_GROUP     |
+		@EQ_GROUP      |	
+		AndExpr        |
+		ExclOrExpr     |
+		InclOrExpr     |
+		CondAndExpr    |
+		CondOrExpr
+	)
+	(
+		@UNARY_EXPR    |
+		@MULT_GROUP    |
+		@ADD_GROUP     |
+		@SHIFT_GROUP   |
+		@REL_GROUP     |
+		@EQ_GROUP      |	
+		AndExpr        |
+		ExclOrExpr     |
+		InclOrExpr     |
+		CondAndExpr    |
+		CondOrExpr     |
+		NullCoalesExpr
+	)
+
+CondOrExpr ->
+	(
+		@UNARY_EXPR    |
+		@MULT_GROUP    |
+		@ADD_GROUP     |
+		@SHIFT_GROUP   |
+		@REL_GROUP     |
+		@EQ_GROUP      |	
+		AndExpr        |
+		ExclOrExpr     |
+		InclOrExpr     |
+		CondAndExpr    |
+		CondOrExpr
+	)
+	(
+		@UNARY_EXPR    |
+		@MULT_GROUP    |
+		@ADD_GROUP     |
+		@SHIFT_GROUP   |
+		@REL_GROUP     |
+		@EQ_GROUP      |	
+		AndExpr        |
+		ExclOrExpr     |
+		InclOrExpr     |
+		CondAndExpr
+	)
+
+CondAndExpr ->
+	(
+		@UNARY_EXPR    |
+		@MULT_GROUP    |
+		@ADD_GROUP     |
+		@SHIFT_GROUP   |
+		@REL_GROUP     |
+		@EQ_GROUP      |	
+		AndExpr        |
+		ExclOrExpr     |
+		InclOrExpr     |
+		CondAndExpr
+	)
+	(
+		@UNARY_EXPR    |
+		@MULT_GROUP    |
+		@ADD_GROUP     |
+		@SHIFT_GROUP   |
+		@REL_GROUP     |
+		@EQ_GROUP      |	
+		AndExpr        |
+		ExclOrExpr     |
+		InclOrExpr
+	)
+
+InclOrExpr ->
+	(
+		@UNARY_EXPR    |
+		@MULT_GROUP    |
+		@ADD_GROUP     |
+		@SHIFT_GROUP   |
+		@REL_GROUP     |
+		@EQ_GROUP      |	
+		AndExpr        |
+		ExclOrExpr     |
+		InclOrExpr
+	)
+	(
+		@UNARY_EXPR    |
+		@MULT_GROUP    |
+		@ADD_GROUP     |
+		@SHIFT_GROUP   |
+		@REL_GROUP     |
+		@EQ_GROUP      |	
+		AndExpr        |
+		ExclOrExpr
+	)
+
+ExclOrExpr ->
+	(
+		@UNARY_EXPR    |
+		@MULT_GROUP    |
+		@ADD_GROUP     |
+		@SHIFT_GROUP   |
+		@REL_GROUP     |
+		@EQ_GROUP      |	
+		AndExpr        |
+		ExclOrExpr
+	)
+	(
+		@UNARY_EXPR    |
+		@MULT_GROUP    |
+		@ADD_GROUP     |
+		@SHIFT_GROUP   |
+		@REL_GROUP     |
+		@EQ_GROUP      |	
+		AndExpr
+	)
+
+AndExpr ->
+	(
+		@UNARY_EXPR    |
+		@MULT_GROUP    |
+		@ADD_GROUP     |
+		@SHIFT_GROUP   |
+		@REL_GROUP     |
+		@EQ_GROUP      |	
+		AndExpr
+	)
+	(
+		@UNARY_EXPR   |
+		@MULT_GROUP   |
+		@ADD_GROUP    |
+		@SHIFT_GROUP  |
+		@REL_GROUP    |
+		@EQ_GROUP
+	)
+
+@@EQ_GROUP_RHS
+{
+	(
+		@UNARY_EXPR   |
+		@MULT_GROUP   |
+		@ADD_GROUP    |
+		@SHIFT_GROUP  |
+		@REL_GROUP    |
+		@EQ_GROUP
+	)
+	(
+		@UNARY_EXPR   |
+		@MULT_GROUP   |
+		@ADD_GROUP    |
+		@SHIFT_GROUP  |
+		@REL_GROUP
+	)
+}
+
+EqExpr -> @EQ_GROUP_RHS
+
+NotEqExpr -> @EQ_GROUP_RHS
+
+@@REL_GROUP_RHS
+{
+	(
+		@UNARY_EXPR   |
+		@MULT_GROUP   |
+		@ADD_GROUP    |
+		@SHIFT_GROUP  |
+		@REL_GROUP
+	)
+	(
+		@UNARY_EXPR   |
+		@MULT_GROUP   |
+		@ADD_GROUP    |
+		@SHIFT_GROUP
+	)
+}
+
+LessExpr -> @REL_GROUP_RHS
+
+GtExpr -> @REL_GROUP_RHS
+
+LsEqExpr -> @REL_GROUP_RHS
+
+GtEqExpr -> @REL_GROUP_RHS
+
+IsExpr -> 	
+	(
+		@UNARY_EXPR   |
+		@MULT_GROUP   |
+		@ADD_GROUP    |
+		@SHIFT_GROUP  |
+		@REL_GROUP
+	)
+	Type
+
+AsExpr ->
+	(
+		@UNARY_EXPR   |
+		@MULT_GROUP   |
+		@ADD_GROUP    |
+		@SHIFT_GROUP  |
+		@REL_GROUP
+	)
+	Type
+
+@@SHIFT_GROUP_RHS
+{
+	(
+		@UNARY_EXPR   |
+		@MULT_GROUP   |
+		@ADD_GROUP    |
+		@SHIFT_GROUP
+	)
+	(
+		@UNARY_EXPR   |
+		@MULT_GROUP   |
+		@ADD_GROUP
+	)
+}
+
+LShiftExpr -> @SHIFT_GROUP_RHS
+
+RShiftExpr -> @SHIFT_GROUP_RHS
+
+@@ADD_GROUP_RHS
+{
+	(
+		@UNARY_EXPR   |
+		@MULT_GROUP   |
+		@ADD_GROUP
+	)
+	(
+		@UNARY_EXPR   |
+		@MULT_GROUP
+	)
+}
+
+AddExpr -> @ADD_GROUP_RHS
+
+SubExpr -> @ADD_GROUP_RHS
+
+@@MULT_GROUP_RHS
+{
+	(
+		@UNARY_EXPR   |
+		@MULT_GROUP
+	)
+	(
+		@UNARY_EXPR
+	)	
+}
+
+MultExpr -> @MULT_GROUP_RHS
+
+DivExpr -> @MULT_GROUP_RHS
+
+ModExpr -> @MULT_GROUP_RHS
+
+PlusExpr -> @UNARY_EXPR
+
+MinusExpr -> @UNARY_EXPR
+
+NotExpr -> @UNARY_EXPR
+
+InvExpr -> @UNARY_EXPR
+
+PreIncrExpr -> @UNARY_EXPR
+
+PreDecrExpr -> @UNARY_EXPR
+
+CastExpr -> Type (@UNARY_EXPR)
+
+PtrIndirExpr -> @UNARY_EXPR
+
+AddrofExpr -> @UNARY_EXPR
+
+Literal ->
+	CHAR_LITERAL |
+	STR_LITERAL  |
+	INT_LITERAL  |
+	REAL_LITERAL |
+	True         |
+	False        |
+	NULL
+
+ParenExpr -> Expr
+
+MemAccess -> (PredefType | @PRIMARY_EXPR) Id
+
+PredefType ->
+	BOOL    |
+	BYTE    |
+	CHAR    |
+	DECIMAL |
+	DOUBLE  |
+	FLOAT   |
+	INT     |
+	LONG    |
+	OBJECT  |
+	SBYTE   |
+	SHORT   |
+	STRING  |
+	UINT    |
+	ULONG   |
+	USHORT
+
+InvocExpr -> (@PRIMARY_EXPR | QName) Arg* ArgLstExpr?
+
+ElemAccess -> (@PRIMARY_NO_ARR_CREAT_EXPR | QName | ArrCreInitExpr) Expr+
+
+BaseAccess -> Id | Expr+
+
+PostIncrExpr -> @PRIMARY_EXPR | QName
+
+PostDecrExpr -> @PRIMARY_EXPR | QName
+
+ObjCreatExpr -> Type (Arg* | ARGLIST)
+
+ArrCreatExpr -> Type Expr+ RankSpec*
+
+ArrCreInitExpr -> (Type Expr+ RankSpec* ArrInit?) | (ArrType ArrInit)
+
+TypeofExpr -> Type | VOID | UnboundTypeName
+
+UnboundTypeName -> (QName Comma*)+ (Id Comma*)?
+
+CheckedExpr -> Expr
+
+UncheckedExpr -> Expr
+
+PtrMemAccess -> (@PRIMARY_EXPR | QName) Id
+
+SizeofExpr -> Type
+
+DefaultValExpr -> Type
+
+AnonymMethodExpr -> AnonymMethodParam* Blk
+
+AnonymMethodParam -> ParamModifier? Type Id
+
+MakeRefExpr -> Expr
+
+RefTypeExpr -> Expr
+
+RefValExpr -> Expr Type
+
+StmtExpr -> 
+	@ASSN_GROUP  |
+	InvocExpr    |
+	ObjCreatExpr |
+	PostIncrExpr |
+	PostDecrExpr |
+	PreIncrExpr  |
+	PreDecrExpr
+
+PosArg -> 	
+	@UNARY_EXPR    |
+	@MULT_GROUP    |
+	@ADD_GROUP     |
+	@SHIFT_GROUP   |
+	@REL_GROUP     |
+	@EQ_GROUP      |	
+	AndExpr        |
+	ExclOrExpr     |
+	InclOrExpr     |
+	CondAndExpr    |
+	CondOrExpr     |
+	NullCoalesExpr

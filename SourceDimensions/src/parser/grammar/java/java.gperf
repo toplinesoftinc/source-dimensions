@@ -1,0 +1,61 @@
+%struct-type
+%includes
+%global-table
+%null-strings
+%readonly-tables
+%language=C++
+%define hash-function-name GetHash
+%define lookup-function-name MatchKeyword 
+%define class-name CJavaLexer
+struct KEYWORD { char *name; int index; }
+%%
+abstract, 0
+assert, 1
+boolean, 2
+break, 3
+byte, 4
+case, 5
+catch, 6
+char, 7
+class, 8
+continue, 9
+default, 10
+do, 11
+double, 12
+else, 13
+extends, 14
+false, 15
+final, 16
+finally, 17
+float, 18
+for, 19
+if, 20
+implements, 21
+import, 22
+instanceof, 23
+int, 24
+interface, 25
+long, 26
+native, 27
+new, 28
+null, 29
+package, 30
+private, 31
+protected, 32
+public, 33
+return, 34
+short, 35
+static, 36
+strictfp, 37
+super, 38
+switch, 39
+synchronized, 40
+this, 41
+throw, 42
+throws, 43
+transient, 44
+true, 45
+try, 46
+void, 47
+volatile, 48
+while, 49

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.sourcedimensions.server.sys.profile" default-cascade="save-update" default-access="field">
+
+    <class name="Database" table="T_DATABASE">
+        <id name="m_id" length="32" column="F_ID">
+            <generator class="uuid.hex"/>
+        </id>
+       	<property name="m_serverUrl" length="256" column="F_SERVER_URL" />
+       	<property name="m_databaseName" length="80" column="F_DATABASE_NAME" />
+       	<property name="m_userName" length="50" column="F_USER_NAME" />
+       	<property name="m_password" length="50" column="F_PASSWORD" />
+    </class>
+
+</hibernate-mapping>

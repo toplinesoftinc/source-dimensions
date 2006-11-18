@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+	
+<hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
+
+    <subclass name="AttributeItem" extends="AstNode" discriminator-value="47">
+	<list name="m_arguments" where="T_ROLE=0">
+		<key column="F_PARENT" foreign-key="none"/>
+		<list-index column="F_ORDINAL_INDEX"/>
+		<one-to-many class="AttributeArgument"/>
+	</list>
+	<join table="T_ATTRIBUTE_ITEM">
+		<key column="F_ID" foreign-key="none"/>
+		<many-to-one name="m_type" column="F_TYPE" unique="true" foreign-key="none"/>
+	</join>
+    </subclass>
+
+</hibernate-mapping>

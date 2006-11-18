@@ -1,0 +1,31 @@
+Comment -> '/' '*' AnyCharNotStarSlash '*' '/'
+
+SingleLineComment -> '/' '/' AnyCharNotEndOfLine EndOfLine
+
+MacroDefinition -> '@' '@' MacroName '{' AnyTextNotClosingBrace '}'
+
+MacroName -> Identifier
+
+MacroReference -> '@' MacroName
+
+Grammar -> Definition*
+
+Definition -> NonTerm '->' Expression
+
+Expression -> Sequence ('|' Sequence)*
+
+Sequence -> (Term Suffix?)*
+
+Term -> Identifier | '(' Expression ')'
+
+Suffix -> '?' | '*' | '+'
+
+Identifier -> NonTerm | Terminal
+
+NonTerm -> Symbol*
+
+Symbol -> [_a-zA-Z0-9]
+
+Terminal -> UpperCaseSymbol*
+
+UpperCaseSymbol -> [_A-Z0-9]

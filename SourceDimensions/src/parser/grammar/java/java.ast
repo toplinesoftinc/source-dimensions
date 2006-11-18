@@ -1,0 +1,880 @@
+/**************************************************************
+* This file describes abstract syntax tree using the following
+* extended BNF notation:
+* A - exactly one
+* A? - zero or one(optional)
+* A* - zero or more             
+* A+ - one or more
+* ABC - sequence
+* (A | B | C) - choice
+* 
+* The following syntax provides macro support for reuse of
+* repeated text:
+*
+* @@MacroName {...} - definition of macro named "MacroName",
+* where text is provided in braces ("{}").
+*
+* @MacroExt - expansion of the macro named "MacroExt". 
+*
+**************************************************************/
+
+/*********************** DECLARATIONS *************************/
+
+CompUnit -> 
+	PackageDecl? 
+	(
+		SingleTypeImpDecl   | 
+		TypeImpOnDemandDecl |
+		SingleStaticImpDecl |
+		StaticImpOnDemandDecl
+	)*
+	(
+		ClsDecl  |
+		EnumDecl |
+		IntfDecl |
+		AnnotTypeDecl
+	)*
+	
+PackageDecl -> Modifiers? QName
+
+SingleTypeImpDecl -> QName
+
+TypeImpOnDemandDecl -> QName
+
+SingleStaticImpDecl -> STATIC QName ID
+
+StaticImpOnDemandDecl -> STATIC QName
+
+QName -> ID+
+
+Modifiers ->
+	(
+		NormalAnnot     |
+		MarkerAnnot     |
+		SingleElemAnnot |	
+		PUBLIC          |
+		PROTECTED       | 
+		PRIVATE         |
+		STATIC          |
+		ABSTRACT        |
+		FINAL           |
+		NATIVE          |
+		SYNCHRONIZED    |
+		TRANSIENT       |
+		VOLATILE        |
+		STRICTFP
+	)+
+	
+NormalAnnot -> QName ElemValPair*
+
+ElemValPair -> ID ElemVal
+
+ElemVal ->
+	THIS            | 
+	ParenExpr       |
+	InstCreatExpr   |
+	FldAccess       |
+	MethodInvoc     |
+	ArrAccess       |
+	INT_LITERAL     |
+	FLOAT_LITERAL   |
+	CHAR_LITERAL    |
+	STR_LITERAL     |
+	NULL            |
+	TRUE            |
+	FALSE	        |
+	ArrCreatExpr    |
+	QName           |
+	PostIncrExpr    |
+	PostDecrExpr    |
+	PreIncrExpr     |
+	PreDecrExpr     |
+	UnaryPlusExpr   |
+	UnaryMinusExpr  |
+	InvExpr         |
+	NotExpr         |
+	CastExpr        |
+	MultExpr        |
+	DivExpr         |
+	ModExpr         |
+	PlusExpr        |
+	MinusExpr       |
+	LShiftExpr      |
+	RShiftExpr      |
+	UShiftExpr      |
+	LessExpr        |
+	GtExpr          |
+	LeExpr          |
+	GeExpr          |
+	InstOfExpr      |
+	EqExpr          |
+	NeExpr          |
+	AndExpr         |
+	ExclOrExpr      |
+	InclOrExpr      |
+	CondAndExpr     |
+	CondOrExpr      |
+	CondExpr        |
+	NormalAnnot     |
+	MarkerAnnot     |
+	SingleElemAnnot |	
+	ElemValArrInit
+	
+ElemValArrInit -> ElemVal*
+
+MarkerAnnot -> QName
+
+SingleElemAnnot -> QName ElemVal
+
+ClsDecl -> Modifiers? ID TypeParam* ClsType? IntfType* ClsBody
+
+TypeParam -> ID (ClsIntfType BndList?)?
+
+BndList -> IntfType+
+
+ClsType -> QName ActualTypeArg*
+
+ClsIntfType -> QName ActualTypeArg*
+
+IntfType -> QName ActualTypeArg*
+
+ActualTypeArg -> RefType | SuperWildcardBnd | ExtendsWildcardBnd | Wildcard
+
+SuperWildcardBnd -> RefType
+
+ExtendsWildcardBnd -> RefType
+
+RefType -> ClsIntfType Dim* | PrimitiveType Dim+
+
+Type -> RefType | PrimitiveType
+
+PrimitiveType -> 
+	BOOLEAN |
+	BYTE    |
+	SHORT   |
+	INT     |
+	LONG    |
+	CHAR    |
+	FLOAT   |
+	DOUBLE
+		
+ClsBody -> 
+	(
+		FldDecl       |
+		MethodDecl    |
+		ClsDecl       |
+		EnumDecl      |
+		IntfDecl      |
+		AnnotTypeDecl |
+		InstInit      |
+		StaticInit    |
+		ConstrDecl
+	)*
+	
+FldDecl -> Modifiers? Type VarDclr+
+
+VarDclr -> ID Dim* VarInit?
+
+VarInit -> Expr | ArrInit
+
+ArrInit -> VarInit*
+
+MethodDecl -> 
+	Modifiers?
+	TypeParam*
+	ResultType
+	ID 
+	FormalParam* 
+	VarArityParam?
+	Dim*
+	Throws?
+	Blk?
+	
+ResultType -> Type | VOID
+
+FormalParam -> Modifiers? Type ID Dim*
+
+VarArityParam -> Modifiers? Type ID Dim*
+
+Throws -> ClsType+
+
+InstInit -> Blk
+
+StaticInit -> STATIC Blk
+
+ConstrDecl -> 
+	Modifiers?
+	TypeParam*
+	ID 
+	FormalParam* 
+	VarArityParam?
+	Throws?
+	ConstrBody
+	
+ConstrBody -> ExplicitConstrInvoc? BlkStmt*
+
+ExplicitConstrInvoc ->
+	(
+		(
+			RefType+
+			THIS
+		)
+		|
+		Super
+		|
+		(
+			THIS
+			(
+				RefType*
+				Super
+			)?
+		)
+		|
+		(
+			INT_LITERAL   |
+			FLOAT_LITERAL |
+			CHAR_LITERAL  |
+			STR_LITERAL   |
+			NULL          |
+			TRUE          |
+			FALSE         |
+			ParenExpr     |
+			InstCreatExpr |
+			FldAccess     |
+			MethodInvoc   |
+			ArrAccess     |
+			ArrCreatExpr
+		)
+		RefType*
+		Super
+	)
+	Expr*
+	
+IntfDecl -> Modifiers? ID TypeParam* IntfType* IntfBody
+
+IntfBody ->
+	(
+		ConstDecl       |
+		AbstrMethodDecl |
+		ClsDecl         |
+		EnumDecl        |
+		IntfDecl        |
+		AnnotTypeDecl
+	)*
+	
+ConstDecl -> Modifiers? Type VarDclr+
+
+AbstrMethodDecl ->
+	Modifiers? 
+	TypeParam*
+	ResultType
+	ID 
+	FormalParam* 
+	VarArityParam?
+	Dim*
+	Throws?
+
+EnumDecl ->
+	Modifiers?
+	ID
+	IntfType*
+	EnumBody
+	
+EnumBody ->
+	EnumConst*
+	(
+		FldDecl       |
+		MethodDecl    |
+		ClsDecl       |
+		EnumDecl      |
+		IntfDecl      |
+		AnnotTypeDecl |
+		InstInit      |
+		StaticInit    |
+		ConstrDecl
+	)*
+
+EnumConst ->
+	Modifiers?
+	ID
+	Expr*
+	ClsBody?
+	
+AnnotTypeDecl ->
+	Modifiers?
+	ID
+	AnnotTypeBody
+	
+AnnotTypeBody ->
+	(
+		AnnotTypeMethodDecl |
+		ConstDecl           |
+		ClsDecl             |
+		EnumDecl            |
+		IntfDecl            |
+		AnnotTypeDecl 
+	)*
+	
+AnnotTypeMethodDecl ->
+	Modifiers?
+	Type
+	ID
+	ElemVal?		
+
+
+/*********************** STATEMENTS *************************/
+
+Blk -> BlkStmt*
+
+BlkStmt ->
+	LocalVarDecl |
+	ClsDecl      |
+	EnumDecl     |
+	Stmt
+
+LocalVarDecl -> Modifiers? Type VarDclr+
+	
+Stmt ->
+	Blk          |
+	EmptyStmt    |
+	AssertStmt   |
+	StmtExpr     |
+	SwitchStmt   | 
+	DoStmt       |
+	BreakStmt    |
+	ContinueStmt |
+	ReturnStmt   |
+	SyncStmt     |
+	ThrowStmt    |
+	TryStmt      |
+	LblStmt      |
+	IfThenStmt   |
+	WhileStmt    |
+	ForStmt      |
+	EnhancedForStmt
+		
+AssertStmt -> Expr Expr?
+	
+StmtExpr -> 
+	(
+		AssnExpr       | 
+		MultAssnExpr   |
+		DivAssnExpr    |
+		ModAssnExpr    |
+		PlusAssnExpr   |
+		MinusAssnExpr  |
+		LShiftAssnExpr |
+		RShiftAssnExpr |
+		UShiftAssnExpr |
+		AndAssnExpr    |
+		OrAssnExpr     |
+		XorAssnExpr    | 
+		PreIncrExpr    |
+		PreDecrExpr    |
+		PostIncrExpr   |
+		PostDecrExpr   |
+		MethodInvoc    |
+		InstCreatExpr
+	)
+
+SwitchStmt -> Expr SwitchBlkStmtGr* SwitchLbl*
+
+SwitchBlkStmtGr -> SwitchLbl* BlkStmt*
+
+SwitchLbl -> ConstExpr?
+
+ConstExpr -> Expr
+
+DoStmt -> Stmt Expr
+
+BreakStmt -> ID?
+
+ContinueStmt -> ID?
+
+ReturnStmt ->Expr?
+
+SyncStmt -> SYNCHRONIZED Expr Blk
+
+ThrowStmt -> Expr
+
+TryStmt -> Blk ((Catch+ Finally?) | Finally)
+
+Catch -> FormalParam Blk
+
+Finally -> Blk
+
+LblStmt -> ID Stmt
+
+IfThenStmt -> Expr Stmt Stmt?
+
+WhileStmt -> Expr Stmt
+
+ForStmt -> ForInit? Expr? ForUpdate? Stmt
+
+ForInit -> StmtExpr+ | LocalVarDecl
+
+ForUpdate -> StmtExpr+
+
+EnhancedForStmt -> Modifiers? Type ID Expr Stmt
+
+ 
+/*********************** EXPRESSIONS *************************/ 
+
+@@PRIMARY_NO_NEW_ARRAY_EXPR
+{
+	INT_LITERAL   |
+	FLOAT_LITERAL |
+	CHAR_LITERAL  |
+	STR_LITERAL   |
+	NULL          |
+	TRUE          |
+	FALSE         |
+	THIS          |
+	ParenExpr     |
+	InstCreatExpr |
+	FldAccess     |
+	MethodInvoc   |
+	ArrAccess
+}
+
+@@PRIMARY_EXPR
+{
+	@PRIMARY_NO_NEW_ARRAY_EXPR |
+	ArrCreatExpr
+}
+
+@@POSTFIX_EXPR
+{
+	@PRIMARY_EXPR  |
+	QName          |
+	PostIncrExpr   |
+	PostDecrExpr
+}
+
+@@UNARY_EXPR_NOT_PLUS_MINUS
+{
+	@POSTFIX_EXPR |
+	InvExpr       |
+	NotExpr       |
+	CastExpr
+}
+
+@@UNARY_EXPR
+{
+	PreIncrExpr    |
+	PreDecrExpr    |
+	UnaryPlusExpr  |
+	UnaryMinusExpr |
+	@UNARY_EXPR_NOT_PLUS_MINUS	
+}
+
+ParenExpr  -> Expr
+
+InstCreatExpr -> ((ActualTypeArg* ClsIntfType) | ((@PRIMARY_EXPR) | QName) ActualTypeArg* ID) Expr* ClsBody?
+
+FldAccess ->
+	ClsType THIS               |
+	(Type | VOID) Class        |
+	(@PRIMARY_EXPR | Super) ID |
+	QName Super ID
+	
+MethodInvoc -> (@PRIMARY_EXPR | Super) RefType* ID Expr* | QName (Super? RefType* ID)? Expr*
+
+ArrAccess -> (@PRIMARY_NO_NEW_ARRAY_EXPR | QName) Expr
+
+ArrCreatExpr ->	(PrimitiveType | QName ActualTypeArg*)(Expr+ Dim* | Dim+ ArrInit)
+	
+PostIncrExpr -> @POSTFIX_EXPR
+	
+PostDecrExpr -> @POSTFIX_EXPR
+
+PreIncrExpr -> @UNARY_EXPR
+
+PreDecrExpr -> @UNARY_EXPR
+
+UnaryPlusExpr -> @UNARY_EXPR
+
+UnaryMinusExpr -> @UNARY_EXPR
+
+InvExpr -> @UNARY_EXPR
+
+NotExpr -> @UNARY_EXPR
+
+CastExpr ->
+	PrimitiveType
+	Dim*
+	(
+		@UNARY_EXPR
+	)
+	|
+	(
+		ClsIntfType 
+		Dim+  
+		|
+		QName 
+		ActualTypeArg*
+	)
+	(
+		@UNARY_EXPR_NOT_PLUS_MINUS
+	)
+
+
+@@EQ_GROUP
+{
+	EqExpr |
+	NeExpr
+}
+
+@@REL_GROUP
+{
+	LessExpr |
+	GtExpr   |
+	LeExpr   |
+	GeExpr   |
+	InstOfExpr
+}
+
+@@SHIFT_GROUP
+{
+	LShiftExpr |
+	RShiftExpr |
+	UShiftExpr
+}
+
+@@ADD_GROUP
+{
+	PlusExpr |
+	MinusExpr
+}
+
+@@MULT_GROUP
+{
+	MultExpr |
+	DivExpr  |
+	ModExpr	
+}
+
+@@LEFT_HAND_SIDE
+{
+	QName     |
+	FldAccess |
+	ArrAccess
+}
+
+@@ASSIGNMENT
+{
+	AssnExpr        |
+	MultAssnExpr    |
+	DivAssnExpr     |
+	ModAssnExpr     |
+	PlusAssnExpr    |
+	MinusAssnExpr   |
+	LShiftAssnExpr  |
+	RShiftAssnExpr  |
+	UShiftAssnExpr  |
+	AndAssnExpr     |
+	OrAssnExpr      |
+	XorAssnExpr
+}
+
+
+@@EXPRESSION
+{
+	@UNARY_EXPR  |
+	@MULT_GROUP  |
+	@ADD_GROUP   |
+	@SHIFT_GROUP |
+	@REL_GROUP   |
+	@EQ_GROUP    |
+	AndExpr      |
+	ExclOrExpr   |
+	InclOrExpr   |
+	CondAndExpr  |
+	CondOrExpr   |
+	CondExpr     |
+	@ASSIGNMENT
+}
+
+AssnExpr -> (@LEFT_HAND_SIDE) (@EXPRESSION)
+
+MultAssnExpr -> (@LEFT_HAND_SIDE) (@EXPRESSION)
+
+DivAssnExpr -> (@LEFT_HAND_SIDE) (@EXPRESSION)
+
+ModAssnExpr ->  (@LEFT_HAND_SIDE) (@EXPRESSION)
+
+PlusAssnExpr ->  (@LEFT_HAND_SIDE) (@EXPRESSION)
+
+MinusAssnExpr ->  (@LEFT_HAND_SIDE) (@EXPRESSION)
+
+LShiftAssnExpr -> (@LEFT_HAND_SIDE) (@EXPRESSION)
+
+RShiftAssnExpr -> (@LEFT_HAND_SIDE) (@EXPRESSION)
+
+UShiftAssnExpr -> (@LEFT_HAND_SIDE) (@EXPRESSION)
+
+AndAssnExpr -> (@LEFT_HAND_SIDE) (@EXPRESSION)
+
+XorAssnExpr -> (@LEFT_HAND_SIDE) (@EXPRESSION)
+
+OrAssnExpr -> (@LEFT_HAND_SIDE) (@EXPRESSION)
+
+CondExpr ->
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP    |
+		AndExpr      |
+		ExclOrExpr   |
+		InclOrExpr   |
+		CondAndExpr  |
+		CondOrExpr
+	)
+	Expr
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP    |
+		AndExpr      |
+		ExclOrExpr   |
+		InclOrExpr   |
+		CondAndExpr  |
+		CondOrExpr   |
+		CondExpr
+	)
+
+CondOrExpr ->
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP    |
+		AndExpr      |
+		ExclOrExpr   |
+		InclOrExpr   |
+		CondAndExpr  |
+		CondOrExpr
+	)
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP    |
+		AndExpr      |
+		ExclOrExpr   |
+		InclOrExpr   |
+		CondAndExpr
+	)
+
+CondAndExpr ->
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP    |
+		AndExpr      |
+		ExclOrExpr   |
+		InclOrExpr   |
+		CondAndExpr
+	)
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP    |
+		AndExpr      |
+		ExclOrExpr   |
+		InclOrExpr
+	)
+  
+InclOrExpr ->
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP    |
+		AndExpr      |
+		ExclOrExpr   |
+		InclOrExpr
+	)
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP    |
+		AndExpr      |
+		ExclOrExpr
+	)
+ 
+ExclOrExpr ->
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP    |
+		AndExpr      |
+		ExclOrExpr
+	)
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP    |
+		AndExpr
+	)
+
+AndExpr ->
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP    |
+		AndExpr
+	)
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP
+	)
+
+@@EQ_GROUP_RHS
+{
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP   |
+		@EQ_GROUP
+	)
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP
+	)
+}
+ 
+EqExpr -> @EQ_GROUP_RHS
+
+NeExpr -> @EQ_GROUP_RHS
+
+@@REL_GROUP_RHS
+{
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP
+	)
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP
+	)
+}
+
+LessExpr -> @REL_GROUP_RHS
+
+GtExpr -> @REL_GROUP_RHS
+
+LeExpr -> @REL_GROUP_RHS
+
+GeExpr -> @REL_GROUP_RHS
+
+InstOfExpr -> 
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP |
+		@REL_GROUP
+	)
+	RefType
+
+@@SHIFT_GROUP_RHS
+{
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP   |
+		@SHIFT_GROUP
+	)
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP
+	)
+}
+
+LShiftExpr -> @SHIFT_GROUP_RHS
+
+RShiftExpr -> @SHIFT_GROUP_RHS
+
+UShiftExpr -> @SHIFT_GROUP_RHS
+
+@@ADD_GROUP_RHS
+{
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP  |
+		@ADD_GROUP
+	)
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP
+	)
+}
+
+PlusExpr -> @ADD_GROUP_RHS
+
+MinusExpr -> @ADD_GROUP_RHS
+
+@@MULT_GROUP_RHS
+{
+	(
+		@UNARY_EXPR  |
+		@MULT_GROUP
+	)
+	(
+		@UNARY_EXPR
+	)
+}
+
+MultExpr -> @MULT_GROUP_RHS
+
+DivExpr -> @MULT_GROUP_RHS
+
+ModExpr -> @MULT_GROUP_RHS
+
+Expr -> @EXPRESSION

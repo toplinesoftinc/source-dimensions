@@ -1,0 +1,16 @@
+<beans xmlns="http://xfire.codehaus.org/config/1.0">
+
+	<service>
+		<name>webservice</name>
+		<serviceClass>com.sourcedimensions.ws.provider.IWebService</serviceClass>
+		<implementationClass>com.sourcedimensions.ws.provider.WebService</implementationClass>
+
+		<properties>
+			<property key="mtom-enabled">true</property>
+		</properties>
+ 
+	</service>  
+  
+</beans>
+
+

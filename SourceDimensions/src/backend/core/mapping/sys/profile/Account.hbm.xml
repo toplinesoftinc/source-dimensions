@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.sourcedimensions.server.sys.profile" default-cascade="save-update" default-access="field">
+
+    <class name="Account" table="T_ACCOUNT">
+        <id name="m_id" length="32" column="F_ID">
+            <generator class="uuid.hex"/>
+        </id>
+	<many-to-one name="m_database" column="F_DATABASE"/>
+        <property name="m_ownerName" length="80" column="F_OWNER_NAME"/>
+	<property name="m_status" column="F_STATUS"/>
+	<property name="m_creationDate" column="F_CREATION_DATE"/>	
+	<property name="m_expDate" column="F_EXP_DATE"/>
+	<property name="m_writeAccess" column="F_WRITE_ACCESS"/>
+	<property name="m_langAccess" column="F_LANG_ACCESS"/>
+	<set name="m_users" cascade="delete,save-update" inverse="true">
+		<key column="F_ACCOUNT"/>
+		<one-to-many class="User"/>	
+	</set>
+	<set name="m_projectIds" table="T_ACCOUNT_PROJECTS">
+		<key column="F_ACCOUNT"/>
+		<element column="F_PROJECT_ID" type="string"/>
+	</set>
+
+    </class>
+
+</hibernate-mapping>

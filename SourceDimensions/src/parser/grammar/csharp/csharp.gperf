@@ -1,0 +1,103 @@
+%struct-type
+%includes
+%global-table
+%null-strings
+%readonly-tables
+%language=C++
+%define hash-function-name GetHash
+%define lookup-function-name MatchKeyword 
+%define class-name CSharpLexer
+struct KEYWORD { char *name; int index; }
+%%
+__arglist, 0
+__makeref, 1
+__reftype, 2
+__refvalue, 3
+abstract, 4
+add, 5
+as, 6
+assembly, 7
+base, 8
+bool, 9
+break, 10
+byte, 11
+case, 12
+catch, 13
+char, 14
+checked, 15
+class, 16
+const, 17
+continue, 18
+decimal, 19
+default, 20
+delegate, 21
+do, 22
+double, 23
+else, 24
+enum, 25
+event, 26
+explicit, 27
+extern, 28
+false, 29
+field, 30
+finally, 31
+fixed, 32
+float, 33
+for, 34
+foreach, 35
+get, 36
+goto, 37
+if, 38
+implicit, 39
+in, 40
+int, 41
+interface, 42
+internal, 43
+is, 44
+lock, 45
+long, 46
+method, 47
+module, 48
+namespace, 49
+new, 50
+null, 51
+object, 52
+operator, 53
+out, 54
+override, 55
+param, 56
+params, 57
+private, 58
+property, 59
+protected, 60
+public, 61
+readonly, 62
+ref, 63
+remove, 64
+return, 65
+sbyte, 66
+sealed, 67
+set, 68
+short, 69
+sizeof, 70
+stackalloc, 71
+static, 72
+string, 73
+struct, 74
+switch, 75
+this, 76
+throw, 77
+true, 78
+try, 79
+type, 80
+typeof, 81
+uint, 82
+ulong, 83
+unchecked, 84
+unsafe, 85
+ushort, 86
+using, 87
+virtual, 88
+void, 89
+volatile, 90
+while, 91

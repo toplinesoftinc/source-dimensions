@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
+
+    <subclass name="AttributeMethodMember" extends="Member" discriminator-value="3">
+	<join table="T_ATTRIBUTE_METHOD_MEMBER">
+		<key column="F_ID" foreign-key="none"/>
+		<property name="m_name" length="256" column="F_NAME"/>
+		<many-to-one name="m_defaultValue" column="F_DEFAULT_VALUE" unique="true" foreign-key="none"/>
+	</join>
+    </subclass>
+
+</hibernate-mapping>

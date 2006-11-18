@@ -1,0 +1,22 @@
+%struct-type
+%includes
+%global-table
+%null-strings
+%readonly-tables
+%language=C++
+%define hash-function-name GetPreprocHash
+%define lookup-function-name MatchPreprocKeyword 
+%define class-name CSharpLexer
+struct KEYWORD { char *name; int index; }
+%%
+define, 0
+undef, 1
+if, 2
+elif, 3 
+else, 4
+endif, 5
+line, 6
+error, 7
+warning, 8
+region, 9
+endregion, 10

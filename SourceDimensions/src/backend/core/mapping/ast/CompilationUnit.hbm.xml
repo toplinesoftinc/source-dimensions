@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
+
+    <subclass name="CompilationUnit" extends="AstNode" discriminator-value="77">
+	<set name="m_attributes" where="T_ROLE=0">
+		<key column="F_PARENT" foreign-key="none"/>
+		<one-to-many class="AttributeBlock"/>
+	</set>
+	<set name="m_directives" where="T_ROLE=1">
+		<key column="F_PARENT" foreign-key="none"/>
+		<one-to-many class="Directive"/>
+	</set>
+	<set name="m_declarations" where="T_ROLE=2">                                                 
+		<key column="F_PARENT" foreign-key="none"/>
+		<one-to-many class="Declaration"/>
+	</set>
+    </subclass>
+
+</hibernate-mapping>

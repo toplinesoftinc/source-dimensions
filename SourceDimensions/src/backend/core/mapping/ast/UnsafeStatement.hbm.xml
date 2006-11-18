@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+	
+<hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
+
+    <subclass name="UnsafeStatement" extends="EmbeddedStatement" discriminator-value="71"> 
+	<join table="T_UNSAFE_STATEMENT">
+		<key column="F_ID" foreign-key="none"/>
+		<many-to-one name="m_unsafeBlock" column="F_UNSAFE_BLOCK"/>
+	</join>
+    </subclass>
+
+</hibernate-mapping>

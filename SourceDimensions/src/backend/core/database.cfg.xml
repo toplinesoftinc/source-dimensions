@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+
+    <session-factory>
+
+	<!-- JDBC driver -->
+        <property name="connection.driver_class">org.postgresql.Driver</property>
+
+        <!-- JDBC connection pool (use the built-in) -->
+        <property name="connection.pool_size">20</property>
+
+        <!-- SQL dialect -->
+        <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+
+        <!-- Enable Hibernate's automatic session context management -->
+        <property name="current_session_context_class">thread</property>
+
+	<property name="hibernate.jdbc.batch_size">30</property>
+
+        <!-- Disable the second-level cache  -->
+        <property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
+
+        <!-- Echo all executed SQL to stdout -->
+        <property name="show_sql">false</property>
+	<property name="format_sql">true</property>
+
+        <!-- Update schema as necessary -->
+        <property name="hbm2ddl.auto">update</property>
+
+	<mapping resource="mapping/sys/Project.hbm.xml"/>
+        <mapping resource="mapping/sys/FileSystemElement.hbm.xml"/>
+        <mapping resource="mapping/sys/Folder.hbm.xml"/>
+        <mapping resource="mapping/sys/SourceFile.hbm.xml"/>
+
+	<mapping resource="mapping/ast/AbstractMember.hbm.xml"/>
+	<mapping resource="mapping/ast/AbstractStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/Accessor.hbm.xml"/>
+	<mapping resource="mapping/ast/AttributeMethodMember.hbm.xml"/>
+	<mapping resource="mapping/ast/AnonymousMethodExpression.hbm.xml"/>
+	<mapping resource="mapping/ast/ArrayCreationExpression.hbm.xml"/>
+	<mapping resource="mapping/ast/ArrayElementValue.hbm.xml"/>
+	<mapping resource="mapping/ast/ArrayInitializer.hbm.xml"/>
+	<mapping resource="mapping/ast/AssertStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/AstNode.hbm.xml"/>
+	<mapping resource="mapping/ast/AttributeArgument.hbm.xml"/>
+	<mapping resource="mapping/ast/AttributeBlock.hbm.xml"/>
+	<mapping resource="mapping/ast/AttributeElementValue.hbm.xml"/>
+	<mapping resource="mapping/ast/AttributeItem.hbm.xml"/>
+	<mapping resource="mapping/ast/BinaryExpression.hbm.xml"/>
+	<mapping resource="mapping/ast/BlockStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/CatchBlock.hbm.xml"/>
+	<mapping resource="mapping/ast/CheckedStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/CompilationUnit.hbm.xml"/>
+	<mapping resource="mapping/ast/ConditionExpression.hbm.xml"/>
+	<mapping resource="mapping/ast/Constraint.hbm.xml"/>
+	<mapping resource="mapping/ast/ConstraintBound.hbm.xml"/>
+	<mapping resource="mapping/ast/DataMember.hbm.xml"/>
+	<mapping resource="mapping/ast/Declaration.hbm.xml"/>
+	<mapping resource="mapping/ast/Declarator.hbm.xml"/>
+	<mapping resource="mapping/ast/DelegateDeclaration.hbm.xml"/>
+	<mapping resource="mapping/ast/DelegateMember.hbm.xml"/>
+	<mapping resource="mapping/ast/Directive.hbm.xml"/>
+	<mapping resource="mapping/ast/DoWhileStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/ElementValue.hbm.xml"/>
+	<mapping resource="mapping/ast/ElementValueArrayInitializer.hbm.xml"/>
+	<mapping resource="mapping/ast/EmbeddedStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/EnumConstMember.hbm.xml"/>
+	<mapping resource="mapping/ast/EventMember.hbm.xml"/>
+	<mapping resource="mapping/ast/Expression.hbm.xml"/>
+	<mapping resource="mapping/ast/ExpressionElementValue.hbm.xml"/>
+	<mapping resource="mapping/ast/ExpressionInitializer.hbm.xml"/>
+	<mapping resource="mapping/ast/ExpressionStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/ExternAliasDirective.hbm.xml"/>
+	<mapping resource="mapping/ast/FixedSizeBufDeclarator.hbm.xml"/>
+	<mapping resource="mapping/ast/FixedSizeBufMember.hbm.xml"/>
+	<mapping resource="mapping/ast/FixedStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/ForEachStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/ForStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/FunctionalMember.hbm.xml"/>
+	<mapping resource="mapping/ast/IdentifierExpression.hbm.xml"/>
+	<mapping resource="mapping/ast/IfStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/IndexerMember.hbm.xml"/>
+	<mapping resource="mapping/ast/InitBlockMember.hbm.xml"/>
+	<mapping resource="mapping/ast/Initializer.hbm.xml"/>
+	<mapping resource="mapping/ast/InstanceCreationExpression.hbm.xml"/>
+	<mapping resource="mapping/ast/JumpStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/LabelStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/LiteralExpression.hbm.xml"/>
+	<mapping resource="mapping/ast/LocalVarDeclStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/LocalVariableDeclaration.hbm.xml"/>
+	<mapping resource="mapping/ast/Member.hbm.xml"/>
+	<mapping resource="mapping/ast/Modifier.hbm.xml"/>
+	<mapping resource="mapping/ast/MethodInvocationExpression.hbm.xml"/>
+	<mapping resource="mapping/ast/Name.hbm.xml"/>
+	<mapping resource="mapping/ast/NamedAttributeArgument.hbm.xml"/>
+	<mapping resource="mapping/ast/Parameter.hbm.xml"/>
+	<mapping resource="mapping/ast/PropertyMember.hbm.xml"/>
+	<mapping resource="mapping/ast/ResourceAcquisition.hbm.xml"/>
+	<mapping resource="mapping/ast/ReturnStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/SelfReferenceExpression.hbm.xml"/>
+	<mapping resource="mapping/ast/SimpleType.hbm.xml"/>
+	<mapping resource="mapping/ast/StackallocInitializer.hbm.xml"/>
+	<mapping resource="mapping/ast/SwitchLabel.hbm.xml"/>
+	<mapping resource="mapping/ast/SwitchSection.hbm.xml"/>
+	<mapping resource="mapping/ast/SwitchStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/SyncStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/TryStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/Type.hbm.xml"/>
+	<mapping resource="mapping/ast/TypeArgument.hbm.xml"/>
+	<mapping resource="mapping/ast/TypeDeclaration.hbm.xml"/>
+	<mapping resource="mapping/ast/TypeDeclarationMember.hbm.xml"/>
+	<mapping resource="mapping/ast/TypeDeclarationStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/TypeExpression.hbm.xml"/>
+	<mapping resource="mapping/ast/TypeParameter.hbm.xml"/>
+	<mapping resource="mapping/ast/UnaryExpression.hbm.xml"/>
+	<mapping resource="mapping/ast/UnaryTypeExpression.hbm.xml"/>
+	<mapping resource="mapping/ast/UnsafeStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/UserDefinedType.hbm.xml"/>
+	<mapping resource="mapping/ast/UsingAliasDirective.hbm.xml"/>
+	<mapping resource="mapping/ast/UsingDirective.hbm.xml"/>
+	<mapping resource="mapping/ast/UsingStatement.hbm.xml"/>
+	<mapping resource="mapping/ast/YieldStatement.hbm.xml"/>
+    </session-factory>
+
+</hibernate-configuration>

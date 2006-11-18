@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
+
+    <subclass name="Constraint" extends="AstNode" discriminator-value="15">
+	<list name="m_bounds" where="T_ROLE=0">
+		<key column="F_PARENT" foreign-key="none"/>
+		<list-index column="F_ORDINAL_INDEX"/>
+		<one-to-many class="ConstraintBound"/>
+	</list>
+	<join table="T_CONSTRAINT">
+		<key column="F_ID" foreign-key="none"/>
+		<property name="m_paramName" length="256" column="F_PARAM_NAME"/>
+	</join>
+    </subclass>
+
+</hibernate-mapping>

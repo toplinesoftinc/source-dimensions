@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+	
+<hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
+
+    <subclass name="AttributeBlock" extends="AstNode" discriminator-value="45">
+	<set name="m_items" where="T_ROLE=0">
+		<key column="F_PARENT" foreign-key="none"/>
+		<one-to-many class="AttributeItem"/>
+	</set>
+	<join table="T_ATTRIBUTE_BLOCK">
+		<key column="F_ID" foreign-key="none"/>
+		<property name="m_target" length="256" column="F_TARGET"/>
+	</join>
+    </subclass>
+
+</hibernate-mapping>

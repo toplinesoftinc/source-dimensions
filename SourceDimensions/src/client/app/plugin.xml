@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension
+         id="application"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="com.sourcedimensions.client.Application">
+         </run>
+      </application>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            name="Main Perspective"
+            class="com.sourcedimensions.client.Perspective"
+            id="SourceDimensionsClient.perspective">
+      </perspective>
+   </extension>
+   <extension
+         id="sourcedimensions"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="com.sourcedimensions.client.application"
+            name="Source Dimensions">
+         <property
+               name="windowImages"
+               value="icons/img16.gif,icons/img32.gif,icons/img48.gif,icons/img64.gif,icons/img128.gif"/>
+         <property
+               name="aboutImage"
+               value="icons/about.gif"/>
+      </product>
+   </extension>
+  
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="com.sourcedimensions.client.application"
+            name="Source Dimensions">
+         <property
+               name="windowImages"
+               value="icons/img16.gif,icons/img32.gif,icons/img48.gif,icons/img64.gif,icons/img128.gif"/>
+         <property
+               name="aboutImage"
+               value="icons/about.gif"/>
+      </product>
+   </extension> <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension targetID="org.eclipse.ui.resourcePerspective">
+         <view
+               id="com.sourcedimensions.client.views.MainView"
+               ratio="0.5"
+               relationship="right"
+               relative="org.eclipse.ui.views.TaskList"/>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="com.sourcedimensions.client"
+            class="com.sourcedimensions.client.views.ProjectView"
+            icon="icons/project.png"
+            id="com.sourcedimensions.client.views.ProjectView"
+            name="Projects"/>
+   </extension>
+
+</plugin>

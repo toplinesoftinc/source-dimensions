@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+
+    <session-factory>
+
+        <!-- Database connection settings -->
+        <property name="connection.driver_class">org.postgresql.Driver</property>
+        <property name="connection.url">jdbc:postgresql://localhost/profile</property>
+        <property name="hibernate.connection.username">postgres</property>
+        <property name="hibernate.connection.password">postgres</property>
+
+        <!-- JDBC connection pool (use the built-in) -->
+        <property name="connection.pool_size">20</property>
+
+        <!-- SQL dialect -->
+        <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+
+        <!-- Enable Hibernate's automatic session context management -->
+        <property name="current_session_context_class">thread</property>
+
+        <!-- Second-level cache  -->
+        <property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
+
+        <!-- Echo all executed SQL to stdout -->
+        <property name="show_sql">false</property>
+	<property name="format_sql">true</property>
+
+        <!-- Update schema as necessary -->
+        <property name="hbm2ddl.auto">update</property>
+
+	<mapping resource="mapping/sys/profile/Database.hbm.xml"/>
+	<mapping resource="mapping/sys/profile/Account.hbm.xml"/>
+	<mapping resource="mapping/sys/profile/User.hbm.xml"/>
+	<mapping resource="mapping/sys/profile/UserSession.hbm.xml"/>
+    </session-factory>
+
+</hibernate-configuration>
