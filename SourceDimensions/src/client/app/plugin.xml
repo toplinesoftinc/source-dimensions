@@ -19,20 +19,6 @@
             id="SourceDimensionsClient.perspective">
       </perspective>
    </extension>
-   <extension
-         id="sourcedimensions"
-         point="org.eclipse.core.runtime.products">
-      <product
-            application="com.sourcedimensions.client.application"
-            name="Source Dimensions">
-         <property
-               name="windowImages"
-               value="icons/img16.gif,icons/img32.gif,icons/img48.gif,icons/img64.gif,icons/img128.gif"/>
-         <property
-               name="aboutImage"
-               value="icons/about.gif"/>
-      </product>
-   </extension>
   
    <extension
          id="product"

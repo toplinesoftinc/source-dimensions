@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="consumer/|provider/" kind="src" path=""/>
+	<classpathentry exported="true" kind="lib" path="derby.jar" sourcepath="C:/Projects/SourceDimensions/thirdparty/derby/db-derby-10.2.1.6-src.zip"/>
 	<classpathentry exported="true" kind="lib" path="activation-1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="bcprov-jdk15-133.jar"/>
 	<classpathentry exported="true" kind="lib" path="commons-attributes-api-2.1.jar"/>
