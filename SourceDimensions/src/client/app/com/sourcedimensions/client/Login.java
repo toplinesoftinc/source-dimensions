@@ -2,6 +2,8 @@ package com.sourcedimensions.client;
 
 import org.codehaus.xfire.fault.XFireFault;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
@@ -14,6 +16,7 @@ import org.eclipse.swt.widgets.Button;
 
 import com.sourcedimensions.ws.consumer.WSConsumer;
 import com.sourcedimensions.ws.provider.IWebService;
+import org.eclipse.swt.graphics.Image;
 
 public class Login
 {
@@ -51,13 +54,14 @@ public class Login
 	 */
 	private void createShell(Display display, Shell parent) 
 	{
-		m_shell = new Shell(SWT.BORDER | SWT.TITLE | SWT.APPLICATION_MODAL);
+		m_shell = new Shell(SWT.TITLE | SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
 		if (parent != null)
 			m_shell.setParent(parent);
 		m_shell.setText("Login");
 		m_shell.setLayout(null);
 		m_shell.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
 		m_shell.setVisible(false);
+		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		m_shell.setSize(new Point(293, 166));
 		m_userNameLabel = new Label(m_shell, SWT.NONE);
 		m_userNameLabel.setText("User name:");
@@ -125,6 +129,7 @@ public class Login
 
 			}
 		});
+
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_cancelButton.setText("Cancel");
 		m_cancelButton.setLocation(new Point(158, 96));
@@ -139,6 +144,7 @@ public class Login
 				m_shell.close();
 			}
 		});
+
 		m_display = display;
 		Util.centerWindow(m_shell, parent);
 	}
