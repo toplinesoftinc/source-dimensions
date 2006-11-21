@@ -1,6 +1,6 @@
 package com.sourcedimensions.ws.provider;
 
-import java.util.Set;
+import java.util.*;
 import org.codehaus.xfire.fault.XFireFault;
 import org.hibernate.Session;
 import com.sourcedimensions.server.sys.profile.*;
@@ -35,9 +35,9 @@ public class WebService implements IWebService
 	
 	private UserSession verifySession(String sessionID) throws XFireFault
 	{
-		UserSession us = UserSession.validateSession(sessionID);
+		UserSession userSession = UserSession.validateSession(sessionID);
 		
-		if (us == null)
+		if (userSession == null)
 		{
 			XFireFault fault = new XFireFault(new Exception());
 			
@@ -45,15 +45,16 @@ public class WebService implements IWebService
 			throw fault;
 		}
 		else
-			return us;
+			return userSession;
 	}
 	
 	public Set<IProject> getProjectList(String sessionID) throws XFireFault
 	{
-		verifySession(sessionID);
-		
-		
+		UserSession userSession = verifySession(sessionID);
+			
 		Session session = Database.getProfileSessionFactory().getCurrentSession();
+		
+		List prjIDs = session.createQuery("SELECT a.m_projectIDs FROM UserSession.m_user.m_account a WHERE m_id = :id").setString("id", userSession.getID()).list();
 		
 		session.beginTransaction();
 
