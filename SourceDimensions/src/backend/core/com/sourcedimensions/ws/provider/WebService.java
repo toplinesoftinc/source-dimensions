@@ -1,11 +1,9 @@
 package com.sourcedimensions.ws.provider;
 
+import java.util.Set;
 import org.codehaus.xfire.fault.XFireFault;
 import org.hibernate.Session;
-
-import com.sourcedimensions.server.sys.profile.Database;
-import com.sourcedimensions.server.sys.profile.User;
-import com.sourcedimensions.server.sys.profile.UserSession;
+import com.sourcedimensions.server.sys.profile.*;
 
 
 public class WebService implements IWebService
@@ -35,21 +33,34 @@ public class WebService implements IWebService
 		}
 	}
 	
-	private void verifySession(String sessionID) throws XFireFault
+	private UserSession verifySession(String sessionID) throws XFireFault
 	{
-		if (!UserSession.validateSession(sessionID))
+		UserSession us = UserSession.validateSession(sessionID);
+		
+		if (us == null)
 		{
 			XFireFault fault = new XFireFault(new Exception());
 			
 			fault.setRole(FaultValues.SESSION_EXPIRED.name());
 			throw fault;
-		}	
+		}
+		else
+			return us;
 	}
 	
-	public String getProjects(String sessionID) throws XFireFault
+	public Set<IProject> getProjectList(String sessionID) throws XFireFault
 	{
 		verifySession(sessionID);
 		
-		return "";
+		
+		Session session = Database.getProfileSessionFactory().getCurrentSession();
+		
+		session.beginTransaction();
+
+		// TODO
+		
+		session.getTransaction().commit();
+		
+		return null;
 	}
 }

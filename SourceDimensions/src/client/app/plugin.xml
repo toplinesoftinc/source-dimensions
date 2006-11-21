@@ -52,5 +52,10 @@
             id="com.sourcedimensions.client.views.ProjectView"
             name="Projects"/>
    </extension>
+   <extension
+         id="com.sourcedimensions.client.projectActionSet"
+         name="Project menu"
+         point="org.eclipse.ui.actionSets">
+   </extension>
 
 </plugin>

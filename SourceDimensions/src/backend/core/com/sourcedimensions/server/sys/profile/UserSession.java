@@ -39,29 +39,26 @@ public class UserSession
 		return userSession;
 	}
 	
-	public static boolean validateSession(String sessionID)
+	public static UserSession validateSession(String sessionID)
 	{
-		boolean valid = true;
 		Session session = Database.getProfileSessionFactory().getCurrentSession();
 		
 		session.beginTransaction();
 		
 		UserSession userSession = (UserSession)session.get(UserSession.class, sessionID);
 		
-		if (userSession == null)
-			valid = false;
-		else
+		if (userSession != null)
 		{
 			Date now = new Date();
 			if (now.getTime() - userSession.m_lastHit.getTime() > m_sessionLifetime)
 			{
 				session.delete(userSession);
-				valid = false;
+				userSession = null;
 			}
 		}
 		
 		session.getTransaction().commit();
 		
-		return valid;
+		return userSession;
 	}
 }
