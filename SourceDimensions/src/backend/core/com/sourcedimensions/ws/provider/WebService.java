@@ -3,7 +3,10 @@ package com.sourcedimensions.ws.provider;
 import java.util.*;
 import org.codehaus.xfire.fault.XFireFault;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+
 import com.sourcedimensions.server.sys.profile.*;
+import com.sourcedimensions.server.sys.Project;
 
 
 public class WebService implements IWebService
@@ -33,11 +36,9 @@ public class WebService implements IWebService
 		}
 	}
 	
-	private UserSession verifySession(String sessionID) throws XFireFault
+	private boolean verifySession(String sessionID) throws XFireFault
 	{
-		UserSession userSession = UserSession.validateSession(sessionID);
-		
-		if (userSession == null)
+		if (!UserSession.validateSession(sessionID))
 		{
 			XFireFault fault = new XFireFault(new Exception());
 			
@@ -45,23 +46,50 @@ public class WebService implements IWebService
 			throw fault;
 		}
 		else
-			return userSession;
+			return true;
 	}
 	
 	public Set<IProject> getProjectList(String sessionID) throws XFireFault
 	{
-		UserSession userSession = verifySession(sessionID);
+		Set<IProject> prjSet = new HashSet<IProject>();
+		verifySession(sessionID);
 			
-		Session session = Database.getProfileSessionFactory().getCurrentSession();
-		
-		List prjIDs = session.createQuery("SELECT a.m_projectIDs FROM UserSession.m_user.m_account a WHERE m_id = :id").setString("id", userSession.getID()).list();
-		
+		Session session = Database.getProfileSessionFactory().openSession();
+				
 		session.beginTransaction();
 
-		// TODO
+		Account account = (Account)session.createQuery("SELECT s.m_user.m_account FROM UserSession s WHERE s.m_id = :id").
+			setString("id", sessionID).uniqueResult();
+		
+		Set<String> prjIDs = new HashSet<String>();
+		prjIDs.addAll(account.m_projectIds);
+		
+		Database db = account.getDatabase();
+		
+		SessionFactory factory = db.getDbSessionFactory(); 
 		
 		session.getTransaction().commit();
+		session.close();
 		
-		return null;
+		session = factory.openSession();
+		
+		session.beginTransaction();
+		
+		for (String id : prjIDs)
+		{
+			Project p = (Project)session.get(Project.class, id);
+			WSProject wsp = new WSProject();
+
+			wsp.m_id = p.getID();
+			wsp.m_name = p.m_name;
+			wsp.m_lang = p.getLangValue();
+			
+			prjSet.add(wsp);
+		}
+		
+		session.getTransaction().commit();
+		session.close();
+		
+		return prjSet;
 	}
 }

@@ -23,7 +23,9 @@ public class Application implements IPlatformRunnable
 			Platform.endSplash();
 							
 			new Login(display, null).open();
-						
+			
+			ActionManager.loadProject(display, null);
+			
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 			
 			if (returnCode == PlatformUI.RETURN_RESTART) 

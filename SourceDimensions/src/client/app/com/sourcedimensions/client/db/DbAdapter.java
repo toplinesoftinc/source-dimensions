@@ -3,7 +3,7 @@ package com.sourcedimensions.client.db;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
-import java.util.List;
+import java.util.*;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -26,22 +26,67 @@ public class DbAdapter
 	}
 
 	
-	public static void saveProjectList(List<Project> list) throws SQLException, IOException
+	public static List<Project> getProjectList()
+	{
+		List<Project> list = new ArrayList<Project>();
+		
+		try
+		{
+			Connection c = getConnection();
+			Statement s = c.createStatement();
+			
+			ResultSet rs = s.executeQuery("select EXT_ID, NAME, LANGUAGE, READONLY from PROJECT");
+
+			while (rs.next())
+			{
+				Project p = new Project();
+				p.m_id = rs.getString("EXT_ID");
+				p.m_name = rs.getString("NAME");
+				p.m_language = rs.getInt("LANGUAGE");
+				p.m_readOnly = rs.getShort("READONLY") > 0;
+				
+				list.add(p);
+			}
+			
+			c.close();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+		}
+		
+		return list;
+	}
+	
+	
+	public static void saveProject(Project prj)
 	{
 		try
 		{
 			Connection c = getConnection();
-	
-			c.setAutoCommit(false);
 			
-			for (Project p : list)
+			PreparedStatement ps = c.prepareStatement("select EXT_ID, NAME, LANGUAGE, READONLY from PROJECT where EXT_ID = ?");
+			ps.setString(1, prj.m_id);
+			
+			ResultSet rs = ps.executeQuery();
+			boolean update = false;
+			
+			if (rs.next())
 			{
-				PreparedStatement ps = c.prepareStatement("INSERT INTO PROJECT(ext_id, name) VALUES(?,?)");
+				update = true;
+				rs.moveToInsertRow();
+			}
 				
-				ps.setString(1, p.m_id);
-				ps.setString(2, p.m_name);
-				ps.executeUpdate();
-				ps.close();
+			rs.updateString("NAME", prj.m_name);
+			rs.updateInt("LANGUAGE", prj.m_language);
+			rs.updateShort("READONLY", (short)(prj.m_readOnly ? 1 : 0));
+				
+			if (update)
+				rs.updateRow();
+			else
+			{
+				rs.insertRow();
+				rs.moveToCurrentRow();
 			}
 			
 			c.commit();
@@ -88,7 +133,9 @@ public class DbAdapter
 				"PROJECT",
 				"ID int generated always as identity",
 				"EXT_ID varchar(36)",
-				"NAME varchar(256)"
+				"NAME varchar(256)",
+				"LANGUAGE integer",
+				"READONLY smallint"
 			}
 		};
 	

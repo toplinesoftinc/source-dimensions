@@ -2,8 +2,6 @@ package com.sourcedimensions.client;
 
 import org.codehaus.xfire.fault.XFireFault;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.events.ShellAdapter;
-import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
@@ -21,16 +19,16 @@ import org.eclipse.swt.graphics.Image;
 public class Login
 {
 
-	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="10,9"
-	private Label m_userNameLabel = null;
-	private Text m_userNameText = null;
-	private Label m_passwordLabel = null;
-	private Text m_passwordText = null;
-	private Button m_loginButton = null;
-	private Button m_cancelButton = null;
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="10,9"
+	private Label m_userNameLabel;
+	private Text m_userNameText;
+	private Label m_passwordLabel;
+	private Text m_passwordText;
+	private Button m_loginButton;
+	private Button m_cancelButton;
 
-	private Display m_display = null;  //  @jve:decl-index=0:
-	private static String m_sessionID = null;
+	private Display m_display;  //  @jve:decl-index=0:
+	private static String m_sessionID;
 	
 	public Login(Display display, Shell parent)
 	{

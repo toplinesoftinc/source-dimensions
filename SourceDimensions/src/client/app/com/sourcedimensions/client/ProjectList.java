@@ -1,8 +1,6 @@
 package com.sourcedimensions.client;
 
-import java.util.ArrayList;
-import java.util.Map;
-
+import java.util.*;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
@@ -11,10 +9,10 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.graphics.Rectangle;
-
 import com.sourcedimensions.client.model.Project;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.graphics.Font;
+
 
 public class ProjectList 
 {
@@ -38,7 +36,8 @@ public class ProjectList
 	public void createShell(Shell parent) 
 	{
 		m_shell = new Shell(SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM | SWT.BORDER);
-		m_shell.setParent(parent);
+		if (parent != null)
+			m_shell.setParent(parent);
 		m_shell.setText("Projects");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		m_shell.setVisible(true);
@@ -88,15 +87,15 @@ public class ProjectList
 		Util.centerWindow(m_shell, parent);
 	}
 
-	public void loadList(Map<String, Project> list)
+	public void loadProjects(Collection<Project> projs)
 	{
 		m_prjList.removeAll();
 		m_idSet.clear();
 		
-		for (String id : list.keySet())
+		for (Project prj : projs)
 		{
-			m_idSet.add(id);
-			m_prjList.add(list.get(id).m_name);
+			m_idSet.add(prj.m_id);
+			m_prjList.add(prj.m_name);
 		}		
 	}
 	

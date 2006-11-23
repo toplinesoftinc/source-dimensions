@@ -161,8 +161,8 @@ public class WSConsumer
 		protected String m_methodName;
 		protected Object[] m_params;
 		protected WaitDialog m_waitDialog;
-		protected Exception m_exception = null;
-		protected Object m_result = null;
+		protected Exception m_exception;
+		protected Object m_result;
 		
 		public WorkingThread(Client client, String methodName, Object[] params, WaitDialog waitDialog)
 		{
@@ -197,11 +197,12 @@ public class WSConsumer
 			}
 			finally
 			{
+				if (result != null && result.length > 0)
+					m_result = result[0];
+				
 				m_waitDialog.close();
 			}
 			
-			if (result.length > 0)
-				m_result = result[0];
 		}
 	}
 }
