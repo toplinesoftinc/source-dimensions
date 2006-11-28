@@ -65,18 +65,19 @@ public class DbAdapter
 		{
 			Connection c = getConnection();
 			
-			PreparedStatement ps = c.prepareStatement("select EXT_ID, NAME, LANGUAGE, READONLY from PROJECT where EXT_ID = ?");
+			PreparedStatement ps = c.prepareStatement("select EXT_ID, NAME, LANGUAGE, READONLY from PROJECT where EXT_ID = ?",
+					ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 			ps.setString(1, prj.m_id);
 			
 			ResultSet rs = ps.executeQuery();
 			boolean update = false;
 			
 			if (rs.next())
-			{
 				update = true;
-				rs.moveToInsertRow();
-			}
+			else
+				rs.moveToInsertRow();			
 				
+			rs.updateString("EXT_ID", prj.m_id);
 			rs.updateString("NAME", prj.m_name);
 			rs.updateInt("LANGUAGE", prj.m_language);
 			rs.updateShort("READONLY", (short)(prj.m_readOnly ? 1 : 0));

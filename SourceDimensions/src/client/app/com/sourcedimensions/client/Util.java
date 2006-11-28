@@ -3,8 +3,10 @@ package com.sourcedimensions.client;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 
 public class Util 
@@ -31,4 +33,8 @@ public class Util
 		window.setLocation(x, y);
 	}
 	
+	public static ImageDescriptor createImageDescriptor(String image)
+	{
+		return AbstractUIPlugin.imageDescriptorFromPlugin(Application.PLUGIN_ID,  image);
+	}
 }

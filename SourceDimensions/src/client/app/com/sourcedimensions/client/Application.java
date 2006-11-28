@@ -11,6 +11,8 @@ import org.eclipse.ui.PlatformUI;
  */
 public class Application implements IPlatformRunnable 
 {
+	public static final String PLUGIN_ID = "com.sourcedimensions.client";	
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.core.runtime.IPlatformRunnable#run(java.lang.Object)
 	 */
@@ -23,8 +25,6 @@ public class Application implements IPlatformRunnable
 			Platform.endSplash();
 							
 			new Login(display, null).open();
-			
-			ActionManager.loadProject(display, null);
 			
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 			

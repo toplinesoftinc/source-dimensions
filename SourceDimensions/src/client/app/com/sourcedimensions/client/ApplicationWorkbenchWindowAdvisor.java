@@ -1,6 +1,7 @@
 package com.sourcedimensions.client;
 
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -25,5 +26,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
         configurer.setInitialSize(new Point(800, 600));
         configurer.setShowCoolBar(false);
         configurer.setShowStatusLine(false);
+    }
+    
+    public void postWindowOpen()
+    {
+		ActionManager.loadProject(Display.getDefault(), 
+			getWindowConfigurer().getWindow().getShell());
     }
 }
