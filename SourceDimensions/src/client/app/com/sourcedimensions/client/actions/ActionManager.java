@@ -1,9 +1,10 @@
-package com.sourcedimensions.client;
+package com.sourcedimensions.client.actions;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import com.sourcedimensions.client.Login;
+import com.sourcedimensions.client.ProjectList;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.ws.consumer.WSConsumer;

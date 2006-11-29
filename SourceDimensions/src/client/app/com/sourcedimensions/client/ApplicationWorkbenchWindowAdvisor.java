@@ -6,6 +6,8 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import com.sourcedimensions.client.actions.ActionManager;
+
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor 
 {

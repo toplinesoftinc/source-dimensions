@@ -25,7 +25,7 @@ public class ProjectList
 	private String m_selected = null;  //  @jve:decl-index=0:
 	private Table m_prjList = null;
 
-	ProjectList(Display display, Shell parent)
+	public ProjectList(Display display, Shell parent)
 	{
 		m_display = display;
 		createShell(parent);
