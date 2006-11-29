@@ -1,4 +1,4 @@
-package com.sourcedimensions.client;
+package com.sourcedimensions.client.forms;
 
 import java.util.*;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -13,6 +13,9 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Table;
+
+import com.sourcedimensions.client.IImageKeys;
+import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.model.Project;
 
 public class ProjectList 

@@ -8,17 +8,14 @@ import org.codehaus.xfire.*;
 import org.codehaus.xfire.service.Service;
 import org.codehaus.xfire.service.binding.ObjectServiceFactory;
 import org.codehaus.xfire.client.*;
-
 import java.lang.reflect.Proxy;
 import java.util.Properties;
-
 import org.codehaus.xfire.fault.*;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-
 import com.sourcedimensions.ws.provider.IWebService;
-import com.sourcedimensions.client.Login;
+import com.sourcedimensions.client.forms.Login;
 
 
 

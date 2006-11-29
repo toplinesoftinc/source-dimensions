@@ -1,4 +1,4 @@
-package com.sourcedimensions.client;
+package com.sourcedimensions.client.forms;
 
 import org.codehaus.xfire.fault.XFireFault;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -12,6 +12,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 
+import com.sourcedimensions.client.Util;
 import com.sourcedimensions.ws.consumer.WSConsumer;
 import com.sourcedimensions.ws.provider.IWebService;
 import org.eclipse.swt.graphics.Image;

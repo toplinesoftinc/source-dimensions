@@ -5,6 +5,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
+import com.sourcedimensions.client.forms.Login;
+
 
 /**
  * This class controls all aspects of the application's execution
