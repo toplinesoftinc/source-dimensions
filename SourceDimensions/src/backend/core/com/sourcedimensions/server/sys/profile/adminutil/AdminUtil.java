@@ -167,6 +167,7 @@ public class AdminUtil extends JFrame
 	private boolean m_cancelProcess = false;
 	private JLabel m_progElapsedLabel = null;
 	private boolean m_dbValid = true;
+	private boolean m_prjEditMode = false;
 	
 	protected final static String m_tempPath = File.separator + "tmp";  //  @jve:decl-index=0:
 	private JLabel m_procStatLabel = null;
@@ -1628,7 +1629,7 @@ public class AdminUtil extends JFrame
 					
 					File rootDir = new File(m_prjRootField.getText());
 					
-					if (rootDir.exists())
+					if (rootDir.exists() && !m_prjEditMode)
 					{
 						JOptionPane.showMessageDialog(null, "Please enter non-existing root path.", 
 								"InputError", JOptionPane.ERROR_MESSAGE);
@@ -1735,6 +1736,7 @@ public class AdminUtil extends JFrame
 					
 					JDialog dialog = getProjectDialog();
 					
+					m_prjEditMode = false;
 					m_curPrjId = null;
 					m_prjNameField.setText("");
 					m_prjRootField.setText("");
@@ -1775,6 +1777,7 @@ public class AdminUtil extends JFrame
 					}
 					else
 					{
+						m_prjEditMode = true;
 						m_curPrjId = m_prjIdList.get(sel);
 						Project prj = null;
 

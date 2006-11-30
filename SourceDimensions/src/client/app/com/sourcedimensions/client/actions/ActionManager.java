@@ -46,6 +46,18 @@ public class ActionManager
 			p.m_language = prj.getLanguage();
 			p.m_readOnly = prj.getReadOnly();
 			
+			for (IProject parent : prj.getParents())
+			{
+				Project proj = new Project();
+				
+				proj.m_id = parent.getID();
+				proj.m_name = parent.getName();
+				proj.m_language = parent.getLanguage();
+				proj.m_readOnly = parent.getReadOnly();
+				
+				p.m_parents.add(proj);
+			}
+			
 			prjHash.put(prj.getID(), p);
 		}
 		
@@ -69,7 +81,11 @@ public class ActionManager
 		ProjectList prjWindow = new ProjectList(display, shell);
 		prjWindow.loadProjects(prjHash.values());
 		prjWindow.open();
-		
+
+		if (prjWindow.getSelected() != null)
+		{
+			
+		}
 		// TODO: loading project
 	}
 }

@@ -1,5 +1,8 @@
 package com.sourcedimensions.client.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Project 
 {
 	public String m_id;
@@ -7,6 +10,7 @@ public class Project
 	public int m_language;
 	public boolean m_readOnly;
 	public boolean m_deleted = false;
+	public Set<Project> m_parents = new HashSet<Project>();
 	
 	protected String[] langNames = 
 	{

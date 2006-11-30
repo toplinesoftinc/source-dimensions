@@ -35,15 +35,15 @@ public class DbAdapter
 			Connection c = getConnection();
 			Statement s = c.createStatement();
 			
-			ResultSet rs = s.executeQuery("select EXT_ID, NAME, LANGUAGE, READONLY from PROJECT");
+			ResultSet rs = s.executeQuery("SELECT ext_id, name, language, readonly FROM project");
 
 			while (rs.next())
 			{
 				Project p = new Project();
-				p.m_id = rs.getString("EXT_ID");
-				p.m_name = rs.getString("NAME");
-				p.m_language = rs.getInt("LANGUAGE");
-				p.m_readOnly = rs.getShort("READONLY") > 0;
+				p.m_id = rs.getString("ext_id");
+				p.m_name = rs.getString("name");
+				p.m_language = rs.getInt("language");
+				p.m_readOnly = rs.getShort("readonly") > 0;
 				
 				list.add(p);
 			}
@@ -64,8 +64,9 @@ public class DbAdapter
 		try
 		{
 			Connection c = getConnection();
+			int id = 0;
 			
-			PreparedStatement ps = c.prepareStatement("select EXT_ID, NAME, LANGUAGE, READONLY from PROJECT where EXT_ID = ?",
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM project WHERE ext_id = ?",
 					ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 			ps.setString(1, prj.m_id);
 			
@@ -73,23 +74,50 @@ public class DbAdapter
 			boolean update = false;
 			
 			if (rs.next())
+			{
+				id = rs.getInt("id");
 				update = true;
+			}
 			else
 				rs.moveToInsertRow();			
 				
-			rs.updateString("EXT_ID", prj.m_id);
-			rs.updateString("NAME", prj.m_name);
-			rs.updateInt("LANGUAGE", prj.m_language);
-			rs.updateShort("READONLY", (short)(prj.m_readOnly ? 1 : 0));
+			rs.updateString("ext_id", prj.m_id);
+			rs.updateString("name", prj.m_name);
+			rs.updateInt("language", prj.m_language);
+			rs.updateShort("readonly", (short)(prj.m_readOnly ? 1 : 0));
 				
 			if (update)
-				rs.updateRow();
+			{
+				rs.updateRow();				
+				
+				ps = c.prepareStatement("SELECT * FROM dependent_project WHERE parent_id = ?", 
+						ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+				ps.setInt(1, id);
+				rs = ps.executeQuery();
+				
+				while (rs.next())
+				{
+					rs.deleteRow();
+				}
+				
+				for (Project p : prj.m_parents)
+				{
+					rs.moveToInsertRow();
+					
+					rs.updateInt("parent_id", id);
+					rs.updateString("ext_id", p.m_id);
+					rs.updateString("name", p.m_name);
+					rs.updateInt("language", p.m_language);
+					
+					rs.insertRow();
+				}				
+			}
 			else
 			{
 				rs.insertRow();
 				rs.moveToCurrentRow();
 			}
-			
+		
 			c.commit();
 			c.close();
 		}
@@ -132,11 +160,22 @@ public class DbAdapter
 		{
 			{
 				"PROJECT",
-				"ID int generated always as identity",
-				"EXT_ID varchar(36)",
-				"NAME varchar(256)",
-				"LANGUAGE integer",
-				"READONLY smallint"
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"ext_id VARCHAR(36)",
+				"name VARCHAR(256)",
+				"language INTEGER",
+				"readonly SMALLINT",
+				"PRIMARY KEY (id)"
+			},
+			{
+				"DEPENDENT_PROJECT",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"parent_id INT",
+				"ext_id VARCHAR(36)",
+				"name VARCHAR(256)",
+				"language INTEGER",				
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (parent_id) REFERENCES PROJECT"
 			}
 		};
 	

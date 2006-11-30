@@ -78,13 +78,24 @@ public class WebService implements IWebService
 		for (String id : prjIDs)
 		{
 			Project p = (Project)session.get(Project.class, id);
-			WSProject wsp = new WSProject();
+			WSProject prj = new WSProject();
 
-			wsp.m_id = p.getID();
-			wsp.m_name = p.m_name;
-			wsp.m_lang = p.getLangValue();
+			prj.m_id = p.getID();
+			prj.m_name = p.m_name;
+			prj.m_lang = p.getLangValue();
 			
-			prjSet.add(wsp);
+			for (Project pp : p.m_parents)
+			{
+				WSProject wpp = new WSProject();
+
+				wpp.m_id = pp.getID();
+				wpp.m_name = pp.m_name;
+				wpp.m_lang = pp.getLangValue();
+
+				prj.m_parents.add(wpp);
+			}
+
+			prjSet.add(prj);
 		}
 		
 		session.getTransaction().commit();

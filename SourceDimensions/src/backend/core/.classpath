@@ -17,7 +17,7 @@
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/connector.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/ehcache-1.2.jar"/>
-	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/hibernate3.jar"/>
+	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/hibernate3.jar" sourcepath="C:/hibernate-3.2/src"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/jaas.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/jacc-1_0-fr.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/javassist.jar"/>
