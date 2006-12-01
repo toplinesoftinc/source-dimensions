@@ -1,0 +1,14 @@
+1. Generation of pair keystore (for server) and respective client certificate (for WS client):
+
+
+     - keytool -genkey -alias <alias> -keyalg RSA -keystore <keystore_filename>
+
+         ** NOTE:  domain name must be specified when first/last name is requested.
+
+
+     - keytool -keystore <keystore_filename> -export -alias <alias> -file <bin_cert_filename>
+
+
+     - openssl.exe x509 -out <client_certificate_filename> -outform pem -text -in <bin_cert_filename> -inform der
+
+         ** NOTE: client certificate must be edited: all lines from beginning of the file till line "-----BEGIN CERTIFICATE-----" should be deleted.
