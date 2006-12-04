@@ -1,7 +1,10 @@
 package com.sourcedimensions.client;
 
 import java.awt.Dimension;
+import org.eclipse.swt.graphics.Image;
 import java.awt.Toolkit;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Point;
@@ -11,6 +14,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class Util 
 {
+	protected static Map<String, Image> m_sharedImages = new HashMap<String,Image>(); 	
+	
 	public static void centerWindow(Shell window, Shell parent)
 	{
 		Dimension parentSize;
@@ -33,8 +38,16 @@ public class Util
 		window.setLocation(x, y);
 	}
 	
-	public static ImageDescriptor createImageDescriptor(String image)
+	public static Image getSharedImage(String key)
 	{
-		return AbstractUIPlugin.imageDescriptorFromPlugin(Application.PLUGIN_ID,  image);
+		Image img = m_sharedImages.get(key);
+	
+		if (img == null)
+		{
+			img = AbstractUIPlugin.imageDescriptorFromPlugin(Application.PLUGIN_ID,  key).createImage();
+			m_sharedImages.put(key, img);
+		}
+
+		return img;
 	}
 }

@@ -21,11 +21,11 @@ import com.sourcedimensions.client.model.Project;
 public class ProjectList 
 {
 	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="-28,-6"
-	private ArrayList<String> m_idSet = new ArrayList<String>();
+	private ArrayList<Project> m_prjSet = new ArrayList<Project>();
 	private Button m_openButton = null;
 	private Button m_cancelButton = null;
 	private Display m_display = null;
-	private String m_selected = null;  //  @jve:decl-index=0:
+	private Project m_selected = null;  //  @jve:decl-index=0:
 	private Table m_prjList = null;
 
 	public ProjectList(Display display, Shell parent)
@@ -67,7 +67,7 @@ public class ProjectList
 				}
 				else
 				{
-					m_selected = m_idSet.get(sel);
+					m_selected = m_prjSet.get(sel);
 					m_shell.close();
 				}
 			}
@@ -103,14 +103,15 @@ public class ProjectList
 
 	public void loadProjects(Collection<Project> projs)
 	{
-		Image imgChkmark = Util.createImageDescriptor(IImageKeys.IMG_CHECKMARK).createImage();
-		Image imgCross = Util.createImageDescriptor(IImageKeys.IMG_CROSS).createImage();
+		Image imgChkmark = Util.getSharedImage(IImageKeys.IMG_CHECKMARK);
+		Image imgCross = Util.getSharedImage(IImageKeys.IMG_CROSS);
+
 		m_prjList.removeAll();
-		m_idSet.clear();
+		m_prjSet.clear();
 		
 		for (Project prj : projs)
 		{
-			m_idSet.add(prj.m_id);
+			m_prjSet.add(prj);
 			TableItem item = new TableItem(m_prjList, SWT.NONE);
 			
 			if (prj.m_deleted)
@@ -134,7 +135,7 @@ public class ProjectList
 		}		
 	}
 	
-	public String getSelected()
+	public Project getSelected()
 	{
 		return m_selected;
 	}

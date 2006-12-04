@@ -14,10 +14,12 @@ import java.util.*;
 
 public class ActionManager
 {
-	public static void loadProject(Display display, Shell shell)
+	public static Project getProject(Display display, Shell shell)
 	{
 		WSConsumer consumer = new WSConsumer();
-		Set<IProject> prjSet; 
+		Set<IProject> prjSet = null;
+		Collection<Project> prjColl;
+		boolean offline = false;
 		
 		try
 		{
@@ -27,65 +29,68 @@ public class ActionManager
 		catch (Exception ex)
 		{
 			MessageDialog.openError(shell, "Web Service Error", ex.getMessage());
-			return;
+			offline = true;
 		}
 		
 		if (consumer.wasCancelled())
 		{
-			return;
+			offline = true;
 		}
 		
-		Map<String,Project> prjHash = new HashMap<String,Project>();
-		
-		for (IProject prj : prjSet)
+		if (!offline)
 		{
-			Project p = new Project();
+			Map<String,Project> prjHash = new HashMap<String,Project>();
 			
-			p.m_id = prj.getID();
-			p.m_name = prj.getName();
-			p.m_language = prj.getLanguage();
-			p.m_readOnly = prj.getReadOnly();
-			
-			for (IProject parent : prj.getParents())
+			for (IProject prj : prjSet)
 			{
-				Project proj = new Project();
+				Project p = new Project();
 				
-				proj.m_id = parent.getID();
-				proj.m_name = parent.getName();
-				proj.m_language = parent.getLanguage();
-				proj.m_readOnly = parent.getReadOnly();
+				p.m_id = prj.getID();
+				p.m_name = prj.getName();
+				p.m_language = prj.getLanguage();
+				p.m_readOnly = prj.getReadOnly();
 				
-				p.m_parents.add(proj);
+				for (IProject parent : prj.getParents())
+				{
+					Project proj = new Project();
+					
+					proj.m_id = parent.getID();
+					proj.m_name = parent.getName();
+					proj.m_language = parent.getLanguage();
+					proj.m_readOnly = parent.getReadOnly();
+					
+					p.m_parents.add(proj);
+				}
+				
+				prjHash.put(prj.getID(), p);
 			}
 			
-			prjHash.put(prj.getID(), p);
-		}
-		
-		List<Project> prjList = DbAdapter.getProjectList();
-		
-		for (Project prj : prjList)
-		{
-			if (prjHash.get(prj.m_id) == null)
+			List<Project> prjList = DbAdapter.getProjectList();
+			
+			for (Project prj : prjList)
 			{
-				prj.m_deleted = true;
-				prjHash.put(prj.m_id, prj);
+				if (prjHash.get(prj.m_id) == null)
+				{
+					prj.m_deleted = true;
+					prjHash.put(prj.m_id, prj);
+				}
 			}
+			
+			for (Project prj : prjHash.values())
+			{
+				if (!prj.m_deleted)
+					DbAdapter.saveProject(prj);
+			}
+			
+			prjColl = prjHash.values();
 		}
-		
-		for (Project prj : prjHash.values())
-		{
-			if (!prj.m_deleted)
-				DbAdapter.saveProject(prj);
-		}
+		else
+			prjColl = DbAdapter.getProjectList();
 		
 		ProjectList prjWindow = new ProjectList(display, shell);
-		prjWindow.loadProjects(prjHash.values());
+		prjWindow.loadProjects(prjColl);
 		prjWindow.open();
 
-		if (prjWindow.getSelected() != null)
-		{
-			
-		}
-		// TODO: loading project
+		return prjWindow.getSelected();
 	}
 }

@@ -57,6 +57,56 @@ public class DbAdapter
 		
 		return list;
 	}
+
+	
+	public static Project getProject(String id)
+	{
+		Project p = null;
+		
+		try
+		{
+			Connection c = getConnection();
+			PreparedStatement s = c.prepareStatement("SELECT ext_id, name, language, readonly FROM project WHERE id = ?");
+			s.setString(1, id);
+			
+			ResultSet rs = s.executeQuery();
+
+			if (rs.next())
+			{
+				p = new Project();
+				
+				p.m_id = rs.getString("ext_id");
+				p.m_name = rs.getString("name");
+				p.m_language = rs.getInt("language");
+				p.m_readOnly = rs.getShort("readonly") > 0;
+			}
+			
+			s = c.prepareStatement("SELECT * FROM dependent_project WHERE parent_id = ?");
+			s.setString(1, id);
+			
+			rs = s.executeQuery();
+			
+			while (rs.next())
+			{
+				Project dp = new Project();
+				
+				dp.m_id = rs.getString("ext_id");
+				dp.m_name = rs.getString("name");
+				dp.m_language = rs.getInt("language");
+				dp.m_readOnly = rs.getShort("readonly") > 0;
+				
+				p.m_parents.add(dp);
+			}		
+			
+			c.close();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+		}
+		
+		return p;
+	}
 	
 	
 	public static void saveProject(Project prj)
