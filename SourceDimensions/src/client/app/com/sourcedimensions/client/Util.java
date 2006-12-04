@@ -5,8 +5,6 @@ import org.eclipse.swt.graphics.Image;
 import java.awt.Toolkit;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.plugin.AbstractUIPlugin;

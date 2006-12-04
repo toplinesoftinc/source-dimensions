@@ -1,16 +1,12 @@
 package com.sourcedimensions.client.views;
 
 import java.util.ArrayList;
-
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.ui.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.core.runtime.IAdaptable;
-
 import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.model.Project;
@@ -82,7 +78,6 @@ public class ProjectView extends ViewPart
 		}
 	}
 	
-	
 	public enum GroupType 
 	{
 		ROOT,
@@ -150,6 +145,10 @@ public class ProjectView extends ViewPart
 
 				case PARENT_PROJECTS:
 					key = IImageKeys.IMG_PARENT;
+					break;
+					
+				case SNAPSHOTS:
+					key = IImageKeys.IMG_SNAPSHOT;
 					break;
 
 				default:
@@ -251,6 +250,9 @@ public class ProjectView extends ViewPart
 				parents.addChild(new PrjObject(p));
 			}
 		}
+		
+		TreeGroup snapshot = new TreeGroup(GroupType.SNAPSHOTS);
+		m_root.addChild(snapshot);
 		
 		m_viewer.refresh();
 	}
