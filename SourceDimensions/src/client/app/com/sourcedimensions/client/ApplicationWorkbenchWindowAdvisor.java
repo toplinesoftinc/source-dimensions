@@ -3,6 +3,7 @@ package com.sourcedimensions.client;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -27,12 +28,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
         return new ApplicationActionBarAdvisor(configurer);
     }
     
+    public IWorkbenchWindow getWindow()
+    {
+    	return getWindowConfigurer().getWindow();    	
+    }
+    
     public void preWindowOpen() 
     {
         IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
         configurer.setInitialSize(new Point(800, 600));
+        configurer.setShowMenuBar(true);
         configurer.setShowCoolBar(false);
-        configurer.setShowStatusLine(false);
+        configurer.setShowStatusLine(true);
     }
     
     public void postWindowOpen()
@@ -46,12 +53,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 			{
 				try
 				{
-					ProjectView view = (ProjectView)getWindowConfigurer().getWindow().getActivePage().showView(ProjectView.ID);
+					ProjectView view = (ProjectView)getWindow().getActivePage().showView(ProjectView.ID);
 					view.setProject(prj);
 				}
 				catch (PartInitException e)
 				{
-					MessageDialog.openError(getWindowConfigurer().getWindow().getShell(), "UI error", e.getMessage());
+					MessageDialog.openError(getWindow().getShell(), "UI error", e.getMessage());
 				}
 			}
     	}
