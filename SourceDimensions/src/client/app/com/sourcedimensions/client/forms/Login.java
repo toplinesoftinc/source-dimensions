@@ -61,7 +61,7 @@ public class Login
 		m_shell.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
 		m_shell.setVisible(false);
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
-		m_shell.setSize(new Point(293, 166));
+		m_shell.setSize(new Point(293, 160));
 		m_userNameLabel = new Label(m_shell, SWT.NONE);
 		m_userNameLabel.setText("User name:");
 		m_userNameLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
