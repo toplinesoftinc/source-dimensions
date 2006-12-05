@@ -32,6 +32,9 @@
          <property
                name="aboutImage"
                value="icons/about.gif"/>
+         <property
+               name="aboutText"
+               value="%aboutText"/>
       </product>
    </extension> <extension
          point="org.eclipse.ui.perspectiveExtensions">
