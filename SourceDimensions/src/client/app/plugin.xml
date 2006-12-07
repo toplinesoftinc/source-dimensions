@@ -48,7 +48,7 @@
    </extension>
    <extension
          point="org.eclipse.ui.views">
-      <view
+         <view
             category="com.sourcedimensions.client"
             class="com.sourcedimensions.client.views.ProjectView"
             icon="icons/project.png"
@@ -59,6 +59,17 @@
          id="com.sourcedimensions.client.projectActionSet"
          name="Project menu"
          point="org.eclipse.ui.actionSets">
+         <actionSet
+         	id="com.sourcedimensions.client.projectActionSet"
+         	label="Project"
+         	visible="true">
+               <action
+                   class="com.sourcedimensions.client.actions.OpenProjectAction"
+                   icon="icons/project.png"
+                   id="com.sourcedimensions.client.openProject"
+                   label="Open &amp;Project..."
+                   menubarPath="project/additions"/>         
+          </actionSet>
    </extension>
 
 </plugin>

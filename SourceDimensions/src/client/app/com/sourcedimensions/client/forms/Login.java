@@ -6,12 +6,13 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
-
+import org.eclipse.swt.events.*;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.ws.consumer.WSConsumer;
 import com.sourcedimensions.ws.provider.IWebService;
@@ -61,7 +62,7 @@ public class Login
 		m_shell.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
 		m_shell.setVisible(false);
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
-		m_shell.setSize(new Point(293, 160));
+		m_shell.setSize(new Point(293, 163));
 		m_userNameLabel = new Label(m_shell, SWT.NONE);
 		m_userNameLabel.setText("User name:");
 		m_userNameLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
@@ -83,9 +84,9 @@ public class Login
 		m_loginButton.setToolTipText("Login");
 		m_loginButton.setText("Login");
 		m_shell.setDefaultButton(m_loginButton);
-		m_loginButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() 
+		m_loginButton.addSelectionListener(new SelectionAdapter() 
 		{
-			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
+			public void widgetSelected(SelectionEvent e) 
 			{
 				WSConsumer consumer = new WSConsumer();
 				
@@ -131,23 +132,46 @@ public class Login
 
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_cancelButton.setText("Cancel");
-		m_cancelButton.setLocation(new Point(158, 96));
+		m_cancelButton.setLocation(new Point(153, 96));
 		m_cancelButton.setSize(new Point(88, 25));
 		m_cancelButton.setToolTipText("Cancel");
 		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
-		m_cancelButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() 
+		m_cancelButton.addSelectionListener(new SelectionAdapter() 
 		{
-			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
+			public void widgetSelected(SelectionEvent e) 
 			{
-				m_sessionID = null;
-				m_shell.close();
+				cancelClose();
 			}
 		});
+		
+		Control[] widgets = m_shell.getChildren();
 
+		for (int i = 0; i < widgets.length; i++) 
+		{ 
+			widgets[i].addKeyListener(new KeyListener()
+			{
+				public void keyPressed(KeyEvent e)
+				{
+					if (e.keyCode == SWT.ESC)
+						cancelClose();
+				}
+				
+				public void keyReleased(KeyEvent e)
+				{				
+				}
+			});
+		}
+		
 		m_display = display;
 		Util.centerWindow(m_shell, parent);
 	}
 
+	protected void cancelClose()
+	{
+		m_sessionID = null;
+		m_shell.close();		
+	}
+	
 	public static String getSessionID()
 	{
 		return m_sessionID;

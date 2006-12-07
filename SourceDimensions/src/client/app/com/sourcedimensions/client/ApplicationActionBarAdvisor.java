@@ -2,6 +2,8 @@ package com.sourcedimensions.client;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
@@ -29,7 +31,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     protected void fillMenuBar(IMenuManager menuBar) 
     {
     	MenuManager prjMenu = new MenuManager("&Project", "project");
-    	prjMenu.add(exitAction);
+    	prjMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+    	prjMenu.add(new Separator());
+    	prjMenu.add(exitAction);    	
     	
     	MenuManager helpMenu = new MenuManager("&Help", "help");
     	helpMenu.add(aboutAction);

@@ -4,6 +4,7 @@ import java.util.*;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -110,16 +111,40 @@ public class ProjectList implements MouseListener
 		m_prjList.getColumn(0).setWidth((int)(0.75 * width));
 		m_prjList.getColumn(1).setWidth((int)(0.25 * width));
 		
-		m_cancelButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter()
+		m_cancelButton.addSelectionListener(new SelectionAdapter()
 		{
-			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
+			public void widgetSelected(SelectionEvent e)
 			{
-				m_selected = null;
-				m_shell.close();
+				cancelClose();
 			}
 		});
 		
 		m_shell.setDefaultButton(m_openButton);
+		
+		Control[] widgets = m_shell.getChildren();
+
+		for (int i = 0; i < widgets.length; i++) 
+		{ 
+			widgets[i].addKeyListener(new KeyListener()
+			{
+				public void keyPressed(KeyEvent e)
+				{
+					if (e.keyCode == SWT.ESC)
+						cancelClose();
+				}
+				
+				public void keyReleased(KeyEvent e)
+				{				
+				}
+			});
+		}
+		
+	}
+
+	protected void cancelClose()
+	{
+		m_selected = null;
+		m_shell.close();
 	}
 
 	public void loadProjects(Collection<Project> projs)
