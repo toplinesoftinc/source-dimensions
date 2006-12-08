@@ -19,7 +19,7 @@ import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.model.Project;
 
-public class ProjectList implements MouseListener
+public class ProjectListDialog implements MouseListener
 {
 	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="-28,-6"
 	private ArrayList<Project> m_prjSet = new ArrayList<Project>();
@@ -49,7 +49,7 @@ public class ProjectList implements MouseListener
 	{	
 	}
 	
-	public ProjectList(Display display, Shell parent)
+	public ProjectListDialog(Display display, Shell parent)
 	{
 		m_display = display;
 		createShell(parent);
