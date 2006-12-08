@@ -15,8 +15,8 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.db.DbAdapter;
-import com.sourcedimensions.client.forms.Login;
-import com.sourcedimensions.client.forms.ProjectList;
+import com.sourcedimensions.client.forms.LoginDialog;
+import com.sourcedimensions.client.forms.ProjectListDialog;
 import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.ws.consumer.WSConsumer;
@@ -56,8 +56,7 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 		
 		try
 		{
-			prjSet = (Set<IProject>)consumer.invokeWebService(display, shell, 
-				"getProjectList", new Object[] { Login.getSessionID() });			
+			prjSet = (Set<IProject>)consumer.invokeWebService(display, shell, "getProjectList", new Object[] { });			
 		}
 		catch (Exception ex)
 		{
@@ -120,7 +119,7 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 		else
 			prjColl = DbAdapter.getProjectList();
 		
-		ProjectList prjWindow = new ProjectList(display, shell);
+		ProjectListDialog prjWindow = new ProjectListDialog(display, shell);
 		prjWindow.loadProjects(prjColl);
 		prjWindow.open();
 		Project prj = prjWindow.getSelected();

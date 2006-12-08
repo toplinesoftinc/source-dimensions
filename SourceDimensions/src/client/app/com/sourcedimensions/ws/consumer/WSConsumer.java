@@ -15,7 +15,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import com.sourcedimensions.ws.provider.IWebService;
-import com.sourcedimensions.client.forms.Login;
+import com.sourcedimensions.client.forms.LoginDialog;
 
 
 
@@ -67,11 +67,11 @@ public class WSConsumer
 	
 	public Object invokeWebService(Display display, Shell parent, String methodName, Object[] params) throws Exception
 	{
-		if (Login.getSessionID() == null)
+		if (LoginDialog.getSessionID() == null)
 		{
-			new Login(display, parent).open();
+			new LoginDialog(display, parent).open();
 			
-			if (Login.getSessionID() == null)
+			if (LoginDialog.getSessionID() == null)
 				return null;
 		}
 		
@@ -79,7 +79,16 @@ public class WSConsumer
 		{
 			try
 			{
-				return invoke(display, parent, methodName, params);
+				Object[] par = new Object[params.length + 1];
+				
+				for (int i = 0; i < params.length; i++)
+				{
+					par[i + 1] = params[i];
+				}
+				                        
+				par[0] = LoginDialog.getSessionID();
+				
+				return invoke(display, parent, methodName, par);
 			}
 			catch (XFireFault fault)
 			{
@@ -87,9 +96,9 @@ public class WSConsumer
 				{
 					MessageDialog.openWarning(null, "Session expired", "You session is expired. Please re-login");
 			
-					new Login(display, parent).open();
+					new LoginDialog(display, parent).open();
 					
-					if (Login.getSessionID() == null)
+					if (LoginDialog.getSessionID() == null)
 						return null;
 				}
 				else

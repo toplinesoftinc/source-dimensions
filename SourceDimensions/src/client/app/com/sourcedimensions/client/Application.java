@@ -5,7 +5,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
-import com.sourcedimensions.client.forms.Login;
+import com.sourcedimensions.client.forms.LoginDialog;
 
 
 /**
@@ -26,7 +26,7 @@ public class Application implements IPlatformRunnable
 		{
 			Platform.endSplash();
 							
-			new Login(display, null).open();
+			new LoginDialog(display, null).open();
 			
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 			

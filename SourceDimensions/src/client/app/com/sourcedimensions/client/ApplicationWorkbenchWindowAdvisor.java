@@ -8,7 +8,7 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import com.sourcedimensions.client.actions.OpenProjectAction;
-import com.sourcedimensions.client.forms.Login;
+import com.sourcedimensions.client.forms.LoginDialog;
 
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor 
@@ -40,7 +40,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
     
     public void postWindowOpen()
     {
-    	if (Login.getSessionID() != null)
+    	if (LoginDialog.getSessionID() != null)
     	{
 			OpenProjectAction.openProject(Display.getDefault(), getWindowConfigurer().getWindow());
     	}

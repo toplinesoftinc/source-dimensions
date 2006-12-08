@@ -18,7 +18,7 @@ import com.sourcedimensions.ws.consumer.WSConsumer;
 import com.sourcedimensions.ws.provider.IWebService;
 import org.eclipse.swt.graphics.Image;
 
-public class Login
+public class LoginDialog
 {
 
 	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="10,9"
@@ -32,7 +32,7 @@ public class Login
 	private Display m_display;  //  @jve:decl-index=0:
 	private static String m_sessionID;
 	
-	public Login(Display display, Shell parent)
+	public LoginDialog(Display display, Shell parent)
 	{
 		m_display = display;
 		createShell(display, parent);
