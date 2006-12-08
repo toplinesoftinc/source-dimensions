@@ -64,6 +64,11 @@
          	label="Project"
          	visible="true">
                <action
+                   class="com.sourcedimensions.client.actions.CloseProjectAction"
+                   id="com.sourcedimensions.client.closeProject"
+                   label="&amp;Close Project"
+                   menubarPath="project/additions"/>         	
+               <action
                    class="com.sourcedimensions.client.actions.OpenProjectAction"
                    icon="icons/project.png"
                    id="com.sourcedimensions.client.openProject"

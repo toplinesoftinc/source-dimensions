@@ -15,9 +15,6 @@ public class Application implements IPlatformRunnable
 {
 	public static final String PLUGIN_ID = "com.sourcedimensions.client";	
 	
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.runtime.IPlatformRunnable#run(java.lang.Object)
-	 */
 	public Object run(Object args) throws Exception 
 	{
 		Display display = PlatformUI.createDisplay();

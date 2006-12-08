@@ -15,12 +15,12 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.db.DbAdapter;
-import com.sourcedimensions.client.forms.LoginDialog;
 import com.sourcedimensions.client.forms.ProjectListDialog;
 import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.ws.consumer.WSConsumer;
 import com.sourcedimensions.ws.provider.IProject;
+
 
 public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 {
@@ -33,26 +33,25 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 	
 	public void run(IAction action)
 	{
-		openProject(PlatformUI.getWorkbench().getDisplay(), m_window);
+		openProject(m_window);
 	}
 	
 	public void selectionChanged(IAction action, ISelection selection)
-	{
-		
+	{		
 	}
 	
 	public void dispose()
-	{
-		
+	{	
 	}
 	
-	public static void openProject(Display display, IWorkbenchWindow window)
+	public static void openProject(IWorkbenchWindow window)
 	{
 		WSConsumer consumer = new WSConsumer();
 		Set<IProject> prjSet = null;
 		Collection<Project> prjColl;
 		boolean offline = false;
 		Shell shell = window.getShell();
+		Display display = PlatformUI.getWorkbench().getDisplay();
 		
 		try
 		{
@@ -137,5 +136,4 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 			}
 		}
 	}
-	
 }

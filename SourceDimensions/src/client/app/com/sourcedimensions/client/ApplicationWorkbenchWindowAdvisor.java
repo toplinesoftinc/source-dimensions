@@ -1,7 +1,6 @@
 package com.sourcedimensions.client;
 
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -42,7 +41,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
     {
     	if (LoginDialog.getSessionID() != null)
     	{
-			OpenProjectAction.openProject(Display.getDefault(), getWindowConfigurer().getWindow());
+			OpenProjectAction.openProject(getWindowConfigurer().getWindow());
     	}
     }
 }

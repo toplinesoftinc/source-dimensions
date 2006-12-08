@@ -232,8 +232,16 @@ public class ProjectView extends ViewPart
 	public void setProject(Project project)
 	{
 		m_project = project;
-		initializeTree();
-		m_viewer.expandToLevel(2);
+		
+		if (project == null)
+			m_root = null;
+		else
+		{
+			initializeTree();
+			m_viewer.expandToLevel(2);
+		}
+				
+		m_viewer.refresh();
 	}
 	
 	protected void initializeTree()
@@ -253,8 +261,6 @@ public class ProjectView extends ViewPart
 		
 		TreeGroup snapshot = new TreeGroup(GroupType.SNAPSHOTS);
 		m_root.addChild(snapshot);
-		
-		m_viewer.refresh();
 	}
 	
 	public void createPartControl(Composite parent) 
