@@ -27,10 +27,6 @@ public class ProjectView extends ViewPart
 		protected String m_name;
 		protected TreeGroup m_parent;
 
-		protected TreeObject()
-		{			
-		}
-		
 		public TreeObject(String name) 
 		{
 			m_name = name;
@@ -65,51 +61,13 @@ public class ProjectView extends ViewPart
 	}
 
 	
-	class PrjObject extends TreeObject
-	{
-		public PrjObject(Project prj)
-		{
-			super(prj.m_name);
-		}
-		
-		public Image getImage()
-		{
-			return Util.getSharedImage(IImageKeys.IMG_PROJECT);
-		}
-	}
-	
-	public enum GroupType 
-	{
-		ROOT,
-		PARENT_PROJECTS,
-		SNAPSHOTS
-	}
-	
-	
-	class TreeGroup extends TreeObject
+	abstract class TreeGroup extends TreeObject
 	{
 		protected ArrayList<TreeObject> m_children = new ArrayList<TreeObject>();
-		protected GroupType m_type;
 
-		public TreeGroup(GroupType type) 
+		public TreeGroup(String name)
 		{
-			m_type = type;
-			
-			switch (type)
-			{
-				case ROOT:
-					if (m_project != null)
-						m_name = m_project.m_name;
-					break;
-					
-				case PARENT_PROJECTS:
-					m_name = "Parent projects";
-					break;
-					
-				case SNAPSHOTS:
-					m_name = "Snapshots";
-					break;
-			}
+			super(name);
 		}
 	
 		public void addChild(TreeObject object)
@@ -127,38 +85,92 @@ public class ProjectView extends ViewPart
 		{
 			return m_children.size()>0;
 		}
-		
-		public GroupType getGroupType()
+	}
+
+
+	public class ProjectObject extends TreeObject
+	{
+		public ProjectObject(Project prj)
 		{
-			return m_type;
+			super(prj.m_name);
 		}
 		
 		public Image getImage()
 		{
-			String key;
-			
-			switch (m_type)
-			{
-				case ROOT:
-					key = IImageKeys.IMG_PROJECT;
-					break;
-
-				case PARENT_PROJECTS:
-					key = IImageKeys.IMG_PARENT;
-					break;
-					
-				case SNAPSHOTS:
-					key = IImageKeys.IMG_SNAPSHOT;
-					break;
-
-				default:
-					return null;
-			}
-			
-			return Util.getSharedImage(key);
-		}		
+			return Util.getSharedImage(IImageKeys.IMG_PROJECT);
+		}
 	}
 
+	
+	public class FolderObject extends TreeObject
+	{
+		public FolderObject(String name)
+		{
+			super(name);
+		}
+		
+		public Image getImage()
+		{
+			return Util.getSharedImage(IImageKeys.IMG_FOLDER);
+		}
+	}
+
+	
+	public class RootGroup extends TreeGroup
+	{
+		public RootGroup()
+		{
+			super(m_project.m_name);			
+		}
+		
+		public Image getImage()
+		{
+			return Util.getSharedImage(IImageKeys.IMG_PROJECT);
+		}
+	}
+	
+	
+	public class ParentPrjGroup extends TreeGroup
+	{
+		public ParentPrjGroup()
+		{
+			super("Parent Projects");
+		}
+		
+		public Image getImage()
+		{
+			return Util.getSharedImage(IImageKeys.IMG_PARENT);
+		}
+	}
+	
+
+	public class SnapshotGroup extends TreeGroup
+	{
+		public SnapshotGroup()
+		{
+			super("Snapshots");
+		}
+		
+		public Image getImage()
+		{
+			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT);
+		}
+	}
+		
+	
+	public class FolderGroup extends TreeGroup
+	{
+		public FolderGroup(String name)
+		{
+			super(name);
+		}
+		
+		public Image getImage()
+		{
+			return Util.getSharedImage(IImageKeys.IMG_FOLDER);
+		}
+	}
+	
 	
 	class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider 
 	{
@@ -246,8 +258,8 @@ public class ProjectView extends ViewPart
 	
 	protected void initializeTree()
 	{
-		m_root = new TreeGroup(GroupType.ROOT);	
-		TreeGroup parents = new TreeGroup(GroupType.PARENT_PROJECTS);
+		m_root = new RootGroup();	
+		TreeGroup parents = new ParentPrjGroup();
 		
 		m_root.addChild(parents);
 		
@@ -255,11 +267,11 @@ public class ProjectView extends ViewPart
 		{
 			for (Project p : m_project.m_parents)
 			{
-				parents.addChild(new PrjObject(p));
+				parents.addChild(new ProjectObject(p));
 			}
 		}
 		
-		TreeGroup snapshot = new TreeGroup(GroupType.SNAPSHOTS);
+		TreeGroup snapshot = new SnapshotGroup();
 		m_root.addChild(snapshot);
 	}
 	

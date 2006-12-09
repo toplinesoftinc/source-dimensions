@@ -64,16 +64,48 @@
          	label="Project"
          	visible="true">
                <action
+                   class="com.sourcedimensions.client.actions.DeleteFolderAction"
+                   icon="icons/delfolder.png"
+                   id="com.sourcedimensions.client.deleteFolder"
+                   label="&amp;Delete Folder"
+                   menubarPath="project/additions_folder"
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView.FolderGroup"/>                   
+               </action>
+               <action
+                   class="com.sourcedimensions.client.actions.RenameFolderAction"
+                   icon="icons/editfolder.png"
+                   id="com.sourcedimensions.client.renameFolder"
+                   label="&amp;Rename Folder..."
+                   menubarPath="project/additions_folder"
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView.FolderGroup"/>                   
+               </action>
+               <action
+                   class="com.sourcedimensions.client.actions.CreateFolderAction"
+                   icon="icons/addfolder.png"
+                   id="com.sourcedimensions.client.createFolder"
+                   label="Create &amp;Folder..."
+                   menubarPath="project/additions_folder"
+                   enablesFor="1">
+                 <enablement>
+                    <or>
+                       <objectClass name="com.sourcedimensions.client.views.ProjectView.SnapshotGroup"/>
+                       <objectClass name="com.sourcedimensions.client.views.ProjectView.FolderGroup"/>
+                    </or>
+                 </enablement>
+               </action>
+               <action
                    class="com.sourcedimensions.client.actions.CloseProjectAction"
                    id="com.sourcedimensions.client.closeProject"
                    label="&amp;Close Project"
-                   menubarPath="project/additions"/>         	
+                   menubarPath="project/additions_project"/>         	
                <action
                    class="com.sourcedimensions.client.actions.OpenProjectAction"
                    icon="icons/project.png"
                    id="com.sourcedimensions.client.openProject"
                    label="Open &amp;Project..."
-                   menubarPath="project/additions"/>         
+                   menubarPath="project/additions_project"/>         
           </actionSet>
    </extension>
 

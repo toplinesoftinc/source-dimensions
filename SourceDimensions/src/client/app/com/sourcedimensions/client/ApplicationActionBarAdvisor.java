@@ -31,9 +31,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     protected void fillMenuBar(IMenuManager menuBar) 
     {
     	MenuManager prjMenu = new MenuManager("&Project", "project");
-    	prjMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+    	prjMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_project"));
+    	prjMenu.add(new Separator());    	
+    	prjMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_folder"));
     	prjMenu.add(new Separator());
-    	prjMenu.add(exitAction);    	
+    	prjMenu.add(exitAction);
     	
     	MenuManager helpMenu = new MenuManager("&Help", "help");
     	helpMenu.add(aboutAction);
