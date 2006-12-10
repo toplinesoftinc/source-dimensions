@@ -18,7 +18,7 @@ public class ProjectView extends ViewPart
 	
 	private TreeViewer m_viewer;
 	private DrillDownAdapter m_drillDownAdapter;
-	private Project m_project;
+	private static Project m_project;
 	private TreeGroup m_root;
 
 	
@@ -280,6 +280,7 @@ public class ProjectView extends ViewPart
 		m_viewer = new TreeViewer(parent, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		m_drillDownAdapter = new DrillDownAdapter(m_viewer);
 		m_viewer.setContentProvider(new ViewContentProvider());
+		getSite().setSelectionProvider(m_viewer);
 		m_viewer.setLabelProvider(new ViewLabelProvider());
 		m_viewer.setInput(getViewSite());
 	}
@@ -287,5 +288,10 @@ public class ProjectView extends ViewPart
 	public void setFocus() 
 	{
 		m_viewer.getControl().setFocus();
+	}
+	
+	public static Project getProject()
+	{
+		return m_project;
 	}
 }

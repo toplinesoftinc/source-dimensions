@@ -226,6 +226,14 @@ public class DbAdapter
 				"language INTEGER",				
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (parent_id) REFERENCES PROJECT"
+			},
+			{
+				"FOLDER",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"parent_id INT",
+				"name VARCHAR(256)",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (parent_id) REFERENCES FOLDER"
 			}
 		};
 	

@@ -3,7 +3,6 @@ package com.sourcedimensions.client.actions;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
@@ -22,7 +21,27 @@ public class CloseProjectAction implements IWorkbenchWindowActionDelegate
 	
 	public void run(IAction action)
 	{
-		closeProject(m_window);
+		if (ProjectView.getProject() != null)
+		{
+			if (MessageDialog.openQuestion(m_window.getShell(), "Close confirmation", 
+				"Do you want to close current project?"))
+			{
+				try
+				{
+					ProjectView view = (ProjectView)m_window.getActivePage().showView(ProjectView.ID);
+					view.setProject(null);
+				}
+				catch (PartInitException e)
+				{
+					MessageDialog.openError(m_window.getShell(), "UI error", e.getMessage());
+				}
+	
+				for (IViewReference viewRef : m_window.getActivePage().getViewReferences())
+				{
+					m_window.getActivePage().hideView(viewRef);
+				}
+			}
+		}
 	}
 	
 	public void selectionChanged(IAction action, ISelection selection)
@@ -32,27 +51,4 @@ public class CloseProjectAction implements IWorkbenchWindowActionDelegate
 	public void dispose()
 	{	
 	}
-	
-	public static void closeProject(IWorkbenchWindow window)
-	{
-		if (MessageDialog.openQuestion(window.getShell(), "Close confirmation", 
-					"Do you want to close current project?"))
-		{
-			try
-			{
-				ProjectView view = (ProjectView)window.getActivePage().showView(ProjectView.ID);
-				view.setProject(null);
-			}
-			catch (PartInitException e)
-			{
-				MessageDialog.openError(window.getShell(), "UI error", e.getMessage());
-			}
-			
-			for (IViewReference viewRef : window.getActivePage().getViewReferences())
-			{
-				window.getActivePage().hideView(viewRef);
-			}
-		}
-	}
-
 }

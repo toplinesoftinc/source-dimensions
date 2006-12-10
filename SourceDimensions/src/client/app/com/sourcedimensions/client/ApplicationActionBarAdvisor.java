@@ -19,7 +19,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     {
         super(configurer);
     }
-
+    
     protected void makeActions(IWorkbenchWindow window) 
     {
     	exitAction = ActionFactory.QUIT.create(window);
