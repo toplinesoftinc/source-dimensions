@@ -8,6 +8,7 @@ import java.util.*;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
 
+import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
 
 public class DbAdapter 
@@ -33,13 +34,13 @@ public class DbAdapter
 		try
 		{
 			Connection c = getConnection();
-			Statement s = c.createStatement();
 			
-			ResultSet rs = s.executeQuery("SELECT ext_id, name, language, readonly FROM project");
+			ResultSet rs = c.createStatement().executeQuery("SELECT * FROM project");
 
 			while (rs.next())
 			{
 				Project p = new Project();
+
 				p.m_id = rs.getString("ext_id");
 				p.m_name = rs.getString("name");
 				p.m_language = rs.getInt("language");
@@ -66,7 +67,7 @@ public class DbAdapter
 		try
 		{
 			Connection c = getConnection();
-			PreparedStatement s = c.prepareStatement("SELECT ext_id, name, language, readonly FROM project WHERE id = ?");
+			PreparedStatement s = c.prepareStatement("SELECT * FROM project WHERE id = ?");
 			s.setString(1, id);
 			
 			ResultSet rs = s.executeQuery();
@@ -74,7 +75,7 @@ public class DbAdapter
 			if (rs.next())
 			{
 				p = new Project();
-				
+
 				p.m_id = rs.getString("ext_id");
 				p.m_name = rs.getString("name");
 				p.m_language = rs.getInt("language");
@@ -89,7 +90,7 @@ public class DbAdapter
 			while (rs.next())
 			{
 				Project dp = new Project();
-				
+
 				dp.m_id = rs.getString("ext_id");
 				dp.m_name = rs.getString("name");
 				dp.m_language = rs.getInt("language");
@@ -113,11 +114,12 @@ public class DbAdapter
 	{
 		try
 		{
-			Connection c = getConnection();
 			int id = 0;
+			Connection c = getConnection();
 			
-			PreparedStatement ps = c.prepareStatement("SELECT * FROM project WHERE ext_id = ?",
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM project WHERE ext_id = ?", 
 					ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+			
 			ps.setString(1, prj.m_id);
 			
 			ResultSet rs = ps.executeQuery();
@@ -142,6 +144,7 @@ public class DbAdapter
 				
 				ps = c.prepareStatement("SELECT * FROM dependent_project WHERE parent_id = ?", 
 						ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+
 				ps.setInt(1, id);
 				rs = ps.executeQuery();
 				
@@ -154,7 +157,6 @@ public class DbAdapter
 				{
 					rs.moveToInsertRow();
 					
-					rs.updateInt("parent_id", id);
 					rs.updateString("ext_id", p.m_id);
 					rs.updateString("name", p.m_name);
 					rs.updateInt("language", p.m_language);
@@ -175,6 +177,241 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 		}
+	}
+	
+	
+	public static List<Folder> getFolderList(Integer parent_id, String projectId)
+	{
+		List<Folder> list = new ArrayList<Folder>();
+		int p_id;
+
+		try
+		{
+			Connection c = getConnection();
+			
+			if (parent_id == null)
+				p_id = getRootFolderID(c, projectId);
+			else
+				p_id = parent_id.intValue();
+
+			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
+			
+			ps.setString(1, projectId);
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			
+			int prjId = rs.getInt("id");
+
+			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND parent_id = ?");
+			
+			ps.setInt(1, prjId);
+			ps.setInt(2, p_id);
+			
+			rs = ps.executeQuery();
+			
+			while (rs.next())
+			{
+				Folder folder = new Folder();
+				folder.m_id = rs.getInt("id");
+				folder.m_name = rs.getString("name");
+				
+				list.add(folder);
+			}
+			
+			c.commit();
+			c.close();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+		}		
+				
+		return list;
+	}
+	
+	
+	public static Folder addFolder(String name, Integer parent_id, String projectId) throws DupFolderNameException
+	{
+		try
+		{
+			Connection c = getConnection();			
+			int real_id;
+			
+			if (parent_id == null)
+			{
+				real_id = getRootFolderID(c, projectId);
+			}
+			else
+				real_id = parent_id.intValue();
+			
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM folder WHERE parent_id = ? and name = ?");
+			
+			ps.setInt(1, real_id);			
+			ps.setString(2, name);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			if (rs.next())
+			{
+				throw new DupFolderNameException();
+			}
+			
+			ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
+			
+			ps.setString(1, projectId);
+			rs = ps.executeQuery();
+			rs.next();
+			
+			int prjId = rs.getInt("id");
+			
+			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id, name) VALUES(?,?,?)");
+			
+			ps.setInt(1, prjId);
+			ps.setInt(2, real_id);
+			ps.setString(3, name);
+			
+			ps.executeUpdate();
+			
+			ps = c.prepareStatement("SELECT * FROM folder WHERE parent_id = ? and name = ?");
+
+			ps.setInt(1, real_id);			
+			ps.setString(2, name);
+			
+			rs = ps.executeQuery();
+			rs.next();
+			
+			Folder folder = new Folder();
+			folder.m_id = rs.getInt("id");
+			folder.m_name = rs.getString("name");
+					
+			c.commit();
+			c.close();
+			
+			return folder;
+		}
+		catch (DupFolderNameException e)
+		{
+			throw e;
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			return null;
+		}		
+	}
+
+	
+	public static void updateFolder(String name, int id) throws DupFolderNameException
+	{
+		try
+		{
+			Connection c = getConnection();			
+			
+			PreparedStatement ps = c.prepareStatement("SELECT parent_id FROM folder WHERE id = ?");
+			
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			
+			Integer parent_id = rs.getInt("parent_id");
+
+			ps = c.prepareStatement("SELECT * FROM folder WHERE parent_id = ? and name = ?");
+			
+			ps.setInt(1, parent_id);			
+			ps.setString(2, name);
+			
+			rs = ps.executeQuery();
+			
+			if (rs.next())
+				throw new DupFolderNameException();
+			
+			ps = c.prepareStatement("UPDATE folder SET name = ? WHERE id = ?");
+			
+			ps.setString(1, name);
+			ps.setInt(2, id);
+			
+			ps.executeUpdate();
+					
+			c.commit();
+			c.close();
+		}
+		catch (DupFolderNameException e)
+		{
+			throw e;
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+		}				
+	}
+	
+	
+	public static void deleteFolder(int id)
+	{
+		try
+		{
+			Connection c = getConnection();
+			
+			deleteFolder(c, id);
+			
+			c.commit();
+			c.close();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+		}						
+	}
+	
+	
+	protected static void deleteFolder(Connection c, int id) throws SQLException
+	{
+		PreparedStatement ps = c.prepareStatement("SELECT id FROM folder WHERE parent_id = ?");
+		
+		ps.setInt(1, id);
+		ResultSet rs = ps.executeQuery();
+		
+		while (rs.next())
+		{
+			deleteFolder(c, rs.getInt("id"));
+		}
+		
+		ps = c.prepareStatement("DELETE FROM folder WHERE id = ?");
+		
+		ps.setInt(1, id);
+		ps.executeUpdate();
+	}
+	
+	
+	protected static int getRootFolderID(Connection c, String projectId) throws SQLException, IOException
+	{
+		ResultSet rs = c.prepareStatement("SELECT * FROM folder WHERE parent_id IS NULL").executeQuery();
+		
+		if (!rs.next())
+		{
+			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
+			
+			ps.setString(1, projectId);
+			rs = ps.executeQuery();
+			rs.next();
+			
+			int prjId = rs.getInt("id");
+			
+			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id) VALUES (?, NULL)");
+			
+			ps.setInt(1, prjId);
+			ps.executeUpdate();
+			
+			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND parent_id IS NULL");
+			
+			ps.setInt(1, prjId);
+			rs = ps.executeQuery();
+			
+			rs.next();
+		}
+		
+		return rs.getInt("id");
 	}
 	
 	
@@ -213,7 +450,7 @@ public class DbAdapter
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"ext_id VARCHAR(36)",
 				"name VARCHAR(256)",
-				"language INTEGER",
+				"language INT",
 				"readonly SMALLINT",
 				"PRIMARY KEY (id)"
 			},
@@ -231,9 +468,11 @@ public class DbAdapter
 				"FOLDER",
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"parent_id INT",
+				"project_id INT",
 				"name VARCHAR(256)",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (parent_id) REFERENCES FOLDER"
+				"FOREIGN KEY (parent_id) REFERENCES FOLDER",
+				"FOREIGN KEY (project_id) REFERENCES PROJECT"
 			}
 		};
 	

@@ -35,7 +35,7 @@ public class LoginDialog
 	public LoginDialog(Display display, Shell parent)
 	{
 		m_display = display;
-		createShell(display, parent);
+		createShell(parent);
 	}
 	
 	public void open()
@@ -52,7 +52,7 @@ public class LoginDialog
 	/**
 	 * This method initializes m_shell
 	 */
-	private void createShell(Display display, Shell parent) 
+	private void createShell(Shell parent) 
 	{
 		m_shell = new Shell(SWT.TITLE | SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
 		if (parent != null)
@@ -162,7 +162,6 @@ public class LoginDialog
 			});
 		}
 		
-		m_display = display;
 		Util.centerWindow(m_shell, parent);
 	}
 

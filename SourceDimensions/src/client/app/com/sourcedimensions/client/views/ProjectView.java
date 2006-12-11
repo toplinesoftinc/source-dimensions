@@ -1,6 +1,7 @@
 package com.sourcedimensions.client.views;
 
 import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
@@ -9,6 +10,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.core.runtime.IAdaptable;
 import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
+import com.sourcedimensions.client.db.DbAdapter;
+import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
 
 
@@ -22,7 +25,7 @@ public class ProjectView extends ViewPart
 	private TreeGroup m_root;
 
 	
-	abstract class TreeObject implements IAdaptable 
+	abstract static class TreeObject implements IAdaptable 
 	{
 		protected String m_name;
 		protected TreeGroup m_parent;
@@ -35,6 +38,12 @@ public class ProjectView extends ViewPart
 		public String getName() 
 		{
 			return m_name;
+		}
+		
+		
+		public void setName(String name)
+		{
+			m_name = name;
 		}
 		
 		public TreeGroup getParent() 
@@ -61,9 +70,9 @@ public class ProjectView extends ViewPart
 	}
 
 	
-	abstract class TreeGroup extends TreeObject
+	public abstract static class TreeGroup extends TreeObject
 	{
-		protected ArrayList<TreeObject> m_children = new ArrayList<TreeObject>();
+		private ArrayList<TreeObject> m_children = new ArrayList<TreeObject>();
 
 		public TreeGroup(String name)
 		{
@@ -76,6 +85,11 @@ public class ProjectView extends ViewPart
 			object.setParent(this);
 		}
 		
+		public void deleteChild(TreeObject object)
+		{
+			m_children.remove(object);
+		}
+		
 		public Object[] getChildren() 
 		{
 			return m_children.toArray();
@@ -83,12 +97,12 @@ public class ProjectView extends ViewPart
 		
 		public boolean hasChildren() 
 		{
-			return m_children.size()>0;
+			return m_children.size() > 0;
 		}
 	}
 
 
-	public class ProjectObject extends TreeObject
+	public static class ProjectObject extends TreeObject
 	{
 		public ProjectObject(Project prj)
 		{
@@ -102,21 +116,41 @@ public class ProjectView extends ViewPart
 	}
 
 	
-	public class FolderObject extends TreeObject
+	public static class FolderObject extends TreeGroup
 	{
-		public FolderObject(String name)
+		protected Integer m_id;
+		
+		public FolderObject(String name, Integer id)
 		{
 			super(name);
+			m_id = id;
+		}
+		
+		public void load()
+		{
+			List<Folder> list = DbAdapter.getFolderList(m_id, m_project.m_id);
+			
+			for (Folder f : list)
+			{
+				FolderObject o = new FolderObject(f.m_name, f.m_id);
+				addChild(o);
+				o.load();
+			}
 		}
 		
 		public Image getImage()
 		{
 			return Util.getSharedImage(IImageKeys.IMG_FOLDER);
 		}
+		
+		public int getID()
+		{
+			return m_id;
+		}
 	}
 
 	
-	public class RootGroup extends TreeGroup
+	public static class RootGroup extends TreeGroup
 	{
 		public RootGroup()
 		{
@@ -130,7 +164,7 @@ public class ProjectView extends ViewPart
 	}
 	
 	
-	public class ParentPrjGroup extends TreeGroup
+	public static class ParentPrjGroup extends TreeGroup
 	{
 		public ParentPrjGroup()
 		{
@@ -144,33 +178,32 @@ public class ProjectView extends ViewPart
 	}
 	
 
-	public class SnapshotGroup extends TreeGroup
+	public static class SnapshotGroup extends TreeGroup
 	{
 		public SnapshotGroup()
 		{
 			super("Snapshots");
+			load();
 		}
 		
 		public Image getImage()
 		{
 			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT);
 		}
-	}
 		
-	
-	public class FolderGroup extends TreeGroup
-	{
-		public FolderGroup(String name)
+		protected void load()
 		{
-			super(name);
-		}
-		
-		public Image getImage()
-		{
-			return Util.getSharedImage(IImageKeys.IMG_FOLDER);
+			List<Folder> list = DbAdapter.getFolderList(null, m_project.m_id);
+			
+			for (Folder f : list)
+			{
+				FolderObject o = new FolderObject(f.m_name, f.m_id);
+				addChild(o);
+				o.load();
+			}			
 		}
 	}
-	
+		
 	
 	class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider 
 	{
@@ -241,6 +274,7 @@ public class ProjectView extends ViewPart
 		}
 	}
 
+	
 	public void setProject(Project project)
 	{
 		m_project = project;
@@ -293,5 +327,10 @@ public class ProjectView extends ViewPart
 	public static Project getProject()
 	{
 		return m_project;
+	}
+	
+	public TreeViewer getViewer()
+	{
+		return m_viewer;
 	}
 }

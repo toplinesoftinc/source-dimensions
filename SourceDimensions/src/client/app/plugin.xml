@@ -71,7 +71,7 @@
                    label="&amp;Delete Folder"
                    menubarPath="project/additions_folder"
                    enablesFor="1">
-                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderGroup"/>
+                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
                </action>
                <action
                    class="com.sourcedimensions.client.actions.RenameFolderAction"
@@ -80,7 +80,7 @@
                    label="&amp;Rename Folder..."
                    menubarPath="project/additions_folder"
                    enablesFor="1">
-                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderGroup"/>
+                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
                </action>
                <action
                    class="com.sourcedimensions.client.actions.CreateFolderAction"
@@ -90,7 +90,7 @@
                    menubarPath="project/additions_folder"
                    enablesFor="1">
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotGroup"/>
-                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderGroup"/>                 
+                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>                 
                </action>
                <action
                    class="com.sourcedimensions.client.actions.CloseProjectAction"
