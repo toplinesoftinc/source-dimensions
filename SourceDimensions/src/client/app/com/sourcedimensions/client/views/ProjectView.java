@@ -3,7 +3,11 @@ package com.sourcedimensions.client.views;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.part.*;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.SWT;
@@ -317,6 +321,12 @@ public class ProjectView extends ViewPart
 		getSite().setSelectionProvider(m_viewer);
 		m_viewer.setLabelProvider(new ViewLabelProvider());
 		m_viewer.setInput(getViewSite());
+		
+		MenuManager menuMgr = new MenuManager("projectPopup");
+		menuMgr.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+		Menu menu = menuMgr.createContextMenu(m_viewer.getControl());
+		m_viewer.getControl().setMenu(menu);
+		getSite().registerContextMenu(menuMgr, m_viewer);
 	}
 
 	public void setFocus() 

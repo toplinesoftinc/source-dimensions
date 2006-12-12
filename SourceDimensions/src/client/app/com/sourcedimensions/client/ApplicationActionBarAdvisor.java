@@ -1,8 +1,12 @@
 package com.sourcedimensions.client;
 
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.ICoolBarManager;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.actions.ActionFactory;
@@ -10,10 +14,13 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 
+import com.sourcedimensions.client.actions.CloseProjectAction;
+
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor 
 {
 	private IWorkbenchAction exitAction;
 	private IWorkbenchAction aboutAction;
+	private IWorkbenchAction closePrjAction;
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) 
     {
@@ -26,12 +33,14 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     	register(exitAction);
     	aboutAction = ActionFactory.ABOUT.create(window);
     	register(aboutAction);
+    	closePrjAction = new CloseProjectAction(window);
     }
 
     protected void fillMenuBar(IMenuManager menuBar) 
     {
     	MenuManager prjMenu = new MenuManager("&Project", "project");
     	prjMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_project"));
+    	prjMenu.add(closePrjAction);
     	prjMenu.add(new Separator());    	
     	prjMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_folder"));
     	prjMenu.add(new Separator());
@@ -42,5 +51,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     	
     	menuBar.add(prjMenu);
     	menuBar.add(helpMenu);
+    }
+    
+    protected void fillCoolBar(ICoolBarManager coolBar)
+    {
+    	IToolBarManager toolbar = new ToolBarManager(coolBar.getStyle());
+    	coolBar.add(toolbar);
+    	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_project"));    	
+    	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_folder"));    	
     }
 }

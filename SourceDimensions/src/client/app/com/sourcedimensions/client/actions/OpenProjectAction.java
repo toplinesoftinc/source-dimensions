@@ -129,6 +129,7 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 			{
 				ProjectView view = (ProjectView)window.getActivePage().showView(ProjectView.ID);
 				view.setProject(prj);
+				CloseProjectAction.enableAction(true);
 			}
 			catch (PartInitException e)
 			{

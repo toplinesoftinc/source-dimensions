@@ -5,6 +5,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IObjectActionDelegate;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
@@ -13,7 +15,7 @@ import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
 import com.sourcedimensions.client.views.ProjectView.TreeGroup;
 
-public class DeleteFolderAction implements IWorkbenchWindowActionDelegate
+public class DeleteFolderAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate
 {
 	protected IStructuredSelection m_selection;	
 	protected IWorkbenchWindow m_window;
@@ -46,6 +48,11 @@ public class DeleteFolderAction implements IWorkbenchWindowActionDelegate
 		}
 	}
 
+	public void setActivePart(IAction action, IWorkbenchPart targetPart)
+	{	
+		m_window = targetPart.getSite().getWorkbenchWindow();
+	}		
+	
 	public void selectionChanged(IAction action, ISelection selection)
 	{
 		if (selection instanceof IStructuredSelection)

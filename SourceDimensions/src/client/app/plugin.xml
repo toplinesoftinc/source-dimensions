@@ -65,11 +65,19 @@
          	label="Project"
          	visible="true">
                <action
+                   class="com.sourcedimensions.client.actions.OpenProjectAction"
+                   icon="icons/project.png"
+                   id="com.sourcedimensions.client.openProject"
+                   label="Open &amp;Project..."
+                   menubarPath="project/additions_project"
+                   toolbarPath="additions_project"/>
+               <action
                    class="com.sourcedimensions.client.actions.DeleteFolderAction"
                    icon="icons/delfolder.png"
                    id="com.sourcedimensions.client.deleteFolder"
                    label="&amp;Delete Folder"
                    menubarPath="project/additions_folder"
+                   toolbarPath="additions_folder"
                    enablesFor="1">
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
                </action>
@@ -79,6 +87,7 @@
                    id="com.sourcedimensions.client.renameFolder"
                    label="&amp;Rename Folder..."
                    menubarPath="project/additions_folder"
+                   toolbarPath="additions_folder"
                    enablesFor="1">
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
                </action>
@@ -88,22 +97,55 @@
                    id="com.sourcedimensions.client.createFolder"
                    label="Create &amp;Folder..."
                    menubarPath="project/additions_folder"
+                   toolbarPath="additions_folder"
                    enablesFor="1">
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotGroup"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>                 
                </action>
-               <action
-                   class="com.sourcedimensions.client.actions.CloseProjectAction"
-                   id="com.sourcedimensions.client.closeProject"
-                   label="&amp;Close Project"
-                   menubarPath="project/additions_project"/>
-               <action
-                   class="com.sourcedimensions.client.actions.OpenProjectAction"
-                   icon="icons/project.png"
-                   id="com.sourcedimensions.client.openProject"
-                   label="Open &amp;Project..."
-                   menubarPath="project/additions_project"/>         
           </actionSet>
+   </extension>
+   <extension 
+         point="org.eclipse.ui.popupMenus">
+         <objectContribution
+              adaptable="false"
+              id="com.sourcedimensions.client.folderContributions"
+              objectClass="com.sourcedimensions.client.views.ProjectView$FolderObject">
+               <action
+                   class="com.sourcedimensions.client.actions.DeleteFolderAction"
+                   icon="icons/delfolder.png"
+                   id="com.sourcedimensions.client.deleteFolder"
+                   label="Delete Folder"/>
+                 <action
+                     class="com.sourcedimensions.client.actions.RenameFolderAction"
+                     icon="icons/editfolder.png"
+                     id="com.sourcedimensions.client.renameFolder"
+                     label="Rename Folder..."/>
+                 <action
+                     class="com.sourcedimensions.client.actions.CreateFolderAction"
+                     icon="icons/addfolder.png"
+                     id="com.sourcedimensions.client.createFolder"
+                     label="Create Folder..."/>
+         </objectContribution>
+         <objectContribution
+              adaptable="false"
+              id="com.sourcedimensions.client.snapshotContributions"
+              objectClass="com.sourcedimensions.client.views.ProjectView$SnapshotGroup">
+                 <action
+                     class="com.sourcedimensions.client.actions.CreateFolderAction"
+                     icon="icons/addfolder.png"
+                     id="com.sourcedimensions.client.createFolder"
+                     label="Create Folder..."/>
+         </objectContribution>
+         <objectContribution
+              adaptable="false"
+              id="com.sourcedimensions.client.projectContributions"
+              objectClass="com.sourcedimensions.client.views.ProjectView$RootGroup">
+                 <action
+                     class="com.sourcedimensions.client.actions.CloseProjectAction"
+                     id="com.sourcedimensions.client.closeProject"
+                     label="Close Project"/>              
+         </objectContribution>
+         
    </extension>
 
 </plugin>
