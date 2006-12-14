@@ -49,7 +49,7 @@ public class FolderDialog
 		m_shell.setLayout(null);
 		m_folderNameLabel = new Label(m_shell, SWT.NONE);
 		m_folderNameLabel.setBounds(new Rectangle(13, 16, 85, 16));
-		m_folderNameLabel.setText("Folder name:");
+		m_folderNameLabel.setText("&Folder name:");
 		m_folderNameLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));		
 		m_folderNameText = new Text(m_shell, SWT.BORDER | SWT.LEFT);
 		m_folderNameText.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
@@ -59,7 +59,7 @@ public class FolderDialog
 			m_folderNameText.setText(m_folderName);
 		m_OkButton = new Button(m_shell, SWT.NONE);
 		m_OkButton.setToolTipText("Cancel");
-		m_OkButton.setText("Ok");
+		m_OkButton.setText("O&k");
 		m_OkButton.setLocation(new Point(47, 73));
 		m_OkButton.setSize(new Point(88, 25));
 		m_OkButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
@@ -79,7 +79,7 @@ public class FolderDialog
 		});
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_cancelButton.setToolTipText("Cancel");
-		m_cancelButton.setText("Cancel");
+		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setLocation(new Point(158, 73));
 		m_cancelButton.setSize(new Point(88, 25));
 		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));

@@ -64,7 +64,7 @@ public class ProjectListDialog implements MouseListener
 		
 		m_shell.setText("Projects");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
-		m_shell.setSize(new Point(470, 364));
+		m_shell.setSize(new Point(470, 359));
 		m_shell.setLayout(null);
 		
 		Util.centerWindow(m_shell, parent);
@@ -73,7 +73,7 @@ public class ProjectListDialog implements MouseListener
 		m_openButton = new Button(m_shell, SWT.NONE);
 		m_openButton.setBounds(new Rectangle(117, 295, 88, 25));
 		m_openButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
-		m_openButton.setText("Open");
+		m_openButton.setText("O&pen");
 		m_openButton.setToolTipText("Open");
 		m_openButton.addSelectionListener(new SelectionAdapter()
 		{
@@ -96,7 +96,7 @@ public class ProjectListDialog implements MouseListener
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_cancelButton.setBounds(new Rectangle(258, 295, 88, 25));
 		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
-		m_cancelButton.setText("Cancel");
+		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setToolTipText("Cancel");
 		m_prjList = new Table(m_shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.READ_ONLY);
 		m_prjList.addMouseListener(this);

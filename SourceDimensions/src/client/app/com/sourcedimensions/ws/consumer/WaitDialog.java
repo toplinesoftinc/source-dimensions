@@ -70,7 +70,8 @@ public class WaitDialog
 		m_waitLabel.setText("Connecting to server ...");
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_cancelButton.setLocation(new Point(139, 67));
-		m_cancelButton.setText("Cancel");
+		m_cancelButton.setText("&Cancel");
+		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
 		m_cancelButton.setSize(new Point(88, 25));
 		m_cancelButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() 
 		{

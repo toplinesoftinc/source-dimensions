@@ -102,6 +102,17 @@
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotGroup"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>                 
                </action>
+               <action
+                   class="com.sourcedimensions.client.actions.SymbolQueryAction"
+                   icon="icons/symbol.png"
+                   id="com.sourcedimensions.client.symbolQuery"
+                   label="&amp;Symbol Query..."
+                   menubarPath="query/additions_query"
+                   toolbarPath="additions_query"
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotGroup"/>                   
+                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
+               </action>               
           </actionSet>
    </extension>
    <extension 
@@ -110,6 +121,11 @@
               adaptable="false"
               id="com.sourcedimensions.client.folderContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$FolderObject">
+              <action
+                   class="com.sourcedimensions.client.actions.SymbolQueryAction"
+                   icon="icons/symbol.png"
+                   id="com.sourcedimensions.client.symbolQuery"
+                   label="Symbol Query..."/>              
                <action
                    class="com.sourcedimensions.client.actions.DeleteFolderAction"
                    icon="icons/delfolder.png"
@@ -130,6 +146,11 @@
               adaptable="false"
               id="com.sourcedimensions.client.snapshotContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$SnapshotGroup">
+              <action
+                   class="com.sourcedimensions.client.actions.SymbolQueryAction"
+                   icon="icons/symbol.png"
+                   id="com.sourcedimensions.client.symbolQuery"
+                   label="Symbol Query..."/>              
                  <action
                      class="com.sourcedimensions.client.actions.CreateFolderAction"
                      icon="icons/addfolder.png"
@@ -143,7 +164,7 @@
                  <action
                      class="com.sourcedimensions.client.actions.CloseProjectAction"
                      id="com.sourcedimensions.client.closeProject"
-                     label="Close Project"/>              
+                     label="Close Project"/>
          </objectContribution>
          
    </extension>
