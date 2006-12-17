@@ -6,6 +6,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.part.*;
+import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
@@ -322,8 +323,10 @@ public class ProjectView extends ViewPart
 		m_viewer.setLabelProvider(new ViewLabelProvider());
 		m_viewer.setInput(getViewSite());
 		
-		MenuManager menuMgr = new MenuManager("projectPopup");
-		menuMgr.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+		MenuManager menuMgr = new MenuManager("");
+		menuMgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS + "_folder"));
+		menuMgr.add(new Separator());
+		menuMgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS + "_query"));
 		Menu menu = menuMgr.createContextMenu(m_viewer.getControl());
 		m_viewer.getControl().setMenu(menu);
 		getSite().registerContextMenu(menuMgr, m_viewer);

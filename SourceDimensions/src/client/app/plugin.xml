@@ -125,21 +125,25 @@
                    class="com.sourcedimensions.client.actions.SymbolQueryAction"
                    icon="icons/symbol.png"
                    id="com.sourcedimensions.client.symbolQuery"
+                   menubarPath="additions_query"
                    label="Symbol Query..."/>              
                <action
                    class="com.sourcedimensions.client.actions.DeleteFolderAction"
                    icon="icons/delfolder.png"
                    id="com.sourcedimensions.client.deleteFolder"
+                   menubarPath="additions_folder"                   
                    label="Delete Folder"/>
                  <action
                      class="com.sourcedimensions.client.actions.RenameFolderAction"
                      icon="icons/editfolder.png"
                      id="com.sourcedimensions.client.renameFolder"
+                     menubarPath="additions_folder"                     
                      label="Rename Folder..."/>
                  <action
                      class="com.sourcedimensions.client.actions.CreateFolderAction"
                      icon="icons/addfolder.png"
                      id="com.sourcedimensions.client.createFolder"
+                     menubarPath="additions_folder"                     
                      label="Create Folder..."/>
          </objectContribution>
          <objectContribution
@@ -150,11 +154,13 @@
                    class="com.sourcedimensions.client.actions.SymbolQueryAction"
                    icon="icons/symbol.png"
                    id="com.sourcedimensions.client.symbolQuery"
+                   menubarPath="additions_query"                                        
                    label="Symbol Query..."/>              
                  <action
                      class="com.sourcedimensions.client.actions.CreateFolderAction"
                      icon="icons/addfolder.png"
                      id="com.sourcedimensions.client.createFolder"
+                     menubarPath="additions_folder"                                          
                      label="Create Folder..."/>
          </objectContribution>
          <objectContribution
