@@ -111,7 +111,7 @@ public class ProjectView extends ViewPart
 	{
 		public ProjectObject(Project prj)
 		{
-			super(prj.m_name);
+			super(prj.m_name + " (" + prj.getLangName() + ")");
 		}
 		
 		public Image getImage()
@@ -159,7 +159,7 @@ public class ProjectView extends ViewPart
 	{
 		public RootGroup()
 		{
-			super(m_project.m_name);			
+			super(m_project.m_name + " (" + m_project.getLangName() + ")");			
 		}
 		
 		public Image getImage()

@@ -22,9 +22,10 @@ public class InputDialog
 	private Button m_OkButton = null;
 	private Text m_textValue = null;
 	private Label m_textLabel = null;
+	private boolean m_optional;
 
 	private Display m_display;  //  @jve:decl-index=0:
-	private static String m_folderName;  //  @jve:decl-index=0:
+	private static String m_value;  //  @jve:decl-index=0:
 	
 	public void open()
 	{
@@ -55,8 +56,8 @@ public class InputDialog
 		m_textValue.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
 		m_textValue.setSize(new Point(266, 19));
 		m_textValue.setLocation(new Point(13, 33));
-		if (m_folderName != null)
-			m_textValue.setText(m_folderName);
+		if (m_value != null)
+			m_textValue.setText(m_value);
 		m_OkButton = new Button(m_shell, SWT.NONE);
 		m_OkButton.setToolTipText("Cancel");
 		m_OkButton.setText("O&k");
@@ -67,13 +68,13 @@ public class InputDialog
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				if (m_textValue.getText().trim().length() == 0)
+				if (m_textValue.getText().trim().length() == 0 && !m_optional)
 				{
-					MessageDialog.openError(m_shell, "Incorrect input", "Please enter folder name");
+					MessageDialog.openError(m_shell, "Incorrect input", "Please enter text");
 					return;
 				}
 		
-				m_folderName = m_textValue.getText();
+				m_value = m_textValue.getText();
 				m_shell.close();				
 			}
 		});
@@ -115,21 +116,22 @@ public class InputDialog
 	}
 
 
-	public InputDialog(Display display, Shell parent, String title, String label, String text)
+	public InputDialog(Display display, Shell parent, String title, String label, String text, boolean optional)
 	{
 		m_display = display;
-		m_folderName = text;
+		m_value = text;
+		m_optional = optional;
 		createShell(parent, title, label);
 	}
 
-	public String getFolderName()
+	public String getValue()
 	{
-		return m_folderName;
+		return m_value;
 	}
 	
 	protected void cancelClose()
 	{
-		m_folderName = null;
+		m_value = null;
 		m_shell.close();
 	}
 }
