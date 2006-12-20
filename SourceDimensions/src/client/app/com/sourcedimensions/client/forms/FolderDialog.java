@@ -15,13 +15,13 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.events.*;
 import com.sourcedimensions.client.Util;
 
-public class FolderDialog
+public class InputDialog
 {
 	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="10,10"
 	private Button m_cancelButton = null;
 	private Button m_OkButton = null;
-	private Text m_folderNameText = null;
-	private Label m_folderNameLabel = null;
+	private Text m_textValue = null;
+	private Label m_textLabel = null;
 
 	private Display m_display;  //  @jve:decl-index=0:
 	private static String m_folderName;  //  @jve:decl-index=0:
@@ -38,25 +38,25 @@ public class FolderDialog
 	}
 	
 	
-	private void createShell(Shell parent)
+	private void createShell(Shell parent, String title, String label)
 	{
 		m_shell = new Shell(SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
 		if (parent != null)
 			m_shell.setParent(parent);		
-		m_shell.setText("Folder");
+		m_shell.setText(title);
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		m_shell.setSize(new Point(298, 138));
 		m_shell.setLayout(null);
-		m_folderNameLabel = new Label(m_shell, SWT.NONE);
-		m_folderNameLabel.setBounds(new Rectangle(13, 16, 85, 16));
-		m_folderNameLabel.setText("&Folder name:");
-		m_folderNameLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));		
-		m_folderNameText = new Text(m_shell, SWT.BORDER | SWT.LEFT);
-		m_folderNameText.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
-		m_folderNameText.setSize(new Point(266, 19));
-		m_folderNameText.setLocation(new Point(13, 33));
+		m_textLabel = new Label(m_shell, SWT.NONE);
+		m_textLabel.setBounds(new Rectangle(13, 16, 265, 16));
+		m_textLabel.setText(label);
+		m_textLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));		
+		m_textValue = new Text(m_shell, SWT.BORDER | SWT.LEFT);
+		m_textValue.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_textValue.setSize(new Point(266, 19));
+		m_textValue.setLocation(new Point(13, 33));
 		if (m_folderName != null)
-			m_folderNameText.setText(m_folderName);
+			m_textValue.setText(m_folderName);
 		m_OkButton = new Button(m_shell, SWT.NONE);
 		m_OkButton.setToolTipText("Cancel");
 		m_OkButton.setText("O&k");
@@ -67,13 +67,13 @@ public class FolderDialog
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				if (m_folderNameText.getText().trim().length() == 0)
+				if (m_textValue.getText().trim().length() == 0)
 				{
 					MessageDialog.openError(m_shell, "Incorrect input", "Please enter folder name");
 					return;
 				}
 		
-				m_folderName = m_folderNameText.getText();
+				m_folderName = m_textValue.getText();
 				m_shell.close();				
 			}
 		});
@@ -114,17 +114,12 @@ public class FolderDialog
 		Util.centerWindow(m_shell, parent);		
 	}
 
-	
-	public FolderDialog(Display display, Shell parent)
-	{
-		this(display, parent, null);
-	}
 
-	public FolderDialog(Display display, Shell parent, String text)
+	public InputDialog(Display display, Shell parent, String title, String label, String text)
 	{
 		m_display = display;
 		m_folderName = text;
-		createShell(parent);
+		createShell(parent, title, label);
 	}
 
 	public String getFolderName()
