@@ -12,7 +12,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DupFolderNameException;
-import com.sourcedimensions.client.forms.FolderDialog;
+import com.sourcedimensions.client.forms.InputDialog;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
 
@@ -36,7 +36,7 @@ public class RenameFolderAction implements IWorkbenchWindowActionDelegate, IObje
 		
 		while (true)
 		{
-			FolderDialog dialog = new FolderDialog(PlatformUI.getWorkbench().getDisplay(), shell, name);
+			InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), shell, "Folder", "&Folder name:", name);
 			dialog.open();
 			
 			name = dialog.getFolderName();
