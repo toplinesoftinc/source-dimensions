@@ -4,6 +4,7 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -22,11 +23,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.TableViewer;
 
 
 public class SymbolQueryDialog
@@ -42,16 +41,22 @@ public class SymbolQueryDialog
 	private TabFolder m_queryParamsTabFolder = null;
 	private Button m_runQueryButton = null;
 	private Button m_cancelButton = null;
-	private Composite m_namespaceScopeTab = null;
-	private Composite m_memberScopeTab = null;
-	private Composite m_localScopeTab = null;
-	private Composite m_classScopeTab = null;
+	private Composite m_namespacesTab = null;
+	private Composite m_typeMembersTab = null;
+	private Composite m_localDeclsTab = null;
+	private Composite m_typesTab = null;
 	private Table m_namespaceFilterTable = null;
 	private Label m_namespaceFilterLabel = null;
 	private Button m_allNamespacesCheckBox = null;
-	private Button m_addFilterButton = null;
-	private Button m_removeFilterButton = null;
-	private Button m_editFilterButton = null;
+	private Button m_addNamespaceFilterButton = null;
+	private Button m_removeNamespaceFilterButton = null;
+	private Button m_editNamespaceFilterButton = null;
+	private Button m_allTypesCheckBox = null;
+	private Table m_typeFilterTable = null;
+	private Label m_typeFilterLabel = null;
+	private Button m_addTypeFilterButton = null;
+	private Button m_editTypeFilterButton = null;
+	private Button m_removeTypeFilterButton = null;
 	public SymbolQueryDialog(Display display, Shell parent)
 	{
 		m_display = display;
@@ -90,6 +95,7 @@ public class SymbolQueryDialog
 		m_snapshotNameText.setSize(new Point(199, 21));
 		m_snapshotNameText.setLocation(new Point(426, 25));
 		m_clearSnapshotCheckBox.setBounds(new Rectangle(145, 56, 119, 15));
+		m_clearSnapshotCheckBox.setEnabled(false);
 		m_clearSnapshotCheckBox.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
 		m_clearSnapshotCheckBox.setText("Clear &Snapshot");
 		m_clearSnapshotCheckBox.setToolTipText("Delete all contents of the snapshot before putting results of this query");
@@ -153,6 +159,19 @@ public class SymbolQueryDialog
 		m_comboDestinationSnapshot.setToolTipText("Snapshot where to put results of this query into");
 		m_comboDestinationSnapshot.setVisibleItemCount(10);
 		m_comboDestinationSnapshot.setSize(new Point(253, 24));
+		m_comboDestinationSnapshot.addSelectionListener(new SelectionListener()
+		{
+			public void widgetSelected(SelectionEvent e)
+			{
+				boolean newSnapshot = (m_comboDestinationSnapshot.getSelectionIndex() == 0);
+				m_clearSnapshotCheckBox.setEnabled(!newSnapshot);
+				m_snapshotNameText.setEnabled(newSnapshot);
+			}
+			
+			public void widgetDefaultSelected(SelectionEvent e)
+			{
+			}
+		});
 		m_comboDestinationSnapshot.add("< New Snapshot >");
 		m_comboDestinationSnapshot.select(0);
 	}
@@ -161,45 +180,46 @@ public class SymbolQueryDialog
 	{
 		m_queryParamsTabFolder = new TabFolder(m_shell, SWT.NONE);
 		m_queryParamsTabFolder.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
-		createNamespaceScopeComposite();
-		createMemberScopeComposite();
-		createLocalScopePage();
-		createClassScopeTab();
-		m_queryParamsTabFolder.setBounds(new Rectangle(15, 87, 610, 376));
+		m_queryParamsTabFolder.setLocation(new Point(15, 85));
+		m_queryParamsTabFolder.setSize(new Point(610, 376));
+		createNamespacesTab();
+		createTypeMembersTab();
+		createLocalDeclsTab();
+		createTypesTab();
 		TabItem tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
-		tabItem.setText("Namespace Scope");
-		tabItem.setControl(m_namespaceScopeTab);
+		tabItem.setText("Namespaces");
+		tabItem.setControl(m_namespacesTab);
 		tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
-		tabItem.setText("Class Scope");
-		tabItem.setControl(m_classScopeTab);		
+		tabItem.setText("Types");
+		tabItem.setControl(m_typesTab);		
 		tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
-		tabItem.setText("Member Scope");
-		tabItem.setControl(m_memberScopeTab);
+		tabItem.setText("Type Members");
+		tabItem.setControl(m_typeMembersTab);
 		tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
-		tabItem.setText("Local Scope");
-		tabItem.setControl(m_localScopeTab);
+		tabItem.setText("Local Declarations");
+		tabItem.setControl(m_localDeclsTab);
 	}
 
-	private void createNamespaceScopeComposite()
+	private void createNamespacesTab()
 	{
-		m_namespaceScopeTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
-		m_namespaceScopeTab.setLayout(null);
-		m_allNamespacesCheckBox = new Button(m_namespaceScopeTab, SWT.CHECK | SWT.RIGHT);
-		m_namespaceFilterLabel = new Label(m_namespaceScopeTab, SWT.NONE);
-		m_namespaceFilterTable = new Table(m_namespaceScopeTab, SWT.BORDER | SWT.FULL_SELECTION);
+		m_namespacesTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
+		m_namespacesTab.setLayout(null);
+		m_allNamespacesCheckBox = new Button(m_namespacesTab, SWT.CHECK | SWT.RIGHT);
+		m_namespaceFilterLabel = new Label(m_namespacesTab, SWT.NONE);
+		m_namespaceFilterTable = new Table(m_namespacesTab, SWT.BORDER | SWT.FULL_SELECTION);
 		m_namespaceFilterTable.setHeaderVisible(false);
 		m_namespaceFilterTable.setLinesVisible(true);
 		m_namespaceFilterTable.setBounds(new Rectangle(15, 57, 476, 272));
-		new TableColumn(m_namespaceFilterTable, SWT.LEFT)
-			.setWidth(m_namespaceFilterTable.getBounds().width - 2 * m_namespaceFilterTable.getBorderWidth());
-		m_addFilterButton = new Button(m_namespaceScopeTab, SWT.NONE);
-		m_addFilterButton.setToolTipText("Login");
-		m_addFilterButton.setSelection(true);
-		m_addFilterButton.setText("A&dd filter...");
-		m_addFilterButton.setLocation(new Point(502, 57));
-		m_addFilterButton.setSize(new Point(88, 25));
-		m_addFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
-		m_addFilterButton.addSelectionListener(new SelectionAdapter()
+		new TableColumn(m_namespaceFilterTable, SWT.LEFT).setWidth(
+			m_namespaceFilterTable.getBounds().width - 2 * m_namespaceFilterTable.getBorderWidth());
+		m_addNamespaceFilterButton = new Button(m_namespacesTab, SWT.NONE);
+		m_addNamespaceFilterButton.setToolTipText("Login");
+		m_addNamespaceFilterButton.setSelection(true);
+		m_addNamespaceFilterButton.setText("A&dd filter...");
+		m_addNamespaceFilterButton.setLocation(new Point(502, 57));
+		m_addNamespaceFilterButton.setSize(new Point(88, 25));
+		m_addNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_addNamespaceFilterButton.addSelectionListener(new SelectionAdapter()
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
@@ -214,15 +234,15 @@ public class SymbolQueryDialog
 				}
 			}
 		});
-		m_editFilterButton = new Button(m_namespaceScopeTab, SWT.NONE);
-		m_removeFilterButton = new Button(m_namespaceScopeTab, SWT.NONE);
-		m_removeFilterButton.setToolTipText("Login");
-		m_removeFilterButton.setSelection(true);
-		m_removeFilterButton.setText("Re&move filter");
-		m_removeFilterButton.setLocation(new Point(502, 152));
-		m_removeFilterButton.setSize(new Point(88, 25));
-		m_removeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
-		m_removeFilterButton.addSelectionListener(new SelectionAdapter()
+		m_editNamespaceFilterButton = new Button(m_namespacesTab, SWT.NONE);
+		m_removeNamespaceFilterButton = new Button(m_namespacesTab, SWT.NONE);
+		m_removeNamespaceFilterButton.setToolTipText("Login");
+		m_removeNamespaceFilterButton.setSelection(true);
+		m_removeNamespaceFilterButton.setText("Re&move filter");
+		m_removeNamespaceFilterButton.setLocation(new Point(502, 152));
+		m_removeNamespaceFilterButton.setSize(new Point(88, 25));
+		m_removeNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_removeNamespaceFilterButton.addSelectionListener(new SelectionAdapter()
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
@@ -242,13 +262,13 @@ public class SymbolQueryDialog
 				}				
 			}
 		});
-		m_editFilterButton.setToolTipText("Login");
-		m_editFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
-		m_editFilterButton.setSize(new Point(88, 25));
-		m_editFilterButton.setLocation(new Point(502, 104));
-		m_editFilterButton.setText("&Edit filter...");
-		m_editFilterButton.setSelection(true);
-		m_editFilterButton.addSelectionListener(new SelectionAdapter()
+		m_editNamespaceFilterButton.setToolTipText("Login");
+		m_editNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_editNamespaceFilterButton.setSize(new Point(88, 25));
+		m_editNamespaceFilterButton.setLocation(new Point(502, 104));
+		m_editNamespaceFilterButton.setText("&Edit filter...");
+		m_editNamespaceFilterButton.setSelection(true);
+		m_editNamespaceFilterButton.addSelectionListener(new SelectionAdapter()
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
@@ -283,30 +303,95 @@ public class SymbolQueryDialog
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				boolean sel = !m_allNamespacesCheckBox.getSelection();
-				m_namespaceFilterTable.setEnabled(sel);
-				m_addFilterButton.setEnabled(sel);
-				m_editFilterButton.setEnabled(sel);
-				m_removeFilterButton.setEnabled(sel);
+				boolean sel = m_allNamespacesCheckBox.getSelection();
+				m_namespaceFilterTable.setEnabled(!sel);
+				m_addNamespaceFilterButton.setEnabled(!sel);
+				m_editNamespaceFilterButton.setEnabled(!sel);
+				m_removeNamespaceFilterButton.setEnabled(!sel);
 			}
 		});
 	}
 
-	private void createMemberScopeComposite()
+	private void createTypeMembersTab()
 	{
-		m_memberScopeTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
-		m_memberScopeTab.setLayout(null);
+		m_typeMembersTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
+		m_typeMembersTab.setLayout(null);
 	}
 
-	private void createLocalScopePage()
+	private void createLocalDeclsTab()
 	{
-		m_localScopeTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
-		m_localScopeTab.setLayout(null);
+		m_localDeclsTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
+		m_localDeclsTab.setLayout(null);
 	}
 
-	private void createClassScopeTab()
+	private void createTypesTab()
 	{
-		m_classScopeTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
-		m_classScopeTab.setLayout(new GridLayout());
+		m_typesTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
+		m_typesTab.setLayout(null);
+		m_allTypesCheckBox = new Button(m_typesTab, SWT.CHECK | SWT.RIGHT);
+		m_allTypesCheckBox.setSelection(false);
+		m_allTypesCheckBox.setText("&All Types");
+		m_allTypesCheckBox.setSize(new Point(83, 16));
+		m_allTypesCheckBox.setLocation(new Point(15, 12));
+		m_allTypesCheckBox.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
+		m_allTypesCheckBox.addSelectionListener(new SelectionAdapter()
+		{
+			public void widgetSelected(SelectionEvent e)
+			{
+				boolean sel = m_allTypesCheckBox.getSelection();
+
+				m_typeFilterTable.setEnabled(!sel);
+				m_addTypeFilterButton.setEnabled(!sel);
+				m_editTypeFilterButton.setEnabled(!sel);
+				m_removeTypeFilterButton.setEnabled(!sel);
+			}
+		});
+		m_typeFilterTable = new Table(m_typesTab, SWT.BORDER | SWT.FULL_SELECTION);
+		m_typeFilterTable.setHeaderVisible(true);
+		m_typeFilterTable.setLinesVisible(true);
+		m_typeFilterTable.setBounds(new Rectangle(15, 57, 476, 272));
+		double width = m_typeFilterTable.getBounds().width - 2 * m_typeFilterTable.getBorderWidth(); 
+		TableColumn column = new TableColumn(m_typeFilterTable, SWT.LEFT, 0);
+		column.setWidth((int)(0.4 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Name");
+		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 1);
+		column.setWidth((int)(0.2 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Categories");
+		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 2);
+		column.setWidth((int)(0.2 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Modifiers");
+		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 3);
+		column.setWidth((int)(0.2 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Base types");
+		m_typeFilterLabel = new Label(m_typesTab, SWT.NONE);
+		m_typeFilterLabel.setBounds(new Rectangle(15, 40, 98, 16));
+		m_typeFilterLabel.setText("&Type filter list:");
+		m_typeFilterLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
+		m_addTypeFilterButton = new Button(m_typesTab, SWT.NONE);
+		m_addTypeFilterButton.setBounds(new Rectangle(502, 57, 88, 25));
+		m_addTypeFilterButton.setToolTipText("Login");
+		m_addTypeFilterButton.setSelection(true);
+		m_addTypeFilterButton.setText("A&dd filter...");
+		m_addTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_editTypeFilterButton = new Button(m_typesTab, SWT.NONE);
+		m_editTypeFilterButton.setBounds(new Rectangle(502, 104, 88, 25));
+		m_editTypeFilterButton.setToolTipText("Login");
+		m_editTypeFilterButton.setSelection(true);
+		m_editTypeFilterButton.setText("&Edit filter...");
+		m_editTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_removeTypeFilterButton = new Button(m_typesTab, SWT.NONE);
+		m_removeTypeFilterButton.setBounds(new Rectangle(502, 152, 88, 25));
+		m_removeTypeFilterButton.setToolTipText("Login");
+		m_removeTypeFilterButton.setSelection(true);
+		m_removeTypeFilterButton.setText("Re&move filter");
+		m_removeTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
 	}
 }
