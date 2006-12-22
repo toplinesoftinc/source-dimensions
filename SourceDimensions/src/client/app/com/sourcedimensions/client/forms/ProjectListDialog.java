@@ -72,7 +72,7 @@ public class ProjectListDialog implements MouseListener
 		
 		m_openButton = new Button(m_shell, SWT.NONE);
 		m_openButton.setBounds(new Rectangle(117, 295, 88, 25));
-		m_openButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_openButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_openButton.setText("O&pen");
 		m_openButton.setToolTipText("Open");
 		m_openButton.addSelectionListener(new SelectionAdapter()
@@ -95,7 +95,7 @@ public class ProjectListDialog implements MouseListener
 
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_cancelButton.setBounds(new Rectangle(258, 295, 88, 25));
-		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setToolTipText("Cancel");
 		m_prjList = new Table(m_shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.READ_ONLY);

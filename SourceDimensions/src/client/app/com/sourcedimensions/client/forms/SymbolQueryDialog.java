@@ -1,5 +1,8 @@
 package com.sourcedimensions.client.forms;
 
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -30,7 +33,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 public class SymbolQueryDialog
 {
-
 	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="0,-13"
 	private Display m_display;  //  @jve:decl-index=0:
 	private Label m_destinationSnapshotLabel = null;
@@ -84,27 +86,27 @@ public class SymbolQueryDialog
 		m_runQueryButton = new Button(m_shell, SWT.NONE);
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_destinationSnapshotLabel = new Label(m_shell, SWT.NONE);
-		m_destinationSnapshotLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
-		m_destinationSnapshotLabel.setBounds(new Rectangle(144, 8, 147, 17));
+		m_destinationSnapshotLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
+		m_destinationSnapshotLabel.setBounds(new Rectangle(145, 9, 118, 14));
 		m_destinationSnapshotLabel.setText("&Destination Snapshot:");
 		createComboDestinationSnapshot();
 		m_clearSnapshotCheckBox = new Button(m_shell, SWT.CHECK | SWT.RIGHT);
 		m_snapshotNameLabel = new Label(m_shell, SWT.NONE);
 		m_snapshotNameText = new Text(m_shell, SWT.BORDER | SWT.LEFT);
-		m_snapshotNameText.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
-		m_snapshotNameText.setSize(new Point(199, 21));
+		m_snapshotNameText.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
+		m_snapshotNameText.setSize(new Point(199, 18));
 		m_snapshotNameText.setLocation(new Point(426, 25));
-		m_clearSnapshotCheckBox.setBounds(new Rectangle(145, 56, 119, 15));
+		m_clearSnapshotCheckBox.setBounds(new Rectangle(145, 56, 91, 15));
 		m_clearSnapshotCheckBox.setEnabled(false);
-		m_clearSnapshotCheckBox.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
+		m_clearSnapshotCheckBox.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_clearSnapshotCheckBox.setText("Clear &Snapshot");
 		m_clearSnapshotCheckBox.setToolTipText("Delete all contents of the snapshot before putting results of this query");
-		m_snapshotNameLabel.setBounds(new Rectangle(426, 8, 144, 16));
-		m_snapshotNameLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
+		m_snapshotNameLabel.setBounds(new Rectangle(426, 9, 116, 14));
+		m_snapshotNameLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_snapshotNameLabel.setText("&New Snapshot Name:");
 		createQueryParamsTabFolder();
 		m_cancelButton.setToolTipText("Login");
-		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_cancelButton.setSize(new Point(88, 25));
 		m_cancelButton.setLocation(new Point(15, 48));
 		m_cancelButton.setText("&Cancel");
@@ -117,48 +119,63 @@ public class SymbolQueryDialog
 			}
 		});
 		m_runQueryButton.setToolTipText("Login");
-		m_runQueryButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_runQueryButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 
 		m_runQueryButton.setSize(new Point(88, 25));
 		m_runQueryButton.setLocation(new Point(15, 12));
 		m_runQueryButton.setText("&Run Query");
 		m_runQueryButton.setSelection(true);
 		
-		Control[] widgets = m_shell.getChildren();
-
-		for (int i = 0; i < widgets.length; i++) 
-		{ 
-			widgets[i].addKeyListener(new KeyListener()
+		
+		addKeyListener(m_shell, new KeyListener()
+		{
+			public void keyPressed(KeyEvent e)
 			{
-				public void keyPressed(KeyEvent e)
-				{
-					if (e.keyCode == SWT.ESC)
-						cancelClose();
-				}
-				
-				public void keyReleased(KeyEvent e)
-				{				
-				}
-			});
-		}
+				if (e.keyCode == SWT.ESC)
+					cancelClose();
+			}
+			
+			public void keyReleased(KeyEvent e)
+			{				
+			}
+		});
+		
 		
 		Util.centerWindow(m_shell, parent);		
 	}
 	
+	protected void addKeyListener(Composite composite, KeyListener listener)
+	{
+		Control[] widgets = composite.getChildren();
+
+		for (int i = 0; i < widgets.length; i++) 
+		{ 
+			widgets[i].addKeyListener(listener);
+			
+			if (widgets[i] instanceof Composite)
+			{
+				addKeyListener((Composite)widgets[i], listener);
+			}
+		}		
+	}
+	
 	protected void cancelClose()
 	{
-		m_shell.close();
+		if (MessageDialog.openQuestion(m_shell, "Close confirmation", "Do you want to close query window?"))
+		{
+			m_shell.close();
+		}
 	}
 
 	private void createComboDestinationSnapshot()
 	{
 		m_comboDestinationSnapshot = new Combo(m_shell, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.V_SCROLL);
 		m_comboDestinationSnapshot.setLocation(new Point(145, 25));
-		m_comboDestinationSnapshot.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_comboDestinationSnapshot.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_comboDestinationSnapshot.setText("");
 		m_comboDestinationSnapshot.setToolTipText("Snapshot where to put results of this query into");
 		m_comboDestinationSnapshot.setVisibleItemCount(10);
-		m_comboDestinationSnapshot.setSize(new Point(253, 24));
+		m_comboDestinationSnapshot.setSize(new Point(253, 18));
 		m_comboDestinationSnapshot.addSelectionListener(new SelectionListener()
 		{
 			public void widgetSelected(SelectionEvent e)
@@ -179,7 +196,7 @@ public class SymbolQueryDialog
 	private void createQueryParamsTabFolder()
 	{
 		m_queryParamsTabFolder = new TabFolder(m_shell, SWT.NONE);
-		m_queryParamsTabFolder.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_queryParamsTabFolder.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_queryParamsTabFolder.setLocation(new Point(15, 85));
 		m_queryParamsTabFolder.setSize(new Point(610, 376));
 		createNamespacesTab();
@@ -209,6 +226,7 @@ public class SymbolQueryDialog
 		m_namespaceFilterTable = new Table(m_namespacesTab, SWT.BORDER | SWT.FULL_SELECTION);
 		m_namespaceFilterTable.setHeaderVisible(false);
 		m_namespaceFilterTable.setLinesVisible(true);
+		m_namespaceFilterTable.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_namespaceFilterTable.setBounds(new Rectangle(15, 57, 476, 272));
 		new TableColumn(m_namespaceFilterTable, SWT.LEFT).setWidth(
 			m_namespaceFilterTable.getBounds().width - 2 * m_namespaceFilterTable.getBorderWidth());
@@ -218,13 +236,13 @@ public class SymbolQueryDialog
 		m_addNamespaceFilterButton.setText("A&dd filter...");
 		m_addNamespaceFilterButton.setLocation(new Point(502, 57));
 		m_addNamespaceFilterButton.setSize(new Point(88, 25));
-		m_addNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_addNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_addNamespaceFilterButton.addSelectionListener(new SelectionAdapter()
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
 				InputDialog input = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
-						"Filter", "&Namespace Filter:", "", false);
+						"Filter", "&Namespace Filter:", "", new QueryValidator());
 				input.open();
 				String val = input.getValue();
 				
@@ -241,7 +259,7 @@ public class SymbolQueryDialog
 		m_removeNamespaceFilterButton.setText("Re&move filter");
 		m_removeNamespaceFilterButton.setLocation(new Point(502, 152));
 		m_removeNamespaceFilterButton.setSize(new Point(88, 25));
-		m_removeNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_removeNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_removeNamespaceFilterButton.addSelectionListener(new SelectionAdapter()
 		{
 			public void widgetSelected(SelectionEvent e)
@@ -263,7 +281,7 @@ public class SymbolQueryDialog
 			}
 		});
 		m_editNamespaceFilterButton.setToolTipText("Login");
-		m_editNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_editNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_editNamespaceFilterButton.setSize(new Point(88, 25));
 		m_editNamespaceFilterButton.setLocation(new Point(502, 104));
 		m_editNamespaceFilterButton.setText("&Edit filter...");
@@ -281,7 +299,7 @@ public class SymbolQueryDialog
 				else
 				{
 					InputDialog input = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
-						"Filter", "&Namespace Filter:", m_namespaceFilterTable.getItem(sel).getText() ,false);
+						"Filter", "&Namespace Filter:", m_namespaceFilterTable.getItem(sel).getText(), new QueryValidator());
 					input.open();
 					String val = input.getValue();
 					
@@ -292,12 +310,12 @@ public class SymbolQueryDialog
 				}
 			}
 		});
-		m_namespaceFilterLabel.setBounds(new Rectangle(15, 41, 140, 16));
-		m_namespaceFilterLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
+		m_namespaceFilterLabel.setBounds(new Rectangle(15, 41, 115, 16));
+		m_namespaceFilterLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_namespaceFilterLabel.setText("Namespace &filter list:");
-		m_allNamespacesCheckBox.setBounds(new Rectangle(15, 12, 121, 16));
+		m_allNamespacesCheckBox.setBounds(new Rectangle(15, 12, 93, 16));
 		m_allNamespacesCheckBox.setText("&All Namespaces");
-		m_allNamespacesCheckBox.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
+		m_allNamespacesCheckBox.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_allNamespacesCheckBox.setSelection(false);
 		m_allNamespacesCheckBox.addSelectionListener(new SelectionAdapter()
 		{
@@ -331,9 +349,9 @@ public class SymbolQueryDialog
 		m_allTypesCheckBox = new Button(m_typesTab, SWT.CHECK | SWT.RIGHT);
 		m_allTypesCheckBox.setSelection(false);
 		m_allTypesCheckBox.setText("&All Types");
-		m_allTypesCheckBox.setSize(new Point(83, 16));
+		m_allTypesCheckBox.setSize(new Point(64, 16));
 		m_allTypesCheckBox.setLocation(new Point(15, 12));
-		m_allTypesCheckBox.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
+		m_allTypesCheckBox.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_allTypesCheckBox.addSelectionListener(new SelectionAdapter()
 		{
 			public void widgetSelected(SelectionEvent e)
@@ -349,6 +367,7 @@ public class SymbolQueryDialog
 		m_typeFilterTable = new Table(m_typesTab, SWT.BORDER | SWT.FULL_SELECTION);
 		m_typeFilterTable.setHeaderVisible(true);
 		m_typeFilterTable.setLinesVisible(true);
+		m_typeFilterTable.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_typeFilterTable.setBounds(new Rectangle(15, 57, 476, 272));
 		double width = m_typeFilterTable.getBounds().width - 2 * m_typeFilterTable.getBorderWidth(); 
 		TableColumn column = new TableColumn(m_typeFilterTable, SWT.LEFT, 0);
@@ -374,24 +393,71 @@ public class SymbolQueryDialog
 		m_typeFilterLabel = new Label(m_typesTab, SWT.NONE);
 		m_typeFilterLabel.setBounds(new Rectangle(15, 40, 98, 16));
 		m_typeFilterLabel.setText("&Type filter list:");
-		m_typeFilterLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
+		m_typeFilterLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_addTypeFilterButton = new Button(m_typesTab, SWT.NONE);
 		m_addTypeFilterButton.setBounds(new Rectangle(502, 57, 88, 25));
 		m_addTypeFilterButton.setToolTipText("Login");
 		m_addTypeFilterButton.setSelection(true);
 		m_addTypeFilterButton.setText("A&dd filter...");
-		m_addTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_addTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_editTypeFilterButton = new Button(m_typesTab, SWT.NONE);
 		m_editTypeFilterButton.setBounds(new Rectangle(502, 104, 88, 25));
 		m_editTypeFilterButton.setToolTipText("Login");
 		m_editTypeFilterButton.setSelection(true);
 		m_editTypeFilterButton.setText("&Edit filter...");
-		m_editTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_editTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_removeTypeFilterButton = new Button(m_typesTab, SWT.NONE);
 		m_removeTypeFilterButton.setBounds(new Rectangle(502, 152, 88, 25));
 		m_removeTypeFilterButton.setToolTipText("Login");
 		m_removeTypeFilterButton.setSelection(true);
 		m_removeTypeFilterButton.setText("Re&move filter");
-		m_removeTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_removeTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
+	}
+	
+	class QueryValidator extends InputDialog.MandatoryFieldValidator
+	{
+		public QueryValidator()
+		{
+			super("Please enter filter");
+		}
+		
+		public boolean validate(Shell shell, String value)
+		{
+			if (!super.validate(shell, value))
+			{
+				return false;
+			}
+			else
+			{
+				String[] names = value.split("/");
+				
+				for (String name : names)
+				{
+					if (name.length() == 0)
+					{
+						MessageDialog.openError(shell, "Incorrect input", "Namespace section cannot be empty (like \"com//abc\")");
+						return false;
+					}
+					
+					if (name.equals("**"))
+					{
+						continue;
+					}
+					
+					try
+					{
+						Pattern.compile(name);
+					}
+					catch(PatternSyntaxException e)
+					{
+						MessageDialog.openError(shell, "Incorrect input",
+							"Pattern \"" + name + "\" has the following error: " + e.getMessage());
+						return false;
+					}
+				}
+				
+				return true;
+			}
+		}
 	}
 }

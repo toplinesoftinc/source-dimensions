@@ -19,7 +19,6 @@ import com.sourcedimensions.client.views.ProjectView.FolderObject;
 
 public class RenameFolderAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate
 {
-
 	protected IStructuredSelection m_selection;
 	protected IWorkbenchWindow m_window;
 
@@ -37,7 +36,7 @@ public class RenameFolderAction implements IWorkbenchWindowActionDelegate, IObje
 		while (true)
 		{
 			InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), 
-				shell, "Folder", "&Folder name:", name, false);
+				shell, "Folder", "&Folder name:", name, new InputDialog.MandatoryFieldValidator("Please enter folder name"));
 			dialog.open();
 			
 			name = dialog.getValue();

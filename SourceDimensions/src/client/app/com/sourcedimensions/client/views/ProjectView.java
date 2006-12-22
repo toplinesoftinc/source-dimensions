@@ -18,6 +18,8 @@ import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Display;
 
 
 public class ProjectView extends ViewPart 
@@ -317,6 +319,7 @@ public class ProjectView extends ViewPart
 	public void createPartControl(Composite parent) 
 	{
 		m_viewer = new TreeViewer(parent, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		m_viewer.getTree().setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_drillDownAdapter = new DrillDownAdapter(m_viewer);
 		m_viewer.setContentProvider(new ViewContentProvider());
 		getSite().setSelectionProvider(m_viewer);

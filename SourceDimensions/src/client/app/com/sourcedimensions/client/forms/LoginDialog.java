@@ -59,27 +59,27 @@ public class LoginDialog
 			m_shell.setParent(parent);
 		m_shell.setText("Login");
 		m_shell.setLayout(null);
-		m_shell.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_shell.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_shell.setVisible(false);
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
-		m_shell.setSize(new Point(293, 163));
+		m_shell.setSize(new Point(269, 151));
 		m_userNameLabel = new Label(m_shell, SWT.NONE);
 		m_userNameLabel.setText("U&ser name:");
-		m_userNameLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
-		m_userNameLabel.setBounds(new Rectangle(16, 24, 78, 16));
+		m_userNameLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
+		m_userNameLabel.setBounds(new Rectangle(17, 19, 60, 15));
 		m_userNameText = new Text(m_shell, SWT.BORDER | SWT.LEFT);
 		m_passwordLabel = new Label(m_shell, SWT.NONE);
-		m_passwordLabel.setBounds(new Rectangle(17, 59, 68, 16));
-		m_passwordLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
+		m_passwordLabel.setBounds(new Rectangle(18, 47, 54, 14));
+		m_passwordLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_passwordLabel.setText("&Password:");
-		m_userNameText.setBounds(new Rectangle(96, 21, 170, 19));
-		m_userNameText.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_userNameText.setBounds(new Rectangle(78, 16, 167, 18));
+		m_userNameText.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_passwordText = new Text(m_shell, SWT.BORDER | SWT.PASSWORD | SWT.LEFT);
-		m_passwordText.setBounds(new Rectangle(96, 56, 170, 19));
-		m_passwordText.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_passwordText.setBounds(new Rectangle(78, 43, 167, 18));
+		m_passwordText.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_loginButton = new Button(m_shell, SWT.NONE);
-		m_loginButton.setBounds(new Rectangle(41, 96, 88, 25));
-		m_loginButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_loginButton.setBounds(new Rectangle(31, 84, 88, 25));
+		m_loginButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_loginButton.setSelection(true);
 		m_loginButton.setToolTipText("Login");
 		m_loginButton.setText("&Login");
@@ -132,10 +132,10 @@ public class LoginDialog
 
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_cancelButton.setText("&Cancel");
-		m_cancelButton.setLocation(new Point(153, 96));
+		m_cancelButton.setLocation(new Point(142, 84));
 		m_cancelButton.setSize(new Point(88, 25));
 		m_cancelButton.setToolTipText("Cancel");
-		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_cancelButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 

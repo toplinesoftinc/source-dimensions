@@ -65,13 +65,13 @@ public class WaitDialog
 		m_progressBar = new ProgressBar(m_shell, SWT.INDETERMINATE | SWT.SMOOTH | SWT.BORDER);
 		m_progressBar.setBounds(new Rectangle(19, 43, 329, 15));
 		m_waitLabel = new Label(m_shell, SWT.CENTER);
-		m_waitLabel.setBounds(new Rectangle(21, 15, 328, 23));
-		m_waitLabel.setFont(new Font(Display.getDefault(), "Times New Roman", 12, SWT.BOLD));
+		m_waitLabel.setBounds(new Rectangle(21, 20, 328, 18));
+		m_waitLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
 		m_waitLabel.setText("Connecting to server ...");
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_cancelButton.setLocation(new Point(139, 67));
 		m_cancelButton.setText("&Cancel");
-		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
+		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_cancelButton.setSize(new Point(88, 25));
 		m_cancelButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() 
 		{

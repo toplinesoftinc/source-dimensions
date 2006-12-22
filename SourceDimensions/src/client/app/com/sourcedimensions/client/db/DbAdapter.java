@@ -316,10 +316,11 @@ public class DbAdapter
 			
 			Integer parent_id = rs.getInt("parent_id");
 
-			ps = c.prepareStatement("SELECT * FROM folder WHERE parent_id = ? and name = ?");
+			ps = c.prepareStatement("SELECT * FROM folder WHERE parent_id = ? and name = ? and id <> ?");
 			
 			ps.setInt(1, parent_id);			
 			ps.setString(2, name);
+			ps.setInt(3, id);
 			
 			rs = ps.executeQuery();
 			

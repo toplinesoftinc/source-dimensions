@@ -38,7 +38,7 @@ public class CreateFolderAction implements IWorkbenchWindowActionDelegate, IObje
 		while (true)
 		{
 			InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), shell, 
-				"Folder", "&Folder name:", name, false);
+				"Folder", "&Folder name:", name, new InputDialog.MandatoryFieldValidator("Please enter folder name"));
 			dialog.open();
 			
 			name = dialog.getValue();
