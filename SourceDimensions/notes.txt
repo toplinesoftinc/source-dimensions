@@ -12,3 +12,12 @@
      - openssl.exe x509 -out <client_certificate_filename> -outform pem -text -in <bin_cert_filename> -inform der
 
          ** NOTE: client certificate must be edited: all lines from beginning of the file till line "-----BEGIN CERTIFICATE-----" should be deleted.
+
+     - example of configuring SSL in configuration file "server.xml" (keystore file is located at "C:\" and has name ".keystore"):
+
+
+      <Connector protocol="org.apache.coyote.http11.Http11Protocol"
+               port="8443" SSLEnabled="true" 
+               maxThreads="150" scheme="https" secure="true" 
+               clientAuth="false" sslProtocol="TLS" 
+               keystoreFile="C:/.keystore" keystorePass="changeit"/>
