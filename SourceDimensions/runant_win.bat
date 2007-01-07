@@ -1,2 +1,2 @@
 call vcvars32.bat
-ant %1
+ant/bin/ant %1

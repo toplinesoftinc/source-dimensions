@@ -1,23 +1,87 @@
 1. Generation of pair keystore (for server) and respective client certificate (for WS client):
 
 
-     - keytool -genkey -alias <alias> -keyalg RSA -keystore <keystore_filename>
+     - Run "keytool -genkey -alias <alias> -keyalg RSA -keystore <keystore_filename>"
 
-         ** NOTE:  domain name must be specified when first/last name is requested.
-
-
-     - keytool -keystore <keystore_filename> -export -alias <alias> -file <bin_cert_filename>
-
-
-     - openssl.exe x509 -out <client_certificate_filename> -outform pem -text -in <bin_cert_filename> -inform der
-
-         ** NOTE: client certificate must be edited: all lines from beginning of the file till line "-----BEGIN CERTIFICATE-----" should be deleted.
-
-     - example of configuring SSL in configuration file "server.xml" (keystore file is located at "C:\" and has name ".keystore"):
+         ** NOTE1: domain name must be specified when first/last name is requested.
+                                      
+         ** NOTE2: utility "keytool.exe" is part of Java Runtime.
 
 
-      <Connector protocol="org.apache.coyote.http11.Http11Protocol"
+     - Run "keytool -keystore <keystore_filename> -export -alias <alias> -file <bin_cert_filename>"
+
+
+     - Run "openssl.exe x509 -out <client_certificate_filename> -outform pem -text -in <bin_cert_filename> -inform der"
+
+         ** NOTE1: client certificate must be edited: all lines from beginning of the file till line "-----BEGIN CERTIFICATE-----" should be deleted.
+
+         ** NOTE2: utility "openssl.exe" must be installed from "./thirdparty/openssl".
+
+
+     - Copy <client_certificate_filename> created in previous step into "./src/client/app/com/sourcedimensions/ws/consumer".
+
+     - Edit file ""./src/client/app/com/sourcedimensions/ws/consumer/ws-consumer.properties", setting parameter "CERT" to proper name of <client_certificate_filename>.
+
+     - Edit Tomcat configuratio file "server.xml" located in Tomcat installation folder. Example of configuration file is provided below (keystore file is located at "C:\" and has name ".keystore"):
+
+         <Connector protocol="org.apache.coyote.http11.Http11Protocol"
                port="8443" SSLEnabled="true" 
                maxThreads="150" scheme="https" secure="true" 
                clientAuth="false" sslProtocol="TLS" 
                keystoreFile="C:/.keystore" keystorePass="changeit"/>
+                                                                                                
+          ** NOTE: Ready keystore file ".keystore" is located at "./src/backend". There is also corresponding certificate file located in proper place for client. So just copy file "./src/backend/.keystore" to some place and edit Tomcat configuration file appropriately (see previous step above).
+
+
+
+
+2. Command-line compilation of backend under Windows.
+
+     
+     - Make sure batch file "vcvars32.bat" is available in PATH (The file specified environment variables for MS C++ compiler)
+
+     - Run batch "runant_win.bat" for compilation.
+
+
+
+
+3. Setting Eclipse environment.
+
+
+     - Import projects "Client" (located at "./src/client/app") and "Backend" ("./src/backend/core") into Eclipse workspace. Project "Backend" is used for backend-side debugging.
+
+     - Set "Compiler compliance level" at value 5.0 or higher (setting is available in Eclipse at "Window->Preferences->Java->Compiler").
+
+     - Set setting "Target platform" in Eclipse (at "Window->Preferences->Plug-in Development->Target Platform") to path "./src/client/lib".
+
+     - Use commands "Launch the product"/"Launch the product in Debug mode" in page of file "sourcedimensions.project" to run project.
+
+
+
+
+4. Backend debugging in Eclipse
+
+
+    - Import project "Backend" ("./src/backend/core") into Eclipse workspace if it is not done yet.
+
+
+    - Set debugging parameters in Tomcat. 
+                                                                                                             
+         WINDOWS: run "tomcat6w.exe" located in "bin" subdirectory of Tomcat installation. Go to tab "Java" and add two separate strings "-Xdebug" and "-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n" in multi-line text box "Java Options".
+
+         UNIX: Set environment variables JPDA_ADDRESS=8000 and JPDA_TRANSPORT=dt_socket and then start Tomcat using "catalina jpda start".
+
+
+    - Go to "Run->Debug->Remote Java Appliation" in Eclipse. Press button "New" and open tab "Connect". Enter name of debug configuration, choose project "Backend" for field "Project", connection type "Standard (Socket Attach)", set correct Host name and Port to "8000". Run the configuration before running client-side project in debugger.
+
+      ** NOTE: make sure check-box "Allow termination of remove VM" is NOT checked on tab "Connect" for debugging configuration screen.
+
+
+    - To disconnect from Tomcat debugging open perspective "Debug" in Eclipse, choose session in window "Debug", press right mouse button and choose "Disconnect".
+
+
+
+5. Web Service URL on client side.
+
+     - Edit file ""./src/client/app/com/sourcedimensions/ws/consumer/ws-consumer.properties", setting parameter "URL" to proper URL string and probably value of "SSLPORT" to correct value of SSL Port on server side. If parameter "SSLPORT" is NOT specified, HTTP is used instead of HTTPS protocol irrelevant of URL protocol part setting.
+

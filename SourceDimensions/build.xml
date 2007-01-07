@@ -1,7 +1,7 @@
 <project name="SourceDimensions" default="all" basedir=".">
 
 	<!-- Debug flag -->
-	<property name="debug" value="true"/>
+	<property name="debug" value="false"/>
 
 
         <property name="cpptasks.jar" value="${basedir}/ant/lib/cpptasks.jar"/>

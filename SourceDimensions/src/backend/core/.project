@@ -18,14 +18,14 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>app</name>
-			<type>2</type>
-			<location>C:/Projects/SourceDimensions/src/client/app</location>
-		</link>
-		<link>
 			<name>output</name>
 			<type>2</type>
 			<location>C:/Projects/SourceDimensions/output/backend</location>
+		</link>
+		<link>
+			<name>app</name>
+			<type>2</type>
+			<location>C:/Projects/SourceDimensions/src/client/app</location>
 		</link>
 	</linkedResources>
 </projectDescription>
