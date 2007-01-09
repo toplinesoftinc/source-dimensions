@@ -33,7 +33,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 public class SymbolQueryDialog
 {
-	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="0,-13"
+	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="-17,-30"
 	private Display m_display;  //  @jve:decl-index=0:
 	private Label m_destinationSnapshotLabel = null;
 	private Combo m_comboDestinationSnapshot = null;
@@ -400,6 +400,13 @@ public class SymbolQueryDialog
 		m_addTypeFilterButton.setSelection(true);
 		m_addTypeFilterButton.setText("A&dd filter...");
 		m_addTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
+		m_addTypeFilterButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e)
+			{
+				new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell).open();
+			}
+		});
 		m_editTypeFilterButton = new Button(m_typesTab, SWT.NONE);
 		m_editTypeFilterButton.setBounds(new Rectangle(502, 104, 88, 25));
 		m_editTypeFilterButton.setToolTipText("Login");

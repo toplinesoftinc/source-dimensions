@@ -12,6 +12,26 @@ public class Project
 	public boolean m_deleted = false;
 	public Set<Project> m_parents = new HashSet<Project>();
 	
+	public enum Language
+	{
+		JAVA14(0),
+		JAVA15(1),
+		CSHARP11(2),
+		CSHARP20(3);
+		
+		Language(int val)
+		{
+			value = val;
+		}
+		
+		private final int value;
+		
+		public int value()
+		{
+			return value;
+		}
+	}
+	
 	protected String[] langNames = 
 	{
 		"Java 1.4",
@@ -19,6 +39,11 @@ public class Project
 		"C# 1.1",
 		"C# 2.0"		
 	};
+
+	public Language getLanguage()
+	{
+		return Language.values()[m_language];
+	}	
 	
 	public String getLangName()
 	{

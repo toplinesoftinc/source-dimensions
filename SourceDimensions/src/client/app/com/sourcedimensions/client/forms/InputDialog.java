@@ -36,8 +36,7 @@ public class InputDialog
 				m_display.sleep();
 		}		
 	}
-	
-	
+		
 	private void createShell(Shell parent, String title, String label)
 	{
 		m_shell = new Shell(SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);

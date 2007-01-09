@@ -57,7 +57,7 @@ public class ProjectListDialog implements MouseListener
 	
 	public void createShell(Shell parent) 
 	{
-		m_shell = new Shell(SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM | SWT.BORDER);
+		m_shell = new Shell(SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
 		
 		if (parent != null)
 			m_shell.setParent(parent);
