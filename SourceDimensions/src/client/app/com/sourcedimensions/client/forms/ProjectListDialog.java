@@ -19,7 +19,7 @@ import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.model.Project;
 
-public class ProjectListDialog implements MouseListener
+public class ProjectListDialog
 {
 	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="-28,-6"
 	private ArrayList<Project> m_prjSet = new ArrayList<Project>();
@@ -29,25 +29,6 @@ public class ProjectListDialog implements MouseListener
 	private Project m_selected = null;  //  @jve:decl-index=0:
 	private Table m_prjList = null;
 
-	
-	public void mouseDoubleClick(MouseEvent e)
-	{
-		int sel = m_prjList.getSelectionIndex();
-		
-		if (sel != -1)
-		{
-			m_selected = m_prjSet.get(sel);
-			m_shell.close();
-		}
-	}
-	
-	public void mouseDown(MouseEvent e)
-	{
-	}
-	
-	public void mouseUp(MouseEvent e)
-	{	
-	}
 	
 	public ProjectListDialog(Display display, Shell parent)
 	{
@@ -99,7 +80,19 @@ public class ProjectListDialog implements MouseListener
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setToolTipText("Cancel");
 		m_prjList = new Table(m_shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.READ_ONLY);
-		m_prjList.addMouseListener(this);
+		m_prjList.addMouseListener(new MouseAdapter()
+		{
+			public void mouseDoubleClick(MouseEvent e)
+			{
+				int sel = m_prjList.getSelectionIndex();
+				
+				if (sel != -1)
+				{
+					m_selected = m_prjSet.get(sel);
+					m_shell.close();
+				}
+			}			
+		});
 		m_prjList.setHeaderVisible(true);
 		m_prjList.setLinesVisible(false);
 		m_prjList.setBounds(new Rectangle(19, 17, 424, 262));

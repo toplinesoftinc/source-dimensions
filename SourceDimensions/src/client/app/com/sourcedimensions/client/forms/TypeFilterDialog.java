@@ -1,7 +1,5 @@
 package com.sourcedimensions.client.forms;
 
-import java.awt.event.MouseListener;
-
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
@@ -13,7 +11,6 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableItem;
-
 import com.sourcedimensions.client.views.ProjectView;
 
 public class TypeFilterDialog 
