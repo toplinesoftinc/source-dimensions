@@ -242,7 +242,7 @@ public class SymbolQueryDialog
 			public void widgetSelected(SelectionEvent e)
 			{
 				InputDialog input = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
-						"Filter", "&Namespace Filter:", "", new QueryValidator());
+						"Filter", "&Namespace Filter:", "", new NamespaceFilterValidator());
 				input.open();
 				String val = input.getValue();
 				
@@ -299,7 +299,7 @@ public class SymbolQueryDialog
 				else
 				{
 					InputDialog input = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
-						"Filter", "&Namespace Filter:", m_namespaceFilterTable.getItem(sel).getText(), new QueryValidator());
+						"Filter", "&Namespace Filter:", m_namespaceFilterTable.getItem(sel).getText(), new NamespaceFilterValidator());
 					input.open();
 					String val = input.getValue();
 					
@@ -312,7 +312,7 @@ public class SymbolQueryDialog
 		});
 		m_namespaceFilterLabel.setBounds(new Rectangle(15, 41, 115, 16));
 		m_namespaceFilterLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_namespaceFilterLabel.setText("Namespace &filter list:");
+		m_namespaceFilterLabel.setText("Namespace &Filter List:");
 		m_allNamespacesCheckBox.setBounds(new Rectangle(15, 12, 93, 16));
 		m_allNamespacesCheckBox.setText("&All Namespaces");
 		m_allNamespacesCheckBox.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
@@ -392,7 +392,7 @@ public class SymbolQueryDialog
 		column.setText("Base types");
 		m_typeFilterLabel = new Label(m_typesTab, SWT.NONE);
 		m_typeFilterLabel.setBounds(new Rectangle(15, 40, 98, 16));
-		m_typeFilterLabel.setText("&Type filter list:");
+		m_typeFilterLabel.setText("&Type Filter List:");
 		m_typeFilterLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_addTypeFilterButton = new Button(m_typesTab, SWT.NONE);
 		m_addTypeFilterButton.setBounds(new Rectangle(502, 57, 88, 25));
@@ -421,9 +421,9 @@ public class SymbolQueryDialog
 		m_removeTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 	}
 	
-	class QueryValidator extends InputDialog.MandatoryFieldValidator
+	class NamespaceFilterValidator extends InputDialog.MandatoryFieldValidator
 	{
-		public QueryValidator()
+		public NamespaceFilterValidator()
 		{
 			super("Please enter filter");
 		}

@@ -19,7 +19,7 @@ public class InputDialog
 {
 	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="10,10"
 	private Button m_cancelButton;
-	private Button m_OkButton;
+	private Button m_okButton;
 	private Text m_textValue;
 	private Label m_textLabel;
 	private Validator m_validator;  //  @jve:decl-index=0:
@@ -56,13 +56,13 @@ public class InputDialog
 		m_textValue.setLocation(new Point(13, 33));
 		if (m_value != null)
 			m_textValue.setText(m_value);
-		m_OkButton = new Button(m_shell, SWT.NONE);
-		m_OkButton.setToolTipText("Cancel");
-		m_OkButton.setText("O&k");
-		m_OkButton.setLocation(new Point(47, 68));
-		m_OkButton.setSize(new Point(88, 25));
-		m_OkButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_OkButton.addSelectionListener(new SelectionAdapter()
+		m_okButton = new Button(m_shell, SWT.NONE);
+		m_okButton.setToolTipText("Cancel");
+		m_okButton.setText("O&k");
+		m_okButton.setLocation(new Point(47, 68));
+		m_okButton.setSize(new Point(88, 25));
+		m_okButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
+		m_okButton.addSelectionListener(new SelectionAdapter()
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
@@ -89,7 +89,7 @@ public class InputDialog
 			}
 		});
 
-		m_shell.setDefaultButton(m_OkButton);
+		m_shell.setDefaultButton(m_okButton);
 		
 		Control[] widgets = m_shell.getChildren();
 
