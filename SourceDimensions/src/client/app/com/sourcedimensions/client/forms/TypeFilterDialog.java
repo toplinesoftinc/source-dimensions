@@ -128,19 +128,73 @@ public class TypeFilterDialog
 		m_addBaseTypeButton.setText("A&dd filter...");
 		m_addBaseTypeButton.setSize(new Point(88, 25));
 		m_addBaseTypeButton.addSelectionListener(new SelectionAdapter()
-		{
-			public void widgetSelected(SelectionEvent e)
-			{
+		{   
+			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
+			{    
+				BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, "");
+				input.open();
+				String val = input.getValue();
+				
+				if (val != null)
+				{
+					new TableItem(m_baseTypesTable, SWT.NONE).setText(0, val);
+				}
+				
 			}
+		
 		});
 		m_editBaseTypeButton = new Button(m_shell, SWT.NONE);
 		m_editBaseTypeButton.setLocation(new Point(328, 228));
 		m_editBaseTypeButton.setText("&Edit filter...");
 		m_editBaseTypeButton.setSize(new Point(88, 25));
+		m_editBaseTypeButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				int sel = m_baseTypesTable.getSelectionIndex();
+				
+				if (sel == -1)
+				{
+					MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
+				}
+				else
+				{
+					BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
+						m_baseTypesTable.getItem(sel).getText());
+					input.open();
+					String val = input.getValue();
+					
+					if (val != null)
+					{
+						m_baseTypesTable.getItem(sel).setText(val);
+					}							
+				}
+			}
+		});
 		m_removeBaseTypeButton = new Button(m_shell, SWT.NONE);
 		m_removeBaseTypeButton.setLocation(new Point(328, 273));
 		m_removeBaseTypeButton.setText("&Remove filter");
 		m_removeBaseTypeButton.setSize(new Point(88, 25));
+		m_removeBaseTypeButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				int sel = m_baseTypesTable.getSelectionIndex();
+				
+				if (sel == -1)
+				{
+					MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
+				}
+				else
+				{
+					if (MessageDialog.openQuestion(m_shell, "Deletion confirmation", 
+						"Are you sure you want to delete selected filter?"))
+					{
+						m_baseTypesTable.remove(sel);
+					}
+				}				
+			}
+		});
 		m_okButton = new Button(m_shell, SWT.NONE);
 		m_okButton.setLocation(new Point(328, 23));
 		m_okButton.setText("O&k");
@@ -195,8 +249,7 @@ public class TypeFilterDialog
 			});
 		}
 		
-		Util.centerWindow(m_shell, parent);		
-		
+		Util.centerWindow(m_shell, parent);				
 	}
 	
 	public void open()

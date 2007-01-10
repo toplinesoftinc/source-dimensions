@@ -25,6 +25,16 @@ public class InputDialog
 	private Validator m_validator;  //  @jve:decl-index=0:
 	private Display m_display;  //  @jve:decl-index=0:
 	private static String m_value;  //  @jve:decl-index=0:
+
+
+	public InputDialog(Display display, Shell parent, String title, 
+		String label, String text, Validator validator)
+	{
+		m_display = display;
+		m_value = text;
+		m_validator = validator;
+		createShell(parent, title, label);
+	}	
 	
 	public void open()
 	{
@@ -111,17 +121,6 @@ public class InputDialog
 		
 		Util.centerWindow(m_shell, parent);		
 	}
-
-
-	public InputDialog(Display display, Shell parent, String title, 
-		String label, String text, Validator validator)
-	{
-		m_display = display;
-		m_value = text;
-		m_validator = validator;
-		createShell(parent, title, label);
-	}
-	
 
 	public String getValue()
 	{
