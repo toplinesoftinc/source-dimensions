@@ -2,7 +2,7 @@ package com.sourcedimensions.client.forms;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
+import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -127,16 +127,12 @@ public class SymbolQueryDialog
 		m_runQueryButton.setSelection(true);
 		
 		
-		addKeyListener(m_shell, new KeyListener()
+		addKeyListener(m_shell, new KeyAdapter()
 		{
 			public void keyPressed(KeyEvent e)
 			{
 				if (e.keyCode == SWT.ESC)
 					cancelClose();
-			}
-			
-			public void keyReleased(KeyEvent e)
-			{				
 			}
 		});
 		

@@ -105,16 +105,12 @@ public class InputDialog
 
 		for (int i = 0; i < widgets.length; i++) 
 		{ 
-			widgets[i].addKeyListener(new KeyListener()
+			widgets[i].addKeyListener(new KeyAdapter()
 			{
 				public void keyPressed(KeyEvent e)
 				{
 					if (e.keyCode == SWT.ESC)
 						cancelClose();
-				}
-				
-				public void keyReleased(KeyEvent e)
-				{				
 				}
 			});
 		}

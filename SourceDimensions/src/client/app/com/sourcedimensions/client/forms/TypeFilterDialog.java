@@ -1,11 +1,9 @@
 package com.sourcedimensions.client.forms;
 
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
+import java.util.ArrayList;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -21,10 +19,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-
 import com.sourcedimensions.client.Util;
-import com.sourcedimensions.client.forms.InputDialog.MandatoryFieldValidator;
-import com.sourcedimensions.client.forms.SymbolQueryDialog.NamespaceFilterValidator;
 import com.sourcedimensions.client.views.ProjectView;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
@@ -36,17 +31,19 @@ public class TypeFilterDialog
 	private Display m_display;
 	private Table m_typeCategoryList;
 	private Label m_typeCategoryLabel;
-	private Label m_modifierListLabel = null;
-	private Table m_modifiersList = null;
-	private Label m_typeNameLabel = null;
-	private Text m_typeNameText = null;
-	private Label m_baseTypesLabel = null;
-	private Table m_baseTypesTable = null;
-	private Button m_addBaseTypeButton = null;
-	private Button m_editBaseTypeButton = null;
-	private Button m_removeBaseTypeButton = null;
-	private Button m_okButton = null;
-	private Button m_cancelButton = null;
+	private Label m_modifierListLabel;
+	private Table m_modifiersList;
+	private Label m_typeNameLabel;
+	private Text m_typeNameText;
+	private Label m_baseTypesLabel;
+	private Table m_baseTypesTable;
+	private Button m_addBaseTypeButton;
+	private Button m_editBaseTypeButton;
+	private Button m_removeBaseTypeButton;
+	private Button m_okButton;
+	private Button m_cancelButton;
+	private ArrayList<BaseTypeFilterDialog.TypeCategory> m_baseTypeCategories = 
+		new ArrayList<BaseTypeFilterDialog.TypeCategory>();  //  @jve:decl-index=0:
 	
 	public TypeFilterDialog(Display display, Shell parent)
 	{
@@ -63,13 +60,13 @@ public class TypeFilterDialog
 		
 		m_shell.setText("Type Filter");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
-		m_shell.setSize(new Point(429, 392));
+		m_shell.setSize(new Point(454, 392));
 		m_shell.setLayout(null);
 		m_typeCategoryLabel = new Label(m_shell, SWT.NONE);
 		m_typeCategoryList = new Table(m_shell, SWT.BORDER | SWT.SINGLE | SWT.CHECK | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
 		m_typeCategoryList.setHeaderVisible(false);
 		m_typeCategoryList.setLinesVisible(false);
-		m_typeCategoryList.setBounds(new Rectangle(17, 23, 106, 72));
+		m_typeCategoryList.setBounds(new Rectangle(17, 22, 106, 72));
 		m_typeCategoryList.addMouseListener(new CheckListDblClickMouseAdapter()); 
 		m_typeCategoryLabel.setBounds(new Rectangle(17, 8, 89, 13));
 		m_typeCategoryLabel.setText("&Type Categories:");
@@ -91,60 +88,61 @@ public class TypeFilterDialog
 		}
 
 		m_modifierListLabel = new Label(m_shell, SWT.NONE);
-		m_modifierListLabel.setBounds(new Rectangle(220, 8, 56, 13));
+		m_modifierListLabel.setBounds(new Rectangle(231, 8, 56, 13));
 		m_modifierListLabel.setText("&Modifiers:");
 
 		m_modifiersList = new Table(m_shell, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
 		m_modifiersList.setHeaderVisible(false);
 		m_modifiersList.setLinesVisible(false);
-		m_modifiersList.setBounds(new Rectangle(220, 23, 100, 136));
+		m_modifiersList.setBounds(new Rectangle(231, 22, 100, 136));
 		m_modifiersList.addMouseListener(new CheckListDblClickMouseAdapter());
 
 		m_typeNameLabel = new Label(m_shell, SWT.NONE);
-		m_typeNameLabel.setBounds(new Rectangle(17, 126, 101, 13));
+		m_typeNameLabel.setBounds(new Rectangle(17, 125, 101, 13));
 		m_typeNameLabel.setText("Type &Name Filter:");
 		m_typeNameText = new Text(m_shell, SWT.BORDER);
-		m_typeNameText.setBounds(new Rectangle(17, 140, 194, 19));
+		m_typeNameText.setBounds(new Rectangle(17, 139, 201, 19));
 		m_baseTypesLabel = new Label(m_shell, SWT.NONE);
 		m_baseTypesLabel.setBounds(new Rectangle(18, 172, 110, 13));
 		m_baseTypesLabel.setText("&Base Types Filter List:");
 		m_baseTypesTable = new Table(m_shell, SWT.BORDER | SWT.FULL_SELECTION);
 		m_baseTypesTable.setHeaderVisible(true);
 		m_baseTypesTable.setLinesVisible(true);
-		m_baseTypesTable.setBounds(new Rectangle(17, 186, 303, 162));
+		m_baseTypesTable.setBounds(new Rectangle(17, 186, 315, 162));
 		double width = m_baseTypesTable.getBounds().width - 2 * m_baseTypesTable.getBorderWidth(); 
 		TableColumn column = new TableColumn(m_baseTypesTable, SWT.LEFT, 0);
-		column.setWidth((int)(0.6 * width));
+		column.setWidth((int)(0.7 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Name Filter");
 		column = new TableColumn(m_baseTypesTable, SWT.LEFT, 1);
-		column.setWidth((int)(0.4 * width));
+		column.setWidth((int)(0.3 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Categories");
+		column.setText("Category");
 		m_addBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_addBaseTypeButton.setLocation(new Point(328, 186));
+		m_addBaseTypeButton.setLocation(new Point(346, 185));
 		m_addBaseTypeButton.setText("A&dd filter...");
 		m_addBaseTypeButton.setSize(new Point(88, 25));
 		m_addBaseTypeButton.addSelectionListener(new SelectionAdapter()
 		{   
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
 			{    
-				BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, "");
+				BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
 				input.open();
 				String val = input.getValue();
 				
 				if (val != null)
 				{
-					new TableItem(m_baseTypesTable, SWT.NONE).setText(0, val);
-				}
-				
-			}
-		
+					TableItem item = new TableItem(m_baseTypesTable, SWT.NONE);
+					item.setText(0, val);
+					item.setText(1, input.getTypeCategoryName());
+					m_baseTypeCategories.add(input.getTypeCategory().value(), input.getTypeCategory());
+				}				
+			}		
 		});
 		m_editBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_editBaseTypeButton.setLocation(new Point(328, 228));
+		m_editBaseTypeButton.setLocation(new Point(346, 227));
 		m_editBaseTypeButton.setText("&Edit filter...");
 		m_editBaseTypeButton.setSize(new Point(88, 25));
 		m_editBaseTypeButton.addSelectionListener(new SelectionAdapter() 
@@ -160,19 +158,23 @@ public class TypeFilterDialog
 				else
 				{
 					BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-						m_baseTypesTable.getItem(sel).getText());
+						m_baseTypesTable.getItem(sel).getText(0), m_baseTypeCategories.get(sel));
+					
 					input.open();
 					String val = input.getValue();
 					
 					if (val != null)
 					{
-						m_baseTypesTable.getItem(sel).setText(val);
+						TableItem item = m_baseTypesTable.getItem(sel);
+						item.setText(0, val);
+						item.setText(1, input.getTypeCategoryName());
+						m_baseTypeCategories.set(sel, input.getTypeCategory());
 					}							
 				}
 			}
 		});
 		m_removeBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_removeBaseTypeButton.setLocation(new Point(328, 273));
+		m_removeBaseTypeButton.setLocation(new Point(346, 272));
 		m_removeBaseTypeButton.setText("&Remove filter");
 		m_removeBaseTypeButton.setSize(new Point(88, 25));
 		m_removeBaseTypeButton.addSelectionListener(new SelectionAdapter() 
@@ -196,11 +198,11 @@ public class TypeFilterDialog
 			}
 		});
 		m_okButton = new Button(m_shell, SWT.NONE);
-		m_okButton.setLocation(new Point(328, 23));
+		m_okButton.setLocation(new Point(346, 22));
 		m_okButton.setText("O&k");
 		m_okButton.setSize(new Point(88, 25));
 		m_cancelButton = new Button(m_shell, SWT.NONE);
-		m_cancelButton.setLocation(new Point(328, 63));
+		m_cancelButton.setLocation(new Point(346, 62));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
 		m_cancelButton.addSelectionListener(new SelectionAdapter() 
@@ -235,16 +237,12 @@ public class TypeFilterDialog
 
 		for (int i = 0; i < widgets.length; i++) 
 		{ 
-			widgets[i].addKeyListener(new KeyListener()
+			widgets[i].addKeyListener(new KeyAdapter()
 			{
 				public void keyPressed(KeyEvent e)
 				{
 					if (e.keyCode == SWT.ESC)
 						m_shell.close();
-				}
-				
-				public void keyReleased(KeyEvent e)
-				{				
 				}
 			});
 		}
