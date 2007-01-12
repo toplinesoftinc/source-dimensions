@@ -1,6 +1,9 @@
 package com.sourcedimensions.client.forms;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
@@ -44,6 +47,53 @@ public class TypeFilterDialog
 	private Button m_cancelButton;
 	private ArrayList<BaseTypeFilterDialog.TypeCategory> m_baseTypeCategories = 
 		new ArrayList<BaseTypeFilterDialog.TypeCategory>();  //  @jve:decl-index=0:
+
+	public enum TypeCategoryFlag
+	{
+		CLASS(1),
+		INTERFACE(2),
+		ENUM(4),
+		ANNOTATION(8),
+		STRUCT(16);
+		
+		TypeCategoryFlag(int val)
+		{
+			value = val;
+		}
+		
+		private final int value;
+		
+		public int value()
+		{
+			return value;
+		}		
+	}
+	
+	public enum ModifierFlag
+	{
+		PUBLIC(1),
+		PROTECTED(2),
+		PRIVATE(4),
+		ABSTRACT(8),
+		STATIC(16),
+		FINAL(32),
+		STRICTFP(64),
+		NEW(128),
+		INTERNAL(256),
+		SEALED(512);
+		
+		ModifierFlag(int val)
+		{
+			value = val;
+		}
+		
+		private final int value;
+		
+		public int value()
+		{
+			return value;
+		}		
+	}
 	
 	public TypeFilterDialog(Display display, Shell parent)
 	{
@@ -109,14 +159,21 @@ public class TypeFilterDialog
 		m_baseTypesTable.setHeaderVisible(true);
 		m_baseTypesTable.setLinesVisible(true);
 		m_baseTypesTable.setBounds(new Rectangle(17, 186, 315, 162));
+		m_baseTypesTable.addMouseListener(new MouseAdapter()
+		{
+			public void mouseDoubleClick(MouseEvent e)
+			{
+				editBaseType();
+			}			
+		});
 		double width = m_baseTypesTable.getBounds().width - 2 * m_baseTypesTable.getBorderWidth(); 
 		TableColumn column = new TableColumn(m_baseTypesTable, SWT.LEFT, 0);
-		column.setWidth((int)(0.7 * width));
+		column.setWidth((int)(0.65 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Name Filter");
 		column = new TableColumn(m_baseTypesTable, SWT.LEFT, 1);
-		column.setWidth((int)(0.3 * width));
+		column.setWidth((int)(0.35 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Category");
@@ -137,7 +194,7 @@ public class TypeFilterDialog
 					TableItem item = new TableItem(m_baseTypesTable, SWT.NONE);
 					item.setText(0, val);
 					item.setText(1, input.getTypeCategoryName());
-					m_baseTypeCategories.add(input.getTypeCategory().value(), input.getTypeCategory());
+					m_baseTypeCategories.add(input.getTypeCategory());
 				}				
 			}		
 		});
@@ -149,28 +206,7 @@ public class TypeFilterDialog
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				int sel = m_baseTypesTable.getSelectionIndex();
-				
-				if (sel == -1)
-				{
-					MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
-				}
-				else
-				{
-					BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-						m_baseTypesTable.getItem(sel).getText(0), m_baseTypeCategories.get(sel));
-					
-					input.open();
-					String val = input.getValue();
-					
-					if (val != null)
-					{
-						TableItem item = m_baseTypesTable.getItem(sel);
-						item.setText(0, val);
-						item.setText(1, input.getTypeCategoryName());
-						m_baseTypeCategories.set(sel, input.getTypeCategory());
-					}							
-				}
+				editBaseType();
 			}
 		});
 		m_removeBaseTypeButton = new Button(m_shell, SWT.NONE);
@@ -201,6 +237,46 @@ public class TypeFilterDialog
 		m_okButton.setLocation(new Point(346, 22));
 		m_okButton.setText("O&k");
 		m_okButton.setSize(new Point(88, 25));
+		m_okButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				String val = m_typeNameText.getText();
+				
+				if (val.length() == 0)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
+					return;
+				}
+
+				String[] names = val.split("/");
+				
+				for (String name : names)
+				{
+					if (name.length() == 0)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input", "Namespace section cannot be empty (like \"com//abc\")");
+						return;
+					}
+					
+					if (name.equals("**"))
+					{
+						continue;
+					}
+					
+					try
+					{
+						Pattern.compile(name);
+					}
+					catch(PatternSyntaxException ex)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",
+							"Pattern \"" + name + "\" has the following error: " + ex.getMessage());
+						return;
+					}
+				}				
+			}
+		});
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_cancelButton.setLocation(new Point(346, 62));
 		m_cancelButton.setText("&Cancel");
@@ -261,6 +337,32 @@ public class TypeFilterDialog
 		}		
 	}
 	
+	private void editBaseType()
+	{
+		int sel = m_baseTypesTable.getSelectionIndex();
+		
+		if (sel == -1)
+		{
+			MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
+		}
+		else
+		{
+			BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
+				m_baseTypesTable.getItem(sel).getText(0), m_baseTypeCategories.get(sel));
+			
+			input.open();
+			String val = input.getValue();
+			
+			if (val != null)
+			{
+				TableItem item = m_baseTypesTable.getItem(sel);
+				item.setText(0, val);
+				item.setText(1, input.getTypeCategoryName());
+				m_baseTypeCategories.set(sel, input.getTypeCategory());
+			}							
+		}		
+	}
+	
 	protected class CheckListDblClickMouseAdapter extends MouseAdapter 
 	{
 		public void mouseDoubleClick(MouseEvent e) 
@@ -279,4 +381,6 @@ public class TypeFilterDialog
 			}
 		}
 	}	
+	
+	
 }

@@ -123,16 +123,32 @@ public class BaseTypeFilterDialog
 					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Base Type Name Filter");					
 					return;
 				}
+
+				String[] names = val.split("/");
 				
-				try
+				for (String name : names)
 				{
-					Pattern.compile(val);
-				}
-				catch(PatternSyntaxException ex)
-				{
-					MessageDialog.openError(m_shell, "Incorrect input",
-						"Pattern \"" + val + "\" has the following error: " + ex.getMessage());
-					return;
+					if (name.length() == 0)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input", "Namespace section cannot be empty (like \"com//abc\")");
+						return;
+					}
+					
+					if (name.equals("**"))
+					{
+						continue;
+					}
+					
+					try
+					{
+						Pattern.compile(name);
+					}
+					catch(PatternSyntaxException ex)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",
+							"Pattern \"" + name + "\" has the following error: " + ex.getMessage());
+						return;
+					}
 				}
 				
 				m_value = val;
@@ -169,8 +185,14 @@ public class BaseTypeFilterDialog
 
 		if (m_value != null)
 		{
-			if (m_typeCategoryCombo.getSelectionIndex() == TypeCategory.INTEGRAL_TYPE.value())
-				m_integralTypeCombo.setText(m_value);
+			m_typeCategoryCombo.select(m_categoryValue.value);
+			
+			if (m_categoryValue == TypeCategory.INTEGRAL_TYPE)
+			{
+				m_integralTypeCombo.setVisible(true);
+				m_baseTypeFilterText.setVisible(false);				
+				m_integralTypeCombo.select(m_integralTypeCombo.indexOf(m_value));
+			}
 			else
 				m_baseTypeFilterText.setText(m_value);
 		}
@@ -216,7 +238,7 @@ public class BaseTypeFilterDialog
 		m_integralTypeCombo.setVisible(false);
 		m_integralTypeCombo.setText("");
 		m_integralTypeCombo.setVisibleItemCount(9);
-		m_integralTypeCombo.setBounds(new Rectangle(130, 42, 171, 21));
+		m_integralTypeCombo.setBounds(new Rectangle(130, 42, 183, 21));
 		m_integralTypeCombo.add("sbyte");
 		m_integralTypeCombo.add("byte");
 		m_integralTypeCombo.add("short");

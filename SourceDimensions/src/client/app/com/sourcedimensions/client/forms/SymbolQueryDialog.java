@@ -5,6 +5,8 @@ import java.util.regex.PatternSyntaxException;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -33,32 +35,33 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 public class SymbolQueryDialog
 {
-	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="-17,-30"
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-17,-30"
 	private Display m_display;  //  @jve:decl-index=0:
-	private Label m_destinationSnapshotLabel = null;
-	private Combo m_comboDestinationSnapshot = null;
-	private Text m_snapshotNameText = null;
-	private Button m_clearSnapshotCheckBox = null;
-	private Label m_snapshotNameLabel = null;
-	private TabFolder m_queryParamsTabFolder = null;
-	private Button m_runQueryButton = null;
-	private Button m_cancelButton = null;
-	private Composite m_namespacesTab = null;
-	private Composite m_typeMembersTab = null;
-	private Composite m_localDeclsTab = null;
-	private Composite m_typesTab = null;
-	private Table m_namespaceFilterTable = null;
-	private Label m_namespaceFilterLabel = null;
-	private Button m_allNamespacesCheckBox = null;
-	private Button m_addNamespaceFilterButton = null;
-	private Button m_removeNamespaceFilterButton = null;
-	private Button m_editNamespaceFilterButton = null;
-	private Button m_allTypesCheckBox = null;
-	private Table m_typeFilterTable = null;
-	private Label m_typeFilterLabel = null;
-	private Button m_addTypeFilterButton = null;
-	private Button m_editTypeFilterButton = null;
-	private Button m_removeTypeFilterButton = null;
+	private Label m_destinationSnapshotLabel;
+	private Combo m_comboDestinationSnapshot;
+	private Text m_snapshotNameText;
+	private Button m_clearSnapshotCheckBox;
+	private Label m_snapshotNameLabel;
+	private TabFolder m_queryParamsTabFolder;
+	private Button m_runQueryButton;
+	private Button m_cancelButton;
+	private Composite m_namespacesTab;
+	private Composite m_typeMembersTab;
+	private Composite m_localDeclsTab;
+	private Composite m_typesTab;
+	private Table m_namespaceFilterTable;
+	private Label m_namespaceFilterLabel;
+	private Button m_allNamespacesCheckBox;
+	private Button m_addNamespaceFilterButton;
+	private Button m_removeNamespaceFilterButton;
+	private Button m_editNamespaceFilterButton;
+	private Button m_allTypesCheckBox;
+	private Table m_typeFilterTable;
+	private Label m_typeFilterLabel;
+	private Button m_addTypeFilterButton;
+	private Button m_editTypeFilterButton;
+	private Button m_removeTypeFilterButton;
+	
 	public SymbolQueryDialog(Display display, Shell parent)
 	{
 		m_display = display;
@@ -224,6 +227,14 @@ public class SymbolQueryDialog
 		m_namespaceFilterTable.setLinesVisible(true);
 		m_namespaceFilterTable.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_namespaceFilterTable.setBounds(new Rectangle(15, 57, 476, 272));
+		m_namespaceFilterTable.addMouseListener(new MouseAdapter()
+		{
+			public void mouseDoubleClick(MouseEvent e)
+			{
+				editNamespaceFilter();
+			}			
+		});
+		
 		new TableColumn(m_namespaceFilterTable, SWT.LEFT).setWidth(
 			m_namespaceFilterTable.getBounds().width - 2 * m_namespaceFilterTable.getBorderWidth());
 		m_addNamespaceFilterButton = new Button(m_namespacesTab, SWT.NONE);
@@ -286,24 +297,7 @@ public class SymbolQueryDialog
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				int sel = m_namespaceFilterTable.getSelectionIndex();
-				
-				if (sel == -1)
-				{
-					MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
-				}
-				else
-				{
-					InputDialog input = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
-						"Filter", "&Namespace Filter:", m_namespaceFilterTable.getItem(sel).getText(), new NamespaceFilterValidator());
-					input.open();
-					String val = input.getValue();
-					
-					if (val != null)
-					{
-						m_namespaceFilterTable.getItem(sel).setText(val);
-					}							
-				}
+				editNamespaceFilter();
 			}
 		});
 		m_namespaceFilterLabel.setBounds(new Rectangle(15, 41, 115, 16));
@@ -365,6 +359,12 @@ public class SymbolQueryDialog
 		m_typeFilterTable.setLinesVisible(true);
 		m_typeFilterTable.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_typeFilterTable.setBounds(new Rectangle(15, 57, 476, 272));
+		m_typeFilterTable.addMouseListener(new MouseAdapter()
+		{
+			public void mouseDoubleClick(MouseEvent e)
+			{
+			}			
+		});		
 		double width = m_typeFilterTable.getBounds().width - 2 * m_typeFilterTable.getBorderWidth(); 
 		TableColumn column = new TableColumn(m_typeFilterTable, SWT.LEFT, 0);
 		column.setWidth((int)(0.4 * width));
@@ -416,6 +416,29 @@ public class SymbolQueryDialog
 		m_removeTypeFilterButton.setText("Re&move filter");
 		m_removeTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 	}
+	
+	protected void editNamespaceFilter()
+	{
+		int sel = m_namespaceFilterTable.getSelectionIndex();
+		
+		if (sel == -1)
+		{
+			MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
+		}
+		else
+		{
+			InputDialog input = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
+				"Filter", "&Namespace Filter:", m_namespaceFilterTable.getItem(sel).getText(), new NamespaceFilterValidator());
+			input.open();
+			String val = input.getValue();
+			
+			if (val != null)
+			{
+				m_namespaceFilterTable.getItem(sel).setText(val);
+			}							
+		}		
+	}
+	
 	
 	class NamespaceFilterValidator extends InputDialog.MandatoryFieldValidator
 	{
