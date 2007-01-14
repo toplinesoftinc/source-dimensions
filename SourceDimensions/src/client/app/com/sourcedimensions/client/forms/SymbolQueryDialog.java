@@ -1,5 +1,6 @@
 package com.sourcedimensions.client.forms;
 
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.eclipse.swt.events.KeyAdapter;
@@ -17,6 +18,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import com.sourcedimensions.client.Util;
+import com.sourcedimensions.client.forms.TypeFilterDialog.BaseType;
+import com.sourcedimensions.client.forms.TypeFilterDialog.ModifierFlag;
+import com.sourcedimensions.client.forms.TypeFilterDialog.TypeCategoryFlag;
+
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Rectangle;
@@ -61,6 +66,7 @@ public class SymbolQueryDialog
 	private Button m_addTypeFilterButton;
 	private Button m_editTypeFilterButton;
 	private Button m_removeTypeFilterButton;
+	private ArrayList<TypeFilter> m_typeFilter = new ArrayList<TypeFilter>();
 	
 	public SymbolQueryDialog(Display display, Shell parent)
 	{
@@ -400,7 +406,62 @@ public class SymbolQueryDialog
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell).open();
+				TypeFilterDialog input = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+				input.open();	
+				
+				if (!input.isCancelled())
+				{
+					TypeFilter filter = new TypeFilter();
+					
+					filter.m_modifiers = input.getModifiers();
+					filter.m_categories = input.getTypeCategories();
+					filter.m_baseTypes.addAll(input.getBaseTypes());
+					m_typeFilter.add(filter);
+					TableItem item = new TableItem(m_typeFilterTable, 0);
+					item.setText(0, input.getTypeName());
+					
+					String text = "";
+					
+					for (TypeCategoryFlag f : TypeCategoryFlag.values())
+					{
+						if ((filter.m_categories & f.value()) != 0)
+						{
+							if (text.length() > 0)
+								text += ",";
+							
+							text += f.name();
+						}
+					}
+					
+					item.setText(1, text);
+					
+					text = "";
+					
+					for (ModifierFlag f : ModifierFlag.values())
+					{
+						if ((filter.m_modifiers & f.value()) != 0)
+						{
+							if (text.length() > 0)
+								text += ",";
+							
+							text += f.name().toLowerCase();
+						}						
+					}
+					
+					item.setText(2, text);
+					
+					text = "";
+					
+					for (BaseType t : filter.m_baseTypes)
+					{
+						if (text.length() > 0)
+							text += ",";
+						
+						text += t.m_name;
+					}
+					
+					item.setText(3, text);
+				}
 			}
 		});
 		m_editTypeFilterButton = new Button(m_typesTab, SWT.NONE);
@@ -439,8 +500,15 @@ public class SymbolQueryDialog
 		}		
 	}
 	
+	protected class TypeFilter
+	{
+		public int m_categories;
+		public int m_modifiers;
+		public boolean m_allBaseTypes;
+		public ArrayList<BaseType> m_baseTypes;
+	}
 	
-	class NamespaceFilterValidator extends InputDialog.MandatoryFieldValidator
+	protected class NamespaceFilterValidator extends InputDialog.MandatoryFieldValidator
 	{
 		public NamespaceFilterValidator()
 		{

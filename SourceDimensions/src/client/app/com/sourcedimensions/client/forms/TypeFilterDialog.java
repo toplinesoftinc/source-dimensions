@@ -35,7 +35,7 @@ public class TypeFilterDialog
 	private Table m_typeCategoryList;
 	private Label m_typeCategoryLabel;
 	private Label m_modifierListLabel;
-	private Table m_modifiersList;
+	private Table m_modifierList;
 	private Label m_typeNameLabel;
 	private Text m_typeNameText;
 	private Label m_baseTypesLabel;
@@ -45,8 +45,9 @@ public class TypeFilterDialog
 	private Button m_removeBaseTypeButton;
 	private Button m_okButton;
 	private Button m_cancelButton;
-	private ArrayList<BaseTypeFilterDialog.TypeCategory> m_baseTypeCategories = 
-		new ArrayList<BaseTypeFilterDialog.TypeCategory>();  //  @jve:decl-index=0:
+	private boolean m_cancel;
+	private ArrayList<BaseType> m_baseTypes = new ArrayList<BaseType>();  //  @jve:decl-index=0:
+	private Button m_allBaseTypesCheckBox;
 
 	public enum TypeCategoryFlag
 	{
@@ -94,6 +95,54 @@ public class TypeFilterDialog
 			return value;
 		}		
 	}
+
+	public class BaseType
+	{
+		public String m_name;
+		public int m_category; 
+		
+		public BaseType(String name, int category)
+		{
+			m_name = name;
+			m_category = category;
+		}		
+	}
+
+	public TypeFilterDialog(Display display, Shell parent, String typeName, 
+			int categories, int modifiers, boolean allBaseTypes, ArrayList<BaseType> baseTypes)
+	{
+		m_display = display;
+		createShell(parent);
+		m_typeNameText.setText(typeName);
+		m_allBaseTypesCheckBox.setSelection(allBaseTypes);
+		
+		if (baseTypes != null & !allBaseTypes)
+		{
+			m_baseTypes = baseTypes;
+			
+			for (BaseType t : m_baseTypes)
+			{
+				TableItem item = new TableItem(m_baseTypesTable, 0);
+				item.setText(0, t.m_name);
+				item.setText(1, BaseTypeFilterDialog.getTypeCategoryName(t.m_category));
+			}
+		}
+		
+		int[] flags = getModifierArray();
+		
+		for (int i = 0; i < m_typeCategoryList.getItemCount(); i++)
+		{
+			m_typeCategoryList.getItem(i).setChecked((modifiers & flags[i]) != 0);
+		}
+		
+		flags = getTypeCategoryArray();
+		
+		for (int i = 0; i < m_typeCategoryList.getItemCount(); i++)
+		{
+			m_typeCategoryList.getItem(i).setChecked((categories & flags[i]) != 0);
+		}
+	}
+	
 	
 	public TypeFilterDialog(Display display, Shell parent)
 	{
@@ -141,23 +190,25 @@ public class TypeFilterDialog
 		m_modifierListLabel.setBounds(new Rectangle(231, 8, 56, 13));
 		m_modifierListLabel.setText("&Modifiers:");
 
-		m_modifiersList = new Table(m_shell, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
-		m_modifiersList.setHeaderVisible(false);
-		m_modifiersList.setLinesVisible(false);
-		m_modifiersList.setBounds(new Rectangle(231, 22, 100, 136));
-		m_modifiersList.addMouseListener(new CheckListDblClickMouseAdapter());
+		m_modifierList = new Table(m_shell, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
+		m_modifierList.setHeaderVisible(false);
+		m_modifierList.setLinesVisible(false);
+		m_modifierList.setBounds(new Rectangle(231, 22, 100, 136));
+		m_modifierList.addMouseListener(new CheckListDblClickMouseAdapter());
 
 		m_typeNameLabel = new Label(m_shell, SWT.NONE);
-		m_typeNameLabel.setBounds(new Rectangle(17, 125, 101, 13));
+		m_typeNameLabel.setBounds(new Rectangle(17, 101, 101, 13));
 		m_typeNameLabel.setText("Type &Name Filter:");
 		m_typeNameText = new Text(m_shell, SWT.BORDER);
-		m_typeNameText.setBounds(new Rectangle(17, 139, 201, 19));
+		m_typeNameText.setBounds(new Rectangle(17, 115, 201, 19));
+		m_allBaseTypesCheckBox = new Button(m_shell, SWT.CHECK);
 		m_baseTypesLabel = new Label(m_shell, SWT.NONE);
-		m_baseTypesLabel.setBounds(new Rectangle(18, 172, 110, 13));
+		m_baseTypesLabel.setBounds(new Rectangle(17, 172, 110, 13));
 		m_baseTypesLabel.setText("&Base Types Filter List:");
 		m_baseTypesTable = new Table(m_shell, SWT.BORDER | SWT.FULL_SELECTION);
 		m_baseTypesTable.setHeaderVisible(true);
 		m_baseTypesTable.setLinesVisible(true);
+		m_baseTypesTable.setEnabled(false);
 		m_baseTypesTable.setBounds(new Rectangle(17, 186, 315, 162));
 		m_baseTypesTable.addMouseListener(new MouseAdapter()
 		{
@@ -180,10 +231,11 @@ public class TypeFilterDialog
 		m_addBaseTypeButton = new Button(m_shell, SWT.NONE);
 		m_addBaseTypeButton.setLocation(new Point(346, 185));
 		m_addBaseTypeButton.setText("A&dd filter...");
+		m_addBaseTypeButton.setEnabled(false);
 		m_addBaseTypeButton.setSize(new Point(88, 25));
 		m_addBaseTypeButton.addSelectionListener(new SelectionAdapter()
 		{   
-			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
+			public void widgetSelected(SelectionEvent e) 
 			{    
 				BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
 				input.open();
@@ -194,13 +246,14 @@ public class TypeFilterDialog
 					TableItem item = new TableItem(m_baseTypesTable, SWT.NONE);
 					item.setText(0, val);
 					item.setText(1, input.getTypeCategoryName());
-					m_baseTypeCategories.add(input.getTypeCategory());
+					m_baseTypes.add(new BaseType(val, input.getTypeCategory().value()));
 				}				
 			}		
 		});
 		m_editBaseTypeButton = new Button(m_shell, SWT.NONE);
 		m_editBaseTypeButton.setLocation(new Point(346, 227));
 		m_editBaseTypeButton.setText("&Edit filter...");
+		m_editBaseTypeButton.setEnabled(false);
 		m_editBaseTypeButton.setSize(new Point(88, 25));
 		m_editBaseTypeButton.addSelectionListener(new SelectionAdapter() 
 		{
@@ -212,6 +265,7 @@ public class TypeFilterDialog
 		m_removeBaseTypeButton = new Button(m_shell, SWT.NONE);
 		m_removeBaseTypeButton.setLocation(new Point(346, 272));
 		m_removeBaseTypeButton.setText("&Remove filter");
+		m_removeBaseTypeButton.setEnabled(false);
 		m_removeBaseTypeButton.setSize(new Point(88, 25));
 		m_removeBaseTypeButton.addSelectionListener(new SelectionAdapter() 
 		{
@@ -275,38 +329,56 @@ public class TypeFilterDialog
 						return;
 					}
 				}				
+				
+				m_cancel = false;
+				m_shell.close();
 			}
 		});
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_cancelButton.setLocation(new Point(346, 62));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
+		m_allBaseTypesCheckBox.setBounds(new Rectangle(17, 143, 89, 15));
+		m_allBaseTypesCheckBox.setText("&All Base Types");
+		m_allBaseTypesCheckBox.setSelection(true);
+		m_allBaseTypesCheckBox.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				boolean checked = m_allBaseTypesCheckBox.getSelection();
+
+				m_baseTypesTable.setEnabled(!checked);
+				m_addBaseTypeButton.setEnabled(!checked);
+				m_editBaseTypeButton.setEnabled(!checked);
+				m_removeBaseTypeButton.setEnabled(!checked);
+			}
+		});
 		m_cancelButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				m_shell.close();
+				cancelClose();
 			}
 		});
-		new TableItem(m_modifiersList, 0, 0).setText("public");
-		new TableItem(m_modifiersList, 0, 1).setText("protected");
-		new TableItem(m_modifiersList, 0, 2).setText("private");
-		new TableItem(m_modifiersList, 0, 3).setText("abstract");
-		new TableItem(m_modifiersList, 0, 4).setText("static");		
+		new TableItem(m_modifierList, 0, 0).setText("public");
+		new TableItem(m_modifierList, 0, 1).setText("protected");
+		new TableItem(m_modifierList, 0, 2).setText("private");
+		new TableItem(m_modifierList, 0, 3).setText("abstract");
+		new TableItem(m_modifierList, 0, 4).setText("static");		
 		
 		switch (ProjectView.getProject().getLanguage())
 		{
 			case JAVA14:
 			case JAVA15:
-				new TableItem(m_modifiersList, 0, 5).setText("final");
-				new TableItem(m_modifiersList, 0, 6).setText("strictfp");				
+				new TableItem(m_modifierList, 0, 5).setText("final");
+				new TableItem(m_modifierList, 0, 6).setText("strictfp");				
 				break;
 				
 			case CSHARP11:
 			case CSHARP20:
-				new TableItem(m_modifiersList, 0, 5).setText("new");
-				new TableItem(m_modifiersList, 0, 6).setText("internal");				
-				new TableItem(m_modifiersList, 0, 7).setText("sealed");
+				new TableItem(m_modifierList, 0, 5).setText("new");
+				new TableItem(m_modifierList, 0, 6).setText("internal");				
+				new TableItem(m_modifierList, 0, 7).setText("sealed");
 		}
 
 		Control[] widgets = m_shell.getChildren();
@@ -318,7 +390,7 @@ public class TypeFilterDialog
 				public void keyPressed(KeyEvent e)
 				{
 					if (e.keyCode == SWT.ESC)
-						m_shell.close();
+						cancelClose();
 				}
 			});
 		}
@@ -336,6 +408,121 @@ public class TypeFilterDialog
 				m_display.sleep();
 		}		
 	}
+
+	public int getTypeCategories()
+	{
+		int ret = 0;
+		int[] flags = getTypeCategoryArray();
+		
+		for (int i = 0; i < m_typeCategoryList.getItemCount(); i++)
+		{
+			if (m_typeCategoryList.getItem(i).getChecked())
+			{
+				ret += flags[i];
+			}
+		}
+
+		return ret;
+	}
+	
+	public int getModifiers()
+	{
+		int ret = 0;
+		int[] flags = getModifierArray();
+
+		for (int i = 0; i < m_typeCategoryList.getItemCount(); i++)
+		{
+			if (m_typeCategoryList.getItem(i).getChecked())
+			{
+				ret += flags[i];
+			}
+		}
+		
+		return ret;
+	}
+	
+	protected int[] getTypeCategoryArray()
+	{
+		int[] flags = new int[] 
+      		    {
+      				TypeCategoryFlag.CLASS.value,
+      				TypeCategoryFlag.INTERFACE.value,
+      				TypeCategoryFlag.ENUM.value,
+      				0
+      			};
+		          		
+  		switch (ProjectView.getProject().getLanguage())
+  		{
+  			case JAVA14:
+  			case JAVA15:
+  				flags[3] = TypeCategoryFlag.ANNOTATION.value;
+  				break;
+  				
+  			case CSHARP11:
+  			case CSHARP20:
+  				flags[3] = TypeCategoryFlag.STRUCT.value; 
+  		}
+  		
+  		return flags;
+	}
+	
+	protected int[] getModifierArray()
+	{
+		int[] flags = new int[]
+			    {
+					ModifierFlag.PUBLIC.value,
+					ModifierFlag.PROTECTED.value,
+					ModifierFlag.PRIVATE.value,
+					ModifierFlag.ABSTRACT.value,
+					ModifierFlag.STATIC.value,
+					0,
+					0,
+					0
+			    };
+		          		
+  		switch (ProjectView.getProject().getLanguage())
+  		{
+  			case JAVA14:
+  			case JAVA15:
+  				flags[5] = ModifierFlag.FINAL.value;
+  				flags[6] = ModifierFlag.STRICTFP.value;				
+  				break;
+  				
+  			case CSHARP11:
+  			case CSHARP20:
+  				flags[5] = ModifierFlag.NEW.value;
+  				flags[6] = ModifierFlag.INTERNAL.value;
+  				flags[7] = ModifierFlag.SEALED.value;
+  		}
+
+  		return flags;
+	}
+	
+	public ArrayList<BaseType> getBaseTypes()
+	{
+		return m_baseTypes;
+	}
+	
+	public boolean isAllBaseTypes()
+	{
+		return m_allBaseTypesCheckBox.getSelection();
+	}
+
+	public String getTypeName()
+	{
+		return m_typeNameText.getText();
+	}
+	
+	public boolean isCancelled()
+	{
+		return m_cancel;
+	}
+
+	protected void cancelClose()
+	{
+		m_cancel = true;
+		m_shell.close();
+	}
 	
 	private void editBaseType()
 	{
@@ -348,7 +535,7 @@ public class TypeFilterDialog
 		else
 		{
 			BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-				m_baseTypesTable.getItem(sel).getText(0), m_baseTypeCategories.get(sel));
+				m_baseTypesTable.getItem(sel).getText(0), m_baseTypes.get(sel).m_category);
 			
 			input.open();
 			String val = input.getValue();
@@ -358,7 +545,7 @@ public class TypeFilterDialog
 				TableItem item = m_baseTypesTable.getItem(sel);
 				item.setText(0, val);
 				item.setText(1, input.getTypeCategoryName());
-				m_baseTypeCategories.set(sel, input.getTypeCategory());
+				m_baseTypes.set(sel, new BaseType(val, input.getTypeCategory().value()));
 			}							
 		}		
 	}

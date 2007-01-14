@@ -38,7 +38,7 @@ public class BaseTypeFilterDialog
 	private Combo m_typeCategoryCombo = null;  //  @jve:decl-index=0:visual-constraint="369,103"
 	private TypeCategory m_categoryValue;
 	
-	protected String[] m_typeCategoryNames = 
+	protected static String[] m_typeCategoryNames = 
 	{
 		"CLASS",
 		"INTERFACE",
@@ -74,11 +74,11 @@ public class BaseTypeFilterDialog
 		createShell(parent);
 	}		
 	
-	public BaseTypeFilterDialog(Display display, Shell parent, String value, TypeCategory category)
+	public BaseTypeFilterDialog(Display display, Shell parent, String value, int category)
 	{
 		m_display = display;
 		m_value = value;
-		m_categoryValue = category;
+		m_categoryValue = TypeCategory.values()[category];
 		createShell(parent);
 	}	
 	
@@ -225,6 +225,11 @@ public class BaseTypeFilterDialog
 	{
 		return m_typeCategoryNames[m_categoryValue.value];
 	}	
+	
+	public static String getTypeCategoryName(int code)
+	{
+		return m_typeCategoryNames[code];
+	}
 	
 	private void cancelClose()
 	{
