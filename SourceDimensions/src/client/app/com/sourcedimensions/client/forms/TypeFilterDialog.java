@@ -48,14 +48,22 @@ public class TypeFilterDialog
 	private boolean m_cancel;
 	private ArrayList<BaseType> m_baseTypes = new ArrayList<BaseType>();  //  @jve:decl-index=0:
 	private Button m_allBaseTypesCheckBox;
-
+	private int m_typeCategories;
+	private int m_modifiers;
+	private boolean m_allBaseTypes;
+	private String m_typeName = "";
+	private Button m_allModifiersButton;
+	
+	
+	
 	public enum TypeCategoryFlag
 	{
 		CLASS(1),
 		INTERFACE(2),
 		ENUM(4),
 		ANNOTATION(8),
-		STRUCT(16);
+		STRUCT(16),
+		ALL(32);
 		
 		TypeCategoryFlag(int val)
 		{
@@ -81,7 +89,8 @@ public class TypeFilterDialog
 		STRICTFP(64),
 		NEW(128),
 		INTERNAL(256),
-		SEALED(512);
+		SEALED(512),
+		ALL(1024);
 		
 		ModifierFlag(int val)
 		{
@@ -115,6 +124,7 @@ public class TypeFilterDialog
 		createShell(parent);
 		m_typeNameText.setText(typeName);
 		m_allBaseTypesCheckBox.setSelection(allBaseTypes);
+		setBaseTypeControls();
 		
 		if (baseTypes != null & !allBaseTypes)
 		{
@@ -130,9 +140,9 @@ public class TypeFilterDialog
 		
 		int[] flags = getModifierArray();
 		
-		for (int i = 0; i < m_typeCategoryList.getItemCount(); i++)
+		for (int i = 0; i < m_modifierList.getItemCount(); i++)
 		{
-			m_typeCategoryList.getItem(i).setChecked((modifiers & flags[i]) != 0);
+			m_modifierList.getItem(i).setChecked((modifiers & flags[i]) != 0);
 		}
 		
 		flags = getTypeCategoryArray();
@@ -142,12 +152,13 @@ public class TypeFilterDialog
 			m_typeCategoryList.getItem(i).setChecked((categories & flags[i]) != 0);
 		}
 	}
-	
-	
+		
 	public TypeFilterDialog(Display display, Shell parent)
 	{
 		m_display = display;
 		createShell(parent);
+		selectAllItems(m_typeCategoryList);
+		selectAllItems(m_modifierList);
 	}
 	
 	private void createShell(Shell parent) 
@@ -166,9 +177,12 @@ public class TypeFilterDialog
 		m_typeCategoryList.setHeaderVisible(false);
 		m_typeCategoryList.setLinesVisible(false);
 		m_typeCategoryList.setBounds(new Rectangle(17, 22, 106, 72));
-		m_typeCategoryList.addMouseListener(new CheckListDblClickMouseAdapter()); 
 		m_typeCategoryLabel.setBounds(new Rectangle(17, 8, 89, 13));
 		m_typeCategoryLabel.setText("&Type Categories:");
+		m_typeNameLabel = new Label(m_shell, SWT.NONE);
+		m_typeNameText = new Text(m_shell, SWT.BORDER);
+		m_typeNameText.setBounds(new Rectangle(17, 115, 206, 19));
+		m_allModifiersButton = new Button(m_shell, SWT.NONE);
 		
 		new TableItem(m_typeCategoryList, 0, 0).setText("CLASS");
 		new TableItem(m_typeCategoryList, 0, 1).setText("INTERFACE");
@@ -185,7 +199,7 @@ public class TypeFilterDialog
 			case CSHARP20:
 				new TableItem(m_typeCategoryList, 0, 3).setText("STRUCT");
 		}
-
+		
 		m_modifierListLabel = new Label(m_shell, SWT.NONE);
 		m_modifierListLabel.setBounds(new Rectangle(231, 8, 56, 13));
 		m_modifierListLabel.setText("&Modifiers:");
@@ -194,13 +208,9 @@ public class TypeFilterDialog
 		m_modifierList.setHeaderVisible(false);
 		m_modifierList.setLinesVisible(false);
 		m_modifierList.setBounds(new Rectangle(231, 22, 100, 136));
-		m_modifierList.addMouseListener(new CheckListDblClickMouseAdapter());
 
-		m_typeNameLabel = new Label(m_shell, SWT.NONE);
 		m_typeNameLabel.setBounds(new Rectangle(17, 101, 101, 13));
 		m_typeNameLabel.setText("Type &Name Filter:");
-		m_typeNameText = new Text(m_shell, SWT.BORDER);
-		m_typeNameText.setBounds(new Rectangle(17, 115, 201, 19));
 		m_allBaseTypesCheckBox = new Button(m_shell, SWT.CHECK);
 		m_baseTypesLabel = new Label(m_shell, SWT.NONE);
 		m_baseTypesLabel.setBounds(new Rectangle(17, 172, 110, 13));
@@ -214,7 +224,10 @@ public class TypeFilterDialog
 		{
 			public void mouseDoubleClick(MouseEvent e)
 			{
-				editBaseType();
+				if (m_baseTypesTable.getSelectionIndex() != -1)
+				{
+					editBaseType();
+				}
 			}			
 		});
 		double width = m_baseTypesTable.getBounds().width - 2 * m_baseTypesTable.getBorderWidth(); 
@@ -295,6 +308,19 @@ public class TypeFilterDialog
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
+				boolean checked = false;
+				
+				for(int i = 0; i < m_typeCategoryList.getItemCount(); i++)
+				{
+					checked |= m_typeCategoryList.getItem(i).getChecked();
+				}
+				
+				if (!checked)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input",	"Please select at least one Type Category");
+					return;
+				}
+				
 				String val = m_typeNameText.getText();
 				
 				if (val.length() == 0)
@@ -330,6 +356,11 @@ public class TypeFilterDialog
 					}
 				}				
 				
+				m_typeCategories = calcTypeCategoryFlags();
+				m_modifiers = calcModifierFlags();
+				m_typeName = m_typeNameText.getText();
+				m_allBaseTypes = m_allBaseTypesCheckBox.getSelection();
+				
 				m_cancel = false;
 				m_shell.close();
 			}
@@ -338,19 +369,23 @@ public class TypeFilterDialog
 		m_cancelButton.setLocation(new Point(346, 62));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
-		m_allBaseTypesCheckBox.setBounds(new Rectangle(17, 143, 89, 15));
+		m_allModifiersButton.setBounds(new Rectangle(149, 71, 74, 23));
+		m_allModifiersButton.setText("All Modi&fiers");
+		m_allModifiersButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				selectAllItems(m_modifierList);
+			}
+		});
+		m_allBaseTypesCheckBox.setBounds(new Rectangle(17, 145, 89, 15));
 		m_allBaseTypesCheckBox.setText("&All Base Types");
 		m_allBaseTypesCheckBox.setSelection(true);
 		m_allBaseTypesCheckBox.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				boolean checked = m_allBaseTypesCheckBox.getSelection();
-
-				m_baseTypesTable.setEnabled(!checked);
-				m_addBaseTypeButton.setEnabled(!checked);
-				m_editBaseTypeButton.setEnabled(!checked);
-				m_removeBaseTypeButton.setEnabled(!checked);
+				setBaseTypeControls();
 			}
 		});
 		m_cancelButton.addSelectionListener(new SelectionAdapter() 
@@ -380,7 +415,7 @@ public class TypeFilterDialog
 				new TableItem(m_modifierList, 0, 6).setText("internal");				
 				new TableItem(m_modifierList, 0, 7).setText("sealed");
 		}
-
+		
 		Control[] widgets = m_shell.getChildren();
 
 		for (int i = 0; i < widgets.length; i++) 
@@ -395,7 +430,26 @@ public class TypeFilterDialog
 			});
 		}
 		
+		m_typeNameText.setFocus();		
 		Util.centerWindow(m_shell, parent);				
+	}
+	
+	protected void selectAllItems(Table table)
+	{
+		for (int i = 0; i < table.getItemCount(); i++)
+		{
+			table.getItem(i).setChecked(true);
+		}		
+	}
+
+	protected void setBaseTypeControls()
+	{
+		boolean checked = m_allBaseTypesCheckBox.getSelection();
+
+		m_baseTypesTable.setEnabled(!checked);
+		m_addBaseTypeButton.setEnabled(!checked);
+		m_editBaseTypeButton.setEnabled(!checked);
+		m_removeBaseTypeButton.setEnabled(!checked);		
 	}
 	
 	public void open()
@@ -411,8 +465,20 @@ public class TypeFilterDialog
 
 	public int getTypeCategories()
 	{
+		return m_typeCategories;
+	}
+	
+	public int getModifiers()
+	{
+		return m_modifiers;
+	}
+	
+	protected int calcTypeCategoryFlags()
+	{
 		int ret = 0;
 		int[] flags = getTypeCategoryArray();
+		
+		boolean all = true;
 		
 		for (int i = 0; i < m_typeCategoryList.getItemCount(); i++)
 		{
@@ -420,23 +486,35 @@ public class TypeFilterDialog
 			{
 				ret += flags[i];
 			}
+			else
+				all = false;
 		}
+		
+		if (all)
+			ret += flags[flags.length - 1];
 
 		return ret;
 	}
 	
-	public int getModifiers()
+	protected int calcModifierFlags()
 	{
 		int ret = 0;
 		int[] flags = getModifierArray();
 
-		for (int i = 0; i < m_typeCategoryList.getItemCount(); i++)
+		boolean all = true;
+		
+		for (int i = 0; i < m_modifierList.getItemCount(); i++)
 		{
-			if (m_typeCategoryList.getItem(i).getChecked())
+			if (m_modifierList.getItem(i).getChecked())
 			{
 				ret += flags[i];
 			}
+			else
+				all = false;
 		}
+		
+		if (all)
+			ret += flags[flags.length - 1]; 
 		
 		return ret;
 	}
@@ -448,7 +526,8 @@ public class TypeFilterDialog
       				TypeCategoryFlag.CLASS.value,
       				TypeCategoryFlag.INTERFACE.value,
       				TypeCategoryFlag.ENUM.value,
-      				0
+      				0,
+      				TypeCategoryFlag.ALL.value
       			};
 		          		
   		switch (ProjectView.getProject().getLanguage())
@@ -477,7 +556,8 @@ public class TypeFilterDialog
 					ModifierFlag.STATIC.value,
 					0,
 					0,
-					0
+					0,
+					ModifierFlag.ALL.value
 			    };
 		          		
   		switch (ProjectView.getProject().getLanguage())
@@ -503,14 +583,14 @@ public class TypeFilterDialog
 		return m_baseTypes;
 	}
 	
-	public boolean isAllBaseTypes()
+	public boolean getAllBaseTypes()
 	{
-		return m_allBaseTypesCheckBox.getSelection();
+		return m_allBaseTypes;
 	}
 
 	public String getTypeName()
 	{
-		return m_typeNameText.getText();
+		return m_typeName;
 	}
 	
 	public boolean isCancelled()
@@ -549,25 +629,4 @@ public class TypeFilterDialog
 			}							
 		}		
 	}
-	
-	protected class CheckListDblClickMouseAdapter extends MouseAdapter 
-	{
-		public void mouseDoubleClick(MouseEvent e) 
-		{
-			if (e.getSource() instanceof Table)
-			{
-				Table src = (Table)e.getSource();
-				
-				int sel = src.getSelectionIndex();
-	
-				if (sel != -1)
-				{
-					TableItem item = src.getItem(sel); 
-					item.setChecked(!item.getChecked());
-				}
-			}
-		}
-	}	
-	
-	
 }

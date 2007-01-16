@@ -237,7 +237,10 @@ public class SymbolQueryDialog
 		{
 			public void mouseDoubleClick(MouseEvent e)
 			{
-				editNamespaceFilter();
+				if (m_namespaceFilterTable.getSelectionIndex() != -1)
+				{
+					editNamespaceFilter();
+				}
 			}			
 		});
 		
@@ -369,6 +372,10 @@ public class SymbolQueryDialog
 		{
 			public void mouseDoubleClick(MouseEvent e)
 			{
+				if (m_typeFilterTable.getSelectionIndex() != -1)
+				{
+					editTypeFilter();
+				}
 			}			
 		});		
 		double width = m_typeFilterTable.getBounds().width - 2 * m_typeFilterTable.getBorderWidth(); 
@@ -415,52 +422,15 @@ public class SymbolQueryDialog
 					
 					filter.m_modifiers = input.getModifiers();
 					filter.m_categories = input.getTypeCategories();
-					filter.m_baseTypes.addAll(input.getBaseTypes());
+					filter.m_baseTypes = input.getBaseTypes();
+					filter.m_allBaseTypes = input.getAllBaseTypes();
 					m_typeFilter.add(filter);
+					
 					TableItem item = new TableItem(m_typeFilterTable, 0);
 					item.setText(0, input.getTypeName());
-					
-					String text = "";
-					
-					for (TypeCategoryFlag f : TypeCategoryFlag.values())
-					{
-						if ((filter.m_categories & f.value()) != 0)
-						{
-							if (text.length() > 0)
-								text += ",";
-							
-							text += f.name();
-						}
-					}
-					
-					item.setText(1, text);
-					
-					text = "";
-					
-					for (ModifierFlag f : ModifierFlag.values())
-					{
-						if ((filter.m_modifiers & f.value()) != 0)
-						{
-							if (text.length() > 0)
-								text += ",";
-							
-							text += f.name().toLowerCase();
-						}						
-					}
-					
-					item.setText(2, text);
-					
-					text = "";
-					
-					for (BaseType t : filter.m_baseTypes)
-					{
-						if (text.length() > 0)
-							text += ",";
-						
-						text += t.m_name;
-					}
-					
-					item.setText(3, text);
+					item.setText(1, typeCategoriesToString(filter.m_categories));
+					item.setText(2, modifiersToString(filter.m_modifiers));
+					item.setText(3, input.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.m_baseTypes));
 				}
 			}
 		});
@@ -470,12 +440,96 @@ public class SymbolQueryDialog
 		m_editTypeFilterButton.setSelection(true);
 		m_editTypeFilterButton.setText("&Edit filter...");
 		m_editTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
+		m_editTypeFilterButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{	
+				editTypeFilter();
+			}
+		});
 		m_removeTypeFilterButton = new Button(m_typesTab, SWT.NONE);
 		m_removeTypeFilterButton.setBounds(new Rectangle(502, 152, 88, 25));
 		m_removeTypeFilterButton.setToolTipText("Login");
 		m_removeTypeFilterButton.setSelection(true);
 		m_removeTypeFilterButton.setText("Re&move filter");
 		m_removeTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
+		m_removeTypeFilterButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e)
+			{
+				int sel = m_typeFilterTable.getSelectionIndex();
+				
+				if (sel == -1)
+				{
+					MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
+				}
+				else
+				{
+					if (MessageDialog.openQuestion(m_shell, "Deletion confirmation", 
+						"Are you sure you want to delete selected filter?"))
+					{
+						m_typeFilterTable.remove(sel);
+					}
+				}				
+			}
+		});
+	}
+
+	protected String typeCategoriesToString(int flags)
+	{
+		if ((flags & TypeCategoryFlag.ALL.value()) != 0)
+			return "<All>";
+		
+		String str = "";
+				
+		for (TypeCategoryFlag f : TypeCategoryFlag.values())
+		{
+			if ((flags & f.value()) != 0)
+			{
+				if (str.length() > 0)
+					str += ",";
+				
+				str += f.name();
+			}
+		}
+		
+		return str;
+	}
+
+	protected String modifiersToString(int flags)
+	{
+		if ((flags & ModifierFlag.ALL.value()) != 0)
+			return "<All>";
+		
+		String str = "";
+		
+		for (ModifierFlag f : ModifierFlag.values())
+		{
+			if ((flags & f.value()) != 0)
+			{
+				if (str.length() > 0)
+					str += ",";
+				
+				str += f.name().toLowerCase();
+			}						
+		}
+		
+		return str;
+	}
+
+	protected String baseTypesToString(ArrayList<BaseType> types)
+	{
+		String str = "";
+		
+		for (BaseType t : types)
+		{
+			if (str.length() > 0)
+				str += ",";
+			
+			str += t.m_name;
+		}
+		
+		return str;
 	}
 	
 	protected void editNamespaceFilter()
@@ -498,6 +552,40 @@ public class SymbolQueryDialog
 				m_namespaceFilterTable.getItem(sel).setText(val);
 			}							
 		}		
+	}
+
+	protected void editTypeFilter()
+	{
+		int sel = m_typeFilterTable.getSelectionIndex();
+		
+		if (sel == -1)
+		{
+			MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
+		}
+		else
+		{
+			TypeFilter filter = m_typeFilter.get(sel);
+			TableItem item = m_typeFilterTable.getItem(sel);
+			
+			TypeFilterDialog input = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
+				item.getText(0), filter.m_categories, filter.m_modifiers, filter.m_allBaseTypes, filter.m_baseTypes);
+			
+			input.open();
+			
+			if (!input.isCancelled())
+			{
+				filter.m_modifiers = input.getModifiers();
+				filter.m_categories = input.getTypeCategories();
+				filter.m_baseTypes = input.getBaseTypes();
+				filter.m_allBaseTypes = input.getAllBaseTypes();						
+
+				item.setText(0, input.getTypeName());
+				item.setText(1, typeCategoriesToString(filter.m_categories));
+				item.setText(2, modifiersToString(filter.m_modifiers));
+				item.setText(3, input.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.m_baseTypes));
+			}
+		}
+		
 	}
 	
 	protected class TypeFilter
