@@ -54,16 +54,14 @@ public class TypeFilterDialog
 	private String m_typeName = "";
 	private Button m_allModifiersButton;
 	
-	
-	
 	public enum TypeCategoryFlag
 	{
 		CLASS(1),
 		INTERFACE(2),
-		ENUM(4),
-		ANNOTATION(8),
-		STRUCT(16),
-		ALL(32);
+		ENUM(2<<1),
+		ANNOTATION(2<<2),
+		STRUCT(2<<3),
+		ALL(2<<4);
 		
 		TypeCategoryFlag(int val)
 		{
@@ -78,33 +76,6 @@ public class TypeFilterDialog
 		}		
 	}
 	
-	public enum ModifierFlag
-	{
-		PUBLIC(1),
-		PROTECTED(2),
-		PRIVATE(4),
-		ABSTRACT(8),
-		STATIC(16),
-		FINAL(32),
-		STRICTFP(64),
-		NEW(128),
-		INTERNAL(256),
-		SEALED(512),
-		ALL(1024);
-		
-		ModifierFlag(int val)
-		{
-			value = val;
-		}
-		
-		private final int value;
-		
-		public int value()
-		{
-			return value;
-		}		
-	}
-
 	public class BaseType
 	{
 		public String m_name;
@@ -523,23 +494,23 @@ public class TypeFilterDialog
 	{
 		int[] flags = new int[] 
       		    {
-      				TypeCategoryFlag.CLASS.value,
-      				TypeCategoryFlag.INTERFACE.value,
-      				TypeCategoryFlag.ENUM.value,
+      				TypeCategoryFlag.CLASS.value(),
+      				TypeCategoryFlag.INTERFACE.value(),
+      				TypeCategoryFlag.ENUM.value(),
       				0,
-      				TypeCategoryFlag.ALL.value
+      				TypeCategoryFlag.ALL.value()
       			};
 		          		
   		switch (ProjectView.getProject().getLanguage())
   		{
   			case JAVA14:
   			case JAVA15:
-  				flags[3] = TypeCategoryFlag.ANNOTATION.value;
+  				flags[3] = TypeCategoryFlag.ANNOTATION.value();
   				break;
   				
   			case CSHARP11:
   			case CSHARP20:
-  				flags[3] = TypeCategoryFlag.STRUCT.value; 
+  				flags[3] = TypeCategoryFlag.STRUCT.value(); 
   		}
   		
   		return flags;
@@ -549,30 +520,30 @@ public class TypeFilterDialog
 	{
 		int[] flags = new int[]
 			    {
-					ModifierFlag.PUBLIC.value,
-					ModifierFlag.PROTECTED.value,
-					ModifierFlag.PRIVATE.value,
-					ModifierFlag.ABSTRACT.value,
-					ModifierFlag.STATIC.value,
+					Modifier.PUBLIC.value(),
+					Modifier.PROTECTED.value(),
+					Modifier.PRIVATE.value(),
+					Modifier.ABSTRACT.value(),
+					Modifier.STATIC.value(),
 					0,
 					0,
 					0,
-					ModifierFlag.ALL.value
+					Modifier.ALL.value()
 			    };
 		          		
   		switch (ProjectView.getProject().getLanguage())
   		{
   			case JAVA14:
   			case JAVA15:
-  				flags[5] = ModifierFlag.FINAL.value;
-  				flags[6] = ModifierFlag.STRICTFP.value;				
+  				flags[5] = Modifier.FINAL.value();
+  				flags[6] = Modifier.STRICTFP.value();				
   				break;
   				
   			case CSHARP11:
   			case CSHARP20:
-  				flags[5] = ModifierFlag.NEW.value;
-  				flags[6] = ModifierFlag.INTERNAL.value;
-  				flags[7] = ModifierFlag.SEALED.value;
+  				flags[5] = Modifier.NEW.value();
+  				flags[6] = Modifier.INTERNAL.value();
+  				flags[7] = Modifier.SEALED.value();
   		}
 
   		return flags;
