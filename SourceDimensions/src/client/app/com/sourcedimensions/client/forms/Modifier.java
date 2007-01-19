@@ -21,7 +21,8 @@ public enum Modifier
 	OVERRIDE(2<<14),
 	EXTERN(2<<15),
 	READONLY(2<<16),
-	ALL(2<<17);
+	UNSAFE(2<<17),
+	ALL(2<<18);
 	
 	Modifier(int val)
 	{
