@@ -3,24 +3,18 @@ package com.sourcedimensions.client.forms;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.forms.TypeFilterDialog.BaseType;
-import com.sourcedimensions.client.forms.TypeFilterDialog.TypeCategoryFlag;
-
+import com.sourcedimensions.client.forms.TypeFilterDialog.TypeCategory;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Rectangle;
@@ -37,10 +31,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.jface.dialogs.MessageDialog;
 
 
-public class SymbolQueryDialog
+public class SymbolQueryDialog extends DialogBase
 {
 	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-17,-30"
-	private Display m_display;  //  @jve:decl-index=0:
 	private Label m_destinationSnapshotLabel;
 	private Combo m_comboDestinationSnapshot;
 	private Text m_snapshotNameText;
@@ -79,20 +72,13 @@ public class SymbolQueryDialog
 		createShell(parent);
 	}
 	
-	public void open()
-	{
-		m_shell.open();
-
-		while (!m_shell.isDisposed()) 
-		{
-			if (!m_display.readAndDispatch()) 
-				m_display.sleep();
-		}		
-	}
-	
 	private void createShell(Shell parent) 
 	{
 		m_shell = new Shell(SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
+		
+		if (parent != null)
+			m_shell.setParent(parent);
+		
 		m_shell.setText("Symbol Query");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		m_shell.setSize(new Point(646, 508));
@@ -139,34 +125,7 @@ public class SymbolQueryDialog
 		m_runQueryButton.setLocation(new Point(15, 12));
 		m_runQueryButton.setText("&Run Query");
 		m_runQueryButton.setSelection(true);
-		
-		
-		addKeyListener(m_shell, new KeyAdapter()
-		{
-			public void keyPressed(KeyEvent e)
-			{
-				if (e.keyCode == SWT.ESC)
-					cancelClose();
-			}
-		});
-		
-		
-		Util.centerWindow(m_shell, parent);		
-	}
-	
-	protected void addKeyListener(Composite composite, KeyListener listener)
-	{
-		Control[] widgets = composite.getChildren();
-
-		for (int i = 0; i < widgets.length; i++) 
-		{ 
-			widgets[i].addKeyListener(listener);
-			
-			if (widgets[i] instanceof Composite)
-			{
-				addKeyListener((Composite)widgets[i], listener);
-			}
-		}		
+		postCreate(parent);
 	}
 	
 	protected void cancelClose()
@@ -262,10 +221,10 @@ public class SymbolQueryDialog
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				InputDialog input = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
+				InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
 						"Filter", "&Namespace Filter:", "", new NamespaceFilterValidator());
-				input.open();
-				String val = input.getValue();
+				dialog.open();
+				String val = dialog.getValue();
 				
 				if (val != null)
 				{
@@ -386,6 +345,14 @@ public class SymbolQueryDialog
 		m_addMemberFilterButton = new Button(m_typeMembersTab, SWT.NONE);
 		m_addMemberFilterButton.setBounds(new Rectangle(502, 57, 88, 25));
 		m_addMemberFilterButton.setText("A&dd Filter...");
+		m_addMemberFilterButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				JavaMemberDialog dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+				dialog.open();
+			}
+		});
 		m_editMemberFilterButton = new Button(m_typeMembersTab, SWT.NONE);
 		m_editMemberFilterButton.setBounds(new Rectangle(502, 104, 88, 25));
 		m_editMemberFilterButton.setText("&Edit Filter...");
@@ -472,24 +439,24 @@ public class SymbolQueryDialog
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				TypeFilterDialog input = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
-				input.open();	
+				TypeFilterDialog dialog = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+				dialog.open();	
 				
-				if (!input.isCancelled())
+				if (!dialog.isCancelled())
 				{
 					TypeFilter filter = new TypeFilter();
 					
-					filter.m_modifiers = input.getModifiers();
-					filter.m_categories = input.getTypeCategories();
-					filter.m_baseTypes = input.getBaseTypes();
-					filter.m_allBaseTypes = input.getAllBaseTypes();
+					filter.m_modifiers = dialog.getModifiers();
+					filter.m_categories = dialog.getTypeCategories();
+					filter.m_baseTypes = dialog.getBaseTypes();
+					filter.m_allBaseTypes = dialog.getAllBaseTypes();
 					m_typeFilter.add(filter);
 					
 					TableItem item = new TableItem(m_typeFilterTable, 0);
-					item.setText(0, input.getTypeName());
+					item.setText(0, dialog.getTypeName());
 					item.setText(1, typeCategoriesToString(filter.m_categories));
 					item.setText(2, modifiersToString(filter.m_modifiers));
-					item.setText(3, input.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.m_baseTypes));
+					item.setText(3, dialog.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.m_baseTypes));
 				}
 			}
 		});
@@ -536,12 +503,12 @@ public class SymbolQueryDialog
 
 	protected String typeCategoriesToString(int flags)
 	{
-		if ((flags & TypeCategoryFlag.ALL.value()) != 0)
+		if ((flags & TypeCategory.ALL.value()) != 0)
 			return "<All>";
 		
 		String str = "";
 				
-		for (TypeCategoryFlag f : TypeCategoryFlag.values())
+		for (TypeCategory f : TypeCategory.values())
 		{
 			if ((flags & f.value()) != 0)
 			{
@@ -601,10 +568,10 @@ public class SymbolQueryDialog
 		}
 		else
 		{
-			InputDialog input = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
+			InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
 				"Filter", "&Namespace Filter:", m_namespaceFilterTable.getItem(sel).getText(), new NamespaceFilterValidator());
-			input.open();
-			String val = input.getValue();
+			dialog.open();
+			String val = dialog.getValue();
 			
 			if (val != null)
 			{
@@ -626,22 +593,22 @@ public class SymbolQueryDialog
 			TypeFilter filter = m_typeFilter.get(sel);
 			TableItem item = m_typeFilterTable.getItem(sel);
 			
-			TypeFilterDialog input = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
+			TypeFilterDialog dialog = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
 				item.getText(0), filter.m_categories, filter.m_modifiers, filter.m_allBaseTypes, filter.m_baseTypes);
 			
-			input.open();
+			dialog.open();
 			
-			if (!input.isCancelled())
+			if (!dialog.isCancelled())
 			{
-				filter.m_modifiers = input.getModifiers();
-				filter.m_categories = input.getTypeCategories();
-				filter.m_baseTypes = input.getBaseTypes();
-				filter.m_allBaseTypes = input.getAllBaseTypes();						
+				filter.m_modifiers = dialog.getModifiers();
+				filter.m_categories = dialog.getTypeCategories();
+				filter.m_baseTypes = dialog.getBaseTypes();
+				filter.m_allBaseTypes = dialog.getAllBaseTypes();						
 
-				item.setText(0, input.getTypeName());
+				item.setText(0, dialog.getTypeName());
 				item.setText(1, typeCategoriesToString(filter.m_categories));
 				item.setText(2, modifiersToString(filter.m_modifiers));
-				item.setText(3, input.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.m_baseTypes));
+				item.setText(3, dialog.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.m_baseTypes));
 			}
 		}
 		
@@ -700,5 +667,10 @@ public class SymbolQueryDialog
 				return true;
 			}
 		}
+	}
+	
+	protected Shell getShell()
+	{
+		return m_shell;
 	}
 }

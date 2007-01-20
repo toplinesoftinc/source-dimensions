@@ -24,10 +24,9 @@ import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
 
-public class BaseTypeFilterDialog 
+public class BaseTypeFilterDialog extends DialogBase 
 {
 	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="11,6"
-	private Display m_display;	
 	private String m_value;  //  @jve:decl-index=0:
 	private Label m_typeCategoryLabel = null;
 	private Label m_baseTypeNameFilterLabel = null;
@@ -169,20 +168,6 @@ public class BaseTypeFilterDialog
 			}
 		});
 		
-		Control[] widgets = m_shell.getChildren();
-
-		for (int i = 0; i < widgets.length; i++) 
-		{ 
-			widgets[i].addKeyListener(new KeyAdapter()
-			{
-				public void keyPressed(KeyEvent e)
-				{
-					if (e.keyCode == SWT.ESC)
-						cancelClose();
-				}
-			});
-		}
-
 		if (m_value != null)
 		{
 			m_typeCategoryCombo.select(m_categoryValue.value);
@@ -197,19 +182,9 @@ public class BaseTypeFilterDialog
 				m_baseTypeFilterText.setText(m_value);
 		}
 		
-		Util.centerWindow(m_shell, parent);		
+		m_shell.setDefaultButton(m_okButton);
+		postCreate(parent);
 	}
-
-	public void open()
-	{
-		m_shell.open();
-
-		while (!m_shell.isDisposed()) 
-		{
-			if (!m_display.readAndDispatch()) 
-				m_display.sleep();
-		}		
-	}	
 
 	public String getValue()
 	{
@@ -231,7 +206,7 @@ public class BaseTypeFilterDialog
 		return m_typeCategoryNames[code];
 	}
 	
-	private void cancelClose()
+	protected void cancelClose()
 	{
 		m_value = null;
 		m_shell.close();
@@ -281,5 +256,10 @@ public class BaseTypeFilterDialog
 		}
 		
 		m_typeCategoryCombo.select(m_categoryValue.value);		
+	}
+	
+	protected Shell getShell()
+	{
+		return m_shell;
 	}
 }

@@ -4,7 +4,6 @@ import java.util.*;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -19,15 +18,14 @@ import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.model.Project;
 
-public class ProjectListDialog
+public class ProjectListDialog extends DialogBase
 {
-	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="-28,-6"
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-28,-6"
 	private ArrayList<Project> m_prjSet = new ArrayList<Project>();
-	private Button m_openButton = null;
-	private Button m_cancelButton = null;
-	private Display m_display = null;
-	private Project m_selected = null;  //  @jve:decl-index=0:
-	private Table m_prjList = null;
+	private Button m_openButton;
+	private Button m_cancelButton;
+	private Project m_selected;  //  @jve:decl-index=0:
+	private Table m_prjList;
 
 	
 	public ProjectListDialog(Display display, Shell parent)
@@ -46,9 +44,7 @@ public class ProjectListDialog
 		m_shell.setText("Projects");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		m_shell.setSize(new Point(470, 359));
-		m_shell.setLayout(null);
-		
-		Util.centerWindow(m_shell, parent);
+		m_shell.setLayout(null);		
 		m_shell.setVisible(true);
 		
 		m_openButton = new Button(m_shell, SWT.NONE);
@@ -113,27 +109,7 @@ public class ProjectListDialog
 		});
 		
 		m_shell.setDefaultButton(m_openButton);
-		
-		Control[] widgets = m_shell.getChildren();
-
-		for (int i = 0; i < widgets.length; i++) 
-		{ 
-			widgets[i].addKeyListener(new KeyAdapter()
-			{
-				public void keyPressed(KeyEvent e)
-				{
-					if (e.keyCode == SWT.ESC)
-						cancelClose();
-				}
-			});
-		}
-		
-	}
-
-	protected void cancelClose()
-	{
-		m_selected = null;
-		m_shell.close();
+		postCreate(parent);
 	}
 
 	public void loadProjects(Collection<Project> projs)
@@ -159,19 +135,13 @@ public class ProjectListDialog
 		}		
 	}
 	
-	public void open()
-	{
-		m_shell.open();
-
-		while (!m_shell.isDisposed()) 
-		{
-			if (!m_display.readAndDispatch()) 
-				m_display.sleep();
-		}		
-	}
-	
 	public Project getSelected()
 	{
 		return m_selected;
+	}
+	
+	protected Shell getShell()
+	{
+		return m_shell;
 	}
 }

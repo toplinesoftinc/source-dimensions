@@ -3,10 +3,7 @@ package com.sourcedimensions.client.forms;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -17,21 +14,18 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.views.ProjectView;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.ui.PlatformUI;
 
-public class TypeFilterDialog 
+public class TypeFilterDialog extends DialogBase 
 {
 	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="9,11"
-	private Display m_display;
 	private Table m_typeCategoryList;
 	private Label m_typeCategoryLabel;
 	private Label m_modifierListLabel;
@@ -45,7 +39,6 @@ public class TypeFilterDialog
 	private Button m_removeBaseTypeButton;
 	private Button m_okButton;
 	private Button m_cancelButton;
-	private boolean m_cancel;
 	private ArrayList<BaseType> m_baseTypes = new ArrayList<BaseType>();  //  @jve:decl-index=0:
 	private Button m_allBaseTypesCheckBox;
 	private int m_typeCategories;
@@ -53,8 +46,9 @@ public class TypeFilterDialog
 	private boolean m_allBaseTypes;
 	private String m_typeName = "";
 	private Button m_allModifiersButton;
+	private Button m_allCategoriesButton = null;
 	
-	public enum TypeCategoryFlag
+	public enum TypeCategory
 	{
 		CLASS(1),
 		INTERFACE(2),
@@ -63,7 +57,7 @@ public class TypeFilterDialog
 		STRUCT(2<<3),
 		ALL(2<<4);
 		
-		TypeCategoryFlag(int val)
+		TypeCategory(int val)
 		{
 			value = val;
 		}
@@ -109,18 +103,18 @@ public class TypeFilterDialog
 			}
 		}
 		
-		int[] flags = getModifierArray();
+		Modifier[] mf = getModifierArray();
 		
 		for (int i = 0; i < m_modifierList.getItemCount(); i++)
 		{
-			m_modifierList.getItem(i).setChecked((modifiers & flags[i]) != 0);
+			m_modifierList.getItem(i).setChecked((modifiers & mf[i].value()) != 0);
 		}
 		
-		flags = getTypeCategoryArray();
+		TypeCategory[] cf = getTypeCategoryArray();
 		
 		for (int i = 0; i < m_typeCategoryList.getItemCount(); i++)
 		{
-			m_typeCategoryList.getItem(i).setChecked((categories & flags[i]) != 0);
+			m_typeCategoryList.getItem(i).setChecked((categories & cf[i].value()) != 0);
 		}
 	}
 		
@@ -128,8 +122,8 @@ public class TypeFilterDialog
 	{
 		m_display = display;
 		createShell(parent);
-		selectAllItems(m_typeCategoryList);
-		selectAllItems(m_modifierList);
+		checkAllItems(m_typeCategoryList);
+		checkAllItems(m_modifierList);
 	}
 	
 	private void createShell(Shell parent) 
@@ -154,21 +148,15 @@ public class TypeFilterDialog
 		m_typeNameText = new Text(m_shell, SWT.BORDER);
 		m_typeNameText.setBounds(new Rectangle(17, 115, 206, 19));
 		m_allModifiersButton = new Button(m_shell, SWT.NONE);
+
+		TypeCategory[] cats = getTypeCategoryArray();
 		
-		new TableItem(m_typeCategoryList, 0, 0).setText("CLASS");
-		new TableItem(m_typeCategoryList, 0, 1).setText("INTERFACE");
-		new TableItem(m_typeCategoryList, 0, 2).setText("ENUM");
-		
-		switch (ProjectView.getProject().getLanguage())
+		for (int i = 0; i < cats.length - 1; i++)
 		{
-			case JAVA14:
-			case JAVA15:
-				new TableItem(m_typeCategoryList, 0, 3).setText("ANNOTATION");
+			if (cats[i] == null)
 				break;
-				
-			case CSHARP11:
-			case CSHARP20:
-				new TableItem(m_typeCategoryList, 0, 3).setText("STRUCT");
+			
+			new TableItem(m_typeCategoryList, 0, i).setText(cats[i].toString());
 		}
 		
 		m_modifierListLabel = new Label(m_shell, SWT.NONE);
@@ -179,6 +167,15 @@ public class TypeFilterDialog
 		m_modifierList.setHeaderVisible(false);
 		m_modifierList.setLinesVisible(false);
 		m_modifierList.setBounds(new Rectangle(231, 22, 100, 136));
+		
+		Modifier[] mods = getModifierArray();
+		for (int i = 0; i < mods.length - 1; i++)
+		{
+			if (mods[i] == null)
+				break;
+			
+			new TableItem(m_modifierList, 0, i).setText(mods[i].toString().toLowerCase());
+		}
 
 		m_typeNameLabel.setBounds(new Rectangle(17, 101, 101, 13));
 		m_typeNameLabel.setText("Type &Name Filter:");
@@ -340,13 +337,25 @@ public class TypeFilterDialog
 		m_cancelButton.setLocation(new Point(346, 62));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
-		m_allModifiersButton.setBounds(new Rectangle(149, 71, 74, 23));
+		m_allCategoriesButton = new Button(m_shell, SWT.NONE);
+		m_allCategoriesButton.setLocation(new Point(139, 31));
+		m_allCategoriesButton.setText("All Cate&gories");
+		m_allCategoriesButton.setSize(new Point(80, 23));
+		m_allCategoriesButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e)
+			{
+				checkAllItems(m_typeCategoryList);
+			}
+		});
 		m_allModifiersButton.setText("All Modi&fiers");
+		m_allModifiersButton.setSize(new Point(80, 23));
+		m_allModifiersButton.setLocation(new Point(139, 63));
 		m_allModifiersButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				selectAllItems(m_modifierList);
+				checkAllItems(m_modifierList);
 			}
 		});
 		m_allBaseTypesCheckBox.setBounds(new Rectangle(17, 145, 89, 15));
@@ -366,53 +375,12 @@ public class TypeFilterDialog
 				cancelClose();
 			}
 		});
-		new TableItem(m_modifierList, 0, 0).setText("public");
-		new TableItem(m_modifierList, 0, 1).setText("protected");
-		new TableItem(m_modifierList, 0, 2).setText("private");
-		new TableItem(m_modifierList, 0, 3).setText("abstract");
-		new TableItem(m_modifierList, 0, 4).setText("static");		
-		
-		switch (ProjectView.getProject().getLanguage())
-		{
-			case JAVA14:
-			case JAVA15:
-				new TableItem(m_modifierList, 0, 5).setText("final");
-				new TableItem(m_modifierList, 0, 6).setText("strictfp");				
-				break;
-				
-			case CSHARP11:
-			case CSHARP20:
-				new TableItem(m_modifierList, 0, 5).setText("new");
-				new TableItem(m_modifierList, 0, 6).setText("internal");				
-				new TableItem(m_modifierList, 0, 7).setText("sealed");
-		}
-		
-		Control[] widgets = m_shell.getChildren();
 
-		for (int i = 0; i < widgets.length; i++) 
-		{ 
-			widgets[i].addKeyListener(new KeyAdapter()
-			{
-				public void keyPressed(KeyEvent e)
-				{
-					if (e.keyCode == SWT.ESC)
-						cancelClose();
-				}
-			});
-		}
-		
+		postCreate(parent);
+		m_shell.setDefaultButton(m_okButton);
 		m_typeNameText.setFocus();		
-		Util.centerWindow(m_shell, parent);				
 	}
 	
-	protected void selectAllItems(Table table)
-	{
-		for (int i = 0; i < table.getItemCount(); i++)
-		{
-			table.getItem(i).setChecked(true);
-		}		
-	}
-
 	protected void setBaseTypeControls()
 	{
 		boolean checked = m_allBaseTypesCheckBox.getSelection();
@@ -421,17 +389,6 @@ public class TypeFilterDialog
 		m_addBaseTypeButton.setEnabled(!checked);
 		m_editBaseTypeButton.setEnabled(!checked);
 		m_removeBaseTypeButton.setEnabled(!checked);		
-	}
-	
-	public void open()
-	{
-		m_shell.open();
-
-		while (!m_shell.isDisposed()) 
-		{
-			if (!m_display.readAndDispatch()) 
-				m_display.sleep();
-		}		
 	}
 
 	public int getTypeCategories()
@@ -447,7 +404,7 @@ public class TypeFilterDialog
 	protected int calcTypeCategoryFlags()
 	{
 		int ret = 0;
-		int[] flags = getTypeCategoryArray();
+		TypeCategory[] flags = getTypeCategoryArray();
 		
 		boolean all = true;
 		
@@ -455,14 +412,14 @@ public class TypeFilterDialog
 		{
 			if (m_typeCategoryList.getItem(i).getChecked())
 			{
-				ret += flags[i];
+				ret += flags[i].value();
 			}
 			else
 				all = false;
 		}
 		
 		if (all)
-			ret += flags[flags.length - 1];
+			ret += flags[flags.length - 1].value();
 
 		return ret;
 	}
@@ -470,7 +427,7 @@ public class TypeFilterDialog
 	protected int calcModifierFlags()
 	{
 		int ret = 0;
-		int[] flags = getModifierArray();
+		Modifier[] flags = getModifierArray();
 
 		boolean all = true;
 		
@@ -478,72 +435,72 @@ public class TypeFilterDialog
 		{
 			if (m_modifierList.getItem(i).getChecked())
 			{
-				ret += flags[i];
+				ret += flags[i].value();
 			}
 			else
 				all = false;
 		}
 		
 		if (all)
-			ret += flags[flags.length - 1]; 
+			ret += flags[flags.length - 1].value(); 
 		
 		return ret;
 	}
 	
-	protected int[] getTypeCategoryArray()
+	protected TypeCategory[] getTypeCategoryArray()
 	{
-		int[] flags = new int[] 
+		TypeCategory[] flags = new TypeCategory[] 
       		    {
-      				TypeCategoryFlag.CLASS.value(),
-      				TypeCategoryFlag.INTERFACE.value(),
-      				TypeCategoryFlag.ENUM.value(),
-      				0,
-      				TypeCategoryFlag.ALL.value()
+      				TypeCategory.CLASS,
+      				TypeCategory.INTERFACE,
+      				TypeCategory.ENUM,
+      				null,
+      				TypeCategory.ALL
       			};
 		          		
   		switch (ProjectView.getProject().getLanguage())
   		{
   			case JAVA14:
   			case JAVA15:
-  				flags[3] = TypeCategoryFlag.ANNOTATION.value();
+  				flags[3] = TypeCategory.ANNOTATION;
   				break;
   				
   			case CSHARP11:
   			case CSHARP20:
-  				flags[3] = TypeCategoryFlag.STRUCT.value(); 
+  				flags[3] = TypeCategory.STRUCT; 
   		}
   		
   		return flags;
 	}
 	
-	protected int[] getModifierArray()
+	protected Modifier[] getModifierArray()
 	{
-		int[] flags = new int[]
+		Modifier[] flags = new Modifier[]
 			    {
-					Modifier.PUBLIC.value(),
-					Modifier.PROTECTED.value(),
-					Modifier.PRIVATE.value(),
-					Modifier.ABSTRACT.value(),
-					Modifier.STATIC.value(),
-					0,
-					0,
-					0,
-					Modifier.ALL.value()
+					Modifier.PUBLIC,
+					Modifier.PROTECTED,
+					Modifier.PRIVATE,
+					Modifier.ABSTRACT,
+					Modifier.STATIC,
+					null,
+					null,
+					null,
+					Modifier.ALL
 			    };
 		          		
   		switch (ProjectView.getProject().getLanguage())
   		{
   			case JAVA14:
   			case JAVA15:
-  				flags[5] = Modifier.FINAL.value();
-  				flags[6] = Modifier.STRICTFP.value();				
+  				flags[5] = Modifier.FINAL;
+  				flags[6] = Modifier.STRICTFP;				
   				break;
   				
   			case CSHARP11:
   			case CSHARP20:
-  				flags[5] = Modifier.NEW.value();
-  				flags[6] = Modifier.INTERNAL.value();
-  				flags[7] = Modifier.SEALED.value();
+  				flags[5] = Modifier.NEW;
+  				flags[6] = Modifier.INTERNAL;
+  				flags[7] = Modifier.SEALED;
   		}
 
   		return flags;
@@ -562,17 +519,6 @@ public class TypeFilterDialog
 	public String getTypeName()
 	{
 		return m_typeName;
-	}
-	
-	public boolean isCancelled()
-	{
-		return m_cancel;
-	}
-
-	protected void cancelClose()
-	{
-		m_cancel = true;
-		m_shell.close();
 	}
 	
 	private void editBaseType()
@@ -599,5 +545,10 @@ public class TypeFilterDialog
 				m_baseTypes.set(sel, new BaseType(val, input.getTypeCategory().value()));
 			}							
 		}		
+	}
+	
+	protected Shell getShell()
+	{
+		return m_shell;
 	}
 }

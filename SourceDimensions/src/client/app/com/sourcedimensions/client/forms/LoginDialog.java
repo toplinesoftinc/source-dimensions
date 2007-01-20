@@ -6,21 +6,18 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.*;
-import com.sourcedimensions.client.Util;
 import com.sourcedimensions.ws.consumer.WSConsumer;
 import com.sourcedimensions.ws.provider.IWebService;
 import org.eclipse.swt.graphics.Image;
 
-public class LoginDialog
+public class LoginDialog extends DialogBase
 {
-
 	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="10,9"
 	private Label m_userNameLabel;
 	private Text m_userNameText;
@@ -29,7 +26,6 @@ public class LoginDialog
 	private Button m_loginButton;
 	private Button m_cancelButton;
 
-	private Display m_display;  //  @jve:decl-index=0:
 	private static String m_sessionID;
 	
 	public LoginDialog(Display display, Shell parent)
@@ -55,8 +51,10 @@ public class LoginDialog
 	private void createShell(Shell parent) 
 	{
 		m_shell = new Shell(SWT.TITLE | SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
+		
 		if (parent != null)
 			m_shell.setParent(parent);
+		
 		m_shell.setText("Login");
 		m_shell.setLayout(null);
 		m_shell.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
@@ -143,32 +141,17 @@ public class LoginDialog
 				cancelClose();
 			}
 		});
-		
-		Control[] widgets = m_shell.getChildren();
 
-		for (int i = 0; i < widgets.length; i++) 
-		{ 
-			widgets[i].addKeyListener(new KeyAdapter()
-			{
-				public void keyPressed(KeyEvent e)
-				{
-					if (e.keyCode == SWT.ESC)
-						cancelClose();
-				}
-			});
-		}
-		
-		Util.centerWindow(m_shell, parent);
-	}
-
-	protected void cancelClose()
-	{
-		m_sessionID = null;
-		m_shell.close();		
+		postCreate(parent);
 	}
 	
 	public static String getSessionID()
 	{
 		return m_sessionID;
-	}	
+	}
+	
+	protected Shell getShell()
+	{
+		return m_shell;
+	}
 }

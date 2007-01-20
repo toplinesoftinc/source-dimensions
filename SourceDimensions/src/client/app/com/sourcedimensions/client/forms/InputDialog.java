@@ -5,7 +5,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.graphics.Rectangle;
@@ -13,9 +12,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.events.*;
-import com.sourcedimensions.client.Util;
 
-public class InputDialog
+public class InputDialog extends DialogBase
 {
 	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="10,10"
 	private Button m_cancelButton;
@@ -23,7 +21,6 @@ public class InputDialog
 	private Text m_textValue;
 	private Label m_textLabel;
 	private Validator m_validator;  //  @jve:decl-index=0:
-	private Display m_display;  //  @jve:decl-index=0:
 	private static String m_value;  //  @jve:decl-index=0:
 
 
@@ -36,17 +33,6 @@ public class InputDialog
 		createShell(parent, title, label);
 	}	
 	
-	public void open()
-	{
-		m_shell.open();
-
-		while (!m_shell.isDisposed()) 
-		{
-			if (!m_display.readAndDispatch()) 
-				m_display.sleep();
-		}		
-	}
-		
 	private void createShell(Shell parent, String title, String label)
 	{
 		m_shell = new Shell(SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
@@ -100,22 +86,7 @@ public class InputDialog
 		});
 
 		m_shell.setDefaultButton(m_okButton);
-		
-		Control[] widgets = m_shell.getChildren();
-
-		for (int i = 0; i < widgets.length; i++) 
-		{ 
-			widgets[i].addKeyListener(new KeyAdapter()
-			{
-				public void keyPressed(KeyEvent e)
-				{
-					if (e.keyCode == SWT.ESC)
-						cancelClose();
-				}
-			});
-		}
-		
-		Util.centerWindow(m_shell, parent);		
+		postCreate(parent);
 	}
 
 	public String getValue()
@@ -129,6 +100,10 @@ public class InputDialog
 		m_shell.close();
 	}
 	
+	protected Shell getShell()
+	{
+		return m_shell;
+	}
 	
 	public static abstract class Validator
 	{

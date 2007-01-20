@@ -3,7 +3,7 @@ package com.sourcedimensions.client.forms;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TypeMemberDialogBase 
+public abstract class TypeMemberDialogBase extends DialogBase
 {
 	protected Modifier m_modifiers;
 	protected TypeMemberCategory m_categories;
