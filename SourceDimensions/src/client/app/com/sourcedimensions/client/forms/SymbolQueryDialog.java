@@ -1,6 +1,7 @@
 package com.sourcedimensions.client.forms;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.eclipse.swt.events.MouseAdapter;
@@ -60,7 +61,8 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_addTypeFilterButton;
 	private Button m_editTypeFilterButton;
 	private Button m_removeTypeFilterButton;
-	private ArrayList<TypeFilter> m_typeFilter = new ArrayList<TypeFilter>();
+	private List<TypeFilter> m_typeFilter = new ArrayList<TypeFilter>();
+	private List<MemberFilter> m_memberFilter = new ArrayList<MemberFilter>();
 	private Button m_allMembersCheckBox;
 	private Label m_memberFilterListLabel;
 	private Table m_typeMemberFilterTable;
@@ -200,7 +202,7 @@ public class SymbolQueryDialog extends DialogBase
 		tabItem.setText("Types");
 		tabItem.setControl(m_typesTab);		
 		tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
-		tabItem.setText("Type Members");
+		tabItem.setText("Members");
 		tabItem.setControl(m_typeMembersTab);
 		tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
 		tabItem.setText("Local Declarations");
@@ -319,7 +321,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_typeMembersTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
 		m_typeMembersTab.setLayout(null);
 		m_allMembersCheckBox = new Button(m_typeMembersTab, SWT.CHECK | SWT.LEFT);
-		m_allMembersCheckBox.setText("&All Type Members");
+		m_allMembersCheckBox.setText("&All Members");
 		m_allMembersCheckBox.setLocation(new Point(15, 12));
 		m_allMembersCheckBox.setSize(new Point(105, 16));
 		m_allMembersCheckBox.addSelectionListener(new SelectionAdapter()
@@ -335,7 +337,7 @@ public class SymbolQueryDialog extends DialogBase
 			}
 		});
 		m_memberFilterListLabel = new Label(m_typeMembersTab, SWT.NONE);
-		m_memberFilterListLabel.setText("&Type Members Filter List:");
+		m_memberFilterListLabel.setText("&Members Filter &List:");
 		m_memberFilterListLabel.setLocation(new Point(15, 40));
 		m_memberFilterListLabel.setSize(new Point(125, 16));
 		m_typeMemberFilterTable = new Table(m_typeMembersTab, SWT.BORDER | SWT.FULL_SELECTION);
@@ -372,6 +374,22 @@ public class SymbolQueryDialog extends DialogBase
 			{
 				JavaMemberDialog dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
 				dialog.open();
+				
+				if (!dialog.isCancelled())
+				{
+					MemberFilter filter = new MemberFilter();
+					m_memberFilter.add(filter);
+					
+					filter.m_categories = dialog.getCategory();
+					filter.m_modifiers = dialog.getModifier();
+					filter.m_anyParams = dialog.getAnyParams();
+					
+					TableItem item = new TableItem(m_typeMemberFilterTable, SWT.NONE);
+					item.setText(0, dialog.getName());
+					item.setText(1, dialog.getType().m_name);
+					item.setText(2, memberCategoriesToString(filter.m_categories));
+					item.setText(3, modifiersToString(filter.m_modifiers));
+				}			
 			}
 		});
 		m_editMemberFilterButton = new Button(m_typeMembersTab, SWT.NONE);
@@ -529,20 +547,41 @@ public class SymbolQueryDialog extends DialogBase
 		
 		String str = "";
 				
-		for (TypeCategory f : TypeCategory.values())
+		for (TypeCategory t : TypeCategory.values())
 		{
-			if ((flags & f.value()) != 0)
+			if ((flags & t.value()) != 0)
 			{
 				if (str.length() > 0)
 					str += ",";
 				
-				str += f.name();
+				str += t.name();
 			}
 		}
 		
 		return str;
 	}
-
+	
+	protected String memberCategoriesToString(int flags)
+	{
+		if ((flags & TypeMemberDialogBase.TypeMemberCategory.ALL.value()) != 0)
+			return "<All>";
+		
+		String str = "";
+		
+		for (TypeMemberDialogBase.TypeMemberCategory m : TypeMemberDialogBase.TypeMemberCategory.values())
+		{
+			if ((flags & m.value()) != 0)
+			{
+				if (str.length() > 0)
+					str += ",";
+				
+				str += m.name();
+			}
+		}
+		
+		return str;
+	}
+	
 	protected String modifiersToString(int flags)
 	{
 		if ((flags & Modifier.ALL.value()) != 0)
@@ -641,6 +680,13 @@ public class SymbolQueryDialog extends DialogBase
 		public int m_modifiers;
 		public boolean m_allBaseTypes;
 		public ArrayList<BaseType> m_baseTypes;
+	}
+	
+	protected class MemberFilter
+	{
+		public int m_categories;
+		public int m_modifiers;
+		public boolean m_anyParams;		
 	}
 	
 	protected class NamespaceFilterValidator extends InputDialog.MandatoryFieldValidator

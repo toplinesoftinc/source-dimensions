@@ -19,6 +19,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Combo;
+import com.sourcedimensions.client.Util;
 
 
 public class JavaMemberDialog extends TypeMemberDialogBase 
@@ -272,7 +273,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				}
 				
 				if (all)
-					m_memberCategories += m_categoryArray[m_categoryArray.length - 1].value();
+					m_memberCategories += TypeMemberCategory.ALL.value();
 
 				all = true;
 				m_modifiers = 0;
@@ -288,10 +289,13 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				}
 				
 				if (all)
-					m_modifiers += m_modifierArray[m_modifierArray.length - 1].value();
+					m_modifiers += Modifier.ALL.value();
 				
 				m_name = m_memberNameText.getText();
 				m_anyParams = m_anyParamsCheckBox.getSelection();
+				m_type.m_name = m_typeNameText.getText();
+				m_type.m_isArray = Util.TriStateBoolean.values()[m_arrayTypeCombo.getSelectionIndex()];
+				m_type.m_isTypeParam = Util.TriStateBoolean.values()[m_typeParamCombo.getSelectionIndex()];
 				
 				m_cancel = false;
 				m_shell.close();
@@ -390,9 +394,9 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_arrayTypeCombo = new Combo(m_typeGroup, SWT.READ_ONLY);
 		m_arrayTypeCombo.setVisibleItemCount(3);
 		m_arrayTypeCombo.setBounds(new Rectangle(9, 33, 97, 21));
-		m_arrayTypeCombo.add("No");
-		m_arrayTypeCombo.add("Yes");
-		m_arrayTypeCombo.add("Optional");
+		m_arrayTypeCombo.add("No", 0);
+		m_arrayTypeCombo.add("Yes", 1);
+		m_arrayTypeCombo.add("Optional", 2);
 		m_arrayTypeCombo.select(0);
 	}
 
@@ -401,9 +405,9 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_typeParamCombo = new Combo(m_typeGroup, SWT.READ_ONLY);
 		m_typeParamCombo.setVisibleItemCount(3);
 		m_typeParamCombo.setBounds(new Rectangle(9, 86, 97, 21));
-		m_typeParamCombo.add("No");
-		m_typeParamCombo.add("Yes");
-		m_typeParamCombo.add("Optional");
+		m_typeParamCombo.add("No", 0);
+		m_typeParamCombo.add("Yes", 1);
+		m_typeParamCombo.add("Optional", 2);
 		m_typeParamCombo.select(0);
 	}
 }

@@ -44,7 +44,7 @@ public class TypeFilterDialog extends DialogBase
 	private int m_typeCategories;
 	private int m_modifiers;
 	private boolean m_allBaseTypes;
-	private String m_typeName = "";
+	private String m_typeName = "";  //  @jve:decl-index=0:
 	private Button m_allModifiersButton;
 	private Button m_allCategoriesButton = null;
 	
@@ -340,7 +340,7 @@ public class TypeFilterDialog extends DialogBase
 				}
 				
 				if (all)
-					m_typeCategories += tf[tf.length - 1].value();
+					m_typeCategories += TypeCategory.ALL.value();
 			
 				Modifier[] mf = getModifierArray();
 
@@ -358,7 +358,7 @@ public class TypeFilterDialog extends DialogBase
 				}
 				
 				if (all)
-					m_modifiers += mf[mf.length - 1].value(); 
+					m_modifiers += Modifier.ALL.value(); 
 							
 				m_typeName = m_typeNameText.getText();
 				m_allBaseTypes = m_allBaseTypesCheckBox.getSelection();
@@ -442,8 +442,7 @@ public class TypeFilterDialog extends DialogBase
       				TypeCategory.CLASS,
       				TypeCategory.INTERFACE,
       				TypeCategory.ENUM,
-      				null,
-      				TypeCategory.ALL
+      				null
       			};
 		          		
   		switch (ProjectView.getProject().getLanguage())
@@ -472,8 +471,7 @@ public class TypeFilterDialog extends DialogBase
 					Modifier.STATIC,
 					null,
 					null,
-					null,
-					Modifier.ALL
+					null
 			    };
 		          		
   		switch (ProjectView.getProject().getLanguage())

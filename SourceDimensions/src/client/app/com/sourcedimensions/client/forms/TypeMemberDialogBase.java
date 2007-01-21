@@ -8,7 +8,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	protected boolean m_anyParams;
 	protected int m_modifiers;
 	protected int m_memberCategories;
-	protected Type m_type;
+	protected Type m_type = new Type();
 	protected String m_name;
 	protected List<Parameter> m_paramList = new ArrayList<Parameter>();
 	
@@ -26,7 +26,8 @@ public abstract class TypeMemberDialogBase extends DialogBase
 		INDEXER_GET(1<<9),
 		INDEXER_SET(1<<10),
 		OPERATOR(1<<11),
-		ENUM_CONST(1<<12);
+		ENUM_CONST(1<<12),
+		ALL(1<<13);
 		
 		TypeMemberCategory(int val)
 		{
