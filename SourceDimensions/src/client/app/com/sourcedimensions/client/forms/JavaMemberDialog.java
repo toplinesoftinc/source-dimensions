@@ -17,11 +17,13 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Combo;
 
 
 public class JavaMemberDialog extends TypeMemberDialogBase 
 {
-	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="9,11"
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-10,2"
 	private Label m_memberCategoryLabel;
 	private Table m_memberCategoryList;
 	private TypeMemberCategory[] m_categoryArray = 
@@ -59,6 +61,13 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	private Button m_addParamButton = null;
 	private Button m_editParamButton = null;
 	private Button m_removeParamButton = null;
+	private Group m_typeGroup = null;  //  @jve:decl-index=0:visual-constraint="367,52"
+	private Label m_typeNameLabel = null;
+	private Text m_typeNameText = null;
+	private Combo m_arrayTypeCombo = null;
+	private Combo m_typeParamCombo = null;
+	private Label m_arrayTypeLabel = null;
+	private Label m_typeParamLabel = null;
 	
 	public JavaMemberDialog(Display display, Shell parent)
 	{
@@ -71,8 +80,8 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	private void createShell(Shell parent)  
 	{
 		m_shell = new Shell(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
-		m_shell.setText("Type Member Filter");
-		m_shell.setSize(new Point(471, 460));
+		m_shell.setText("Member Filter");
+		m_shell.setSize(new Point(671, 453));
 		
 		if (parent != null)
 			m_shell.setParent(parent);
@@ -81,7 +90,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		m_shell.setLayout(null);
 		m_memberCategoryLabel = new Label(m_shell, SWT.NONE);
-		m_memberCategoryLabel.setText("Type &Member Categories:");
+		m_memberCategoryLabel.setText("Member Cate&gories:");
 		m_memberCategoryLabel.setLocation(new Point(17, 8));
 		m_memberCategoryLabel.setSize(new Point(122, 13));
 		m_memberCategoryList = new Table(m_shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.CHECK | SWT.HIDE_SELECTION);
@@ -130,14 +139,15 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_modifierList = new Table(getShell(), SWT.HIDE_SELECTION | SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
 		m_modifierList.setHeaderVisible(false);
 		m_modifierList.setLinesVisible(false);
-		m_modifierList.setLocation(new Point(238, 22));
-		m_modifierList.setSize(new Point(115, 179));
+		m_modifierList.setLocation(new Point(235, 22));
+		m_modifierList.setSize(new Point(115, 174));
+		createTypeGroup();
 		m_memberNameLabel = new Label(getShell(), SWT.NONE);
-		m_memberNameLabel.setText("Type &Member Name Filter:");
+		m_memberNameLabel.setText("&Member Name Filter:");
 		m_memberNameLabel.setLocation(new Point(17, 123));
-		m_memberNameLabel.setSize(new Point(138, 13));
+		m_memberNameLabel.setSize(new Point(108, 13));
 		m_memberNameText = new Text(getShell(), SWT.BORDER);
-		m_memberNameText.setBounds(new Rectangle(17, 137, 206, 19));
+		m_memberNameText.setBounds(new Rectangle(17, 137, 208, 19));
 		m_anyParamsCheckBox = new Button(getShell(), SWT.CHECK);
 		m_anyParamsCheckBox.setBounds(new Rectangle(17, 174, 101, 16));
 		m_anyParamsCheckBox.setText("Any &Parameters");
@@ -150,59 +160,60 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 			}
 		});
 		m_paramsLabel = new Label(getShell(), SWT.NONE);
-		m_paramsLabel.setBounds(new Rectangle(15, 213, 106, 13));
+		m_paramsLabel.setBounds(new Rectangle(18, 200, 106, 13));
 		m_paramsLabel.setText("Parameter &Filter List:");
 		m_paramsTable = new Table(getShell(), SWT.BORDER | SWT.FULL_SELECTION);
 		m_paramsTable.setHeaderVisible(true);
 		m_paramsTable.setLinesVisible(true);
 		m_paramsTable.setEnabled(false);
-		m_paramsTable.setBounds(new Rectangle(15, 228, 339, 189));
+		m_paramsTable.setBounds(new Rectangle(18, 215, 539, 189));
 		double width = m_paramsTable.getBounds().width - 2 * m_paramsTable.getBorderWidth(); 
 		TableColumn column = new TableColumn(m_paramsTable, SWT.LEFT, 0);
-		column.setWidth((int)(0.2 * width));
+		column.setWidth((int)(0.13 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Position");
 		column = new TableColumn(m_paramsTable, SWT.LEFT, 1);
-		column.setWidth((int)(0.4 * width));
+		column.setWidth((int)(0.25 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Type Filter");
 		column = new TableColumn(m_paramsTable, SWT.LEFT, 2);
-		column.setWidth((int)(0.4 * width));
+		column.setWidth((int)(0.25 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Name Filter");
 		column = new TableColumn(m_paramsTable, SWT.LEFT, 3);
-		column.setWidth((int)(0.15 * width));
+		column.setWidth((int)(0.09 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Array");
 		column = new TableColumn(m_paramsTable, SWT.LEFT, 4);
-		column.setWidth((int)(0.2 * width));
+		column.setWidth((int)(0.12 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Var.arity");
 		column = new TableColumn(m_paramsTable, SWT.LEFT, 5);
-		column.setWidth((int)(0.25 * width));
+		column.setWidth((int)(0.16 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Type param.");		
 		m_addParamButton = new Button(getShell(), SWT.NONE);
-		m_addParamButton.setBounds(new Rectangle(365, 228, 88, 25));
+		m_addParamButton.setBounds(new Rectangle(567, 215, 88, 25));
 		m_addParamButton.setEnabled(false);
 		m_addParamButton.setText("A&dd Filter...");
 		m_editParamButton = new Button(getShell(), SWT.NONE);
-		m_editParamButton.setBounds(new Rectangle(365, 270, 88, 25));
+		m_editParamButton.setBounds(new Rectangle(567, 257, 88, 25));
 		m_editParamButton.setEnabled(false);
 		m_editParamButton.setText("&Edit Filter...");
 		m_removeParamButton = new Button(getShell(), SWT.NONE);
-		m_removeParamButton.setBounds(new Rectangle(365, 315, 88, 25));
+		m_removeParamButton.setBounds(new Rectangle(567, 302, 88, 25));
 		m_removeParamButton.setEnabled(false);
 		m_removeParamButton.setText("&Remove Filter");
 		m_okButton = new Button(getShell(), SWT.NONE);
 		m_okButton.setText("O&k");
-		m_okButton.setLocation(new Point(365, 22));
+		m_okButton.setLocation(new Point(565, 22));
+		m_okButton.setVisible(true);
 		m_okButton.setSize(new Point(88, 25));
 		m_okButton.addSelectionListener(new SelectionAdapter() 
 		{
@@ -220,8 +231,15 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 					MessageDialog.openError(m_shell, "Incorrect input",	"Please select at least one Type Member Category");
 					return;
 				}
+
+				if (m_typeNameText.getText().trim().length() == 0)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
+					return;
+				}
 				
-				String val = m_memberNameText.getText();
+				
+				String val = m_memberNameText.getText().trim();
 				
 				if (val.length() == 0)
 				{
@@ -282,7 +300,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		});
 		m_cancelButton = new Button(getShell(), SWT.NONE);
 		m_cancelButton.setText("&Cancel");
-		m_cancelButton.setLocation(new Point(365, 62));
+		m_cancelButton.setLocation(new Point(566, 62));
 		m_cancelButton.setSize(new Point(88, 25));
 		m_cancelButton.addSelectionListener(new SelectionAdapter() 
 		{
@@ -345,5 +363,47 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	protected Shell getShell()
 	{
 		return m_shell;
+	}
+
+	private void createTypeGroup() 
+	{
+		m_typeGroup = new Group(getShell(), SWT.SHADOW_NONE);
+		m_typeGroup.setText("&Type/Return type");
+		m_typeGroup.setBounds(new Rectangle(359, 17, 198, 179));
+		m_arrayTypeLabel = new Label(m_typeGroup, SWT.NONE);
+		createArrayTypeCombo();
+		m_typeParamLabel = new Label(m_typeGroup, SWT.NONE);
+		createTypeParamCombo();
+		m_typeNameLabel = new Label(m_typeGroup, SWT.NONE);
+		m_typeNameLabel.setBounds(new Rectangle(9, 135, 87, 13));
+		m_typeNameLabel.setText("Type Name Filter:");
+		m_typeNameText = new Text(m_typeGroup, SWT.BORDER);
+		m_typeNameText.setBounds(new Rectangle(9, 149, 181, 19));
+		m_arrayTypeLabel.setBounds(new Rectangle(9, 18, 62, 13));
+		m_arrayTypeLabel.setText("&Array Type:");
+		m_typeParamLabel.setBounds(new Rectangle(9, 72, 90, 13));
+		m_typeParamLabel.setText("Type &Parameter:");
+	}
+
+	private void createArrayTypeCombo() 
+	{
+		m_arrayTypeCombo = new Combo(m_typeGroup, SWT.READ_ONLY);
+		m_arrayTypeCombo.setVisibleItemCount(3);
+		m_arrayTypeCombo.setBounds(new Rectangle(9, 33, 97, 21));
+		m_arrayTypeCombo.add("No");
+		m_arrayTypeCombo.add("Yes");
+		m_arrayTypeCombo.add("Optional");
+		m_arrayTypeCombo.select(0);
+	}
+
+	private void createTypeParamCombo() 
+	{
+		m_typeParamCombo = new Combo(m_typeGroup, SWT.READ_ONLY);
+		m_typeParamCombo.setVisibleItemCount(3);
+		m_typeParamCombo.setBounds(new Rectangle(9, 86, 97, 21));
+		m_typeParamCombo.add("No");
+		m_typeParamCombo.add("Yes");
+		m_typeParamCombo.add("Optional");
+		m_typeParamCombo.select(0);
 	}
 }

@@ -662,7 +662,7 @@ public class SymbolQueryDialog extends DialogBase
 				
 				for (String name : names)
 				{
-					if (name.length() == 0)
+					if (name.trim().length() == 0)
 					{
 						MessageDialog.openError(shell, "Incorrect input", "Namespace section cannot be empty (like \"com//abc\")");
 						return false;

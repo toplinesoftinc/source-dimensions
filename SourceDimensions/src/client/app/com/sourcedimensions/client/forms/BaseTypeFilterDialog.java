@@ -108,9 +108,9 @@ public class BaseTypeFilterDialog extends DialogBase
 				String val;
 				
 				if (m_typeCategoryCombo.getSelectionIndex() == TypeCategory.INTEGRAL_TYPE.value())
-					val = m_integralTypeCombo.getText();
+					val = m_integralTypeCombo.getText().trim();
 				else
-					val = m_baseTypeFilterText.getText();
+					val = m_baseTypeFilterText.getText().trim();
 
 				if (val.length() == 0)
 				{

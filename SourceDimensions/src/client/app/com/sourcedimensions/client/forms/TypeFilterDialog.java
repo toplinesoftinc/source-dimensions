@@ -289,7 +289,7 @@ public class TypeFilterDialog extends DialogBase
 					return;
 				}
 				
-				String val = m_typeNameText.getText();
+				String val = m_typeNameText.getText().trim();
 				
 				if (val.length() == 0)
 				{
@@ -301,7 +301,7 @@ public class TypeFilterDialog extends DialogBase
 				
 				for (String name : names)
 				{
-					if (name.length() == 0)
+					if (name.trim().length() == 0)
 					{
 						MessageDialog.openError(m_shell, "Incorrect input", "Namespace section cannot be empty (like \"com//abc\")");
 						return;
