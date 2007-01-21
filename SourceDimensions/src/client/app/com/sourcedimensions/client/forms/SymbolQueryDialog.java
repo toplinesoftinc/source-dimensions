@@ -8,6 +8,8 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
@@ -33,7 +35,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 public class SymbolQueryDialog extends DialogBase
 {
-	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-17,-30"
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-38,-54"
 	private Label m_destinationSnapshotLabel;
 	private Combo m_comboDestinationSnapshot;
 	private Text m_snapshotNameText;
@@ -65,6 +67,9 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_addMemberFilterButton;
 	private Button m_editMemberFilterButton;
 	private Button m_removeMemberFilterButton;
+	private Label m_queryNameLabel = null;
+	private Text m_queryNameText = null;
+	private Button m_saveButton = null;
 	
 	public SymbolQueryDialog(Display display, Shell parent)
 	{
@@ -81,34 +86,43 @@ public class SymbolQueryDialog extends DialogBase
 		
 		m_shell.setText("Symbol Query");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
-		m_shell.setSize(new Point(646, 508));
+		m_shell.setSize(new Point(645, 536));
 		m_shell.setLayout(null);
 		m_runQueryButton = new Button(m_shell, SWT.NONE);
+		m_saveButton = new Button(getShell(), SWT.NONE);
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_destinationSnapshotLabel = new Label(m_shell, SWT.NONE);
 		m_destinationSnapshotLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_destinationSnapshotLabel.setBounds(new Rectangle(145, 9, 118, 14));
+		m_destinationSnapshotLabel.setBounds(new Rectangle(122, 17, 118, 14));
 		m_destinationSnapshotLabel.setText("&Destination Snapshot:");
 		createComboDestinationSnapshot();
 		m_clearSnapshotCheckBox = new Button(m_shell, SWT.CHECK | SWT.RIGHT);
 		m_snapshotNameLabel = new Label(m_shell, SWT.NONE);
 		m_snapshotNameText = new Text(m_shell, SWT.BORDER | SWT.LEFT);
 		m_snapshotNameText.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_snapshotNameText.setSize(new Point(199, 18));
-		m_snapshotNameText.setLocation(new Point(426, 25));
-		m_clearSnapshotCheckBox.setBounds(new Rectangle(145, 56, 91, 15));
+		m_snapshotNameText.setSize(new Point(255, 18));
+		m_snapshotNameText.setLocation(new Point(370, 35));
+		m_clearSnapshotCheckBox.setBounds(new Rectangle(122, 64, 91, 15));
 		m_clearSnapshotCheckBox.setEnabled(false);
 		m_clearSnapshotCheckBox.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_clearSnapshotCheckBox.setText("Clear &Snapshot");
 		m_clearSnapshotCheckBox.setToolTipText("Delete all contents of the snapshot before putting results of this query");
-		m_snapshotNameLabel.setBounds(new Rectangle(426, 9, 116, 14));
+		m_snapshotNameLabel.setBounds(new Rectangle(370, 20, 111, 14));
 		m_snapshotNameLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_snapshotNameLabel.setText("&New Snapshot Name:");
+		m_snapshotNameLabel.setText("Ne&w Snapshot Name:");
+		m_queryNameLabel = new Label(getShell(), SWT.NONE);
+		m_queryNameText = new Text(getShell(), SWT.BORDER);
+		m_queryNameText.setBounds(new Rectangle(370, 80, 255, 19));
 		createQueryParamsTabFolder();
+		m_queryNameLabel.setBounds(new Rectangle(370, 66, 70, 13));
+		m_queryNameLabel.setText("&Query Name:");
+		m_saveButton.setLocation(new Point(15, 46));
+		m_saveButton.setSize(new Point(88, 25));
+		m_saveButton.setText("Sa&ve");
 		m_cancelButton.setToolTipText("Login");
 		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_cancelButton.setSize(new Point(88, 25));
-		m_cancelButton.setLocation(new Point(15, 48));
+		m_cancelButton.setLocation(new Point(15, 81));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSelection(true);
 		m_cancelButton.addSelectionListener(new SelectionAdapter()
@@ -125,26 +139,33 @@ public class SymbolQueryDialog extends DialogBase
 		m_runQueryButton.setLocation(new Point(15, 12));
 		m_runQueryButton.setText("&Run Query");
 		m_runQueryButton.setSelection(true);
+		
+		m_shell.addShellListener(new ShellListener() 
+		{	
+			public void shellClosed(ShellEvent event) 
+			{
+				event.doit = MessageDialog.openQuestion(m_shell, "Close confirmation", "Do you want to close query window?");
+				m_cancel = event.doit;
+			}
+			public void shellActivated(ShellEvent arg0) {}
+			public void shellDeactivated(ShellEvent arg0) {}
+			public void shellIconified(ShellEvent arg0) {}
+			public void shellDeiconified(ShellEvent arg0) {}
+			
+		});
+				
 		postCreate(parent);
 	}
 	
-	protected void cancelClose()
-	{
-		if (MessageDialog.openQuestion(m_shell, "Close confirmation", "Do you want to close query window?"))
-		{
-			m_shell.close();
-		}
-	}
-
 	private void createComboDestinationSnapshot()
 	{
 		m_comboDestinationSnapshot = new Combo(m_shell, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.V_SCROLL);
-		m_comboDestinationSnapshot.setLocation(new Point(145, 25));
+		m_comboDestinationSnapshot.setLocation(new Point(122, 32));
 		m_comboDestinationSnapshot.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_comboDestinationSnapshot.setText("");
 		m_comboDestinationSnapshot.setToolTipText("Snapshot where to put results of this query into");
 		m_comboDestinationSnapshot.setVisibleItemCount(10);
-		m_comboDestinationSnapshot.setSize(new Point(253, 18));
+		m_comboDestinationSnapshot.setSize(new Point(236, 21));
 		m_comboDestinationSnapshot.addSelectionListener(new SelectionListener()
 		{
 			public void widgetSelected(SelectionEvent e)
@@ -166,7 +187,7 @@ public class SymbolQueryDialog extends DialogBase
 	{
 		m_queryParamsTabFolder = new TabFolder(m_shell, SWT.NONE);
 		m_queryParamsTabFolder.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_queryParamsTabFolder.setLocation(new Point(15, 85));
+		m_queryParamsTabFolder.setLocation(new Point(15, 118));
 		m_queryParamsTabFolder.setSize(new Point(610, 376));
 		createNamespacesTab();
 		createTypeMembersTab();

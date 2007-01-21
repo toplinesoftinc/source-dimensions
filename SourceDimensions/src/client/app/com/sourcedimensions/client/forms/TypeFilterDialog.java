@@ -25,7 +25,7 @@ import org.eclipse.ui.PlatformUI;
 
 public class TypeFilterDialog extends DialogBase 
 {
-	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="9,11"
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="6,-4"
 	private Table m_typeCategoryList;
 	private Label m_typeCategoryLabel;
 	private Label m_modifierListLabel;
@@ -50,12 +50,12 @@ public class TypeFilterDialog extends DialogBase
 	
 	public enum TypeCategory
 	{
-		CLASS(1),
-		INTERFACE(2),
-		ENUM(2<<1),
-		ANNOTATION(2<<2),
-		STRUCT(2<<3),
-		ALL(2<<4);
+		CLASS(1<<0),
+		INTERFACE(1<<1),
+		ENUM(1<<2),
+		ANNOTATION(1<<3),
+		STRUCT(1<<4),
+		ALL(1<<5);
 		
 		TypeCategory(int val)
 		{
@@ -200,12 +200,12 @@ public class TypeFilterDialog extends DialogBase
 		});
 		double width = m_baseTypesTable.getBounds().width - 2 * m_baseTypesTable.getBorderWidth(); 
 		TableColumn column = new TableColumn(m_baseTypesTable, SWT.LEFT, 0);
-		column.setWidth((int)(0.65 * width));
+		column.setWidth((int)(0.6 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Name Filter");
 		column = new TableColumn(m_baseTypesTable, SWT.LEFT, 1);
-		column.setWidth((int)(0.35 * width));
+		column.setWidth((int)(0.4 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Category");
@@ -324,8 +324,42 @@ public class TypeFilterDialog extends DialogBase
 					}
 				}				
 				
-				m_typeCategories = calcTypeCategoryFlags();
-				m_modifiers = calcModifierFlags();
+				TypeCategory[] tf = getTypeCategoryArray();
+				
+				boolean all = true;
+				m_typeCategories = 0;
+				
+				for (int i = 0; i < m_typeCategoryList.getItemCount(); i++)
+				{
+					if (m_typeCategoryList.getItem(i).getChecked())
+					{
+						m_typeCategories += tf[i].value();
+					}
+					else
+						all = false;
+				}
+				
+				if (all)
+					m_typeCategories += tf[tf.length - 1].value();
+			
+				Modifier[] mf = getModifierArray();
+
+				all = true;
+				m_modifiers = 0;
+				
+				for (int i = 0; i < m_modifierList.getItemCount(); i++)
+				{
+					if (m_modifierList.getItem(i).getChecked())
+					{
+						m_modifiers += mf[i].value();
+					}
+					else
+						all = false;
+				}
+				
+				if (all)
+					m_modifiers += mf[mf.length - 1].value(); 
+							
 				m_typeName = m_typeNameText.getText();
 				m_allBaseTypes = m_allBaseTypesCheckBox.getSelection();
 				
@@ -338,7 +372,7 @@ public class TypeFilterDialog extends DialogBase
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
 		m_allCategoriesButton = new Button(m_shell, SWT.NONE);
-		m_allCategoriesButton.setLocation(new Point(139, 31));
+		m_allCategoriesButton.setLocation(new Point(136, 31));
 		m_allCategoriesButton.setText("All Cate&gories");
 		m_allCategoriesButton.setSize(new Point(80, 23));
 		m_allCategoriesButton.addSelectionListener(new SelectionAdapter() 
@@ -350,7 +384,7 @@ public class TypeFilterDialog extends DialogBase
 		});
 		m_allModifiersButton.setText("All Modi&fiers");
 		m_allModifiersButton.setSize(new Point(80, 23));
-		m_allModifiersButton.setLocation(new Point(139, 63));
+		m_allModifiersButton.setLocation(new Point(136, 63));
 		m_allModifiersButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
@@ -400,53 +434,7 @@ public class TypeFilterDialog extends DialogBase
 	{
 		return m_modifiers;
 	}
-	
-	protected int calcTypeCategoryFlags()
-	{
-		int ret = 0;
-		TypeCategory[] flags = getTypeCategoryArray();
-		
-		boolean all = true;
-		
-		for (int i = 0; i < m_typeCategoryList.getItemCount(); i++)
-		{
-			if (m_typeCategoryList.getItem(i).getChecked())
-			{
-				ret += flags[i].value();
-			}
-			else
-				all = false;
-		}
-		
-		if (all)
-			ret += flags[flags.length - 1].value();
 
-		return ret;
-	}
-	
-	protected int calcModifierFlags()
-	{
-		int ret = 0;
-		Modifier[] flags = getModifierArray();
-
-		boolean all = true;
-		
-		for (int i = 0; i < m_modifierList.getItemCount(); i++)
-		{
-			if (m_modifierList.getItem(i).getChecked())
-			{
-				ret += flags[i].value();
-			}
-			else
-				all = false;
-		}
-		
-		if (all)
-			ret += flags[flags.length - 1].value(); 
-		
-		return ret;
-	}
-	
 	protected TypeCategory[] getTypeCategoryArray()
 	{
 		TypeCategory[] flags = new TypeCategory[] 

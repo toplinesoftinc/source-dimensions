@@ -3,26 +3,26 @@ package com.sourcedimensions.client.forms;
 public enum Modifier 
 {
 	
-	NEW(1),
-	PUBLIC(2),
-	PROTECTED(2<<1),
-	PRIVATE(2<<2),
-	ABSTRACT(2<<3),
-	STATIC(2<<4),
-	FINAL(2<<5),
-	SYNCHRONIZED(2<<6),
-	NATIVE(2<<7),
-	STRICTFP(2<<8),
-	TRANSIENT(2<<9),
-	VOLATILE(2<<10),
-	INTERNAL(2<<11),
-	VIRTUAL(2<<12),
-	SEALED(2<<13),
-	OVERRIDE(2<<14),
-	EXTERN(2<<15),
-	READONLY(2<<16),
-	UNSAFE(2<<17),
-	ALL(2<<18);
+	NEW(1<<0),
+	PUBLIC(1<<1),
+	PROTECTED(1<<2),
+	PRIVATE(1<<3),
+	ABSTRACT(1<<4),
+	STATIC(1<<5),
+	FINAL(1<<6),
+	SYNCHRONIZED(1<<7),
+	NATIVE(1<<8),
+	STRICTFP(1<<9),
+	TRANSIENT(1<<10),
+	VOLATILE(1<<11),
+	INTERNAL(1<<12),
+	VIRTUAL(1<<13),
+	SEALED(1<<14),
+	OVERRIDE(1<<15),
+	EXTERN(1<<16),
+	READONLY(1<<17),
+	UNSAFE(1<<18),
+	ALL(1<<19);
 	
 	Modifier(int val)
 	{

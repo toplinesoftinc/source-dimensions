@@ -52,10 +52,10 @@ public abstract class DialogBase
 			}
 		});
 		
-		Util.centerWindow(shell, parent);						
+		Util.centerWindow(shell, parent);
 	}
 	
-	protected void addKeyListener(Composite composite, KeyListener listener)
+	private void addKeyListener(Composite composite, KeyListener listener)
 	{
 		Control[] widgets = composite.getChildren();
 

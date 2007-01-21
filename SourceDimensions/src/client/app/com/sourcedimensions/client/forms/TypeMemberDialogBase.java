@@ -5,27 +5,28 @@ import java.util.List;
 
 public abstract class TypeMemberDialogBase extends DialogBase
 {
-	protected Modifier m_modifiers;
-	protected TypeMemberCategory m_categories;
+	protected boolean m_anyParams;
+	protected int m_modifiers;
+	protected int m_memberCategories;
 	protected Type m_type;
 	protected String m_name;
 	protected List<Parameter> m_paramList = new ArrayList<Parameter>();
 	
 	public enum TypeMemberCategory
 	{
-		FIELD(1),
-		CONSTANT(2),
-		CONSTRUCTOR(2<<1),
-		DESTRUCTOR(2<<2),
-		METHOD(2<<3),
-		PROPERTY_GET(2<<4),
-		PROPERTY_SET(2<<5),
-		EVENT_ADD(2<<6),
-		EVENT_REMOVE(2<<7),
-		INDEXER_GET(2<<8),
-		INDEXER_SET(2<<9),
-		OPERATOR(2<<10),
-		ENUM_CONST(2<<11);
+		FIELD(1<<0),
+		CONSTANT(1<<1),
+		CONSTRUCTOR(1<<2),
+		DESTRUCTOR(1<<3),
+		METHOD(1<<4),
+		PROPERTY_GET(1<<5),
+		PROPERTY_SET(1<<6),
+		EVENT_ADD(1<<7),
+		EVENT_REMOVE(1<<8),
+		INDEXER_GET(1<<9),
+		INDEXER_SET(1<<10),
+		OPERATOR(1<<11),
+		ENUM_CONST(1<<12);
 		
 		TypeMemberCategory(int val)
 		{
@@ -40,14 +41,14 @@ public abstract class TypeMemberDialogBase extends DialogBase
 		}		
 	}	
 	
-	public Modifier getModifier()
+	public int getModifier()
 	{
 		return m_modifiers;
 	}
 	
-	public TypeMemberCategory getCategory()
+	public int getCategory()
 	{
-		return m_categories;
+		return m_memberCategories;
 	}
 	
 	public Type getType()
@@ -63,5 +64,10 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	public List<Parameter> getParams()
 	{
 		return m_paramList;
+	}
+	
+	public boolean getAnyParams()
+	{
+		return m_anyParams;
 	}
 }

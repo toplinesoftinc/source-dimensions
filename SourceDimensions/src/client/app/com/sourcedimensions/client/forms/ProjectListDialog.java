@@ -45,7 +45,6 @@ public class ProjectListDialog extends DialogBase
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		m_shell.setSize(new Point(470, 359));
 		m_shell.setLayout(null);		
-		m_shell.setVisible(true);
 		
 		m_openButton = new Button(m_shell, SWT.NONE);
 		m_openButton.setBounds(new Rectangle(117, 295, 88, 25));
