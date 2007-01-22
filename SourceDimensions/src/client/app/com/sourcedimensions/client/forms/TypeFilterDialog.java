@@ -204,7 +204,7 @@ public class TypeFilterDialog extends DialogBase
 		column.setWidth((int)(0.6 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Name Filter");
+		column.setText("Name");
 		column = new TableColumn(m_baseTypesTable, SWT.LEFT, 1);
 		column.setWidth((int)(0.4 * width));
 		column.setResizable(true);

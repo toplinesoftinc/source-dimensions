@@ -27,7 +27,7 @@ public class ProjectView extends ViewPart
 	public final static String ID = "com.sourcedimensions.client.views.ProjectView";
 	
 	private TreeViewer m_viewer;
-	private DrillDownAdapter m_drillDownAdapter;
+	//private DrillDownAdapter m_drillDownAdapter;
 	private static Project m_project;
 	private TreeGroup m_root;
 
@@ -320,7 +320,7 @@ public class ProjectView extends ViewPart
 	{
 		m_viewer = new TreeViewer(parent, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		m_viewer.getTree().setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_drillDownAdapter = new DrillDownAdapter(m_viewer);
+		//m_drillDownAdapter = new DrillDownAdapter(m_viewer);
 		m_viewer.setContentProvider(new ViewContentProvider());
 		getSite().setSelectionProvider(m_viewer);
 		m_viewer.setLabelProvider(new ViewLabelProvider());

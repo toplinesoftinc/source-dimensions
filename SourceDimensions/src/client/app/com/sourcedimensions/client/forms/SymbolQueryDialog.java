@@ -18,6 +18,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import com.sourcedimensions.client.forms.TypeFilterDialog.BaseType;
 import com.sourcedimensions.client.forms.TypeFilterDialog.TypeCategory;
+import com.sourcedimensions.client.views.ProjectView;
+
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Rectangle;
@@ -151,6 +153,7 @@ public class SymbolQueryDialog extends DialogBase
 			}
 		});
 				
+		m_shell.setDefaultButton(m_runQueryButton);
 		postCreate(parent);
 	}
 	
@@ -341,7 +344,7 @@ public class SymbolQueryDialog extends DialogBase
 		column.setWidth((int)(0.3 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Type");
+		column.setText("Type/Return type");
 		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 2);
 		column.setWidth((int)(0.2 * width));
 		column.setResizable(true);
@@ -359,7 +362,20 @@ public class SymbolQueryDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				JavaMemberDialog dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+				TypeMemberDialogBase dialog = null;
+				
+		 		switch (ProjectView.getProject().getLanguage())
+		  		{
+		  			case JAVA14:
+		  			case JAVA15:
+		  				dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+		  				break;
+		  				
+		  			case CSHARP11:
+		  			case CSHARP20:
+		  				dialog = new CSharpMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell); 
+		  		}
+				
 				dialog.open();
 				
 				if (!dialog.isCancelled())

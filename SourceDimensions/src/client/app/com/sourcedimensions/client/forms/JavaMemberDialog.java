@@ -200,12 +200,12 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		column.setWidth((int)(0.25 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Type Filter");
+		column.setText("Type");
 		column = new TableColumn(m_paramsTable, SWT.LEFT, 2);
 		column.setWidth((int)(0.25 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Name Filter");
+		column.setText("Name");
 		column = new TableColumn(m_paramsTable, SWT.LEFT, 3);
 		column.setWidth((int)(0.09 * width));
 		column.setResizable(true);
