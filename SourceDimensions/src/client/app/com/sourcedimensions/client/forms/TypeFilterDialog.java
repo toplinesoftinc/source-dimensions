@@ -1,6 +1,7 @@
 package com.sourcedimensions.client.forms;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -39,7 +40,7 @@ public class TypeFilterDialog extends DialogBase
 	private Button m_removeBaseTypeButton;
 	private Button m_okButton;
 	private Button m_cancelButton;
-	private ArrayList<BaseType> m_baseTypes = new ArrayList<BaseType>();  //  @jve:decl-index=0:
+	private List<BaseType> m_baseTypes = new ArrayList<BaseType>();  //  @jve:decl-index=0:
 	private Button m_allBaseTypesCheckBox;
 	private int m_typeCategories;
 	private int m_modifiers;
@@ -83,7 +84,7 @@ public class TypeFilterDialog extends DialogBase
 	}
 
 	public TypeFilterDialog(Display display, Shell parent, String typeName, 
-			int categories, int modifiers, boolean allBaseTypes, ArrayList<BaseType> baseTypes)
+			int categories, int modifiers, boolean allBaseTypes, List<BaseType> baseTypes)
 	{
 		m_display = display;
 		createShell(parent);
@@ -248,26 +249,8 @@ public class TypeFilterDialog extends DialogBase
 		m_removeBaseTypeButton.setText("&Remove filter");
 		m_removeBaseTypeButton.setEnabled(false);
 		m_removeBaseTypeButton.setSize(new Point(88, 25));
-		m_removeBaseTypeButton.addSelectionListener(new SelectionAdapter() 
-		{
-			public void widgetSelected(SelectionEvent e) 
-			{
-				int sel = m_baseTypesTable.getSelectionIndex();
-				
-				if (sel == -1)
-				{
-					MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
-				}
-				else
-				{
-					if (MessageDialog.openQuestion(m_shell, "Deletion confirmation", 
-						"Are you sure you want to delete selected filter?"))
-					{
-						m_baseTypesTable.remove(sel);
-					}
-				}				
-			}
-		});
+		m_removeBaseTypeButton.addSelectionListener(
+				new RemoveFilterAdapter(m_shell, m_baseTypesTable, m_baseTypes)); 
 		m_okButton = new Button(m_shell, SWT.NONE);
 		m_okButton.setLocation(new Point(346, 22));
 		m_okButton.setText("O&k");
@@ -324,7 +307,7 @@ public class TypeFilterDialog extends DialogBase
 					}
 				}				
 				
-				TypeCategory[] tf = getTypeCategoryArray();
+				TypeCategory[] tc = getTypeCategoryArray();
 				
 				boolean all = true;
 				m_typeCategories = 0;
@@ -333,7 +316,7 @@ public class TypeFilterDialog extends DialogBase
 				{
 					if (m_typeCategoryList.getItem(i).getChecked())
 					{
-						m_typeCategories += tf[i].value();
+						m_typeCategories += tc[i].value();
 					}
 					else
 						all = false;
@@ -492,7 +475,7 @@ public class TypeFilterDialog extends DialogBase
   		return flags;
 	}
 	
-	public ArrayList<BaseType> getBaseTypes()
+	public List<BaseType> getBaseTypes()
 	{
 		return m_baseTypes;
 	}

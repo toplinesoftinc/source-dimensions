@@ -12,7 +12,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	protected String m_name;
 	protected List<Parameter> m_paramList = new ArrayList<Parameter>();
 	
-	public enum TypeMemberCategory
+	public enum MemberCategory
 	{
 		FIELD(1<<0),
 		CONSTANT(1<<1),
@@ -29,7 +29,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 		ENUM_CONST(1<<12),
 		ALL(1<<13);
 		
-		TypeMemberCategory(int val)
+		MemberCategory(int val)
 		{
 			value = val;
 		}
@@ -42,12 +42,12 @@ public abstract class TypeMemberDialogBase extends DialogBase
 		}		
 	}	
 	
-	public int getModifier()
+	public int getModifiers()
 	{
 		return m_modifiers;
 	}
 	
-	public int getCategory()
+	public int getMemberCategories()
 	{
 		return m_memberCategories;
 	}
@@ -57,7 +57,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 		return m_type;
 	}
 	
-	public String getName()
+	public String getMemberName()
 	{
 		return m_name;
 	}

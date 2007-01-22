@@ -9,8 +9,8 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
-import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
@@ -46,7 +46,7 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_runQueryButton;
 	private Button m_cancelButton;
 	private Composite m_namespacesTab;
-	private Composite m_typeMembersTab;
+	private Composite m_membersTab;
 	private Composite m_localDeclsTab;
 	private Composite m_typesTab;
 	private Table m_namespaceFilterTable;
@@ -62,10 +62,10 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_editTypeFilterButton;
 	private Button m_removeTypeFilterButton;
 	private List<TypeFilter> m_typeFilter = new ArrayList<TypeFilter>();
-	private List<MemberFilter> m_memberFilter = new ArrayList<MemberFilter>();
+	private List<MemberFilter> m_memberFilter = new ArrayList<MemberFilter>();  //  @jve:decl-index=0:
 	private Button m_allMembersCheckBox;
 	private Label m_memberFilterListLabel;
-	private Table m_typeMemberFilterTable;
+	private Table m_memberFilterTable;
 	private Button m_addMemberFilterButton;
 	private Button m_editMemberFilterButton;
 	private Button m_removeMemberFilterButton;
@@ -142,18 +142,13 @@ public class SymbolQueryDialog extends DialogBase
 		m_runQueryButton.setText("&Run Query");
 		m_runQueryButton.setSelection(true);
 		
-		m_shell.addShellListener(new ShellListener() 
+		m_shell.addShellListener(new ShellAdapter() 
 		{	
 			public void shellClosed(ShellEvent event) 
 			{
 				event.doit = MessageDialog.openQuestion(m_shell, "Close confirmation", "Do you want to close query window?");
 				m_cancel = event.doit;
 			}
-			public void shellActivated(ShellEvent arg0) {}
-			public void shellDeactivated(ShellEvent arg0) {}
-			public void shellIconified(ShellEvent arg0) {}
-			public void shellDeiconified(ShellEvent arg0) {}
-			
 		});
 				
 		postCreate(parent);
@@ -192,7 +187,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_queryParamsTabFolder.setLocation(new Point(15, 118));
 		m_queryParamsTabFolder.setSize(new Point(610, 376));
 		createNamespacesTab();
-		createTypeMembersTab();
+		createMembersTab();
 		createLocalDeclsTab();
 		createTypesTab();
 		TabItem tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
@@ -203,7 +198,7 @@ public class SymbolQueryDialog extends DialogBase
 		tabItem.setControl(m_typesTab);		
 		tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
 		tabItem.setText("Members");
-		tabItem.setControl(m_typeMembersTab);
+		tabItem.setControl(m_membersTab);
 		tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
 		tabItem.setText("Local Declarations");
 		tabItem.setControl(m_localDeclsTab);
@@ -263,26 +258,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_removeNamespaceFilterButton.setLocation(new Point(502, 152));
 		m_removeNamespaceFilterButton.setSize(new Point(88, 25));
 		m_removeNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_removeNamespaceFilterButton.addSelectionListener(new SelectionAdapter()
-		{
-			public void widgetSelected(SelectionEvent e)
-			{
-				int sel = m_namespaceFilterTable.getSelectionIndex();
-				
-				if (sel == -1)
-				{
-					MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
-				}
-				else
-				{
-					if (MessageDialog.openQuestion(m_shell, "Deletion confirmation", 
-						"Are you sure you want to delete selected filter?"))
-					{
-						m_namespaceFilterTable.remove(sel);
-					}
-				}				
-			}
-		});
+		m_removeNamespaceFilterButton.addSelectionListener(new RemoveFilterAdapter(m_shell, m_namespaceFilterTable));
 		m_editNamespaceFilterButton.setToolTipText("Login");
 		m_editNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_editNamespaceFilterButton.setSize(new Point(88, 25));
@@ -316,11 +292,11 @@ public class SymbolQueryDialog extends DialogBase
 		});
 	}
 
-	private void createTypeMembersTab()
+	private void createMembersTab()
 	{
-		m_typeMembersTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
-		m_typeMembersTab.setLayout(null);
-		m_allMembersCheckBox = new Button(m_typeMembersTab, SWT.CHECK | SWT.LEFT);
+		m_membersTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
+		m_membersTab.setLayout(null);
+		m_allMembersCheckBox = new Button(m_membersTab, SWT.CHECK | SWT.LEFT);
 		m_allMembersCheckBox.setText("&All Members");
 		m_allMembersCheckBox.setLocation(new Point(15, 12));
 		m_allMembersCheckBox.setSize(new Point(105, 16));
@@ -330,42 +306,53 @@ public class SymbolQueryDialog extends DialogBase
 			{
 				boolean sel = m_allMembersCheckBox.getSelection();
 
-				m_typeMemberFilterTable.setEnabled(!sel);
+				m_memberFilterTable.setEnabled(!sel);
 				m_addMemberFilterButton.setEnabled(!sel);
 				m_editMemberFilterButton.setEnabled(!sel);
 				m_removeMemberFilterButton.setEnabled(!sel);
 			}
 		});
-		m_memberFilterListLabel = new Label(m_typeMembersTab, SWT.NONE);
+		m_memberFilterListLabel = new Label(m_membersTab, SWT.NONE);
 		m_memberFilterListLabel.setText("&Members Filter &List:");
 		m_memberFilterListLabel.setLocation(new Point(15, 40));
 		m_memberFilterListLabel.setSize(new Point(125, 16));
-		m_typeMemberFilterTable = new Table(m_typeMembersTab, SWT.BORDER | SWT.FULL_SELECTION);
-		m_typeMemberFilterTable.setHeaderVisible(true);
-		m_typeMemberFilterTable.setLinesVisible(true);
-		m_typeMemberFilterTable.setBounds(new Rectangle(15, 57, 476, 272));
-		double width = m_typeMemberFilterTable.getBounds().width - 2 * m_typeMemberFilterTable.getBorderWidth();		
-		TableColumn column = new TableColumn(m_typeMemberFilterTable, SWT.LEFT, 0);
+		m_memberFilterTable = new Table(m_membersTab, SWT.BORDER | SWT.FULL_SELECTION);
+		m_memberFilterTable.setHeaderVisible(true);
+		m_memberFilterTable.setLinesVisible(true);
+		m_memberFilterTable.setBounds(new Rectangle(15, 57, 476, 272));
+		m_memberFilterTable.addMouseListener(new MouseAdapter()
+		{
+			public void mouseDoubleClick(MouseEvent e)
+			{
+				if (m_memberFilterTable.getSelectionIndex() != -1)
+				{
+					editMemberFilter();
+				}
+			}			
+		});		
+		
+		double width = m_memberFilterTable.getBounds().width - 2 * m_memberFilterTable.getBorderWidth();		
+		TableColumn column = new TableColumn(m_memberFilterTable, SWT.LEFT, 0);
 		column.setWidth((int)(0.3 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Name");
-		column = new TableColumn(m_typeMemberFilterTable, SWT.LEFT, 1);
+		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 1);
 		column.setWidth((int)(0.3 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Type");
-		column = new TableColumn(m_typeMemberFilterTable, SWT.LEFT, 2);
+		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 2);
 		column.setWidth((int)(0.2 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Categories");
-		column = new TableColumn(m_typeMemberFilterTable, SWT.LEFT, 3);
+		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 3);
 		column.setWidth((int)(0.2 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Modifiers");		
-		m_addMemberFilterButton = new Button(m_typeMembersTab, SWT.NONE);
+		m_addMemberFilterButton = new Button(m_membersTab, SWT.NONE);
 		m_addMemberFilterButton.setBounds(new Rectangle(502, 57, 88, 25));
 		m_addMemberFilterButton.setText("A&dd Filter...");
 		m_addMemberFilterButton.addSelectionListener(new SelectionAdapter() 
@@ -380,24 +367,33 @@ public class SymbolQueryDialog extends DialogBase
 					MemberFilter filter = new MemberFilter();
 					m_memberFilter.add(filter);
 					
-					filter.m_categories = dialog.getCategory();
-					filter.m_modifiers = dialog.getModifier();
+					filter.m_categories = dialog.getMemberCategories();
+					filter.m_modifiers = dialog.getModifiers();
 					filter.m_anyParams = dialog.getAnyParams();
+					filter.m_type = dialog.getType();
 					
-					TableItem item = new TableItem(m_typeMemberFilterTable, SWT.NONE);
-					item.setText(0, dialog.getName());
-					item.setText(1, dialog.getType().m_name);
+					TableItem item = new TableItem(m_memberFilterTable, SWT.NONE);
+					item.setText(0, dialog.getMemberName());
+					item.setText(1, filter.m_type.m_name);
 					item.setText(2, memberCategoriesToString(filter.m_categories));
 					item.setText(3, modifiersToString(filter.m_modifiers));
 				}			
 			}
 		});
-		m_editMemberFilterButton = new Button(m_typeMembersTab, SWT.NONE);
+		m_editMemberFilterButton = new Button(m_membersTab, SWT.NONE);
 		m_editMemberFilterButton.setBounds(new Rectangle(502, 104, 88, 25));
 		m_editMemberFilterButton.setText("&Edit Filter...");
-		m_removeMemberFilterButton = new Button(m_typeMembersTab, SWT.NONE);
+		m_editMemberFilterButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				editMemberFilter();
+			}
+		});
+		m_removeMemberFilterButton = new Button(m_membersTab, SWT.NONE);
 		m_removeMemberFilterButton.setBounds(new Rectangle(502, 152, 88, 25));
 		m_removeMemberFilterButton.setText("Re&move Filter");
+		m_removeMemberFilterButton.addSelectionListener(new RemoveFilterAdapter(m_shell, m_memberFilterTable, m_memberFilter));
 	}
 
 	private void createLocalDeclsTab()
@@ -518,26 +514,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_removeTypeFilterButton.setSelection(true);
 		m_removeTypeFilterButton.setText("Re&move Filter");
 		m_removeTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_removeTypeFilterButton.addSelectionListener(new SelectionAdapter() 
-		{
-			public void widgetSelected(SelectionEvent e)
-			{
-				int sel = m_typeFilterTable.getSelectionIndex();
-				
-				if (sel == -1)
-				{
-					MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
-				}
-				else
-				{
-					if (MessageDialog.openQuestion(m_shell, "Deletion confirmation", 
-						"Are you sure you want to delete selected filter?"))
-					{
-						m_typeFilterTable.remove(sel);
-					}
-				}				
-			}
-		});
+		m_removeTypeFilterButton.addSelectionListener(new RemoveFilterAdapter(m_shell, m_typeFilterTable, m_typeFilter)); 
 	}
 
 	protected String typeCategoriesToString(int flags)
@@ -563,12 +540,12 @@ public class SymbolQueryDialog extends DialogBase
 	
 	protected String memberCategoriesToString(int flags)
 	{
-		if ((flags & TypeMemberDialogBase.TypeMemberCategory.ALL.value()) != 0)
+		if ((flags & TypeMemberDialogBase.MemberCategory.ALL.value()) != 0)
 			return "<All>";
 		
 		String str = "";
 		
-		for (TypeMemberDialogBase.TypeMemberCategory m : TypeMemberDialogBase.TypeMemberCategory.values())
+		for (TypeMemberDialogBase.MemberCategory m : TypeMemberDialogBase.MemberCategory.values())
 		{
 			if ((flags & m.value()) != 0)
 			{
@@ -603,7 +580,7 @@ public class SymbolQueryDialog extends DialogBase
 		return str;
 	}
 
-	protected String baseTypesToString(ArrayList<BaseType> types)
+	protected String baseTypesToString(List<BaseType> types)
 	{
 		String str = "";
 		
@@ -674,20 +651,60 @@ public class SymbolQueryDialog extends DialogBase
 		
 	}
 	
+	protected void editMemberFilter()
+	{
+		int sel = m_memberFilterTable.getSelectionIndex();
+		
+		if (sel == -1)
+		{
+			MessageDialog.openWarning(m_shell, "Selection", "Please select filter");			
+		}
+		else
+		{
+			MemberFilter filter = m_memberFilter.get(sel);
+			TableItem item = m_memberFilterTable.getItem(sel);
+			
+			JavaMemberDialog dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
+					item.getText(0), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams);
+			
+			dialog.open();
+			
+			if (!dialog.isCancelled())
+			{
+				filter.m_modifiers = dialog.getModifiers();
+				filter.m_categories = dialog.getMemberCategories();
+				filter.m_anyParams = dialog.m_anyParams;
+				filter.m_type = dialog.getType();
+				
+				item.setText(0, dialog.getMemberName());
+				item.setText(1, dialog.getType().m_name);
+				item.setText(2, memberCategoriesToString(filter.m_categories));
+				item.setText(3, modifiersToString(filter.m_modifiers));
+			}
+		}
+	}
+	
 	protected class TypeFilter
 	{
 		public int m_categories;
 		public int m_modifiers;
 		public boolean m_allBaseTypes;
-		public ArrayList<BaseType> m_baseTypes;
+		public List<BaseType> m_baseTypes;
 	}
 	
 	protected class MemberFilter
 	{
 		public int m_categories;
 		public int m_modifiers;
-		public boolean m_anyParams;		
+		public boolean m_anyParams;
+		public Type m_type;
 	}
+
+	protected Shell getShell()
+	{
+		return m_shell;
+	}	
+
 	
 	protected class NamespaceFilterValidator extends InputDialog.MandatoryFieldValidator
 	{
@@ -734,10 +751,5 @@ public class SymbolQueryDialog extends DialogBase
 				return true;
 			}
 		}
-	}
-	
-	protected Shell getShell()
-	{
-		return m_shell;
-	}
+	}	
 }

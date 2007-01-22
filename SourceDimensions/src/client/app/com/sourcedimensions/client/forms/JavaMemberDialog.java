@@ -24,15 +24,15 @@ import com.sourcedimensions.client.Util;
 
 public class JavaMemberDialog extends TypeMemberDialogBase 
 {
-	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-10,2"
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-8,-10"
 	private Label m_memberCategoryLabel;
 	private Table m_memberCategoryList;
-	private TypeMemberCategory[] m_categoryArray = 
+	private MemberCategory[] m_categoryArray = 
 	{
-		TypeMemberCategory.FIELD,
-		TypeMemberCategory.CONSTRUCTOR,
-		TypeMemberCategory.METHOD,
-		TypeMemberCategory.ENUM_CONST
+		MemberCategory.FIELD,
+		MemberCategory.CONSTRUCTOR,
+		MemberCategory.METHOD,
+		MemberCategory.ENUM_CONST
 	};
 	private Modifier[] m_modifierArray =
 	{
@@ -68,7 +68,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	private Combo m_arrayTypeCombo = null;
 	private Combo m_typeParamCombo = null;
 	private Label m_arrayTypeLabel = null;
-	private Label m_typeParamLabel = null;
+	private Label m_typeParamLabel = null;	
 	
 	public JavaMemberDialog(Display display, Shell parent)
 	{
@@ -78,16 +78,38 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		checkAllItems(m_modifierList);
 	}
 	
+	public JavaMemberDialog(Display display, Shell parent, String name, int categories, int modifiers, 
+		Type type, boolean anyParams)
+	{
+		m_display = display;
+		createShell(parent);
+		m_memberNameText.setText(name);
+		m_arrayTypeCombo.select(type.m_isArray.value());
+		m_typeParamCombo.select(type.m_isTypeParam.value());
+		m_typeNameText.setText(type.m_name);
+		m_anyParamsCheckBox.setSelection(anyParams);
+		enableParamControls(!anyParams);
+		
+		for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
+		{
+			m_memberCategoryList.getItem(i).setChecked((categories & m_categoryArray[i].value()) != 0);
+		}
+		
+		for (int i = 0; i < m_modifierList.getItemCount(); i++)
+		{
+			m_modifierList.getItem(i).setChecked((modifiers & m_modifierArray[i].value()) != 0);
+		}
+	}
+		
 	private void createShell(Shell parent)  
 	{
 		m_shell = new Shell(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		m_shell.setText("Member Filter");
-		m_shell.setSize(new Point(671, 453));
+		m_shell.setSize(new Point(671, 450));
 		
 		if (parent != null)
 			m_shell.setParent(parent);
 				
-		m_shell.setText("Type Member Filter");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		m_shell.setLayout(null);
 		m_memberCategoryLabel = new Label(m_shell, SWT.NONE);
@@ -115,7 +137,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		}		
 		m_allCategoriesButton = new Button(getShell(), SWT.NONE);
 		m_allCategoriesButton.setText("All &Categories");
-		m_allCategoriesButton.setLocation(new Point(148, 30));
+		m_allCategoriesButton.setLocation(new Point(147, 30));
 		m_allCategoriesButton.setSize(new Point(80, 23));
 		m_allCategoriesButton.addSelectionListener(new SelectionAdapter() 
 		{
@@ -127,7 +149,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		});
 		m_allModifiersButton = new Button(getShell(), SWT.NONE);
 		m_allModifiersButton.setText("All &Modifiers");
-		m_allModifiersButton.setLocation(new Point(148, 62));
+		m_allModifiersButton.setLocation(new Point(147, 62));
 		m_allModifiersButton.setSize(new Point(80, 23));
 		m_allModifiersButton.addSelectionListener(new SelectionAdapter() 
 		{
@@ -273,7 +295,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				}
 				
 				if (all)
-					m_memberCategories += TypeMemberCategory.ALL.value();
+					m_memberCategories += MemberCategory.ALL.value();
 
 				all = true;
 				m_modifiers = 0;
@@ -339,9 +361,9 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		
 		for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
 		{
-			TypeMemberCategory cat = m_categoryArray[i];
+			MemberCategory cat = m_categoryArray[i];
 			
-			if (cat == TypeMemberCategory.CONSTRUCTOR || cat == TypeMemberCategory.METHOD)
+			if (cat == MemberCategory.CONSTRUCTOR || cat == MemberCategory.METHOD)
 			{
 				if (m_memberCategoryList.getItem(i).getChecked())
 				{
