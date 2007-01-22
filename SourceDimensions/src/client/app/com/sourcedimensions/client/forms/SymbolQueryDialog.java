@@ -318,7 +318,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_memberFilterListLabel = new Label(m_membersTab, SWT.NONE);
 		m_memberFilterListLabel.setText("&Members Filter &List:");
 		m_memberFilterListLabel.setLocation(new Point(15, 40));
-		m_memberFilterListLabel.setSize(new Point(125, 16));
+		m_memberFilterListLabel.setSize(new Point(108, 15));
 		m_memberFilterTable = new Table(m_membersTab, SWT.BORDER | SWT.FULL_SELECTION);
 		m_memberFilterTable.setHeaderVisible(true);
 		m_memberFilterTable.setLinesVisible(true);
@@ -336,25 +336,25 @@ public class SymbolQueryDialog extends DialogBase
 		
 		double width = m_memberFilterTable.getBounds().width - 2 * m_memberFilterTable.getBorderWidth();		
 		TableColumn column = new TableColumn(m_memberFilterTable, SWT.LEFT, 0);
-		column.setWidth((int)(0.3 * width));
-		column.setResizable(true);
-		column.setMoveable(true);
-		column.setText("Name");
-		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 1);
-		column.setWidth((int)(0.3 * width));
-		column.setResizable(true);
-		column.setMoveable(true);
-		column.setText("Type/Return type");
-		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 2);
 		column.setWidth((int)(0.2 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Categories");
-		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 3);
+		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 1);
 		column.setWidth((int)(0.2 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Modifiers");		
+		column.setText("Modifiers");
+		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 2);
+		column.setWidth((int)(0.3 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Name");
+		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 3);
+		column.setWidth((int)(0.3 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Type/Return type");		
 		m_addMemberFilterButton = new Button(m_membersTab, SWT.NONE);
 		m_addMemberFilterButton.setBounds(new Rectangle(502, 57, 88, 25));
 		m_addMemberFilterButton.setText("A&dd Filter...");
@@ -389,10 +389,10 @@ public class SymbolQueryDialog extends DialogBase
 					filter.m_type = dialog.getType();
 					
 					TableItem item = new TableItem(m_memberFilterTable, SWT.NONE);
-					item.setText(0, dialog.getMemberName());
-					item.setText(1, filter.m_type.m_name);
-					item.setText(2, memberCategoriesToString(filter.m_categories));
-					item.setText(3, modifiersToString(filter.m_modifiers));
+					item.setText(0, memberCategoriesToString(filter.m_categories));
+					item.setText(1, modifiersToString(filter.m_modifiers));
+					item.setText(2, dialog.getMemberName());
+					item.setText(3, filter.m_type.m_name);
 				}			
 			}
 		});
@@ -457,22 +457,22 @@ public class SymbolQueryDialog extends DialogBase
 		});		
 		double width = m_typeFilterTable.getBounds().width - 2 * m_typeFilterTable.getBorderWidth(); 
 		TableColumn column = new TableColumn(m_typeFilterTable, SWT.LEFT, 0);
-		column.setWidth((int)(0.4 * width));
-		column.setResizable(true);
-		column.setMoveable(true);
-		column.setText("Name");
-		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 1);
 		column.setWidth((int)(0.2 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Categories");
-		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 2);
+		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 1);
 		column.setWidth((int)(0.2 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Modifiers");
+		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 2);
+		column.setWidth((int)(0.35 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Name");		
 		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 3);
-		column.setWidth((int)(0.2 * width));
+		column.setWidth((int)(0.25 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Base types");
@@ -504,9 +504,9 @@ public class SymbolQueryDialog extends DialogBase
 					m_typeFilter.add(filter);
 					
 					TableItem item = new TableItem(m_typeFilterTable, 0);
-					item.setText(0, dialog.getTypeName());
-					item.setText(1, typeCategoriesToString(filter.m_categories));
-					item.setText(2, modifiersToString(filter.m_modifiers));
+					item.setText(0, typeCategoriesToString(filter.m_categories));
+					item.setText(1, modifiersToString(filter.m_modifiers));
+					item.setText(2, dialog.getTypeName());					
 					item.setText(3, dialog.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.m_baseTypes));
 				}
 			}
@@ -647,7 +647,7 @@ public class SymbolQueryDialog extends DialogBase
 			TableItem item = m_typeFilterTable.getItem(sel);
 			
 			TypeFilterDialog dialog = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-				item.getText(0), filter.m_categories, filter.m_modifiers, filter.m_allBaseTypes, filter.m_baseTypes);
+				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_allBaseTypes, filter.m_baseTypes);
 			
 			dialog.open();
 			
@@ -658,10 +658,10 @@ public class SymbolQueryDialog extends DialogBase
 				filter.m_baseTypes = dialog.getBaseTypes();
 				filter.m_allBaseTypes = dialog.getAllBaseTypes();						
 
-				item.setText(0, dialog.getTypeName());
-				item.setText(1, typeCategoriesToString(filter.m_categories));
-				item.setText(2, modifiersToString(filter.m_modifiers));
-				item.setText(3, dialog.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.m_baseTypes));
+				item.setText(0, typeCategoriesToString(filter.m_categories));			
+				item.setText(1, modifiersToString(filter.m_modifiers));
+				item.setText(2, dialog.getTypeName());				
+				item.setText(3, filter.m_allBaseTypes ? "<Any>" : baseTypesToString(filter.m_baseTypes));
 			}
 		}
 		
@@ -681,7 +681,7 @@ public class SymbolQueryDialog extends DialogBase
 			TableItem item = m_memberFilterTable.getItem(sel);
 			
 			JavaMemberDialog dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-					item.getText(0), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams);
+					item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams);
 			
 			dialog.open();
 			
@@ -692,10 +692,10 @@ public class SymbolQueryDialog extends DialogBase
 				filter.m_anyParams = dialog.m_anyParams;
 				filter.m_type = dialog.getType();
 				
-				item.setText(0, dialog.getMemberName());
-				item.setText(1, dialog.getType().m_name);
-				item.setText(2, memberCategoriesToString(filter.m_categories));
-				item.setText(3, modifiersToString(filter.m_modifiers));
+				item.setText(0, memberCategoriesToString(filter.m_categories));
+				item.setText(1, modifiersToString(filter.m_modifiers));
+				item.setText(2, dialog.getMemberName());
+				item.setText(3, dialog.getType().m_name);				
 			}
 		}
 	}

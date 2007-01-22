@@ -99,8 +99,8 @@ public class TypeFilterDialog extends DialogBase
 			for (BaseType t : m_baseTypes)
 			{
 				TableItem item = new TableItem(m_baseTypesTable, 0);
-				item.setText(0, t.m_name);
-				item.setText(1, BaseTypeFilterDialog.getTypeCategoryName(t.m_category));
+				item.setText(0, BaseTypeFilterDialog.getTypeCategoryName(t.m_category));				
+				item.setText(1, t.m_name);
 			}
 		}
 		
@@ -201,15 +201,15 @@ public class TypeFilterDialog extends DialogBase
 		});
 		double width = m_baseTypesTable.getBounds().width - 2 * m_baseTypesTable.getBorderWidth(); 
 		TableColumn column = new TableColumn(m_baseTypesTable, SWT.LEFT, 0);
-		column.setWidth((int)(0.6 * width));
-		column.setResizable(true);
-		column.setMoveable(true);
-		column.setText("Name");
-		column = new TableColumn(m_baseTypesTable, SWT.LEFT, 1);
 		column.setWidth((int)(0.4 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Category");
+		column = new TableColumn(m_baseTypesTable, SWT.LEFT, 1);
+		column.setWidth((int)(0.6 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Name");		
 		m_addBaseTypeButton = new Button(m_shell, SWT.NONE);
 		m_addBaseTypeButton.setLocation(new Point(346, 185));
 		m_addBaseTypeButton.setText("A&dd filter...");
@@ -226,8 +226,8 @@ public class TypeFilterDialog extends DialogBase
 				if (val != null)
 				{
 					TableItem item = new TableItem(m_baseTypesTable, SWT.NONE);
-					item.setText(0, val);
-					item.setText(1, input.getTypeCategoryName());
+					item.setText(0, input.getTypeCategoryName());
+					item.setText(1, val);					
 					m_baseTypes.add(new BaseType(val, input.getTypeCategory().value()));
 				}				
 			}		
@@ -501,7 +501,7 @@ public class TypeFilterDialog extends DialogBase
 		else
 		{
 			BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-				m_baseTypesTable.getItem(sel).getText(0), m_baseTypes.get(sel).m_category);
+				m_baseTypesTable.getItem(sel).getText(1), m_baseTypes.get(sel).m_category);
 			
 			input.open();
 			String val = input.getValue();
@@ -509,8 +509,8 @@ public class TypeFilterDialog extends DialogBase
 			if (val != null)
 			{
 				TableItem item = m_baseTypesTable.getItem(sel);
-				item.setText(0, val);
-				item.setText(1, input.getTypeCategoryName());
+				item.setText(0, input.getTypeCategoryName());				
+				item.setText(1, val);
 				m_baseTypes.set(sel, new BaseType(val, input.getTypeCategory().value()));
 			}							
 		}		

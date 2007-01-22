@@ -416,9 +416,12 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_arrayTypeCombo = new Combo(m_typeGroup, SWT.READ_ONLY);
 		m_arrayTypeCombo.setVisibleItemCount(3);
 		m_arrayTypeCombo.setBounds(new Rectangle(9, 33, 97, 21));
-		m_arrayTypeCombo.add("No", 0);
-		m_arrayTypeCombo.add("Yes", 1);
-		m_arrayTypeCombo.add("Optional", 2);
+
+		for (int i = 0; i < m_triStateText.length; i++)
+		{
+			m_arrayTypeCombo.add(m_triStateText[i], i);
+		}
+
 		m_arrayTypeCombo.select(0);
 	}
 
@@ -427,9 +430,12 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_typeParamCombo = new Combo(m_typeGroup, SWT.READ_ONLY);
 		m_typeParamCombo.setVisibleItemCount(3);
 		m_typeParamCombo.setBounds(new Rectangle(9, 86, 97, 21));
-		m_typeParamCombo.add("No", 0);
-		m_typeParamCombo.add("Yes", 1);
-		m_typeParamCombo.add("Optional", 2);
+
+		for (int i = 0; i < m_triStateText.length; i++)
+		{
+			m_typeParamCombo.add(m_triStateText[i], i);
+		}
+		
 		m_typeParamCombo.select(0);
 	}
 }
