@@ -11,7 +11,6 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	protected Type m_type = new Type();
 	protected String m_name;
 	protected List<Parameter> m_paramList = new ArrayList<Parameter>();
-	protected static final String[] m_triStateText = { "No", "Yes", "Optional" };
 	
 	public enum MemberCategory
 	{

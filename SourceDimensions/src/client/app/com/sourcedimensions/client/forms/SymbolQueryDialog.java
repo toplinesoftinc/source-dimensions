@@ -16,8 +16,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+
+import com.sourcedimensions.client.TriStateBoolean;
 import com.sourcedimensions.client.forms.TypeFilterDialog.BaseType;
 import com.sourcedimensions.client.forms.TypeFilterDialog.TypeCategory;
+import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
 
 import org.eclipse.swt.widgets.Label;
@@ -38,7 +41,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 public class SymbolQueryDialog extends DialogBase
 {
-	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-38,-54"
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-36,-68"
 	private Label m_destinationSnapshotLabel;
 	private Combo m_comboDestinationSnapshot;
 	private Text m_snapshotNameText;
@@ -71,9 +74,9 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_addMemberFilterButton;
 	private Button m_editMemberFilterButton;
 	private Button m_removeMemberFilterButton;
-	private Label m_queryNameLabel = null;
-	private Text m_queryNameText = null;
-	private Button m_saveButton = null;
+	private Label m_queryNameLabel;
+	private Text m_queryNameText;
+	private Button m_saveButton;
 	
 	public SymbolQueryDialog(Display display, Shell parent)
 	{
@@ -90,35 +93,35 @@ public class SymbolQueryDialog extends DialogBase
 		
 		m_shell.setText("Symbol Query");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
-		m_shell.setSize(new Point(645, 536));
+		m_shell.setSize(new Point(680, 536));
 		m_shell.setLayout(null);
 		m_runQueryButton = new Button(m_shell, SWT.NONE);
 		m_saveButton = new Button(getShell(), SWT.NONE);
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_destinationSnapshotLabel = new Label(m_shell, SWT.NONE);
 		m_destinationSnapshotLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_destinationSnapshotLabel.setBounds(new Rectangle(122, 17, 118, 14));
+		m_destinationSnapshotLabel.setBounds(new Rectangle(122, 17, 115, 14));
 		m_destinationSnapshotLabel.setText("&Destination Snapshot:");
 		createComboDestinationSnapshot();
 		m_clearSnapshotCheckBox = new Button(m_shell, SWT.CHECK | SWT.RIGHT);
 		m_snapshotNameLabel = new Label(m_shell, SWT.NONE);
 		m_snapshotNameText = new Text(m_shell, SWT.BORDER | SWT.LEFT);
 		m_snapshotNameText.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_snapshotNameText.setSize(new Point(255, 18));
-		m_snapshotNameText.setLocation(new Point(370, 35));
+		m_snapshotNameText.setSize(new Point(275, 18));
+		m_snapshotNameText.setLocation(new Point(385, 32));
 		m_clearSnapshotCheckBox.setBounds(new Rectangle(122, 64, 91, 15));
 		m_clearSnapshotCheckBox.setEnabled(false);
 		m_clearSnapshotCheckBox.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_clearSnapshotCheckBox.setText("Clear &Snapshot");
 		m_clearSnapshotCheckBox.setToolTipText("Delete all contents of the snapshot before putting results of this query");
-		m_snapshotNameLabel.setBounds(new Rectangle(370, 20, 111, 14));
+		m_snapshotNameLabel.setBounds(new Rectangle(385, 17, 109, 14));
 		m_snapshotNameLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_snapshotNameLabel.setText("Ne&w Snapshot Name:");
 		m_queryNameLabel = new Label(getShell(), SWT.NONE);
 		m_queryNameText = new Text(getShell(), SWT.BORDER);
-		m_queryNameText.setBounds(new Rectangle(370, 80, 255, 19));
+		m_queryNameText.setBounds(new Rectangle(385, 80, 275, 19));
 		createQueryParamsTabFolder();
-		m_queryNameLabel.setBounds(new Rectangle(370, 66, 70, 13));
+		m_queryNameLabel.setBounds(new Rectangle(385, 66, 69, 13));
 		m_queryNameLabel.setText("&Query Name:");
 		m_saveButton.setLocation(new Point(15, 46));
 		m_saveButton.setSize(new Point(88, 25));
@@ -165,7 +168,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_comboDestinationSnapshot.setText("");
 		m_comboDestinationSnapshot.setToolTipText("Snapshot where to put results of this query into");
 		m_comboDestinationSnapshot.setVisibleItemCount(10);
-		m_comboDestinationSnapshot.setSize(new Point(236, 21));
+		m_comboDestinationSnapshot.setSize(new Point(247, 21));
 		m_comboDestinationSnapshot.addSelectionListener(new SelectionListener()
 		{
 			public void widgetSelected(SelectionEvent e)
@@ -188,7 +191,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_queryParamsTabFolder = new TabFolder(m_shell, SWT.NONE);
 		m_queryParamsTabFolder.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_queryParamsTabFolder.setLocation(new Point(15, 118));
-		m_queryParamsTabFolder.setSize(new Point(610, 376));
+		m_queryParamsTabFolder.setSize(new Point(644, 376));
 		createNamespacesTab();
 		createMembersTab();
 		createLocalDeclsTab();
@@ -216,8 +219,9 @@ public class SymbolQueryDialog extends DialogBase
 		m_namespaceFilterTable = new Table(m_namespacesTab, SWT.BORDER | SWT.FULL_SELECTION);
 		m_namespaceFilterTable.setHeaderVisible(false);
 		m_namespaceFilterTable.setLinesVisible(true);
+		m_namespaceFilterTable.setLocation(new Point(15, 57));
 		m_namespaceFilterTable.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_namespaceFilterTable.setBounds(new Rectangle(15, 57, 476, 272));
+		m_namespaceFilterTable.setSize(new Point(406, 272));
 		m_namespaceFilterTable.addMouseListener(new MouseAdapter()
 		{
 			public void mouseDoubleClick(MouseEvent e)
@@ -235,7 +239,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_addNamespaceFilterButton.setToolTipText("Login");
 		m_addNamespaceFilterButton.setSelection(true);
 		m_addNamespaceFilterButton.setText("A&dd Filter...");
-		m_addNamespaceFilterButton.setLocation(new Point(502, 57));
+		m_addNamespaceFilterButton.setLocation(new Point(432, 57));
 		m_addNamespaceFilterButton.setSize(new Point(88, 25));
 		m_addNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_addNamespaceFilterButton.addSelectionListener(new SelectionAdapter()
@@ -258,14 +262,14 @@ public class SymbolQueryDialog extends DialogBase
 		m_removeNamespaceFilterButton.setToolTipText("Login");
 		m_removeNamespaceFilterButton.setSelection(true);
 		m_removeNamespaceFilterButton.setText("Re&move Filter");
-		m_removeNamespaceFilterButton.setLocation(new Point(502, 152));
+		m_removeNamespaceFilterButton.setLocation(new Point(432, 152));
 		m_removeNamespaceFilterButton.setSize(new Point(88, 25));
 		m_removeNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_removeNamespaceFilterButton.addSelectionListener(new RemoveFilterAdapter(m_shell, m_namespaceFilterTable));
 		m_editNamespaceFilterButton.setToolTipText("Login");
 		m_editNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_editNamespaceFilterButton.setSize(new Point(88, 25));
-		m_editNamespaceFilterButton.setLocation(new Point(502, 104));
+		m_editNamespaceFilterButton.setLocation(new Point(432, 104));
 		m_editNamespaceFilterButton.setText("&Edit Filter...");
 		m_editNamespaceFilterButton.setSelection(true);
 		m_editNamespaceFilterButton.addSelectionListener(new SelectionAdapter()
@@ -321,8 +325,9 @@ public class SymbolQueryDialog extends DialogBase
 		m_memberFilterListLabel.setSize(new Point(108, 15));
 		m_memberFilterTable = new Table(m_membersTab, SWT.BORDER | SWT.FULL_SELECTION);
 		m_memberFilterTable.setHeaderVisible(true);
+		m_memberFilterTable.setLocation(new Point(15, 57));
 		m_memberFilterTable.setLinesVisible(true);
-		m_memberFilterTable.setBounds(new Rectangle(15, 57, 476, 272));
+		m_memberFilterTable.setSize(new Point(506, 272));
 		m_memberFilterTable.addMouseListener(new MouseAdapter()
 		{
 			public void mouseDoubleClick(MouseEvent e)
@@ -346,18 +351,46 @@ public class SymbolQueryDialog extends DialogBase
 		column.setMoveable(true);
 		column.setText("Modifiers");
 		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 2);
-		column.setWidth((int)(0.3 * width));
+		column.setWidth((int)(0.35 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Name");
 		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 3);
-		column.setWidth((int)(0.3 * width));
+		column.setWidth((int)(0.25 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Type/Return type");		
+		column.setText("Type/Return type");
+		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 4);
+		column.setWidth((int)(0.12 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Array");
+		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 5);
+		column.setWidth((int)(0.16 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Type param.");
+		
+		Language lang = ProjectView.getProject().getLanguage();
+		
+ 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
+  		{
+			column = new TableColumn(m_memberFilterTable, SWT.LEFT, 6);
+			column.setWidth((int)(0.14 * width));
+			column.setResizable(true);
+			column.setMoveable(true);
+			column.setText("Nullable");
+			column = new TableColumn(m_memberFilterTable, SWT.LEFT, 7);
+			column.setWidth((int)(0.14 * width));
+			column.setResizable(true);
+			column.setMoveable(true);
+			column.setText("Pointer"); 
+  		}
+		
 		m_addMemberFilterButton = new Button(m_membersTab, SWT.NONE);
-		m_addMemberFilterButton.setBounds(new Rectangle(502, 57, 88, 25));
 		m_addMemberFilterButton.setText("A&dd Filter...");
+		m_addMemberFilterButton.setLocation(new Point(535, 57));
+		m_addMemberFilterButton.setSize(new Point(88, 25));
 		m_addMemberFilterButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
@@ -393,12 +426,23 @@ public class SymbolQueryDialog extends DialogBase
 					item.setText(1, modifiersToString(filter.m_modifiers));
 					item.setText(2, dialog.getMemberName());
 					item.setText(3, filter.m_type.m_name);
+					item.setText(4, m_triStateText[filter.m_type.m_isArray.value()]);
+					item.setText(5, m_triStateText[filter.m_type.m_isTypeParam.value()]);
+					
+					Language lang = ProjectView.getProject().getLanguage();
+					
+			 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
+			  		{
+						item.setText(6, m_triStateText[filter.m_type.m_isNullable.value()]);
+			 			item.setText(7, m_triStateText[filter.m_type.m_isPointer.value()]);
+					}		
 				}			
 			}
 		});
 		m_editMemberFilterButton = new Button(m_membersTab, SWT.NONE);
-		m_editMemberFilterButton.setBounds(new Rectangle(502, 104, 88, 25));
 		m_editMemberFilterButton.setText("&Edit Filter...");
+		m_editMemberFilterButton.setLocation(new Point(535, 104));
+		m_editMemberFilterButton.setSize(new Point(88, 25));
 		m_editMemberFilterButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
@@ -407,8 +451,9 @@ public class SymbolQueryDialog extends DialogBase
 			}
 		});
 		m_removeMemberFilterButton = new Button(m_membersTab, SWT.NONE);
-		m_removeMemberFilterButton.setBounds(new Rectangle(502, 152, 88, 25));
 		m_removeMemberFilterButton.setText("Re&move Filter");
+		m_removeMemberFilterButton.setLocation(new Point(535, 152));
+		m_removeMemberFilterButton.setSize(new Point(88, 25));
 		m_removeMemberFilterButton.addSelectionListener(new RemoveFilterAdapter(m_shell, m_memberFilterTable, m_memberFilter));
 	}
 
@@ -443,8 +488,9 @@ public class SymbolQueryDialog extends DialogBase
 		m_typeFilterTable = new Table(m_typesTab, SWT.BORDER | SWT.FULL_SELECTION);
 		m_typeFilterTable.setHeaderVisible(true);
 		m_typeFilterTable.setLinesVisible(true);
+		m_typeFilterTable.setLocation(new Point(15, 57));
 		m_typeFilterTable.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_typeFilterTable.setBounds(new Rectangle(15, 57, 476, 272));
+		m_typeFilterTable.setSize(new Point(506, 272));
 		m_typeFilterTable.addMouseListener(new MouseAdapter()
 		{
 			public void mouseDoubleClick(MouseEvent e)
@@ -457,12 +503,12 @@ public class SymbolQueryDialog extends DialogBase
 		});		
 		double width = m_typeFilterTable.getBounds().width - 2 * m_typeFilterTable.getBorderWidth(); 
 		TableColumn column = new TableColumn(m_typeFilterTable, SWT.LEFT, 0);
-		column.setWidth((int)(0.2 * width));
+		column.setWidth((int)(0.20 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Categories");
 		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 1);
-		column.setWidth((int)(0.2 * width));
+		column.setWidth((int)(0.20 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Modifiers");
@@ -476,15 +522,21 @@ public class SymbolQueryDialog extends DialogBase
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Base types");
+		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 4);
+		column.setWidth((int)(0.15 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Int.type");
 		m_typeFilterLabel = new Label(m_typesTab, SWT.NONE);
 		m_typeFilterLabel.setBounds(new Rectangle(15, 40, 101, 16));
 		m_typeFilterLabel.setText("&Type Filter List:");
 		m_typeFilterLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_addTypeFilterButton = new Button(m_typesTab, SWT.NONE);
-		m_addTypeFilterButton.setBounds(new Rectangle(502, 57, 88, 25));
 		m_addTypeFilterButton.setToolTipText("Login");
 		m_addTypeFilterButton.setSelection(true);
 		m_addTypeFilterButton.setText("A&dd Filter...");
+		m_addTypeFilterButton.setSize(new Point(88, 25));
+		m_addTypeFilterButton.setLocation(new Point(535, 57));
 		m_addTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_addTypeFilterButton.addSelectionListener(new SelectionAdapter() 
 		{
@@ -501,6 +553,7 @@ public class SymbolQueryDialog extends DialogBase
 					filter.m_categories = dialog.getTypeCategories();
 					filter.m_baseTypes = dialog.getBaseTypes();
 					filter.m_allBaseTypes = dialog.getAllBaseTypes();
+					filter.m_internalType = dialog.getInternalType();
 					m_typeFilter.add(filter);
 					
 					TableItem item = new TableItem(m_typeFilterTable, 0);
@@ -508,14 +561,16 @@ public class SymbolQueryDialog extends DialogBase
 					item.setText(1, modifiersToString(filter.m_modifiers));
 					item.setText(2, dialog.getTypeName());					
 					item.setText(3, dialog.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.m_baseTypes));
+					item.setText(4, m_triStateText[dialog.getInternalType().value()]);
 				}
 			}
 		});
 		m_editTypeFilterButton = new Button(m_typesTab, SWT.NONE);
-		m_editTypeFilterButton.setBounds(new Rectangle(502, 104, 88, 25));
 		m_editTypeFilterButton.setToolTipText("Login");
 		m_editTypeFilterButton.setSelection(true);
 		m_editTypeFilterButton.setText("&Edit Filter...");
+		m_editTypeFilterButton.setSize(new Point(88, 25));
+		m_editTypeFilterButton.setLocation(new Point(535, 104));
 		m_editTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_editTypeFilterButton.addSelectionListener(new SelectionAdapter() 
 		{
@@ -525,10 +580,11 @@ public class SymbolQueryDialog extends DialogBase
 			}
 		});
 		m_removeTypeFilterButton = new Button(m_typesTab, SWT.NONE);
-		m_removeTypeFilterButton.setBounds(new Rectangle(502, 152, 88, 25));
 		m_removeTypeFilterButton.setToolTipText("Login");
 		m_removeTypeFilterButton.setSelection(true);
 		m_removeTypeFilterButton.setText("Re&move Filter");
+		m_removeTypeFilterButton.setSize(new Point(88, 25));
+		m_removeTypeFilterButton.setLocation(new Point(535, 152));
 		m_removeTypeFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_removeTypeFilterButton.addSelectionListener(new RemoveFilterAdapter(m_shell, m_typeFilterTable, m_typeFilter)); 
 	}
@@ -647,7 +703,7 @@ public class SymbolQueryDialog extends DialogBase
 			TableItem item = m_typeFilterTable.getItem(sel);
 			
 			TypeFilterDialog dialog = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_allBaseTypes, filter.m_baseTypes);
+				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_internalType, filter.m_allBaseTypes, filter.m_baseTypes);
 			
 			dialog.open();
 			
@@ -656,12 +712,14 @@ public class SymbolQueryDialog extends DialogBase
 				filter.m_modifiers = dialog.getModifiers();
 				filter.m_categories = dialog.getTypeCategories();
 				filter.m_baseTypes = dialog.getBaseTypes();
-				filter.m_allBaseTypes = dialog.getAllBaseTypes();						
+				filter.m_allBaseTypes = dialog.getAllBaseTypes();
+				filter.m_internalType = dialog.getInternalType();
 
 				item.setText(0, typeCategoriesToString(filter.m_categories));			
 				item.setText(1, modifiersToString(filter.m_modifiers));
 				item.setText(2, dialog.getTypeName());				
 				item.setText(3, filter.m_allBaseTypes ? "<Any>" : baseTypesToString(filter.m_baseTypes));
+				item.setText(4, m_triStateText[dialog.getInternalType().value()]);
 			}
 		}
 		
@@ -695,7 +753,17 @@ public class SymbolQueryDialog extends DialogBase
 				item.setText(0, memberCategoriesToString(filter.m_categories));
 				item.setText(1, modifiersToString(filter.m_modifiers));
 				item.setText(2, dialog.getMemberName());
-				item.setText(3, dialog.getType().m_name);				
+				item.setText(3, dialog.getType().m_name);
+				item.setText(4, m_triStateText[filter.m_type.m_isArray.value()]);
+				item.setText(5, m_triStateText[filter.m_type.m_isTypeParam.value()]);
+				
+				Language lang = ProjectView.getProject().getLanguage();
+				
+		 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
+		  		{
+					item.setText(6, m_triStateText[filter.m_type.m_isNullable.value()]);
+		 			item.setText(7, m_triStateText[filter.m_type.m_isPointer.value()]);
+				}
 			}
 		}
 	}
@@ -705,6 +773,7 @@ public class SymbolQueryDialog extends DialogBase
 		public int m_categories;
 		public int m_modifiers;
 		public boolean m_allBaseTypes;
+		public TriStateBoolean m_internalType;
 		public List<BaseType> m_baseTypes;
 	}
 	

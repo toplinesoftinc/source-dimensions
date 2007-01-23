@@ -1,6 +1,6 @@
 package com.sourcedimensions.client.forms;
 
-import com.sourcedimensions.client.Util.TriStateBoolean;
+import com.sourcedimensions.client.TriStateBoolean;
 
 
 public class Type 

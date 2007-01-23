@@ -19,10 +19,13 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+
+import com.sourcedimensions.client.TriStateBoolean;
 import com.sourcedimensions.client.views.ProjectView;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.swt.widgets.Combo;
 
 public class TypeFilterDialog extends DialogBase 
 {
@@ -47,7 +50,10 @@ public class TypeFilterDialog extends DialogBase
 	private boolean m_allBaseTypes;
 	private String m_typeName = "";  //  @jve:decl-index=0:
 	private Button m_allModifiersButton;
-	private Button m_allCategoriesButton = null;
+	private Button m_allCategoriesButton;
+	private TriStateBoolean m_internalType;
+	private Combo m_internalTypesCombo;
+	private Label m_internalTypesLabel;
 	
 	public enum TypeCategory
 	{
@@ -84,13 +90,15 @@ public class TypeFilterDialog extends DialogBase
 	}
 
 	public TypeFilterDialog(Display display, Shell parent, String typeName, 
-			int categories, int modifiers, boolean allBaseTypes, List<BaseType> baseTypes)
+			int categories, int modifiers, TriStateBoolean internalType, boolean allBaseTypes, List<BaseType> baseTypes)
 	{
 		m_display = display;
 		createShell(parent);
 		m_typeNameText.setText(typeName);
 		m_allBaseTypesCheckBox.setSelection(allBaseTypes);
 		setBaseTypeControls();
+	
+		m_internalTypesCombo.select(internalType.value());
 		
 		if (baseTypes != null & !allBaseTypes)
 		{
@@ -136,7 +144,7 @@ public class TypeFilterDialog extends DialogBase
 		
 		m_shell.setText("Type Filter");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
-		m_shell.setSize(new Point(454, 392));
+		m_shell.setSize(new Point(454, 400));
 		m_shell.setLayout(null);
 		m_typeCategoryLabel = new Label(m_shell, SWT.NONE);
 		m_typeCategoryList = new Table(m_shell, SWT.BORDER | SWT.SINGLE | SWT.CHECK | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
@@ -167,7 +175,7 @@ public class TypeFilterDialog extends DialogBase
 		m_modifierList = new Table(m_shell, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
 		m_modifierList.setHeaderVisible(false);
 		m_modifierList.setLinesVisible(false);
-		m_modifierList.setBounds(new Rectangle(231, 22, 100, 136));
+		m_modifierList.setBounds(new Rectangle(231, 22, 100, 152));
 		
 		Modifier[] mods = getModifierArray();
 		for (int i = 0; i < mods.length - 1; i++)
@@ -180,15 +188,19 @@ public class TypeFilterDialog extends DialogBase
 
 		m_typeNameLabel.setBounds(new Rectangle(17, 101, 101, 13));
 		m_typeNameLabel.setText("Type &Name Filter:");
+		m_internalTypesLabel = new Label(getShell(), SWT.NONE);
+		createInternalTypesCombo();
+		m_internalTypesLabel.setBounds(new Rectangle(17, 140, 77, 13));
+		m_internalTypesLabel.setText("&Internal Types:");		
 		m_allBaseTypesCheckBox = new Button(m_shell, SWT.CHECK);
 		m_baseTypesLabel = new Label(m_shell, SWT.NONE);
-		m_baseTypesLabel.setBounds(new Rectangle(17, 172, 110, 13));
+		m_baseTypesLabel.setBounds(new Rectangle(17, 184, 110, 13));
 		m_baseTypesLabel.setText("&Base Types Filter List:");
 		m_baseTypesTable = new Table(m_shell, SWT.BORDER | SWT.FULL_SELECTION);
 		m_baseTypesTable.setHeaderVisible(true);
 		m_baseTypesTable.setLinesVisible(true);
 		m_baseTypesTable.setEnabled(false);
-		m_baseTypesTable.setBounds(new Rectangle(17, 186, 315, 162));
+		m_baseTypesTable.setBounds(new Rectangle(17, 198, 315, 162));
 		m_baseTypesTable.addMouseListener(new MouseAdapter()
 		{
 			public void mouseDoubleClick(MouseEvent e)
@@ -211,7 +223,7 @@ public class TypeFilterDialog extends DialogBase
 		column.setMoveable(true);
 		column.setText("Name");		
 		m_addBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_addBaseTypeButton.setLocation(new Point(346, 185));
+		m_addBaseTypeButton.setLocation(new Point(346, 197));
 		m_addBaseTypeButton.setText("A&dd filter...");
 		m_addBaseTypeButton.setEnabled(false);
 		m_addBaseTypeButton.setSize(new Point(88, 25));
@@ -233,7 +245,7 @@ public class TypeFilterDialog extends DialogBase
 			}		
 		});
 		m_editBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_editBaseTypeButton.setLocation(new Point(346, 227));
+		m_editBaseTypeButton.setLocation(new Point(346, 239));
 		m_editBaseTypeButton.setText("&Edit filter...");
 		m_editBaseTypeButton.setEnabled(false);
 		m_editBaseTypeButton.setSize(new Point(88, 25));
@@ -245,7 +257,7 @@ public class TypeFilterDialog extends DialogBase
 			}
 		});
 		m_removeBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_removeBaseTypeButton.setLocation(new Point(346, 272));
+		m_removeBaseTypeButton.setLocation(new Point(346, 284));
 		m_removeBaseTypeButton.setText("&Remove filter");
 		m_removeBaseTypeButton.setEnabled(false);
 		m_removeBaseTypeButton.setSize(new Point(88, 25));
@@ -345,6 +357,7 @@ public class TypeFilterDialog extends DialogBase
 							
 				m_typeName = m_typeNameText.getText();
 				m_allBaseTypes = m_allBaseTypesCheckBox.getSelection();
+				m_internalType = TriStateBoolean.values()[m_internalTypesCombo.getSelectionIndex()];
 				
 				m_cancel = false;
 				m_shell.close();
@@ -375,7 +388,7 @@ public class TypeFilterDialog extends DialogBase
 				checkAllItems(m_modifierList);
 			}
 		});
-		m_allBaseTypesCheckBox.setBounds(new Rectangle(17, 145, 89, 15));
+		m_allBaseTypesCheckBox.setBounds(new Rectangle(136, 162, 89, 13));
 		m_allBaseTypesCheckBox.setText("&All Base Types");
 		m_allBaseTypesCheckBox.setSelection(true);
 		m_allBaseTypesCheckBox.addSelectionListener(new SelectionAdapter() 
@@ -490,6 +503,11 @@ public class TypeFilterDialog extends DialogBase
 		return m_typeName;
 	}
 	
+	public TriStateBoolean getInternalType()
+	{
+		return m_internalType;
+	}
+	
 	private void editBaseType()
 	{
 		int sel = m_baseTypesTable.getSelectionIndex();
@@ -514,6 +532,19 @@ public class TypeFilterDialog extends DialogBase
 				m_baseTypes.set(sel, new BaseType(val, input.getTypeCategory().value()));
 			}							
 		}		
+	}
+
+	private void createInternalTypesCombo() 
+	{
+		m_internalTypesCombo = new Combo(getShell(), SWT.READ_ONLY);
+		m_internalTypesCombo.setBounds(new Rectangle(17, 154, 100, 21));
+
+		for (int i = 0; i < m_triStateText.length; i++)
+		{
+			m_internalTypesCombo.add(m_triStateText[i], i);
+		}
+		
+		m_internalTypesCombo.select(0);
 	}
 	
 	protected Shell getShell()

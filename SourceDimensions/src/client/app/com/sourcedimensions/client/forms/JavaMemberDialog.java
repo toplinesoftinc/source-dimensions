@@ -19,7 +19,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Combo;
-import com.sourcedimensions.client.Util;
+import com.sourcedimensions.client.TriStateBoolean;
 
 
 public class JavaMemberDialog extends TypeMemberDialogBase 
@@ -316,8 +316,8 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				m_name = m_memberNameText.getText();
 				m_anyParams = m_anyParamsCheckBox.getSelection();
 				m_type.m_name = m_typeNameText.getText();
-				m_type.m_isArray = Util.TriStateBoolean.values()[m_arrayTypeCombo.getSelectionIndex()];
-				m_type.m_isTypeParam = Util.TriStateBoolean.values()[m_typeParamCombo.getSelectionIndex()];
+				m_type.m_isArray = TriStateBoolean.values()[m_arrayTypeCombo.getSelectionIndex()];
+				m_type.m_isTypeParam = TriStateBoolean.values()[m_typeParamCombo.getSelectionIndex()];
 				
 				m_cancel = false;
 				m_shell.close();
