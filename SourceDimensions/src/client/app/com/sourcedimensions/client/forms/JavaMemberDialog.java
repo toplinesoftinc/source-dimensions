@@ -24,7 +24,7 @@ import com.sourcedimensions.client.TriStateBoolean;
 
 public class JavaMemberDialog extends TypeMemberDialogBase 
 {
-	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-8,-10"
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-8,-26"
 	private Label m_memberCategoryLabel;
 	private Table m_memberCategoryList;
 	private MemberCategory[] m_categoryArray = 
@@ -48,27 +48,27 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		Modifier.TRANSIENT,
 		Modifier.VOLATILE
 	};
-	private Button m_allCategoriesButton = null;
-	private Button m_allModifiersButton = null;
-	private Table m_modifierList = null;
-	private Label m_modifierListLabel = null;
-	private Label m_memberNameLabel = null;
-	private Text m_memberNameText = null;
-	private Button m_anyParamsCheckBox = null;
-	private Button m_okButton = null;
-	private Button m_cancelButton = null;
-	private Label m_paramsLabel = null;
-	private Table m_paramsTable = null;
-	private Button m_addParamButton = null;
-	private Button m_editParamButton = null;
-	private Button m_removeParamButton = null;
-	private Group m_typeGroup = null;  //  @jve:decl-index=0:visual-constraint="367,52"
-	private Label m_typeNameLabel = null;
-	private Text m_typeNameText = null;
-	private Combo m_arrayTypeCombo = null;
-	private Combo m_typeParamCombo = null;
-	private Label m_arrayTypeLabel = null;
-	private Label m_typeParamLabel = null;	
+	private Button m_allCategoriesButton;
+	private Button m_allModifiersButton;
+	private Table m_modifierList;
+	private Label m_modifierListLabel;
+	private Label m_memberNameLabel;
+	private Text m_memberNameText;
+	private Button m_anyParamsCheckBox;
+	private Button m_okButton;
+	private Button m_cancelButton;
+	private Label m_paramsLabel;
+	private Table m_paramsTable;
+	private Button m_addParamButton;
+	private Button m_editParamButton;
+	private Button m_removeParamButton;
+	private Group m_typeGroup;  //  @jve:decl-index=0:visual-constraint="367,52"
+	private Label m_typeNameLabel;
+	private Text m_typeNameText;
+	private Combo m_arrayTypeCombo;
+	private Combo m_typeParamCombo;
+	private Label m_arrayTypeLabel;
+	private Label m_typeParamLabel;	
 	
 	public JavaMemberDialog(Display display, Shell parent)
 	{
@@ -94,6 +94,8 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		{
 			m_memberCategoryList.getItem(i).setChecked((categories & m_categoryArray[i].value()) != 0);
 		}
+	
+		categorySelectionChanged();
 		
 		for (int i = 0; i < m_modifierList.getItemCount(); i++)
 		{
@@ -112,6 +114,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		m_shell.setLayout(null);
+		m_shell.setSize(new Point(671, 448));
 		m_memberCategoryLabel = new Label(m_shell, SWT.NONE);
 		m_memberCategoryLabel.setText("Member Cate&gories:");
 		m_memberCategoryLabel.setLocation(new Point(17, 8));
@@ -230,12 +233,13 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_editParamButton.setEnabled(false);
 		m_editParamButton.setText("&Edit Filter...");
 		m_removeParamButton = new Button(getShell(), SWT.NONE);
-		m_removeParamButton.setBounds(new Rectangle(567, 302, 88, 25));
 		m_removeParamButton.setEnabled(false);
+		m_removeParamButton.setSize(new Point(88, 25));
+		m_removeParamButton.setLocation(new Point(567, 299));
 		m_removeParamButton.setText("&Remove Filter");
 		m_okButton = new Button(getShell(), SWT.NONE);
 		m_okButton.setText("O&k");
-		m_okButton.setLocation(new Point(565, 22));
+		m_okButton.setLocation(new Point(566, 22));
 		m_okButton.setVisible(true);
 		m_okButton.setSize(new Point(88, 25));
 		m_okButton.addSelectionListener(new SelectionAdapter() 
@@ -320,8 +324,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				m_type.m_isTypeParam = TriStateBoolean.values()[m_typeParamCombo.getSelectionIndex()];
 				
 				m_cancel = false;
-				m_shell.close();
-				
+				m_shell.close();				
 			}
 		});
 		m_cancelButton = new Button(getShell(), SWT.NONE);
@@ -382,8 +385,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		else
 		{
 			enableParamControls(false);
-		}
-		
+		}		
 	}
 	
 	protected Shell getShell()
