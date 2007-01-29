@@ -98,6 +98,33 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		checkAllItems(m_operatorList);
 	}
 	
+	public CSharpMemberDialog(Display display, Shell parent, String name, int categories, int modifiers, 
+			Type type, boolean anyParams)
+	{
+		m_display = display;
+		createShell(parent);
+		m_memberNameText.setText(name);
+		m_arrayTypeCombo.select(type.m_isArray.value());
+		m_typeParamCombo.select(type.m_isTypeParam.value());
+		m_nullableCombo.select(type.m_isNullable.value());
+		m_pointerCombo.select(type.m_isPointer.value());
+		m_typeNameText.setText(type.m_name);
+		m_anyParamsCheckBox.setSelection(anyParams);
+		enableParamControls(!anyParams);
+		
+		for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
+		{
+			m_memberCategoryList.getItem(i).setChecked((categories & m_categoryArray[i].value()) != 0);
+		}
+	
+		categorySelectionChanged();
+		
+		for (int i = 0; i < m_modifierList.getItemCount(); i++)
+		{
+			m_modifierList.getItem(i).setChecked((modifiers & m_modifierArray[i].value()) != 0);
+		}
+	}
+	
 	private void createShell(Shell parent) 
 	{
 		m_shell = new Shell(SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);

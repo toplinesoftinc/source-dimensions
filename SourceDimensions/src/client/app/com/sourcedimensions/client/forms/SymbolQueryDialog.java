@@ -737,9 +737,21 @@ public class SymbolQueryDialog extends DialogBase
 		{
 			MemberFilter filter = m_memberFilter.get(sel);
 			TableItem item = m_memberFilterTable.getItem(sel);
+			TypeMemberDialogBase dialog = null;
 			
-			JavaMemberDialog dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-					item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams);
+	 		switch (ProjectView.getProject().getLanguage())
+	  		{
+	  			case JAVA14:
+	  			case JAVA15:
+	  				dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
+	  					item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams);
+	  				break;
+	  				
+	  			case CSHARP11:
+	  			case CSHARP20:
+	  				dialog = new CSharpMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
+		  				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams);
+	  		}
 			
 			dialog.open();
 			
