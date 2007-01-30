@@ -221,7 +221,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_namespaceFilterTable.setLinesVisible(true);
 		m_namespaceFilterTable.setLocation(new Point(15, 57));
 		m_namespaceFilterTable.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_namespaceFilterTable.setSize(new Point(406, 272));
+		m_namespaceFilterTable.setSize(new Point(506, 272));
 		m_namespaceFilterTable.addMouseListener(new MouseAdapter()
 		{
 			public void mouseDoubleClick(MouseEvent e)
@@ -239,7 +239,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_addNamespaceFilterButton.setToolTipText("Login");
 		m_addNamespaceFilterButton.setSelection(true);
 		m_addNamespaceFilterButton.setText("A&dd Filter...");
-		m_addNamespaceFilterButton.setLocation(new Point(432, 57));
+		m_addNamespaceFilterButton.setLocation(new Point(535, 57));
 		m_addNamespaceFilterButton.setSize(new Point(88, 25));
 		m_addNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_addNamespaceFilterButton.addSelectionListener(new SelectionAdapter()
@@ -262,14 +262,14 @@ public class SymbolQueryDialog extends DialogBase
 		m_removeNamespaceFilterButton.setToolTipText("Login");
 		m_removeNamespaceFilterButton.setSelection(true);
 		m_removeNamespaceFilterButton.setText("Re&move Filter");
-		m_removeNamespaceFilterButton.setLocation(new Point(432, 152));
+		m_removeNamespaceFilterButton.setLocation(new Point(535, 152));
 		m_removeNamespaceFilterButton.setSize(new Point(88, 25));
 		m_removeNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_removeNamespaceFilterButton.addSelectionListener(new RemoveFilterAdapter(m_shell, m_namespaceFilterTable));
 		m_editNamespaceFilterButton.setToolTipText("Login");
 		m_editNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_editNamespaceFilterButton.setSize(new Point(88, 25));
-		m_editNamespaceFilterButton.setLocation(new Point(432, 104));
+		m_editNamespaceFilterButton.setLocation(new Point(535, 104));
 		m_editNamespaceFilterButton.setText("&Edit Filter...");
 		m_editNamespaceFilterButton.setSelection(true);
 		m_editNamespaceFilterButton.addSelectionListener(new SelectionAdapter()
@@ -384,7 +384,12 @@ public class SymbolQueryDialog extends DialogBase
 			column.setWidth((int)(0.14 * width));
 			column.setResizable(true);
 			column.setMoveable(true);
-			column.setText("Pointer"); 
+			column.setText("Pointer");
+			column = new TableColumn(m_memberFilterTable, SWT.LEFT, 8);
+			column.setWidth((int)(0.17 * width));
+			column.setResizable(true);
+			column.setMoveable(true);
+			column.setText("Operators");			
   		}
 		
 		m_addMemberFilterButton = new Button(m_membersTab, SWT.NONE);
@@ -397,7 +402,9 @@ public class SymbolQueryDialog extends DialogBase
 			{
 				TypeMemberDialogBase dialog = null;
 				
-		 		switch (ProjectView.getProject().getLanguage())
+				Language lang = ProjectView.getProject().getLanguage();
+				
+		 		switch (lang)
 		  		{
 		  			case JAVA14:
 		  			case JAVA15:
@@ -428,13 +435,14 @@ public class SymbolQueryDialog extends DialogBase
 					item.setText(3, filter.m_type.m_name);
 					item.setText(4, m_triStateText[filter.m_type.m_isArray.value()]);
 					item.setText(5, m_triStateText[filter.m_type.m_isTypeParam.value()]);
-					
-					Language lang = ProjectView.getProject().getLanguage();
-					
+										
 			 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
 			  		{
-						item.setText(6, m_triStateText[filter.m_type.m_isNullable.value()]);
+						filter.m_operators = dialog.getOperators();
+			 			
+			 			item.setText(6, m_triStateText[filter.m_type.m_isNullable.value()]);
 			 			item.setText(7, m_triStateText[filter.m_type.m_isPointer.value()]);
+			 			item.setText(8, operatorsToString(filter.m_operators));
 					}		
 				}			
 			}
@@ -652,6 +660,28 @@ public class SymbolQueryDialog extends DialogBase
 		return str;
 	}
 
+	protected String operatorsToString(int flags)
+	{
+		if ((flags & Operator.ALL.value()) != 0)
+			return "<All>";
+		
+		String str = "";
+		
+		for (Operator op : Operator.values())
+		{
+			if ((flags & op.value()) != 0)
+			{
+				if (str.length() > 0)
+					str += ",";
+				
+				str += CSharpMemberDialog.getOperatorName(op);
+			}
+		}
+		
+		return str;
+	}
+	
+	
 	protected String baseTypesToString(List<BaseType> types)
 	{
 		String str = "";
@@ -738,8 +768,10 @@ public class SymbolQueryDialog extends DialogBase
 			MemberFilter filter = m_memberFilter.get(sel);
 			TableItem item = m_memberFilterTable.getItem(sel);
 			TypeMemberDialogBase dialog = null;
+
+			Language lang = ProjectView.getProject().getLanguage();			
 			
-	 		switch (ProjectView.getProject().getLanguage())
+	 		switch (lang)
 	  		{
 	  			case JAVA14:
 	  			case JAVA15:
@@ -750,7 +782,7 @@ public class SymbolQueryDialog extends DialogBase
 	  			case CSHARP11:
 	  			case CSHARP20:
 	  				dialog = new CSharpMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-		  				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams);
+		  				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams, filter.m_operators);
 	  		}
 			
 			dialog.open();
@@ -769,12 +801,14 @@ public class SymbolQueryDialog extends DialogBase
 				item.setText(4, m_triStateText[filter.m_type.m_isArray.value()]);
 				item.setText(5, m_triStateText[filter.m_type.m_isTypeParam.value()]);
 				
-				Language lang = ProjectView.getProject().getLanguage();
 				
 		 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
 		  		{
+		 			filter.m_operators = dialog.getOperators();
+		 			
 					item.setText(6, m_triStateText[filter.m_type.m_isNullable.value()]);
 		 			item.setText(7, m_triStateText[filter.m_type.m_isPointer.value()]);
+		 			item.setText(8, operatorsToString(filter.m_operators));
 				}
 			}
 		}
@@ -793,6 +827,7 @@ public class SymbolQueryDialog extends DialogBase
 	{
 		public int m_categories;
 		public int m_modifiers;
+		public int m_operators;
 		public boolean m_anyParams;
 		public Type m_type;
 	}

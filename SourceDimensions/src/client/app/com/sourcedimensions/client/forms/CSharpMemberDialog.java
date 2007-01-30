@@ -2,7 +2,6 @@ package com.sourcedimensions.client.forms;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -25,13 +24,13 @@ import com.sourcedimensions.client.TriStateBoolean;
 public class CSharpMemberDialog extends TypeMemberDialogBase 
 {
 	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-95,-73"
-	private Label m_memberCategoryLabel = null;
-	private Table m_memberCategoryList = null;
-	private Button m_allCategoriesButton = null;
-	private Button m_allModifiersButton = null;
-	private Label m_modifierListLabel = null;
-	private Table m_modifierList = null;
-	private MemberCategory[] m_categoryArray = 
+	private Label m_memberCategoryLabel;
+	private Table m_memberCategoryList;
+	private Button m_allCategoriesButton;
+	private Button m_allModifiersButton;
+	private Label m_modifierListLabel;
+	private Table m_modifierList;
+	private final static MemberCategory[] m_categoryArray = 
 	{
 		MemberCategory.FIELD,
 		MemberCategory.CONSTANT,
@@ -46,7 +45,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		MemberCategory.INDEXER_SET,
 		MemberCategory.OPERATOR
 	};
-	private Modifier[] m_modifierArray =
+	private final static Modifier[] m_modifierArray =
 	{
 		Modifier.NEW,
 		Modifier.PUBLIC,
@@ -63,30 +62,60 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		Modifier.VOLATILE,
 		Modifier.UNSAFE
 	};
-	private Group m_typeGroup = null;
-	private Label m_arrayTypeLabel = null;
-	private Combo m_arrayTypeCombo = null;
-	private Label m_typeParamLabel = null;
-	private Combo m_typeParamCombo = null;
-	private Label m_nullableLabel = null;
-	private Combo m_nullableCombo = null;
-	private Label m_pointerLabel = null;
-	private Combo m_pointerCombo = null;
-	private Label m_typeNameLabel = null;
-	private Text m_typeNameText = null;
-	private Label m_memberNameLabel = null;
-	private Text m_memberNameText = null;
-	private Button m_anyParamsCheckBox = null;
-	private Label m_operatorsLabel = null;
-	private Table m_operatorList = null;
-	private Button m_okButton = null;
-	private Button m_cancelButton = null;
-	private Label m_paramsLabel = null;
-	private Table m_paramsTable = null;
-	private Button m_addParamButton = null;
-	private Button m_editParamButton = null;
-	private Button m_removeParamButton = null;
-	private Button m_allOperatorsButton = null;
+	protected final static String[] m_operatorNames =
+	{
+		"+x",
+		"-x",
+		"!",
+		"~",
+		"++",
+		"--",
+		"true",
+		"false",
+		"x+y",
+		"x-y",
+		"*",
+		"/",
+		"%",
+		"&",
+		"|",
+		"^",
+		"<<",
+		">>",
+		"==",
+		"!=",
+		">",
+		"<",
+		">=",
+		"<=",
+		"Impl.Conversion",
+		"Expl.Conversion"
+	};
+
+	private Group m_typeGroup;
+	private Label m_arrayTypeLabel;
+	private Combo m_arrayTypeCombo;
+	private Label m_typeParamLabel;
+	private Combo m_typeParamCombo;
+	private Label m_nullableLabel;
+	private Combo m_nullableCombo;
+	private Label m_pointerLabel;
+	private Combo m_pointerCombo;
+	private Label m_typeNameLabel;
+	private Text m_typeNameText;
+	private Label m_memberNameLabel;
+	private Text m_memberNameText;
+	private Button m_anyParamsCheckBox;
+	private Label m_operatorsLabel;
+	private Table m_operatorList;
+	private Button m_okButton;
+	private Button m_cancelButton;
+	private Label m_paramsLabel;
+	private Table m_paramsTable;
+	private Button m_addParamButton;
+	private Button m_editParamButton;
+	private Button m_removeParamButton;
+	private Button m_allOperatorsButton;
 
 		
 	public CSharpMemberDialog(Display display, Shell parent)
@@ -99,7 +128,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	}
 	
 	public CSharpMemberDialog(Display display, Shell parent, String name, int categories, int modifiers, 
-			Type type, boolean anyParams)
+			Type type, boolean anyParams, int operators)
 	{
 		m_display = display;
 		createShell(parent);
@@ -111,6 +140,11 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_typeNameText.setText(type.m_name);
 		m_anyParamsCheckBox.setSelection(anyParams);
 		enableParamControls(!anyParams);
+		
+		for (int i = 0; i < m_operatorList.getItemCount(); i++)
+		{
+			m_operatorList.getItem(i).setChecked((operators & Operator.values()[i].value()) != 0);
+		}
 		
 		for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
 		{
@@ -158,7 +192,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		{
 			new TableItem(m_memberCategoryList, 0, i).setText(m_categoryArray[i].toString().replace("_", " "));
 		}				
-		m_allCategoriesButton.setLocation(new Point(17, 245));
+		m_allCategoriesButton.setLocation(new Point(17, 252));
 		m_allCategoriesButton.setSize(new Point(80, 23));
 		m_allCategoriesButton.setText("All &Categories");
 		m_allCategoriesButton.addSelectionListener(new SelectionAdapter() 
@@ -169,7 +203,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 			}
 		});
 		m_allModifiersButton = new Button(getShell(), SWT.NONE);
-		m_allModifiersButton.setLocation(new Point(151, 245));
+		m_allModifiersButton.setLocation(new Point(151, 252));
 		m_allModifiersButton.setText("All &Modifiers");
 		m_allModifiersButton.setSize(new Point(80, 23));
 		m_allModifiersButton.addSelectionListener(new SelectionAdapter() 
@@ -192,12 +226,12 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_memberNameText = new Text(getShell(), SWT.BORDER);
 		m_memberNameText.setBounds(new Rectangle(272, 223, 204, 19));
 		m_operatorsLabel = new Label(getShell(), SWT.NONE);
-		m_operatorsLabel.setBounds(new Rectangle(500, 87, 65, 13));
+		m_operatorsLabel.setBounds(new Rectangle(500, 114, 65, 13));
 		m_operatorsLabel.setText("&Operators:");
 		m_operatorList = new Table(getShell(), SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
 		m_operatorList.setHeaderVisible(false);
 		m_operatorList.setLinesVisible(false);
-		m_operatorList.setBounds(new Rectangle(500, 101, 116, 403));
+		m_operatorList.setBounds(new Rectangle(500, 129, 116, 403));
 		m_allOperatorsButton = new Button(getShell(), SWT.NONE);
 		m_anyParamsCheckBox = new Button(getShell(), SWT.CHECK);
 		m_anyParamsCheckBox.addSelectionListener(new SelectionAdapter() 
@@ -258,25 +292,34 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 				}
 				
 				
-				String val = m_memberNameText.getText().trim();
+				if (m_memberNameText.getEnabled())
+				{
+					String val = m_memberNameText.getText().trim();
+					
+					if (val.length() == 0)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Member Name Filter");					
+						return;
+					}
+	
+					try
+					{
+						Pattern.compile(val);
+					}
+					catch(PatternSyntaxException ex)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",
+							"Pattern \"" + val + "\" has the following error: " + ex.getMessage());
+						return;
+					}
+	
+					m_name = m_memberNameText.getText();
+				}
+				else
+				{
+					m_name = "";
+				}
 				
-				if (val.length() == 0)
-				{
-					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Member Name Filter");					
-					return;
-				}
-
-				try
-				{
-					Pattern.compile(val);
-				}
-				catch(PatternSyntaxException ex)
-				{
-					MessageDialog.openError(m_shell, "Incorrect input",
-						"Pattern \"" + val + "\" has the following error: " + ex.getMessage());
-					return;
-				}
-							
 				boolean all = true;
 				m_memberCategories = 0;
 				
@@ -309,7 +352,26 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 				if (all)
 					m_modifiers += Modifier.ALL.value();
 				
-				m_name = m_memberNameText.getText();
+				m_operators = 0;
+				
+				if (m_operatorList.getEnabled())
+				{
+					all = true;
+					
+					for (int i = 0; i < m_operatorList.getItemCount(); i++)
+					{
+						if (m_operatorList.getItem(i).getChecked())
+						{
+							m_operators += Operator.values()[i].value();
+						}
+						else
+							all = false;
+					}
+					
+					if (all)
+						m_operators += Operator.ALL.value();
+				}
+				
 				m_anyParams = m_anyParamsCheckBox.getSelection();
 				m_type.m_name = m_typeNameText.getText();
 				m_type.m_isArray = TriStateBoolean.values()[m_arrayTypeCombo.getSelectionIndex()];
@@ -337,7 +399,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_anyParamsCheckBox.setSelection(true);
 		m_allOperatorsButton.setText("All Operators");
 		m_allOperatorsButton.setSize(new Point(80, 23));
-		m_allOperatorsButton.setLocation(new Point(536, 509));
+		m_allOperatorsButton.setLocation(new Point(396, 188));
 		m_allOperatorsButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
@@ -348,7 +410,10 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	
 		for (Operator op : Operator.values())
 		{
-			new TableItem(m_operatorList, 0).setText(op.getName());
+			if (op != Operator.ALL)
+			{
+				new TableItem(m_operatorList, 0).setText(getOperatorName(op));
+			}
 		}
 		
 		for (int i = 0; i < m_modifierArray.length; i++)
@@ -371,27 +436,30 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	{
 		boolean func = false;
 		boolean oper = false;
+		boolean oper_only = true;
 		
 		for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
 		{
-			switch (m_categoryArray[i])
+			if (m_memberCategoryList.getItem(i).getChecked())
 			{
-				case CONSTRUCTOR:
-				case METHOD:
-				case INDEXER_GET:
-				case INDEXER_SET:
-					if (m_memberCategoryList.getItem(i).getChecked())
-					{
+				switch (m_categoryArray[i])
+				{
+					case CONSTRUCTOR:
+					case METHOD:
+					case INDEXER_GET:
+					case INDEXER_SET:
 						func = true;
-					}
-					break;
-
-				case OPERATOR:
-					if (m_memberCategoryList.getItem(i).getChecked())
-					{
+						oper_only = false;
+						break;
+	
+					case OPERATOR:
 						func = true;
 						oper = true;
-					}	
+						break;
+						
+					default:
+						oper_only = false;
+				}
 			}
 		}
 		
@@ -406,6 +474,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 			enableParamControls(false);
 		}
 		
+		m_memberNameText.setEnabled(!oper_only);
 		m_operatorList.setEnabled(oper);
 		m_allOperatorsButton.setEnabled(oper);
 	}
@@ -504,82 +573,9 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 
 		m_pointerCombo.select(0);		
 	}
-
 	
-	public enum Operator
+	public static String getOperatorName(Operator op)
 	{
-		UNARY_PLUS(0),
-		UNARY_MINUS(1),
-		NOT(2),
-		COMPLEMENT(3),
-		INCREMENT(4),
-		DECREMENT(5),
-		TRUE(6),
-		FALSE(7),
-		PLUS(8),
-		MINUS(9),
-		MULT(10),
-		DIVISION(11),
-		REMINDER(12),
-		BITWISE_AND(13),
-		BITWISE_OR(14),
-		BITWISE_XOR(15),
-		LSHIFT(16),
-		RSHIFT(17),
-		EQ(18),
-		NOT_EQ(19),
-		GT(20),
-		LESS(21),
-		GT_EQ(22),
-		LESS_EQ(23),
-		IMPL_CONV(24),
-		EXPL_CONV(25);
-		
-		Operator(int val)
-		{
-			value = val;
-		}
-		
-		private final int value;
-		
-		public int value()
-		{
-			return value;
-		}
-		
-		public String getName()
-		{
-			return names[value];
-		}
-		
-		protected String[] names =
-		{
-			"+x",
-			"-x",
-			"!",
-			"~",
-			"++",
-			"--",
-			"true",
-			"false",
-			"x+y",
-			"x-y",
-			"*",
-			"/",
-			"%",
-			"&",
-			"|",
-			"^",
-			"<<",
-			">>",
-			"==",
-			"!=",
-			">",
-			"<",
-			">=",
-			"<=",
-			"Impl.Conversion",
-			"Expl.Conversion"
-		};
+		return m_operatorNames[(int)(Math.log(op.value())/Math.log(2.0))];
 	}
 }

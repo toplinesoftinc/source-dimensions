@@ -8,6 +8,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	protected boolean m_anyParams;
 	protected int m_modifiers;
 	protected int m_memberCategories;
+	protected int m_operators;
 	protected Type m_type = new Type();
 	protected String m_name;
 	protected List<Parameter> m_paramList = new ArrayList<Parameter>();
@@ -52,6 +53,11 @@ public abstract class TypeMemberDialogBase extends DialogBase
 		return m_memberCategories;
 	}
 	
+	public int getOperators()
+	{
+		return m_operators;
+	}	
+	
 	public Type getType()
 	{
 		return m_type;
@@ -70,5 +76,5 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	public boolean getAnyParams()
 	{
 		return m_anyParams;
-	}
+	}	
 }

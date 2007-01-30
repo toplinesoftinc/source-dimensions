@@ -2,7 +2,6 @@ package com.sourcedimensions.client.forms;
 
 public enum Modifier 
 {
-	
 	NEW(1<<0),
 	PUBLIC(1<<1),
 	PROTECTED(1<<2),

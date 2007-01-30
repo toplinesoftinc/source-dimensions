@@ -175,7 +175,7 @@ public class TypeFilterDialog extends DialogBase
 		m_modifierList = new Table(m_shell, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
 		m_modifierList.setHeaderVisible(false);
 		m_modifierList.setLinesVisible(false);
-		m_modifierList.setBounds(new Rectangle(231, 22, 100, 152));
+		m_modifierList.setBounds(new Rectangle(231, 22, 100, 154));
 		
 		Modifier[] mods = getModifierArray();
 		for (int i = 0; i < mods.length - 1; i++)
@@ -388,7 +388,7 @@ public class TypeFilterDialog extends DialogBase
 				checkAllItems(m_modifierList);
 			}
 		});
-		m_allBaseTypesCheckBox.setBounds(new Rectangle(136, 162, 89, 13));
+		m_allBaseTypesCheckBox.setBounds(new Rectangle(136, 163, 89, 13));
 		m_allBaseTypesCheckBox.setText("&All Base Types");
 		m_allBaseTypesCheckBox.setSelection(true);
 		m_allBaseTypesCheckBox.addSelectionListener(new SelectionAdapter() 
@@ -537,7 +537,7 @@ public class TypeFilterDialog extends DialogBase
 	private void createInternalTypesCombo() 
 	{
 		m_internalTypesCombo = new Combo(getShell(), SWT.READ_ONLY);
-		m_internalTypesCombo.setBounds(new Rectangle(17, 154, 100, 21));
+		m_internalTypesCombo.setBounds(new Rectangle(17, 155, 100, 21));
 
 		for (int i = 0; i < m_triStateText.length; i++)
 		{

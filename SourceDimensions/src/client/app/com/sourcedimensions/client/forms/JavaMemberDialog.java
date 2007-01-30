@@ -27,14 +27,14 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-8,-26"
 	private Label m_memberCategoryLabel;
 	private Table m_memberCategoryList;
-	private MemberCategory[] m_categoryArray = 
+	private final static MemberCategory[] m_categoryArray = 
 	{
 		MemberCategory.FIELD,
 		MemberCategory.CONSTRUCTOR,
 		MemberCategory.METHOD,
 		MemberCategory.ENUM_CONST
 	};
-	private Modifier[] m_modifierArray =
+	private final static Modifier[] m_modifierArray =
 	{
 		Modifier.PUBLIC,
 		Modifier.PROTECTED,
