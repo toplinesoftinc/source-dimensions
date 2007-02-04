@@ -27,12 +27,14 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-8,-26"
 	private Label m_memberCategoryLabel;
 	private Table m_memberCategoryList;
+	
 	private final static MemberCategory[] m_categoryArray = 
 	{
 		MemberCategory.FIELD,
 		MemberCategory.CONSTRUCTOR,
 		MemberCategory.METHOD,
-		MemberCategory.ENUM_CONST
+		MemberCategory.ENUM_CONST,
+		MemberCategory.ALL
 	};
 	private final static Modifier[] m_modifierArray =
 	{
@@ -46,10 +48,9 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		Modifier.NATIVE,
 		Modifier.STRICTFP,
 		Modifier.TRANSIENT,
-		Modifier.VOLATILE
+		Modifier.VOLATILE,
+		Modifier.ALL
 	};
-	private Button m_allCategoriesButton;
-	private Button m_allModifiersButton;
 	private Table m_modifierList;
 	private Label m_modifierListLabel;
 	private Label m_memberNameLabel;
@@ -75,10 +76,10 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_display = display;
 		createShell(parent);
 		checkAllItems(m_memberCategoryList);
-		checkAllItems(m_modifierList);
+		setAllItems(m_modifierList, TriStateBoolean.EITHER);
 	}
 	
-	public JavaMemberDialog(Display display, Shell parent, String name, int categories, int modifiers, 
+	public JavaMemberDialog(Display display, Shell parent, String name, int categories, TriStateMask modifiers, 
 		Type type, boolean anyParams)
 	{
 		m_display = display;
@@ -99,7 +100,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		
 		for (int i = 0; i < m_modifierList.getItemCount(); i++)
 		{
-			m_modifierList.getItem(i).setChecked((modifiers & m_modifierArray[i].value()) != 0);
+			setTriStateBoolValue(m_modifierList.getItem(i), m_modifiers.getMask(m_modifierArray[i].value()));
 		}
 	}
 		
@@ -107,7 +108,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	{
 		m_shell = new Shell(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		m_shell.setText("Member Filter");
-		m_shell.setSize(new Point(671, 450));
+		m_shell.setSize(new Point(671, 458));
 		
 		if (parent != null)
 			m_shell.setParent(parent);
@@ -123,7 +124,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_memberCategoryList.setHeaderVisible(false);
 		m_memberCategoryList.setLinesVisible(false);
 		m_memberCategoryList.setLocation(new Point(17, 22));
-		m_memberCategoryList.setSize(new Point(122, 78));
+		m_memberCategoryList.setSize(new Point(122, 98));
 		m_memberCategoryList.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
@@ -138,44 +139,24 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		{
 			new TableItem(m_memberCategoryList, 0, i).setText(m_categoryArray[i].toString().replace("_", " "));
 		}		
-		m_allCategoriesButton = new Button(getShell(), SWT.NONE);
-		m_allCategoriesButton.setText("All &Categories");
-		m_allCategoriesButton.setLocation(new Point(147, 30));
-		m_allCategoriesButton.setSize(new Point(80, 23));
-		m_allCategoriesButton.addSelectionListener(new SelectionAdapter() 
-		{
-			public void widgetSelected(SelectionEvent e) 
-			{
-				checkAllItems(m_memberCategoryList);
-				categorySelectionChanged();
-			}
-		});
-		m_allModifiersButton = new Button(getShell(), SWT.NONE);
-		m_allModifiersButton.setText("All &Modifiers");
-		m_allModifiersButton.setLocation(new Point(147, 62));
-		m_allModifiersButton.setSize(new Point(80, 23));
-		m_allModifiersButton.addSelectionListener(new SelectionAdapter() 
-		{
-			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
-			{
-				checkAllItems(m_modifierList);
-			}
-		});
+		m_memberCategoryList.addSelectionListener(new AllItemsAdapter());
 		m_modifierListLabel = new Label(getShell(), SWT.NONE);
 		m_modifierList = new Table(getShell(), SWT.HIDE_SELECTION | SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
 		m_modifierList.setHeaderVisible(false);
 		m_modifierList.setLinesVisible(false);
 		m_modifierList.setLocation(new Point(235, 22));
-		m_modifierList.setSize(new Point(115, 174));
+		m_modifierList.setSize(new Point(115, 187));
+		m_modifierList.addSelectionListener(new TriStateCheckBoxAdapter());
+		m_modifierList.addSelectionListener(new AllItemsAdapter());
 		createTypeGroup();
 		m_memberNameLabel = new Label(getShell(), SWT.NONE);
 		m_memberNameLabel.setText("&Member Name Filter:");
-		m_memberNameLabel.setLocation(new Point(17, 123));
+		m_memberNameLabel.setLocation(new Point(17, 132));
 		m_memberNameLabel.setSize(new Point(108, 13));
 		m_memberNameText = new Text(getShell(), SWT.BORDER);
-		m_memberNameText.setBounds(new Rectangle(17, 137, 208, 19));
+		m_memberNameText.setBounds(new Rectangle(17, 146, 208, 19));
 		m_anyParamsCheckBox = new Button(getShell(), SWT.CHECK);
-		m_anyParamsCheckBox.setBounds(new Rectangle(17, 174, 101, 16));
+		m_anyParamsCheckBox.setBounds(new Rectangle(17, 183, 101, 16));
 		m_anyParamsCheckBox.setText("Any &Parameters");
 		m_anyParamsCheckBox.setSelection(true);
 		m_anyParamsCheckBox.addSelectionListener(new SelectionAdapter() 
@@ -186,13 +167,13 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 			}
 		});
 		m_paramsLabel = new Label(getShell(), SWT.NONE);
-		m_paramsLabel.setBounds(new Rectangle(18, 200, 106, 13));
+		m_paramsLabel.setBounds(new Rectangle(18, 211, 106, 13));
 		m_paramsLabel.setText("Parameter &Filter List:");
 		m_paramsTable = new Table(getShell(), SWT.BORDER | SWT.FULL_SELECTION);
 		m_paramsTable.setHeaderVisible(true);
 		m_paramsTable.setLinesVisible(true);
 		m_paramsTable.setEnabled(false);
-		m_paramsTable.setBounds(new Rectangle(18, 215, 539, 189));
+		m_paramsTable.setBounds(new Rectangle(18, 226, 539, 189));
 		double width = m_paramsTable.getBounds().width - 2 * m_paramsTable.getBorderWidth(); 
 		TableColumn column = new TableColumn(m_paramsTable, SWT.LEFT, 0);
 		column.setWidth((int)(0.13 * width));
@@ -225,17 +206,17 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		column.setMoveable(true);
 		column.setText("Type param.");		
 		m_addParamButton = new Button(getShell(), SWT.NONE);
-		m_addParamButton.setBounds(new Rectangle(567, 215, 88, 25));
+		m_addParamButton.setBounds(new Rectangle(567, 226, 88, 25));
 		m_addParamButton.setEnabled(false);
 		m_addParamButton.setText("A&dd Filter...");
 		m_editParamButton = new Button(getShell(), SWT.NONE);
-		m_editParamButton.setBounds(new Rectangle(567, 257, 88, 25));
+		m_editParamButton.setBounds(new Rectangle(567, 268, 88, 25));
 		m_editParamButton.setEnabled(false);
 		m_editParamButton.setText("&Edit Filter...");
 		m_removeParamButton = new Button(getShell(), SWT.NONE);
 		m_removeParamButton.setEnabled(false);
 		m_removeParamButton.setSize(new Point(88, 25));
-		m_removeParamButton.setLocation(new Point(567, 299));
+		m_removeParamButton.setLocation(new Point(567, 310));
 		m_removeParamButton.setText("&Remove Filter");
 		m_okButton = new Button(getShell(), SWT.NONE);
 		m_okButton.setText("O&k");
@@ -285,7 +266,6 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 					return;
 				}
 							
-				boolean all = true;
 				m_memberCategories = 0;
 				
 				for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
@@ -294,28 +274,14 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 					{
 						m_memberCategories += m_categoryArray[i].value();
 					}
-					else
-						all = false;
 				}
 				
-				if (all)
-					m_memberCategories += MemberCategory.ALL.value();
-
-				all = true;
-				m_modifiers = 0;
+				m_modifiers.reset();
 				
 				for (int i = 0; i < m_modifierList.getItemCount(); i++)
 				{
-					if (m_modifierList.getItem(i).getChecked())
-					{
-						m_modifiers += m_modifierArray[i].value();
-					}
-					else
-						all = false;
+					m_modifiers.setMask(m_modifierArray[i].value(), getTriStateBoolValue(m_modifierList.getItem(i)));
 				}
-				
-				if (all)
-					m_modifiers += Modifier.ALL.value();
 				
 				m_name = m_memberNameText.getText();
 				m_anyParams = m_anyParamsCheckBox.getSelection();
@@ -342,7 +308,10 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_modifierListLabel.setText("Mo&difiers:");
 		for (int i = 0; i < m_modifierArray.length; i++)
 		{
-			new TableItem(m_modifierList, 0, i).setText(m_modifierArray[i].toString().toLowerCase());
+			if (i < m_modifierArray.length - 1)
+				new TableItem(m_modifierList, 0, i).setText(m_modifierArray[i].toString().toLowerCase());
+			else
+				new TableItem(m_modifierList, 0, i).setText(m_modifierArray[i].toString());
 		}
 		
 		m_memberNameText.setFocus();

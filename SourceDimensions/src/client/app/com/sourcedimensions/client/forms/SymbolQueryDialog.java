@@ -639,25 +639,39 @@ public class SymbolQueryDialog extends DialogBase
 		return str;
 	}
 	
-	protected String modifiersToString(int flags)
+	protected String modifiersToString(TriStateMask mask)
 	{
-		if ((flags & Modifier.ALL.value()) != 0)
-			return "<All>";
+		switch (mask.getMask(Modifier.ALL.value()))
+		{
+			case TRUE:
+				return "<ALL>";
+				
+			case EITHER:
+				return "<(ALL)>";		
+		}
 		
 		String str = "";
 		
 		for (Modifier f : Modifier.values())
 		{
-			if ((flags & f.value()) != 0)
+			switch (mask.getMask(f.value()))
 			{
-				if (str.length() > 0)
-					str += ",";
-				
-				str += f.name().toLowerCase();
-			}						
+				case TRUE:
+					if (str.length() > 0)
+						str += ",";
+					
+					str += f.name().toLowerCase();
+					break;
+					 
+				case EITHER:
+					if (str.length() > 0)
+						str += ",";
+					
+					str += "(" + f.name().toLowerCase() + ")";
+			}
 		}
 		
-		return str;
+		return str;		
 	}
 
 	protected String operatorsToString(int flags)
@@ -817,7 +831,7 @@ public class SymbolQueryDialog extends DialogBase
 	protected class TypeFilter
 	{
 		public int m_categories;
-		public int m_modifiers;
+		public TriStateMask m_modifiers;
 		public boolean m_allBaseTypes;
 		public TriStateBoolean m_internalType;
 		public List<BaseType> m_baseTypes;
@@ -826,7 +840,7 @@ public class SymbolQueryDialog extends DialogBase
 	protected class MemberFilter
 	{
 		public int m_categories;
-		public int m_modifiers;
+		public TriStateMask m_modifiers;
 		public int m_operators;
 		public boolean m_anyParams;
 		public Type m_type;

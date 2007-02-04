@@ -19,13 +19,12 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-
 import com.sourcedimensions.client.TriStateBoolean;
 import com.sourcedimensions.client.views.ProjectView;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.swt.widgets.Combo;
+
 
 public class TypeFilterDialog extends DialogBase 
 {
@@ -46,23 +45,21 @@ public class TypeFilterDialog extends DialogBase
 	private List<BaseType> m_baseTypes = new ArrayList<BaseType>();  //  @jve:decl-index=0:
 	private Button m_allBaseTypesCheckBox;
 	private int m_typeCategories;
-	private int m_modifiers;
+	private TriStateMask m_modifiers = new TriStateMask();  //  @jve:decl-index=0:
 	private boolean m_allBaseTypes;
 	private String m_typeName = "";  //  @jve:decl-index=0:
-	private Button m_allModifiersButton;
-	private Button m_allCategoriesButton;
 	private TriStateBoolean m_internalType;
-	private Combo m_internalTypesCombo;
-	private Label m_internalTypesLabel;
+	private Table m_internalTypeCheckBox = null;
 	
 	public enum TypeCategory
 	{
 		CLASS(1<<0),
 		INTERFACE(1<<1),
 		ENUM(1<<2),
-		ANNOTATION(1<<3),
-		STRUCT(1<<4),
-		ALL(1<<5);
+		ANONYMOUS(1<<3),
+		ANNOTATION(1<<4),
+		STRUCT(1<<5),
+		ALL(1<<6);
 		
 		TypeCategory(int val)
 		{
@@ -90,7 +87,7 @@ public class TypeFilterDialog extends DialogBase
 	}
 
 	public TypeFilterDialog(Display display, Shell parent, String typeName, 
-			int categories, int modifiers, TriStateBoolean internalType, boolean allBaseTypes, List<BaseType> baseTypes)
+			int categories, TriStateMask modifiers, TriStateBoolean internalType, boolean allBaseTypes, List<BaseType> baseTypes)
 	{
 		m_display = display;
 		createShell(parent);
@@ -98,7 +95,7 @@ public class TypeFilterDialog extends DialogBase
 		m_allBaseTypesCheckBox.setSelection(allBaseTypes);
 		setBaseTypeControls();
 	
-		m_internalTypesCombo.select(internalType.value());
+		setTriStateBoolValue(m_internalTypeCheckBox.getItem(0), internalType);
 		
 		if (baseTypes != null & !allBaseTypes)
 		{
@@ -116,7 +113,7 @@ public class TypeFilterDialog extends DialogBase
 		
 		for (int i = 0; i < m_modifierList.getItemCount(); i++)
 		{
-			m_modifierList.getItem(i).setChecked((modifiers & mf[i].value()) != 0);
+			setTriStateBoolValue(m_modifierList.getItem(i), modifiers.getMask(mf[i].value()));
 		}
 		
 		TypeCategory[] cf = getTypeCategoryArray();
@@ -132,7 +129,7 @@ public class TypeFilterDialog extends DialogBase
 		m_display = display;
 		createShell(parent);
 		checkAllItems(m_typeCategoryList);
-		checkAllItems(m_modifierList);
+		setAllItems(m_modifierList, TriStateBoolean.EITHER);
 	}
 	
 	private void createShell(Shell parent) 
@@ -144,63 +141,67 @@ public class TypeFilterDialog extends DialogBase
 		
 		m_shell.setText("Type Filter");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
-		m_shell.setSize(new Point(454, 400));
+		m_shell.setSize(new Point(437, 424));
 		m_shell.setLayout(null);
 		m_typeCategoryLabel = new Label(m_shell, SWT.NONE);
 		m_typeCategoryList = new Table(m_shell, SWT.BORDER | SWT.SINGLE | SWT.CHECK | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
 		m_typeCategoryList.setHeaderVisible(false);
 		m_typeCategoryList.setLinesVisible(false);
-		m_typeCategoryList.setBounds(new Rectangle(17, 22, 106, 72));
-		m_typeCategoryLabel.setBounds(new Rectangle(17, 8, 89, 13));
+		m_typeCategoryList.setBounds(new Rectangle(17, 21, 100, 112));
+		m_typeCategoryList.addSelectionListener(new AllItemsAdapter());
+		m_typeCategoryLabel.setBounds(new Rectangle(18, 7, 89, 13));
 		m_typeCategoryLabel.setText("&Type Categories:");
+		m_internalTypeCheckBox = new Table(getShell(), SWT.CHECK | SWT.BORDER | SWT.HIDE_SELECTION | SWT.FULL_SELECTION);
 		m_typeNameLabel = new Label(m_shell, SWT.NONE);
 		m_typeNameText = new Text(m_shell, SWT.BORDER);
-		m_typeNameText.setBounds(new Rectangle(17, 115, 206, 19));
-		m_allModifiersButton = new Button(m_shell, SWT.NONE);
-
+		m_typeNameText.setBounds(new Rectangle(17, 158, 209, 19));
 		TypeCategory[] cats = getTypeCategoryArray();
 		
-		for (int i = 0; i < cats.length - 1; i++)
+		for (int i = 0; i < cats.length; i++)
 		{
 			if (cats[i] == null)
 				break;
 			
 			new TableItem(m_typeCategoryList, 0, i).setText(cats[i].toString());
 		}
-		
+			
 		m_modifierListLabel = new Label(m_shell, SWT.NONE);
-		m_modifierListLabel.setBounds(new Rectangle(231, 8, 56, 13));
+		m_modifierListLabel.setBounds(new Rectangle(231, 7, 56, 13));
 		m_modifierListLabel.setText("&Modifiers:");
 
 		m_modifierList = new Table(m_shell, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
 		m_modifierList.setHeaderVisible(false);
 		m_modifierList.setLinesVisible(false);
-		m_modifierList.setBounds(new Rectangle(231, 22, 100, 154));
+		m_modifierList.setBounds(new Rectangle(231, 21, 85, 156));
+		m_modifierList.addSelectionListener(new TriStateCheckBoxAdapter());
+		m_modifierList.addSelectionListener(new AllItemsAdapter());
 		
 		Modifier[] mods = getModifierArray();
-		for (int i = 0; i < mods.length - 1; i++)
+		
+		for (int i = 0; i < mods.length; i++)
 		{
 			if (mods[i] == null)
 				break;
 			
-			new TableItem(m_modifierList, 0, i).setText(mods[i].toString().toLowerCase());
+			if (i < (mods.length - 1))
+				new TableItem(m_modifierList, 0, i).setText(mods[i].toString().toLowerCase());
+			else
+				new TableItem(m_modifierList, 0, i).setText(mods[i].toString().toUpperCase());
 		}
 
-		m_typeNameLabel.setBounds(new Rectangle(17, 101, 101, 13));
+		m_typeNameLabel.setBounds(new Rectangle(17, 142, 101, 13));
 		m_typeNameLabel.setText("Type &Name Filter:");
-		m_internalTypesLabel = new Label(getShell(), SWT.NONE);
-		createInternalTypesCombo();
-		m_internalTypesLabel.setBounds(new Rectangle(17, 140, 77, 13));
-		m_internalTypesLabel.setText("&Internal Types:");		
 		m_allBaseTypesCheckBox = new Button(m_shell, SWT.CHECK);
 		m_baseTypesLabel = new Label(m_shell, SWT.NONE);
-		m_baseTypesLabel.setBounds(new Rectangle(17, 184, 110, 13));
 		m_baseTypesLabel.setText("&Base Types Filter List:");
+		m_baseTypesLabel.setLocation(new Point(17, 215));
+		m_baseTypesLabel.setSize(new Point(110, 13));
 		m_baseTypesTable = new Table(m_shell, SWT.BORDER | SWT.FULL_SELECTION);
 		m_baseTypesTable.setHeaderVisible(true);
 		m_baseTypesTable.setLinesVisible(true);
 		m_baseTypesTable.setEnabled(false);
-		m_baseTypesTable.setBounds(new Rectangle(17, 198, 315, 162));
+		m_baseTypesTable.setLocation(new Point(17, 230));
+		m_baseTypesTable.setSize(new Point(300, 149));
 		m_baseTypesTable.addMouseListener(new MouseAdapter()
 		{
 			public void mouseDoubleClick(MouseEvent e)
@@ -219,11 +220,11 @@ public class TypeFilterDialog extends DialogBase
 		column.setText("Category");
 		column = new TableColumn(m_baseTypesTable, SWT.LEFT, 1);
 		column.setWidth((int)(0.6 * width));
+		column.setText("Name");		
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Name");		
 		m_addBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_addBaseTypeButton.setLocation(new Point(346, 197));
+		m_addBaseTypeButton.setLocation(new Point(329, 230));
 		m_addBaseTypeButton.setText("A&dd filter...");
 		m_addBaseTypeButton.setEnabled(false);
 		m_addBaseTypeButton.setSize(new Point(88, 25));
@@ -245,7 +246,7 @@ public class TypeFilterDialog extends DialogBase
 			}		
 		});
 		m_editBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_editBaseTypeButton.setLocation(new Point(346, 239));
+		m_editBaseTypeButton.setLocation(new Point(329, 272));
 		m_editBaseTypeButton.setText("&Edit filter...");
 		m_editBaseTypeButton.setEnabled(false);
 		m_editBaseTypeButton.setSize(new Point(88, 25));
@@ -257,14 +258,14 @@ public class TypeFilterDialog extends DialogBase
 			}
 		});
 		m_removeBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_removeBaseTypeButton.setLocation(new Point(346, 284));
+		m_removeBaseTypeButton.setLocation(new Point(329, 314));
 		m_removeBaseTypeButton.setText("&Remove filter");
 		m_removeBaseTypeButton.setEnabled(false);
 		m_removeBaseTypeButton.setSize(new Point(88, 25));
 		m_removeBaseTypeButton.addSelectionListener(
 				new RemoveFilterAdapter(m_shell, m_baseTypesTable, m_baseTypes)); 
 		m_okButton = new Button(m_shell, SWT.NONE);
-		m_okButton.setLocation(new Point(346, 22));
+		m_okButton.setLocation(new Point(330, 21));
 		m_okButton.setText("O&k");
 		m_okButton.setSize(new Point(88, 25));
 		m_okButton.addSelectionListener(new SelectionAdapter() 
@@ -321,7 +322,6 @@ public class TypeFilterDialog extends DialogBase
 				
 				TypeCategory[] tc = getTypeCategoryArray();
 				
-				boolean all = true;
 				m_typeCategories = 0;
 				
 				for (int i = 0; i < m_typeCategoryList.getItemCount(); i++)
@@ -330,65 +330,35 @@ public class TypeFilterDialog extends DialogBase
 					{
 						m_typeCategories += tc[i].value();
 					}
-					else
-						all = false;
 				}
 				
-				if (all)
-					m_typeCategories += TypeCategory.ALL.value();
-			
 				Modifier[] mf = getModifierArray();
-
-				all = true;
-				m_modifiers = 0;
+				m_modifiers.reset();
 				
 				for (int i = 0; i < m_modifierList.getItemCount(); i++)
 				{
-					if (m_modifierList.getItem(i).getChecked())
-					{
-						m_modifiers += mf[i].value();
-					}
-					else
-						all = false;
+					m_modifiers.setMask(mf[i].value(), getTriStateBoolValue(m_modifierList.getItem(i)));
 				}
-				
-				if (all)
-					m_modifiers += Modifier.ALL.value(); 
-							
+											
 				m_typeName = m_typeNameText.getText();
 				m_allBaseTypes = m_allBaseTypesCheckBox.getSelection();
-				m_internalType = TriStateBoolean.values()[m_internalTypesCombo.getSelectionIndex()];
+				m_internalType = getTriStateBoolValue(m_internalTypeCheckBox.getItem(0));
 				
 				m_cancel = false;
 				m_shell.close();
 			}
 		});
 		m_cancelButton = new Button(m_shell, SWT.NONE);
-		m_cancelButton.setLocation(new Point(346, 62));
+		m_cancelButton.setLocation(new Point(330, 61));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
-		m_allCategoriesButton = new Button(m_shell, SWT.NONE);
-		m_allCategoriesButton.setLocation(new Point(136, 31));
-		m_allCategoriesButton.setText("All Cate&gories");
-		m_allCategoriesButton.setSize(new Point(80, 23));
-		m_allCategoriesButton.addSelectionListener(new SelectionAdapter() 
-		{
-			public void widgetSelected(SelectionEvent e)
-			{
-				checkAllItems(m_typeCategoryList);
-			}
-		});
-		m_allModifiersButton.setText("All Modi&fiers");
-		m_allModifiersButton.setSize(new Point(80, 23));
-		m_allModifiersButton.setLocation(new Point(136, 63));
-		m_allModifiersButton.addSelectionListener(new SelectionAdapter() 
-		{
-			public void widgetSelected(SelectionEvent e) 
-			{
-				checkAllItems(m_modifierList);
-			}
-		});
-		m_allBaseTypesCheckBox.setBounds(new Rectangle(136, 163, 89, 13));
+		m_internalTypeCheckBox.setHeaderVisible(false);
+		m_internalTypeCheckBox.setLocation(new Point(123, 110));
+		m_internalTypeCheckBox.setLinesVisible(false);
+		m_internalTypeCheckBox.setSize(new Point(103, 23));
+		new TableItem(m_internalTypeCheckBox, 0).setText("Internal Types");
+		m_internalTypeCheckBox.addSelectionListener(new TriStateCheckBoxAdapter());
+		m_allBaseTypesCheckBox.setBounds(new Rectangle(17, 186, 89, 13));
 		m_allBaseTypesCheckBox.setText("&All Base Types");
 		m_allBaseTypesCheckBox.setSelection(true);
 		m_allBaseTypesCheckBox.addSelectionListener(new SelectionAdapter() 
@@ -426,66 +396,79 @@ public class TypeFilterDialog extends DialogBase
 		return m_typeCategories;
 	}
 	
-	public int getModifiers()
+	public TriStateMask getModifiers()
 	{
 		return m_modifiers;
 	}
 
 	protected TypeCategory[] getTypeCategoryArray()
 	{
-		TypeCategory[] flags = new TypeCategory[] 
-      		    {
-      				TypeCategory.CLASS,
-      				TypeCategory.INTERFACE,
-      				TypeCategory.ENUM,
-      				null
-      			};
-		          		
   		switch (ProjectView.getProject().getLanguage())
   		{
   			case JAVA14:
   			case JAVA15:
-  				flags[3] = TypeCategory.ANNOTATION;
-  				break;
+  				return new TypeCategory[] 
+	      		    {
+	      				TypeCategory.CLASS,
+	      				TypeCategory.INTERFACE,
+	      				TypeCategory.ENUM,
+	      				TypeCategory.ANONYMOUS,
+	      				TypeCategory.ANNOTATION,
+	      				TypeCategory.ALL
+	      			};
   				
   			case CSHARP11:
   			case CSHARP20:
-  				flags[3] = TypeCategory.STRUCT; 
+  				return new TypeCategory[] 
+  	      		    {
+  	      				TypeCategory.CLASS,
+  	      				TypeCategory.INTERFACE,
+  	      				TypeCategory.ENUM,
+  	      				TypeCategory.STRUCT,
+  	      				TypeCategory.ALL
+  	      			};
+  				
+  			default:
+  				return new TypeCategory[] { };
   		}
-  		
-  		return flags;
-	}
+ 	}
 	
 	protected Modifier[] getModifierArray()
 	{
-		Modifier[] flags = new Modifier[]
-			    {
-					Modifier.PUBLIC,
-					Modifier.PROTECTED,
-					Modifier.PRIVATE,
-					Modifier.ABSTRACT,
-					Modifier.STATIC,
-					null,
-					null,
-					null
-			    };
-		          		
   		switch (ProjectView.getProject().getLanguage())
   		{
   			case JAVA14:
   			case JAVA15:
-  				flags[5] = Modifier.FINAL;
-  				flags[6] = Modifier.STRICTFP;				
-  				break;
-  				
+  				return new Modifier[]
+				    {
+						Modifier.PUBLIC,
+						Modifier.PROTECTED,
+						Modifier.PRIVATE,
+						Modifier.ABSTRACT,
+						Modifier.STATIC,
+						Modifier.FINAL,
+						Modifier.STRICTFP,
+						Modifier.ALL
+				    };  				
+  				 				
   			case CSHARP11:
   			case CSHARP20:
-  				flags[5] = Modifier.NEW;
-  				flags[6] = Modifier.INTERNAL;
-  				flags[7] = Modifier.SEALED;
-  		}
+  				return new Modifier[]
+				    {
+						Modifier.PUBLIC,
+						Modifier.PROTECTED,
+						Modifier.PRIVATE,
+						Modifier.ABSTRACT,
+						Modifier.STATIC,
+						Modifier.NEW,
+						Modifier.INTERNAL,
+						Modifier.SEALED,
+						Modifier.ALL
+				    };  				
 
-  		return flags;
+  			default:
+  				return new Modifier[] {};
+  		}
 	}
 	
 	public List<BaseType> getBaseTypes()
@@ -534,19 +517,6 @@ public class TypeFilterDialog extends DialogBase
 		}		
 	}
 
-	private void createInternalTypesCombo() 
-	{
-		m_internalTypesCombo = new Combo(getShell(), SWT.READ_ONLY);
-		m_internalTypesCombo.setBounds(new Rectangle(17, 155, 100, 21));
-
-		for (int i = 0; i < m_triStateText.length; i++)
-		{
-			m_internalTypesCombo.add(m_triStateText[i], i);
-		}
-		
-		m_internalTypesCombo.select(0);
-	}
-	
 	protected Shell getShell()
 	{
 		return m_shell;

@@ -4,12 +4,16 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 
+import com.sourcedimensions.client.TriStateBoolean;
 import com.sourcedimensions.client.Util;
 
 public abstract class DialogBase 
@@ -39,6 +43,15 @@ public abstract class DialogBase
 			table.getItem(i).setChecked(true);
 		}
 	}
+	
+	protected void setAllItems(Table table, TriStateBoolean value)
+	{
+		for (int i = 0; i < table.getItemCount(); i++)
+		{	
+			setTriStateBoolValue(table.getItem(i), value);
+		}
+	}
+	
 	
 	protected void postCreate(Shell parent)
 	{	
@@ -80,5 +93,86 @@ public abstract class DialogBase
 	{
 		m_cancel = true;
 		getShell().close();
-	}	
+	}
+	
+	protected TriStateBoolean getTriStateBoolValue(TableItem item)
+	{
+		if (item.getGrayed())
+		{
+			return TriStateBoolean.EITHER;
+		}
+		else
+		{
+			if (item.getChecked())
+			{
+				return TriStateBoolean.TRUE;
+			}
+			else
+			{
+				return TriStateBoolean.FALSE;
+			}
+		}
+	}
+	
+	protected void setTriStateBoolValue(TableItem item, TriStateBoolean value)
+	{
+		item.setGrayed(value == TriStateBoolean.EITHER);
+		item.setChecked(value == TriStateBoolean.TRUE || value == TriStateBoolean.EITHER);
+	}
+	
+	
+	protected class TriStateCheckBoxAdapter extends SelectionAdapter 
+	{
+		public void widgetSelected(SelectionEvent e)
+		{
+			if (e.detail == SWT.CHECK)
+			{
+				TableItem item = (TableItem)e.item;
+
+				if (item.getChecked())
+				{
+					item.setGrayed(true);
+				}
+				else
+				{
+					if (item.getGrayed())
+					{
+						item.setChecked(true);
+						item.setGrayed(false);
+					}
+				}
+			}
+		}
+	}
+
+	
+	protected class AllItemsAdapter extends SelectionAdapter 
+	{
+		public void widgetSelected(SelectionEvent e)
+		{
+			if (e.detail == SWT.CHECK)
+			{
+				TableItem item = (TableItem)e.item;
+				Table parent = item.getParent();
+				int count = parent.getItemCount() - 1;
+				TableItem last = parent.getItem(count);
+				
+				if (item == last)
+				{
+					for (int i = 0; i < count; i++)
+					{
+						TableItem ti = parent.getItem(i);
+						
+						ti.setGrayed(item.getGrayed());
+						ti.setChecked(item.getChecked());
+					}
+				}
+				else
+				{
+					last.setGrayed(false);
+					last.setChecked(false);
+				}
+			}
+		}
+	}
 }
