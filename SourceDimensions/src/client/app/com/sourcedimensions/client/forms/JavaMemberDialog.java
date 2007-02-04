@@ -18,7 +18,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Combo;
 import com.sourcedimensions.client.TriStateBoolean;
 
 
@@ -27,6 +26,9 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-8,-26"
 	private Label m_memberCategoryLabel;
 	private Table m_memberCategoryList;
+
+	protected final static int m_arrayItem = 0;
+	protected final static int m_typeParamItem = 1;
 	
 	private final static MemberCategory[] m_categoryArray = 
 	{
@@ -66,10 +68,8 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	private Group m_typeGroup;  //  @jve:decl-index=0:visual-constraint="367,52"
 	private Label m_typeNameLabel;
 	private Text m_typeNameText;
-	private Combo m_arrayTypeCombo;
-	private Combo m_typeParamCombo;
-	private Label m_arrayTypeLabel;
-	private Label m_typeParamLabel;	
+	private Label m_typePropsLabel;
+	private Table m_typePropsList;	
 	
 	public JavaMemberDialog(Display display, Shell parent)
 	{
@@ -85,8 +85,8 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_display = display;
 		createShell(parent);
 		m_memberNameText.setText(name);
-		m_arrayTypeCombo.select(type.m_isArray.value());
-		m_typeParamCombo.select(type.m_isTypeParam.value());
+		setTriStateBoolValue(m_typePropsList.getItem(m_arrayItem), type.m_typeProps.getMask(Type.Property.ARRAY.value()));
+		setTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem), type.m_typeProps.getMask(Type.Property.TYPE_PARAM.value()));
 		m_typeNameText.setText(type.m_name);
 		m_anyParamsCheckBox.setSelection(anyParams);
 		enableParamControls(!anyParams);
@@ -100,7 +100,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		
 		for (int i = 0; i < m_modifierList.getItemCount(); i++)
 		{
-			setTriStateBoolValue(m_modifierList.getItem(i), m_modifiers.getMask(m_modifierArray[i].value()));
+			setTriStateBoolValue(m_modifierList.getItem(i), modifiers.getMask(m_modifierArray[i].value()));
 		}
 	}
 		
@@ -108,18 +108,17 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	{
 		m_shell = new Shell(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		m_shell.setText("Member Filter");
-		m_shell.setSize(new Point(671, 458));
 		
 		if (parent != null)
 			m_shell.setParent(parent);
 				
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		m_shell.setLayout(null);
-		m_shell.setSize(new Point(671, 448));
+		m_shell.setSize(new Point(651, 460));
 		m_memberCategoryLabel = new Label(m_shell, SWT.NONE);
 		m_memberCategoryLabel.setText("Member Cate&gories:");
 		m_memberCategoryLabel.setLocation(new Point(17, 8));
-		m_memberCategoryLabel.setSize(new Point(122, 13));
+		m_memberCategoryLabel.setSize(new Point(106, 13));
 		m_memberCategoryList = new Table(m_shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.CHECK | SWT.HIDE_SELECTION);
 		m_memberCategoryList.setHeaderVisible(false);
 		m_memberCategoryList.setLinesVisible(false);
@@ -144,8 +143,8 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_modifierList = new Table(getShell(), SWT.HIDE_SELECTION | SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
 		m_modifierList.setHeaderVisible(false);
 		m_modifierList.setLinesVisible(false);
-		m_modifierList.setLocation(new Point(235, 22));
-		m_modifierList.setSize(new Point(115, 187));
+		m_modifierList.setLocation(new Point(206, 23));
+		m_modifierList.setSize(new Point(115, 192));
 		m_modifierList.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_modifierList.addSelectionListener(new AllItemsAdapter());
 		createTypeGroup();
@@ -154,7 +153,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_memberNameLabel.setLocation(new Point(17, 132));
 		m_memberNameLabel.setSize(new Point(108, 13));
 		m_memberNameText = new Text(getShell(), SWT.BORDER);
-		m_memberNameText.setBounds(new Rectangle(17, 146, 208, 19));
+		m_memberNameText.setBounds(new Rectangle(17, 146, 179, 19));
 		m_anyParamsCheckBox = new Button(getShell(), SWT.CHECK);
 		m_anyParamsCheckBox.setBounds(new Rectangle(17, 183, 101, 16));
 		m_anyParamsCheckBox.setText("Any &Parameters");
@@ -173,10 +172,10 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_paramsTable.setHeaderVisible(true);
 		m_paramsTable.setLinesVisible(true);
 		m_paramsTable.setEnabled(false);
-		m_paramsTable.setBounds(new Rectangle(18, 226, 539, 189));
+		m_paramsTable.setBounds(new Rectangle(18, 226, 513, 189));
 		double width = m_paramsTable.getBounds().width - 2 * m_paramsTable.getBorderWidth(); 
 		TableColumn column = new TableColumn(m_paramsTable, SWT.LEFT, 0);
-		column.setWidth((int)(0.13 * width));
+		column.setWidth((int)(0.2 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Position");
@@ -189,38 +188,28 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		column.setWidth((int)(0.25 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Name");
+		column.setText("Type Properties");
 		column = new TableColumn(m_paramsTable, SWT.LEFT, 3);
-		column.setWidth((int)(0.09 * width));
+		column.setWidth((int)(0.30 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Array");
-		column = new TableColumn(m_paramsTable, SWT.LEFT, 4);
-		column.setWidth((int)(0.12 * width));
-		column.setResizable(true);
-		column.setMoveable(true);
-		column.setText("Var.arity");
-		column = new TableColumn(m_paramsTable, SWT.LEFT, 5);
-		column.setWidth((int)(0.16 * width));
-		column.setResizable(true);
-		column.setMoveable(true);
-		column.setText("Type param.");		
+		column.setText("Name");
 		m_addParamButton = new Button(getShell(), SWT.NONE);
-		m_addParamButton.setBounds(new Rectangle(567, 226, 88, 25));
+		m_addParamButton.setBounds(new Rectangle(542, 225, 88, 25));
 		m_addParamButton.setEnabled(false);
 		m_addParamButton.setText("A&dd Filter...");
 		m_editParamButton = new Button(getShell(), SWT.NONE);
-		m_editParamButton.setBounds(new Rectangle(567, 268, 88, 25));
+		m_editParamButton.setBounds(new Rectangle(542, 267, 88, 25));
 		m_editParamButton.setEnabled(false);
 		m_editParamButton.setText("&Edit Filter...");
 		m_removeParamButton = new Button(getShell(), SWT.NONE);
 		m_removeParamButton.setEnabled(false);
 		m_removeParamButton.setSize(new Point(88, 25));
-		m_removeParamButton.setLocation(new Point(567, 310));
+		m_removeParamButton.setLocation(new Point(542, 309));
 		m_removeParamButton.setText("&Remove Filter");
 		m_okButton = new Button(getShell(), SWT.NONE);
 		m_okButton.setText("O&k");
-		m_okButton.setLocation(new Point(566, 22));
+		m_okButton.setLocation(new Point(541, 21));
 		m_okButton.setVisible(true);
 		m_okButton.setSize(new Point(88, 25));
 		m_okButton.addSelectionListener(new SelectionAdapter() 
@@ -245,7 +234,6 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
 					return;
 				}
-				
 				
 				String val = m_memberNameText.getText().trim();
 				
@@ -285,9 +273,10 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				
 				m_name = m_memberNameText.getText();
 				m_anyParams = m_anyParamsCheckBox.getSelection();
-				m_type.m_name = m_typeNameText.getText();
-				m_type.m_isArray = TriStateBoolean.values()[m_arrayTypeCombo.getSelectionIndex()];
-				m_type.m_isTypeParam = TriStateBoolean.values()[m_typeParamCombo.getSelectionIndex()];
+				m_type.m_name = m_typeNameText.getText();				
+				m_type.m_typeProps.reset();
+				m_type.m_typeProps.setMask(Type.Property.ARRAY.value(), getTriStateBoolValue(m_typePropsList.getItem(m_arrayItem)));
+				m_type.m_typeProps.setMask(Type.Property.TYPE_PARAM.value(), getTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem)));
 				
 				m_cancel = false;
 				m_shell.close();				
@@ -295,7 +284,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		});
 		m_cancelButton = new Button(getShell(), SWT.NONE);
 		m_cancelButton.setText("&Cancel");
-		m_cancelButton.setLocation(new Point(566, 62));
+		m_cancelButton.setLocation(new Point(541, 61));
 		m_cancelButton.setSize(new Point(88, 25));
 		m_cancelButton.addSelectionListener(new SelectionAdapter() 
 		{
@@ -304,7 +293,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				cancelClose();
 			}
 		});
-		m_modifierListLabel.setBounds(new Rectangle(238, 8, 55, 13));
+		m_modifierListLabel.setBounds(new Rectangle(206, 8, 55, 13));
 		m_modifierListLabel.setText("Mo&difiers:");
 		for (int i = 0; i < m_modifierArray.length; i++)
 		{
@@ -366,47 +355,21 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	{
 		m_typeGroup = new Group(getShell(), SWT.SHADOW_NONE);
 		m_typeGroup.setText("&Type/Return type");
-		m_typeGroup.setBounds(new Rectangle(359, 17, 198, 179));
-		m_arrayTypeLabel = new Label(m_typeGroup, SWT.NONE);
-		createArrayTypeCombo();
-		m_typeParamLabel = new Label(m_typeGroup, SWT.NONE);
-		createTypeParamCombo();
+		m_typeGroup.setBounds(new Rectangle(333, 17, 196, 143));
 		m_typeNameLabel = new Label(m_typeGroup, SWT.NONE);
-		m_typeNameLabel.setBounds(new Rectangle(9, 135, 87, 13));
+		m_typeNameLabel.setBounds(new Rectangle(12, 97, 87, 13));
 		m_typeNameLabel.setText("Type Name Filter:");
 		m_typeNameText = new Text(m_typeGroup, SWT.BORDER);
-		m_typeNameText.setBounds(new Rectangle(9, 149, 181, 19));
-		m_arrayTypeLabel.setBounds(new Rectangle(9, 18, 62, 13));
-		m_arrayTypeLabel.setText("&Array Type:");
-		m_typeParamLabel.setBounds(new Rectangle(9, 72, 90, 13));
-		m_typeParamLabel.setText("Type &Parameter:");
-	}
-
-	private void createArrayTypeCombo() 
-	{
-		m_arrayTypeCombo = new Combo(m_typeGroup, SWT.READ_ONLY);
-		m_arrayTypeCombo.setVisibleItemCount(3);
-		m_arrayTypeCombo.setBounds(new Rectangle(9, 33, 97, 21));
-
-		for (int i = 0; i < m_triStateText.length; i++)
-		{
-			m_arrayTypeCombo.add(m_triStateText[i], i);
-		}
-
-		m_arrayTypeCombo.select(0);
-	}
-
-	private void createTypeParamCombo() 
-	{
-		m_typeParamCombo = new Combo(m_typeGroup, SWT.READ_ONLY);
-		m_typeParamCombo.setVisibleItemCount(3);
-		m_typeParamCombo.setBounds(new Rectangle(9, 86, 97, 21));
-
-		for (int i = 0; i < m_triStateText.length; i++)
-		{
-			m_typeParamCombo.add(m_triStateText[i], i);
-		}
-		
-		m_typeParamCombo.select(0);
+		m_typeNameText.setBounds(new Rectangle(12, 111, 172, 19));
+		m_typePropsLabel = new Label(m_typeGroup, SWT.NONE);
+		m_typePropsLabel.setBounds(new Rectangle(12, 24, 87, 13));
+		m_typePropsLabel.setText("Type Properties:");
+		m_typePropsList = new Table(m_typeGroup, SWT.BORDER | SWT.CHECK);
+		m_typePropsList.setHeaderVisible(false);
+		m_typePropsList.setLinesVisible(false);
+		m_typePropsList.setBounds(new Rectangle(12, 39, 119, 43));
+		new TableItem(m_typePropsList, 0, m_arrayItem).setText("ARRAY");
+		new TableItem(m_typePropsList, 0, m_typeParamItem).setText("TYPE PARAMETER");
+		m_typePropsList.addSelectionListener(new TriStateCheckBoxAdapter());
 	}
 }

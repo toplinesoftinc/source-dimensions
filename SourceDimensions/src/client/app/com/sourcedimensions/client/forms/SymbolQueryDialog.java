@@ -77,7 +77,6 @@ public class SymbolQueryDialog extends DialogBase
 	private Label m_queryNameLabel;
 	private Text m_queryNameText;
 	private Button m_saveButton;
-	
 	public SymbolQueryDialog(Display display, Shell parent)
 	{
 		m_display = display;
@@ -361,32 +360,17 @@ public class SymbolQueryDialog extends DialogBase
 		column.setMoveable(true);
 		column.setText("Type/Return type");
 		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 4);
-		column.setWidth((int)(0.12 * width));
+		column.setWidth((int)(0.2 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Array");
-		column = new TableColumn(m_memberFilterTable, SWT.LEFT, 5);
-		column.setWidth((int)(0.16 * width));
-		column.setResizable(true);
-		column.setMoveable(true);
-		column.setText("Type param.");
+		column.setText("Type Properties");
 		
 		Language lang = ProjectView.getProject().getLanguage();
 		
  		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
   		{
-			column = new TableColumn(m_memberFilterTable, SWT.LEFT, 6);
-			column.setWidth((int)(0.14 * width));
-			column.setResizable(true);
-			column.setMoveable(true);
-			column.setText("Nullable");
-			column = new TableColumn(m_memberFilterTable, SWT.LEFT, 7);
-			column.setWidth((int)(0.14 * width));
-			column.setResizable(true);
-			column.setMoveable(true);
-			column.setText("Pointer");
-			column = new TableColumn(m_memberFilterTable, SWT.LEFT, 8);
-			column.setWidth((int)(0.17 * width));
+			column = new TableColumn(m_memberFilterTable, SWT.LEFT, 5);
+			column.setWidth((int)(0.2 * width));
 			column.setResizable(true);
 			column.setMoveable(true);
 			column.setText("Operators");			
@@ -433,16 +417,12 @@ public class SymbolQueryDialog extends DialogBase
 					item.setText(1, modifiersToString(filter.m_modifiers));
 					item.setText(2, dialog.getMemberName());
 					item.setText(3, filter.m_type.m_name);
-					item.setText(4, m_triStateText[filter.m_type.m_isArray.value()]);
-					item.setText(5, m_triStateText[filter.m_type.m_isTypeParam.value()]);
+					item.setText(4, typePropsToString(filter.m_type.m_typeProps));
 										
 			 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
 			  		{
-						filter.m_operators = dialog.getOperators();
-			 			
-			 			item.setText(6, m_triStateText[filter.m_type.m_isNullable.value()]);
-			 			item.setText(7, m_triStateText[filter.m_type.m_isPointer.value()]);
-			 			item.setText(8, operatorsToString(filter.m_operators));
+						filter.m_operators = dialog.getOperators();			 			
+			 			item.setText(5, operatorsToString(filter.m_operators));
 					}		
 				}			
 			}
@@ -695,6 +675,32 @@ public class SymbolQueryDialog extends DialogBase
 		return str;
 	}
 	
+	protected String typePropsToString(TriStateMask mask)
+	{
+		String str = "";
+		
+		for (Type.Property p : Type.Property.values())
+		{
+			switch (mask.getMask(p.value()))
+			{
+				case TRUE:
+					if (str.length() > 0)
+						str += ",";
+					
+					str += p.name().replace("_", " ");
+					break;
+					 
+				case EITHER:
+					if (str.length() > 0)
+						str += ",";
+					
+					str += "(" + p.name().replace("_", " ") + ")";			
+			}
+		}
+		
+		return str;
+	}
+	
 	
 	protected String baseTypesToString(List<BaseType> types)
 	{
@@ -812,17 +818,12 @@ public class SymbolQueryDialog extends DialogBase
 				item.setText(1, modifiersToString(filter.m_modifiers));
 				item.setText(2, dialog.getMemberName());
 				item.setText(3, dialog.getType().m_name);
-				item.setText(4, m_triStateText[filter.m_type.m_isArray.value()]);
-				item.setText(5, m_triStateText[filter.m_type.m_isTypeParam.value()]);
-				
+				item.setText(4, typePropsToString(dialog.getType().m_typeProps));				
 				
 		 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
 		  		{
 		 			filter.m_operators = dialog.getOperators();
-		 			
-					item.setText(6, m_triStateText[filter.m_type.m_isNullable.value()]);
-		 			item.setText(7, m_triStateText[filter.m_type.m_isPointer.value()]);
-		 			item.setText(8, operatorsToString(filter.m_operators));
+		 			item.setText(5, operatorsToString(filter.m_operators));
 				}
 			}
 		}

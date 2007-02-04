@@ -16,8 +16,8 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Text;
+
 import com.sourcedimensions.client.TriStateBoolean;
 
 
@@ -94,14 +94,6 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	};
 
 	private Group m_typeGroup;
-	private Label m_arrayTypeLabel;
-	private Combo m_arrayTypeCombo;
-	private Label m_typeParamLabel;
-	private Combo m_typeParamCombo;
-	private Label m_nullableLabel;
-	private Combo m_nullableCombo;
-	private Label m_pointerLabel;
-	private Combo m_pointerCombo;
 	private Label m_typeNameLabel;
 	private Text m_typeNameText;
 	private Label m_memberNameLabel;
@@ -116,12 +108,15 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	private Button m_addParamButton;
 	private Button m_editParamButton;
 	private Button m_removeParamButton;
+	private Label m_typePropsLabel;
+	private Table m_typePropsList;
+
 	public CSharpMemberDialog(Display display, Shell parent)
 	{
 		m_display = display;
 		createShell(parent);
 		checkAllItems(m_memberCategoryList);
-		checkAllItems(m_modifierList);
+		setAllItems(m_modifierList, TriStateBoolean.TRUE);
 		checkAllItems(m_operatorList);
 	}
 	
@@ -131,10 +126,6 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_display = display;
 		createShell(parent);
 		m_memberNameText.setText(name);
-		m_arrayTypeCombo.select(type.m_isArray.value());
-		m_typeParamCombo.select(type.m_isTypeParam.value());
-		m_nullableCombo.select(type.m_isNullable.value());
-		m_pointerCombo.select(type.m_isPointer.value());
 		m_typeNameText.setText(type.m_name);
 		m_anyParamsCheckBox.setSelection(anyParams);
 		enableParamControls(!anyParams);
@@ -155,6 +146,12 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		{
 			setTriStateBoolValue(m_modifierList.getItem(i), modifiers.getMask(m_modifierArray[i].value()));
 		}
+		
+		for (int i = 0; i < m_typePropsList.getItemCount(); i++)
+		{
+			setTriStateBoolValue(m_typePropsList.getItem(i), 
+					type.m_typeProps.getMask(Type.Property.values()[i].value()));
+		}		
 	}
 	
 	private void createShell(Shell parent) 
@@ -200,10 +197,10 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		createTypeGroup();
 		m_memberNameLabel = new Label(getShell(), SWT.NONE);
 		m_memberNameLabel.setText("&Member Name Filter:");
-		m_memberNameLabel.setLocation(new Point(272, 194));
+		m_memberNameLabel.setLocation(new Point(269, 194));
 		m_memberNameLabel.setSize(new Point(106, 13));
 		m_memberNameText = new Text(getShell(), SWT.BORDER);
-		m_memberNameText.setBounds(new Rectangle(272, 209, 217, 19));
+		m_memberNameText.setBounds(new Rectangle(269, 209, 218, 19));
 		m_operatorsLabel = new Label(getShell(), SWT.NONE);
 		m_operatorsLabel.setBounds(new Rectangle(499, 86, 65, 13));
 		m_operatorsLabel.setText("&Operators:");
@@ -331,10 +328,13 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 				
 				m_anyParams = m_anyParamsCheckBox.getSelection();
 				m_type.m_name = m_typeNameText.getText();
-				m_type.m_isArray = TriStateBoolean.values()[m_arrayTypeCombo.getSelectionIndex()];
-				m_type.m_isTypeParam = TriStateBoolean.values()[m_typeParamCombo.getSelectionIndex()];
-				m_type.m_isNullable = TriStateBoolean.values()[m_nullableCombo.getSelectionIndex()];
-				m_type.m_isPointer = TriStateBoolean.values()[m_pointerCombo.getSelectionIndex()];
+				m_type.m_typeProps.reset();
+				m_modifiers.reset();
+				
+				for (int i = 0; i < m_typePropsList.getItemCount(); i++)
+				{
+					m_type.m_typeProps.setMask(Type.Property.values()[i].value(), getTriStateBoolValue(m_typePropsList.getItem(i)));
+				}
 				
 				m_cancel = false;
 				m_shell.close();
@@ -351,7 +351,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 				cancelClose();
 			}
 		});
-		m_anyParamsCheckBox.setBounds(new Rectangle(272, 242, 104, 13));
+		m_anyParamsCheckBox.setBounds(new Rectangle(269, 242, 104, 13));
 		m_anyParamsCheckBox.setText("An&y Parameters");
 		m_anyParamsCheckBox.setSelection(true);
 	
@@ -439,87 +439,27 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_typeGroup = new Group(getShell(), SWT.NONE);
 		m_typeGroup.setText("&Type/Return Type");
 		m_typeGroup.setLayout(null);
-		m_typeGroup.setBounds(new Rectangle(272, 16, 217, 162));
-		m_arrayTypeLabel = new Label(m_typeGroup, SWT.NONE);
-		m_arrayTypeLabel.setText("&Array Type:");
-		m_arrayTypeLabel.setBounds(new Rectangle(9, 19, 69, 13));
-		createArrayTypeCombo();
-		m_typeParamLabel = new Label(m_typeGroup, SWT.NONE);
-		m_typeParamLabel.setBounds(new Rectangle(9, 66, 92, 13));
-		m_typeParamLabel.setText("Type &Parameter:");
-		createTypeParamCombo();
-		m_nullableLabel = new Label(m_typeGroup, SWT.NONE);
-		m_nullableLabel.setBounds(new Rectangle(113, 19, 50, 13));
-		m_nullableLabel.setText("&Nullable:");
-		createNullableCombo();
-		m_pointerLabel = new Label(m_typeGroup, SWT.NONE);
-		m_pointerLabel.setBounds(new Rectangle(113, 66, 61, 13));
-		m_pointerLabel.setText("Poin&ter:");
-		createPointerCombo();
+		m_typeGroup.setBounds(new Rectangle(269, 16, 218, 163));
 		m_typeNameLabel = new Label(m_typeGroup, SWT.NONE);
-		m_typeNameLabel.setBounds(new Rectangle(9, 117, 91, 13));
+		m_typeNameLabel.setBounds(new Rectangle(11, 117, 91, 13));
 		m_typeNameLabel.setText("Type Name &Filter:");
 		m_typeNameText = new Text(m_typeGroup, SWT.BORDER);
-		m_typeNameText.setBounds(new Rectangle(9, 132, 196, 19));
-	}
-
-	private void createArrayTypeCombo() 
-	{
-		m_arrayTypeCombo = new Combo(m_typeGroup, SWT.READ_ONLY);
-		m_arrayTypeCombo.setLocation(new Point(8, 33));
-		m_arrayTypeCombo.setSize(new Point(93, 21));
-		
-		for (int i = 0; i < m_triStateText.length; i++)
+		m_typeNameText.setBounds(new Rectangle(11, 132, 196, 19));
+		m_typePropsLabel = new Label(m_typeGroup, SWT.NONE);
+		m_typePropsLabel.setBounds(new Rectangle(11, 23, 88, 13));
+		m_typePropsLabel.setText("Type Properties:");
+		m_typePropsList = new Table(m_typeGroup, SWT.HIDE_SELECTION | SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION);
+		m_typePropsList.setHeaderVisible(false);
+		m_typePropsList.setLinesVisible(false);
+		m_typePropsList.setBounds(new Rectangle(11, 37, 111, 68));
+		m_typePropsList.addSelectionListener(new TriStateCheckBoxAdapter());
+		Enum[] values = Type.Property.values();
+		for (int i = 0; i < values.length; i++)
 		{
-			m_arrayTypeCombo.add(m_triStateText[i], i);
-		}
-
-		m_arrayTypeCombo.select(0);		
+			new TableItem(m_typePropsList, 0, i).setText(values[i].toString().replace("_", " "));
+		}					
 	}
 
-	private void createTypeParamCombo() 
-	{
-		m_typeParamCombo = new Combo(m_typeGroup, SWT.READ_ONLY);
-		m_typeParamCombo.setLocation(new Point(9, 81));
-		m_typeParamCombo.setSize(new Point(93, 21));
-		
-		for (int i = 0; i < m_triStateText.length; i++)
-		{
-			m_typeParamCombo.add(m_triStateText[i], i);
-		}
-
-		m_typeParamCombo.select(0);
-		
-	}
-
-	private void createNullableCombo() 
-	{
-		m_nullableCombo = new Combo(m_typeGroup, SWT.READ_ONLY);
-		m_nullableCombo.setLocation(new Point(113, 33));
-		m_nullableCombo.setSize(new Point(93, 21));
-		
-		for (int i = 0; i < m_triStateText.length; i++)
-		{
-			m_nullableCombo.add(m_triStateText[i], i);
-		}
-
-		m_nullableCombo.select(0);
-		
-	}
-
-	private void createPointerCombo() 
-	{
-		m_pointerCombo = new Combo(m_typeGroup, SWT.READ_ONLY);
-		m_pointerCombo.setBounds(new Rectangle(113, 81, 93, 21));
-		
-		for (int i = 0; i < m_triStateText.length; i++)
-		{
-			m_pointerCombo.add(m_triStateText[i], i);
-		}
-
-		m_pointerCombo.select(0);		
-	}
-	
 	public static String getOperatorName(Operator op)
 	{
 		return m_operatorNames[(int)(Math.log(op.value())/Math.log(2.0))];
