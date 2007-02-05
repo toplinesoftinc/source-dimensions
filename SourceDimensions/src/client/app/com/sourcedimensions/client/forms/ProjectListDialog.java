@@ -108,7 +108,7 @@ public class ProjectListDialog extends DialogBase
 		});
 		
 		m_shell.setDefaultButton(m_openButton);
-		postCreate(parent);
+		super.createShell(parent);
 	}
 
 	public void loadProjects(Collection<Project> projs)

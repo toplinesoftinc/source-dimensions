@@ -45,10 +45,7 @@ public class LoginDialog extends DialogBase
 		}		
 	}
 	
-	/**
-	 * This method initializes m_shell
-	 */
-	private void createShell(Shell parent) 
+	protected void createShell(Shell parent) 
 	{
 		m_shell = new Shell(SWT.TITLE | SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
 		
@@ -142,7 +139,7 @@ public class LoginDialog extends DialogBase
 			}
 		});
 
-		postCreate(parent);
+		super.createShell(parent);
 	}
 	
 	public static String getSessionID()

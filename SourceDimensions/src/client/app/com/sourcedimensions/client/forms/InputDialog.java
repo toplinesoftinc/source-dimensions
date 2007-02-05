@@ -86,7 +86,7 @@ public class InputDialog extends DialogBase
 		});
 
 		m_shell.setDefaultButton(m_okButton);
-		postCreate(parent);
+		super.createShell(parent);
 	}
 
 	public String getValue()

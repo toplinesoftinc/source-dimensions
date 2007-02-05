@@ -154,7 +154,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		}		
 	}
 	
-	private void createShell(Shell parent) 
+	protected void createShell(Shell parent) 
 	{
 		m_shell = new Shell(SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
 		
@@ -329,7 +329,6 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 				m_anyParams = m_anyParamsCheckBox.getSelection();
 				m_type.m_name = m_typeNameText.getText();
 				m_type.m_typeProps.reset();
-				m_modifiers.reset();
 				
 				for (int i = 0; i < m_typePropsList.getItemCount(); i++)
 				{
@@ -369,7 +368,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		}
 				
 		m_shell.setDefaultButton(m_okButton);
-		postCreate(parent);
+		super.createShell(parent);
 		
 		m_memberNameText.setFocus();
 	}

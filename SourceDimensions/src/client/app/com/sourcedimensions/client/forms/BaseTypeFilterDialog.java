@@ -76,7 +76,7 @@ public class BaseTypeFilterDialog extends DialogBase
 		createShell(parent);
 	}	
 	
-	private void createShell(Shell parent)
+	protected void createShell(Shell parent)
 	{
 		m_shell = new Shell(SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
 		
@@ -178,7 +178,7 @@ public class BaseTypeFilterDialog extends DialogBase
 		}
 		
 		m_shell.setDefaultButton(m_okButton);
-		postCreate(parent);
+		super.createShell(parent);
 	}
 
 	public String getValue()

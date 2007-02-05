@@ -83,7 +83,7 @@ public class SymbolQueryDialog extends DialogBase
 		createShell(parent);
 	}
 	
-	private void createShell(Shell parent) 
+	protected void createShell(Shell parent) 
 	{
 		m_shell = new Shell(SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
 		
@@ -156,7 +156,7 @@ public class SymbolQueryDialog extends DialogBase
 		});
 				
 		m_shell.setDefaultButton(m_runQueryButton);
-		postCreate(parent);
+		super.createShell(parent);
 	}
 	
 	private void createComboDestinationSnapshot()

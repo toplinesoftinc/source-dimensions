@@ -53,7 +53,7 @@ public abstract class DialogBase
 	}
 	
 	
-	protected void postCreate(Shell parent)
+	protected void createShell(Shell parent)
 	{	
 		Shell shell = getShell();
 		

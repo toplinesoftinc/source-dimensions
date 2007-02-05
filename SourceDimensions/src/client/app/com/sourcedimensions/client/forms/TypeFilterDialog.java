@@ -132,7 +132,7 @@ public class TypeFilterDialog extends DialogBase
 		setAllItems(m_modifierList, TriStateBoolean.EITHER);
 	}
 	
-	private void createShell(Shell parent) 
+	protected void createShell(Shell parent) 
 	{
 		m_shell = new Shell(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		
@@ -376,7 +376,7 @@ public class TypeFilterDialog extends DialogBase
 			}
 		});
 
-		postCreate(parent);
+		super.createShell(parent);
 		m_shell.setDefaultButton(m_okButton);
 		m_typeNameText.setFocus();		
 	}

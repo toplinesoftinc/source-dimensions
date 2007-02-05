@@ -104,7 +104,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		}
 	}
 		
-	private void createShell(Shell parent)  
+	protected void createShell(Shell parent)  
 	{
 		m_shell = new Shell(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		m_shell.setText("Member Filter");
@@ -305,7 +305,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		
 		m_memberNameText.setFocus();
 		m_shell.setDefaultButton(m_okButton);
-		postCreate(parent);
+		super.createShell(parent);
 	}
 
 	private void enableParamControls(boolean enable)
