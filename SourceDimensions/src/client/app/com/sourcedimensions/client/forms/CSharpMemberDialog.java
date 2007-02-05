@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 
 import com.sourcedimensions.client.TriStateBoolean;
 
@@ -230,6 +231,14 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_addParamButton.setText("A&dd Filter...");
 		m_addParamButton.setEnabled(false);
 		m_addParamButton.setSize(new Point(88, 25));
+		m_addParamButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				ParamDialog dialog = new ParamDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+				dialog.open();
+			}
+		});
 		m_editParamButton = new Button(getShell(), SWT.NONE);
 		m_editParamButton.setLocation(new Point(304, 284));
 		m_editParamButton.setText("&Edit Filter...");
@@ -435,15 +444,15 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	
 	private void createTypeGroup() 
 	{
-		m_typeGroup = new Group(getShell(), SWT.NONE);
+		m_typeGroup = new Group(getShell(), SWT.BORDER);
 		m_typeGroup.setText("&Type/Return Type");
 		m_typeGroup.setLayout(null);
-		m_typeGroup.setBounds(new Rectangle(269, 16, 218, 163));
+		m_typeGroup.setBounds(new Rectangle(269, 22, 218, 159));
 		m_typeNameLabel = new Label(m_typeGroup, SWT.NONE);
-		m_typeNameLabel.setBounds(new Rectangle(11, 117, 91, 13));
+		m_typeNameLabel.setBounds(new Rectangle(11, 113, 91, 13));
 		m_typeNameLabel.setText("Type Name &Filter:");
 		m_typeNameText = new Text(m_typeGroup, SWT.BORDER);
-		m_typeNameText.setBounds(new Rectangle(11, 132, 196, 19));
+		m_typeNameText.setBounds(new Rectangle(11, 128, 196, 19));
 		m_typePropsLabel = new Label(m_typeGroup, SWT.NONE);
 		m_typePropsLabel.setBounds(new Rectangle(11, 23, 88, 13));
 		m_typePropsLabel.setText("Type Properties:");

@@ -189,7 +189,7 @@ public class TypeFilterDialog extends DialogBase
 				new TableItem(m_modifierList, 0, i).setText(mods[i].toString().toUpperCase());
 		}
 
-		m_typeNameLabel.setBounds(new Rectangle(17, 142, 101, 13));
+		m_typeNameLabel.setBounds(new Rectangle(17, 144, 101, 13));
 		m_typeNameLabel.setText("Type &Name Filter:");
 		m_allBaseTypesCheckBox = new Button(m_shell, SWT.CHECK);
 		m_baseTypesLabel = new Label(m_shell, SWT.NONE);

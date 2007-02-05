@@ -353,9 +353,9 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 
 	private void createTypeGroup() 
 	{
-		m_typeGroup = new Group(getShell(), SWT.SHADOW_NONE);
+		m_typeGroup = new Group(getShell(), SWT.SHADOW_NONE | SWT.BORDER);
 		m_typeGroup.setText("&Type/Return type");
-		m_typeGroup.setBounds(new Rectangle(333, 17, 196, 143));
+		m_typeGroup.setBounds(new Rectangle(333, 23, 196, 143));
 		m_typeNameLabel = new Label(m_typeGroup, SWT.NONE);
 		m_typeNameLabel.setBounds(new Rectangle(12, 97, 87, 13));
 		m_typeNameLabel.setText("Type Name Filter:");

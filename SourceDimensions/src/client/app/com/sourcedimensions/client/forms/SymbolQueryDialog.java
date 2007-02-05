@@ -514,7 +514,7 @@ public class SymbolQueryDialog extends DialogBase
 		column.setWidth((int)(0.15 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Int.type");
+		column.setText("Internal");
 		m_typeFilterLabel = new Label(m_typesTab, SWT.NONE);
 		m_typeFilterLabel.setBounds(new Rectangle(15, 40, 101, 16));
 		m_typeFilterLabel.setText("&Type Filter List:");
