@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Parameter 
 {
-	public enum ParamPosition
+	public enum Position
 	{
 		ANY(0),
 		EXACT(1),
@@ -14,7 +14,7 @@ public class Parameter
 		BETWEEN(4),
 		LIST(5);
 		
-		ParamPosition(int val)
+		Position(int val)
 		{
 			value = val;
 		}
@@ -27,9 +27,31 @@ public class Parameter
 		}						
 	}
 	
+	public enum Modifier 
+	{
+		REF(1<<0),
+		OUT(1<<1),
+		PARAMS(1<<2),
+		FINAL(1<<3),
+		VAR_ARITY(1<<4);
+		
+		Modifier(int val)
+		{
+			value = val;
+		}
+		
+		private final int value;
+		
+		public int value()
+		{
+			return value;
+		}		
+	}
+
+	
 	public Type m_type = new Type();
 	public String m_name;
-	public boolean m_varParam;
-	public ParamPosition m_posType;		
+	public Position m_posType;
+	public Integer m_posValue, m_posMin, m_posMax;
 	public List<Integer> m_posList = new ArrayList<Integer>();
 }

@@ -58,7 +58,7 @@ public class ParamDialog extends DialogBase
 
 	private void createParamPositionGroup() 
 	{
-		m_paramPositionGroup = new Group(getShell(), SWT.SHADOW_NONE | SWT.BORDER);
+		m_paramPositionGroup = new Group(getShell(), SWT.SHADOW_NONE);
 		m_paramPositionGroup.setText("Position");
 		m_paramPositionGroup.setLayout(null);
 		m_paramPositionGroup.setBounds(new Rectangle(14, 14, 264, 156));

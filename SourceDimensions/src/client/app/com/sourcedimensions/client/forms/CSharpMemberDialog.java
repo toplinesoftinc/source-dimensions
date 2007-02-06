@@ -203,8 +203,9 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_memberNameText = new Text(getShell(), SWT.BORDER);
 		m_memberNameText.setBounds(new Rectangle(269, 209, 218, 19));
 		m_operatorsLabel = new Label(getShell(), SWT.NONE);
-		m_operatorsLabel.setBounds(new Rectangle(499, 86, 65, 13));
 		m_operatorsLabel.setText("&Operators:");
+		m_operatorsLabel.setLocation(new Point(499, 87));
+		m_operatorsLabel.setSize(new Point(65, 13));
 		m_operatorList = new Table(getShell(), SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
 		m_operatorList.setHeaderVisible(false);
 		m_operatorList.setLinesVisible(false);
@@ -252,7 +253,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_okButton = new Button(getShell(), SWT.NONE);
 		m_okButton.setText("O&k");
 		m_okButton.setSize(new Point(88, 25));
-		m_okButton.setLocation(new Point(528, 19));
+		m_okButton.setLocation(new Point(528, 22));
 		m_okButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e)
@@ -351,7 +352,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_cancelButton = new Button(getShell(), SWT.NONE);
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
-		m_cancelButton.setLocation(new Point(528, 54));
+		m_cancelButton.setLocation(new Point(528, 57));
 		m_cancelButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
@@ -444,10 +445,11 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	
 	private void createTypeGroup() 
 	{
-		m_typeGroup = new Group(getShell(), SWT.BORDER);
+		m_typeGroup = new Group(getShell(), SWT.NONE);
 		m_typeGroup.setText("&Type/Return Type");
 		m_typeGroup.setLayout(null);
-		m_typeGroup.setBounds(new Rectangle(269, 22, 218, 159));
+		m_typeGroup.setLocation(new Point(270, 17));
+		m_typeGroup.setSize(new Point(218, 159));
 		m_typeNameLabel = new Label(m_typeGroup, SWT.NONE);
 		m_typeNameLabel.setBounds(new Rectangle(11, 113, 91, 13));
 		m_typeNameLabel.setText("Type Name &Filter:");

@@ -209,7 +209,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_removeParamButton.setText("&Remove Filter");
 		m_okButton = new Button(getShell(), SWT.NONE);
 		m_okButton.setText("O&k");
-		m_okButton.setLocation(new Point(541, 21));
+		m_okButton.setLocation(new Point(541, 23));
 		m_okButton.setVisible(true);
 		m_okButton.setSize(new Point(88, 25));
 		m_okButton.addSelectionListener(new SelectionAdapter() 
@@ -284,7 +284,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		});
 		m_cancelButton = new Button(getShell(), SWT.NONE);
 		m_cancelButton.setText("&Cancel");
-		m_cancelButton.setLocation(new Point(541, 61));
+		m_cancelButton.setLocation(new Point(541, 60));
 		m_cancelButton.setSize(new Point(88, 25));
 		m_cancelButton.addSelectionListener(new SelectionAdapter() 
 		{
@@ -353,9 +353,10 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 
 	private void createTypeGroup() 
 	{
-		m_typeGroup = new Group(getShell(), SWT.SHADOW_NONE | SWT.BORDER);
+		m_typeGroup = new Group(getShell(), SWT.SHADOW_NONE);
 		m_typeGroup.setText("&Type/Return type");
-		m_typeGroup.setBounds(new Rectangle(333, 23, 196, 143));
+		m_typeGroup.setLocation(new Point(335, 18));
+		m_typeGroup.setSize(new Point(196, 143));
 		m_typeNameLabel = new Label(m_typeGroup, SWT.NONE);
 		m_typeNameLabel.setBounds(new Rectangle(12, 97, 87, 13));
 		m_typeNameLabel.setText("Type Name Filter:");
