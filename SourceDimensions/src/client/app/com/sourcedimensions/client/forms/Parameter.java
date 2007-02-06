@@ -1,7 +1,9 @@
 package com.sourcedimensions.client.forms;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Parameter 
 {
@@ -52,6 +54,6 @@ public class Parameter
 	public Type m_type = new Type();
 	public String m_name;
 	public Position m_posType;
-	public Integer m_posValue, m_posMin, m_posMax;
-	public List<Integer> m_posList = new ArrayList<Integer>();
+	public int m_posValue, m_posMin, m_posMax;
+	public Set<Integer> m_posList = new HashSet<Integer>();
 }
