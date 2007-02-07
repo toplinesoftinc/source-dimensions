@@ -1,7 +1,11 @@
 package com.sourcedimensions.client.forms;
 
 import java.util.Iterator;
-
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -15,10 +19,12 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Table;
+import com.sourcedimensions.client.views.ProjectView;
 
 
 public class ParamDialog extends DialogBase 
@@ -39,6 +45,7 @@ public class ParamDialog extends DialogBase
 	private List m_posList;
 	private Button m_removePosButton;
 	private Parameter m_param = new Parameter();  //  @jve:decl-index=0:
+	private Set<Integer> m_posListSet = new TreeSet<Integer>();
 	private Group m_typeGroup;
 	private Label m_typeNameLabel;
 	private Text m_typeNameText;
@@ -50,6 +57,71 @@ public class ParamDialog extends DialogBase
 	private Table m_paramModifiersList;
 	private Button m_okButton;
 	private Button m_cancelButton;
+	private Button m_exactRadioButton = null;
+	private Spinner m_exactPosSpinner = null;
+
+	public ParamDialog(Display display, Shell parent, Parameter param)
+	{
+		m_display = display;
+		createShell(parent);
+		
+		switch (m_param.m_posType)
+		{
+			case LIST:
+				m_listPosRadioButton.setSelection(true);
+				
+				m_posListSet.clear();
+				for (Integer i : m_param.m_posList)
+				{
+					m_posListSet.add(i);
+				}
+				
+				positionListChanged();
+				break;
+
+			case GREATER_EQ:
+				m_noMoreRadioButton.setSelection(true);
+				m_noMorePosSpinner.setSelection(m_param.m_posMin);
+				break;
+								
+			case LESS_EQ:
+				m_notLessRadioButton.setSelection(true);
+				m_notLessPosSpinner.setSelection(m_param.m_posMax);				
+				break;
+				
+			case BETWEEN:
+				m_rangeRadioButton.setSelection(true);
+				m_rangeMinSpinner.setSelection(m_param.m_posMin);
+				m_rangeMaxSpinner.setSelection(m_param.m_posMax);
+				break;				
+				
+			case EXACT:
+				m_exactRadioButton.setSelection(true);
+				m_exactPosSpinner.setSelection(m_param.m_posValue);
+				break;
+				
+			case ANY:
+				m_anyRadioButton.setSelection(true);
+		}
+		
+		positionChanged();
+		
+		for (int i = 0; i < m_typePropsList.getItemCount(); i++)
+		{
+			setTriStateBoolValue(m_typePropsList.getItem(i), 
+				m_param.m_type.m_typeProps.getMask(getTypePropArray()[i].value()));
+		}
+				
+		m_typeNameText.setText(m_param.m_type.m_name);
+
+		for (int i = 0; i < m_paramModifiersList.getItemCount(); i++)
+		{
+			setTriStateBoolValue(m_paramModifiersList.getItem(i),
+				m_param.m_modifiers.getMask(getModifierArray()[i].value()));
+		}
+				
+		m_paramNameFilterText.setText(m_param.m_name);
+	}
 	
 	public ParamDialog(Display display, Shell parent)
 	{
@@ -67,32 +139,146 @@ public class ParamDialog extends DialogBase
 		m_shell.setText("Parameter");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		createParamPositionGroup();
-		createM_typeGroup();
-		m_shell.setSize(new Point(396, 421));
+		createTypeGroup();
+		m_shell.setSize(new Point(396, 447));
 		m_shell.setLayout(null);
 		m_paramModifiersLabel = new Label(getShell(), SWT.NONE);
 		m_paramModifiersList = new Table(getShell(), SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
+		m_paramModifiersList.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_paramNameFilterLabel = new Label(getShell(), SWT.NONE);
 		m_paramNameFilterLabel.setText("Parameter Name Filter:");
-		m_paramNameFilterLabel.setLocation(new Point(129, 344));
+		m_paramNameFilterLabel.setLocation(new Point(133, 334));
 		m_paramNameFilterLabel.setSize(new Point(120, 13));
 		m_paramNameFilterText = new Text(getShell(), SWT.BORDER);
-		m_paramNameFilterText.setSize(new Point(238, 19));
-		m_paramNameFilterText.setLocation(new Point(129, 358));
+		m_paramNameFilterText.setSize(new Point(230, 19));
+		m_paramNameFilterText.setLocation(new Point(133, 348));
 		m_paramModifiersList.setHeaderVisible(false);
 		m_paramModifiersList.setLinesVisible(false);
-		m_paramModifiersList.setBounds(new Rectangle(11, 324, 104, 53));
+		m_paramModifiersList.setBounds(new Rectangle(12, 348, 104, 53));
+		for (Parameter.Modifier m : getModifierArray())
+		{
+			new TableItem(m_paramModifiersList, 0).setText(m.toString().replace("_", ".").toLowerCase());
+		}
 		m_okButton = new Button(getShell(), SWT.NONE);
-		m_okButton.setLocation(new Point(288, 17));
+		m_okButton.setLocation(new Point(289, 17));
 		m_okButton.setText("O&k");
 		m_okButton.setSize(new Point(88, 25));
+		m_okButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
+			{
+				String val = m_typeNameText.getText().trim();
+				
+				if (val.length() == 0)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
+					return;
+				}
+
+				try
+				{
+					Pattern.compile(val);
+				}
+				catch(PatternSyntaxException ex)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input",
+						"Pattern for type name \"" + val + "\" has the following error: " + ex.getMessage());
+					return;
+				}				
+
+				val = m_paramNameFilterText.getText().trim();
+				
+				if (val.length() == 0)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Parameter Name Filter");					
+					return;
+				}
+
+				try
+				{
+					Pattern.compile(val);
+				}
+				catch(PatternSyntaxException ex)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input",
+						"Pattern for parameter name \"" + val + "\" has the following error: " + ex.getMessage());
+					return;
+				}
+				
+				if (m_listPosRadioButton.getSelection())
+				{
+					m_param.m_posType = Parameter.Position.LIST;
+					m_param.m_posList.clear();
+					
+					for (Integer i : m_posListSet)
+					{
+						m_param.m_posList.add(i);
+					}	
+				}
+				else if (m_notLessRadioButton.getSelection())
+				{
+					m_param.m_posType = Parameter.Position.GREATER_EQ;
+					m_param.m_posMin = m_notLessPosSpinner.getSelection();
+				}
+				else if (m_noMoreRadioButton.getSelection())
+				{
+					m_param.m_posType = Parameter.Position.LESS_EQ;
+					m_param.m_posMax = m_noMorePosSpinner.getSelection();
+				}
+				else if (m_exactRadioButton.getSelection())
+				{
+					m_param.m_posType = Parameter.Position.EXACT;
+					m_param.m_posValue = m_exactPosSpinner.getSelection();
+				}
+				else if (m_rangeRadioButton.getSelection())
+				{
+					m_param.m_posType = Parameter.Position.BETWEEN;
+					m_param.m_posMin = m_rangeMinSpinner.getSelection();
+					m_param.m_posMax = m_rangeMaxSpinner.getSelection();
+				}
+				else if (m_anyRadioButton.getSelection())
+				{
+					m_param.m_posType = Parameter.Position.ANY;
+				}
+				
+				m_param.m_type.m_name = m_typeNameText.getText();
+				
+				m_param.m_type.m_typeProps.reset();
+
+				for (int i = 0; i < m_typePropsList.getItemCount(); i++)
+				{
+					m_param.m_type.m_typeProps.setMask(getTypePropArray()[i].value(), 
+						getTriStateBoolValue(m_typePropsList.getItem(i)));
+				}
+				
+				m_param.m_name = m_paramNameFilterText.getText();
+				
+				m_param.m_modifiers.reset();
+				
+				for (int i = 0; i < m_paramModifiersList.getItemCount(); i++)
+				{
+					m_param.m_modifiers.setMask(getModifierArray()[i].value(), 
+						getTriStateBoolValue(m_paramModifiersList.getItem(i)));
+				}
+										
+				m_cancel = false;
+				m_shell.close();
+			}
+		});
 		m_cancelButton = new Button(getShell(), SWT.NONE);
-		m_cancelButton.setLocation(new Point(288, 52));
+		m_cancelButton.setLocation(new Point(289, 52));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
+		m_cancelButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				cancelClose();
+			}
+		});
 		m_paramModifiersLabel.setText("Parameter Modifiers:");
 		m_paramModifiersLabel.setSize(new Point(108, 13));
-		m_paramModifiersLabel.setLocation(new Point(11, 310));
+		m_paramModifiersLabel.setLocation(new Point(12, 334));
 		
 		super.createShell(parent);
 	}
@@ -107,7 +293,7 @@ public class ParamDialog extends DialogBase
 		m_paramPositionGroup = new Group(getShell(), SWT.SHADOW_NONE);
 		m_paramPositionGroup.setText("Position");
 		m_paramPositionGroup.setLayout(null);
-		m_paramPositionGroup.setBounds(new Rectangle(12, 12, 263, 167));
+		m_paramPositionGroup.setBounds(new Rectangle(12, 12, 268, 190));
 		m_listPosRadioButton = new Button(m_paramPositionGroup, SWT.RADIO);
 		m_listPosRadioButton.setText("List");
 		m_listPosRadioButton.setLocation(new Point(12, 24));
@@ -142,6 +328,7 @@ public class ParamDialog extends DialogBase
 		m_notLessRadioButton.setText("Not Less");
 		m_notLessRadioButton.setSize(new Point(60, 16));
 		m_notLessRadioButton.setLocation(new Point(12, 52));
+		m_exactRadioButton = new Button(m_paramPositionGroup, SWT.RADIO);
 		m_notLessRadioButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
@@ -150,8 +337,9 @@ public class ParamDialog extends DialogBase
 			}
 		});
 		m_anyRadioButton = new Button(m_paramPositionGroup, SWT.RADIO);
-		m_anyRadioButton.setBounds(new Rectangle(12, 136, 47, 16));
 		m_anyRadioButton.setSelection(true);
+		m_anyRadioButton.setSize(new Point(47, 16));
+		m_anyRadioButton.setLocation(new Point(12, 164));
 		m_anyRadioButton.setText("Any");
 		m_anyRadioButton.addSelectionListener(new SelectionAdapter() 
 		{
@@ -181,6 +369,22 @@ public class ParamDialog extends DialogBase
 		m_rangeMaxSpinner.setMinimum(1);
 		m_rangeMaxSpinner.setEnabled(false);
 		m_rangeMaxSpinner.setBounds(new Rectangle(133, 107, 49, 17));
+		m_exactRadioButton.setSize(new Point(51, 16));
+		m_exactRadioButton.setLocation(new Point(12, 136));
+		m_exactRadioButton.setText("Exact");
+		m_exactRadioButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				positionChanged();
+			}
+		});
+		m_exactPosSpinner = new Spinner(m_paramPositionGroup, SWT.BORDER);
+		m_exactPosSpinner.setLocation(new Point(77, 136));
+		m_exactPosSpinner.setPageIncrement(1);
+		m_exactPosSpinner.setMinimum(1);
+		m_exactPosSpinner.setEnabled(false);
+		m_exactPosSpinner.setSize(new Point(49, 17));
 		m_noMorePosSpinner.setPageIncrement(1);
 		m_noMorePosSpinner.setEnabled(false);
 		m_noMorePosSpinner.setMinimum(1);
@@ -197,11 +401,11 @@ public class ParamDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				m_param.m_posList.add(m_listPosSpinner.getSelection());
+				m_posListSet.add(m_listPosSpinner.getSelection());
 				positionListChanged();
 			}
 		});
-		m_posList.setBounds(new Rectangle(192, 24, 61, 127));
+		m_posList.setBounds(new Rectangle(192, 24, 61, 130));
 		m_posList.setEnabled(false);
 		m_removePosButton.setBounds(new Rectangle(156, 61, 31, 23));
 		m_removePosButton.setEnabled(false);
@@ -213,7 +417,7 @@ public class ParamDialog extends DialogBase
 			{
 				for (int i : m_posList.getSelectionIndices())
 				{
-					m_param.m_posList.remove(Integer.parseInt(m_posList.getItem(i)));
+					m_posListSet.remove(Integer.parseInt(m_posList.getItem(i)));
 				}
 				
 				m_posList.remove(m_posList.getSelectionIndices());
@@ -255,6 +459,10 @@ public class ParamDialog extends DialogBase
 		{
 			m_noMorePosSpinner.setEnabled(true);
 		}
+		else if (m_exactRadioButton.getSelection())
+		{
+			m_exactPosSpinner.setEnabled(true);
+		}
 		else if (m_rangeRadioButton.getSelection())
 		{
 			m_rangeMinSpinner.setEnabled(true);
@@ -270,7 +478,7 @@ public class ParamDialog extends DialogBase
 	public void positionListChanged()
 	{
 		m_posList.removeAll();
-		Iterator<Integer> iter = m_param.m_posList.iterator();
+		Iterator<Integer> iter = m_posListSet.iterator();
 		
 		while (iter.hasNext())
 		{
@@ -278,27 +486,78 @@ public class ParamDialog extends DialogBase
 		}
 	}
 
-	/**
-	 * This method initializes m_typeGroup	
-	 *
-	 */
-	private void createM_typeGroup() {
+	private void createTypeGroup() 
+	{
 		m_typeGroup = new Group(getShell(), SWT.NONE);
 		m_typeGroup.setLayout(null);
 		m_typeGroup.setText("&Type/Return Type");
-		m_typeGroup.setBounds(new Rectangle(12, 185, 365, 120));
+		m_typeGroup.setBounds(new Rectangle(12, 211, 365, 116));
 		m_typePropsLabel = new Label(m_typeGroup, SWT.NONE);
 		m_typePropsList = new Table(m_typeGroup, SWT.HIDE_SELECTION | SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION);
+		m_typePropsList.addSelectionListener(new TriStateCheckBoxAdapter());
+		for (Type.Property prop : getTypePropArray())
+		{
+			new TableItem(m_typePropsList, 0).setText(prop.toString().replace("_", " "));
+		}							
 		m_typeNameLabel = new Label(m_typeGroup, SWT.NONE);
 		m_typeNameLabel.setText("Type Name &Filter:");
-		m_typeNameLabel.setLocation(new Point(134, 74));
+		m_typeNameLabel.setLocation(new Point(131, 21));
 		m_typeNameLabel.setSize(new Point(91, 13));
 		m_typeNameText = new Text(m_typeGroup, SWT.BORDER);
-		m_typeNameText.setBounds(new Rectangle(134, 88, 219, 19));
-		m_typePropsLabel.setBounds(new Rectangle(14, 25, 88, 13));
+		m_typeNameText.setBounds(new Rectangle(131, 35, 219, 19));
+		m_typePropsLabel.setBounds(new Rectangle(11, 21, 88, 13));
 		m_typePropsLabel.setText("Type Properties:");
 		m_typePropsList.setHeaderVisible(false);
 		m_typePropsList.setLinesVisible(false);
-		m_typePropsList.setBounds(new Rectangle(14, 39, 111, 68));
+		m_typePropsList.setBounds(new Rectangle(11, 35, 111, 70));
 	}
+	
+	protected Type.Property[] getTypePropArray()
+	{
+  		switch (ProjectView.getProject().getLanguage())
+  		{
+  			case JAVA14:
+  			case JAVA15:
+  				return new Type.Property[]
+				    {
+						Type.Property.ARRAY,
+						Type.Property.TYPE_PARAM,
+				    };  				
+  				 				
+  			case CSHARP11:
+  			case CSHARP20:
+  				return Type.Property.values();
+
+  			default:
+  				return null;
+  		}		
+	}
+	
+	protected Parameter.Modifier[] getModifierArray()
+	{
+  		switch (ProjectView.getProject().getLanguage())
+  		{
+  			case JAVA14:
+  			case JAVA15:
+  				return new Parameter.Modifier[]
+				    {
+  						Parameter.Modifier.FINAL,
+  						Parameter.Modifier.VAR_ARITY
+				    };
+  				 				
+  			case CSHARP11:
+  			case CSHARP20:
+  				return new Parameter.Modifier[]
+				    {
+  						Parameter.Modifier.OUT,
+  						Parameter.Modifier.REF,
+  						Parameter.Modifier.PARAMS
+				    };
+
+  			default:
+  				return null;
+  		}
+		
+	}
+	
 }

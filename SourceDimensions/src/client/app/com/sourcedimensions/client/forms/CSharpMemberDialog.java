@@ -271,16 +271,28 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 					return;
 				}
 
-				if (m_typeNameText.getText().trim().length() == 0)
+				String val = m_typeNameText.getText().trim();
+				
+				if (val.length() == 0)
 				{
 					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
 					return;
 				}
-				
+
+				try
+				{
+					Pattern.compile(val);
+				}
+				catch(PatternSyntaxException ex)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input",
+						"Pattern for type name \"" + val + "\" has the following error: " + ex.getMessage());
+					return;
+				}				
 				
 				if (m_memberNameText.getEnabled())
 				{
-					String val = m_memberNameText.getText().trim();
+					val = m_memberNameText.getText().trim();
 					
 					if (val.length() == 0)
 					{
@@ -295,7 +307,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 					catch(PatternSyntaxException ex)
 					{
 						MessageDialog.openError(m_shell, "Incorrect input",
-							"Pattern \"" + val + "\" has the following error: " + ex.getMessage());
+							"Pattern for member name \"" + val + "\" has the following error: " + ex.getMessage());
 						return;
 					}
 	

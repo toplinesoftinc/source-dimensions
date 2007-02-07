@@ -18,6 +18,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.ui.PlatformUI;
+
 import com.sourcedimensions.client.TriStateBoolean;
 
 
@@ -198,6 +200,14 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_addParamButton.setBounds(new Rectangle(542, 225, 88, 25));
 		m_addParamButton.setEnabled(false);
 		m_addParamButton.setText("A&dd Filter...");
+		m_addParamButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				ParamDialog dialog = new ParamDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+				dialog.open();
+			}
+		});
 		m_editParamButton = new Button(getShell(), SWT.NONE);
 		m_editParamButton.setBounds(new Rectangle(542, 267, 88, 25));
 		m_editParamButton.setEnabled(false);
@@ -229,13 +239,26 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 					return;
 				}
 
-				if (m_typeNameText.getText().trim().length() == 0)
+				String val = m_typeNameText.getText().trim();
+				
+				if (val.length() == 0)
 				{
 					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
 					return;
 				}
+
+				try
+				{
+					Pattern.compile(val);
+				}
+				catch(PatternSyntaxException ex)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input",
+						"Pattern for type name \"" + val + "\" has the following error: " + ex.getMessage());
+					return;
+				}				
 				
-				String val = m_memberNameText.getText().trim();
+				val = m_memberNameText.getText().trim();
 				
 				if (val.length() == 0)
 				{
@@ -250,7 +273,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				catch(PatternSyntaxException ex)
 				{
 					MessageDialog.openError(m_shell, "Incorrect input",
-						"Pattern \"" + val + "\" has the following error: " + ex.getMessage());
+						"Pattern for member name \"" + val + "\" has the following error: " + ex.getMessage());
 					return;
 				}
 							
@@ -355,7 +378,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	{
 		m_typeGroup = new Group(getShell(), SWT.SHADOW_NONE);
 		m_typeGroup.setText("&Type/Return type");
-		m_typeGroup.setLocation(new Point(335, 18));
+		m_typeGroup.setLocation(new Point(333, 18));
 		m_typeGroup.setSize(new Point(196, 143));
 		m_typeNameLabel = new Label(m_typeGroup, SWT.NONE);
 		m_typeNameLabel.setBounds(new Rectangle(12, 97, 87, 13));

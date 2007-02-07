@@ -1,8 +1,6 @@
 package com.sourcedimensions.client.forms;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class Parameter 
@@ -12,7 +10,7 @@ public class Parameter
 		ANY(0),
 		EXACT(1),
 		LESS_EQ(2),
-		MORE_EQ(3),
+		GREATER_EQ(3),
 		BETWEEN(4),
 		LIST(5);
 		
@@ -50,7 +48,7 @@ public class Parameter
 		}		
 	}
 
-	
+	public TriStateMask m_modifiers = new TriStateMask();
 	public Type m_type = new Type();
 	public String m_name;
 	public Position m_posType;
