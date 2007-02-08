@@ -57,21 +57,21 @@ public class ParamDialog extends DialogBase
 	private Table m_paramModifiersList;
 	private Button m_okButton;
 	private Button m_cancelButton;
-	private Button m_exactRadioButton = null;
-	private Spinner m_exactPosSpinner = null;
+	private Button m_exactRadioButton;
+	private Spinner m_exactPosSpinner;
 
 	public ParamDialog(Display display, Shell parent, Parameter param)
 	{
 		m_display = display;
 		createShell(parent);
 		
-		switch (m_param.m_posType)
+		switch (param.m_posType)
 		{
 			case LIST:
 				m_listPosRadioButton.setSelection(true);
 				
 				m_posListSet.clear();
-				for (Integer i : m_param.m_posList)
+				for (Integer i : param.m_posList)
 				{
 					m_posListSet.add(i);
 				}
@@ -81,23 +81,23 @@ public class ParamDialog extends DialogBase
 
 			case GREATER_EQ:
 				m_noMoreRadioButton.setSelection(true);
-				m_noMorePosSpinner.setSelection(m_param.m_posMin);
+				m_noMorePosSpinner.setSelection(param.m_posMin);
 				break;
 								
 			case LESS_EQ:
 				m_notLessRadioButton.setSelection(true);
-				m_notLessPosSpinner.setSelection(m_param.m_posMax);				
+				m_notLessPosSpinner.setSelection(param.m_posMax);				
 				break;
 				
 			case BETWEEN:
 				m_rangeRadioButton.setSelection(true);
-				m_rangeMinSpinner.setSelection(m_param.m_posMin);
-				m_rangeMaxSpinner.setSelection(m_param.m_posMax);
+				m_rangeMinSpinner.setSelection(param.m_posMin);
+				m_rangeMaxSpinner.setSelection(param.m_posMax);
 				break;				
 				
 			case EXACT:
 				m_exactRadioButton.setSelection(true);
-				m_exactPosSpinner.setSelection(m_param.m_posValue);
+				m_exactPosSpinner.setSelection(param.m_posValue);
 				break;
 				
 			case ANY:
@@ -109,18 +109,18 @@ public class ParamDialog extends DialogBase
 		for (int i = 0; i < m_typePropsList.getItemCount(); i++)
 		{
 			setTriStateBoolValue(m_typePropsList.getItem(i), 
-				m_param.m_type.m_typeProps.getMask(getTypePropArray()[i].value()));
+				param.m_type.m_typeProps.getMask(getTypePropArray()[i].value()));
 		}
 				
-		m_typeNameText.setText(m_param.m_type.m_name);
+		m_typeNameText.setText(param.m_type.m_name);
 
 		for (int i = 0; i < m_paramModifiersList.getItemCount(); i++)
 		{
 			setTriStateBoolValue(m_paramModifiersList.getItem(i),
-				m_param.m_modifiers.getMask(getModifierArray()[i].value()));
+				param.m_modifiers.getMask(getModifierArray()[i].value()));
 		}
 				
-		m_paramNameFilterText.setText(m_param.m_name);
+		m_paramNameFilterText.setText(param.m_name);
 	}
 	
 	public ParamDialog(Display display, Shell parent)
@@ -281,6 +281,8 @@ public class ParamDialog extends DialogBase
 		m_paramModifiersLabel.setLocation(new Point(12, 334));
 		
 		super.createShell(parent);
+		
+		m_paramNameFilterText.setFocus();
 	}
 	
 	protected Shell getShell()

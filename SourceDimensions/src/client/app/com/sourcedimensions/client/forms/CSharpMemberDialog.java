@@ -1,8 +1,11 @@
 package com.sourcedimensions.client.forms;
 
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -16,8 +19,9 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
+
 
 import com.sourcedimensions.client.TriStateBoolean;
 
@@ -122,7 +126,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	}
 	
 	public CSharpMemberDialog(Display display, Shell parent, String name, int categories, TriStateMask modifiers, 
-			Type type, boolean anyParams, int operators)
+			Type type, boolean anyParams, int operators, List<Parameter> paramList)
 	{
 		m_display = display;
 		createShell(parent);
@@ -130,6 +134,9 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_typeNameText.setText(type.m_name);
 		m_anyParamsCheckBox.setSelection(anyParams);
 		enableParamControls(!anyParams);
+		
+		if (!anyParams)
+			populateParamList(m_paramsTable, paramList);
 		
 		for (int i = 0; i < m_operatorList.getItemCount(); i++)
 		{
@@ -222,11 +229,47 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_paramsLabel = new Label(getShell(), SWT.NONE);
 		m_paramsLabel.setBounds(new Rectangle(17, 297, 102, 13));
 		m_paramsLabel.setText("Parameter &Filter List:");
-		m_paramsTable = new Table(getShell(), SWT.BORDER);
+		m_paramsTable = new Table(getShell(), SWT.BORDER | SWT.FULL_SELECTION);
 		m_paramsTable.setHeaderVisible(true);
 		m_paramsTable.setLinesVisible(true);
 		m_paramsTable.setEnabled(false);
 		m_paramsTable.setBounds(new Rectangle(17, 312, 470, 206));
+		double width = m_paramsTable.getBounds().width - 2 * m_paramsTable.getBorderWidth(); 
+		TableColumn column = new TableColumn(m_paramsTable, SWT.LEFT, 0);
+		column.setWidth((int)(0.13 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Positions");
+		column = new TableColumn(m_paramsTable, SWT.LEFT, 1);
+		column.setWidth((int)(0.17 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Modifiers");
+		column = new TableColumn(m_paramsTable, SWT.LEFT, 2);
+		column.setWidth((int)(0.2 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Type Properties");		
+		column = new TableColumn(m_paramsTable, SWT.LEFT, 3);
+		column.setWidth((int)(0.24 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Type");
+		column = new TableColumn(m_paramsTable, SWT.LEFT, 4);
+		column.setWidth((int)(0.26 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Name");		
+		m_paramsTable.addMouseListener(new MouseAdapter()
+		{
+			public void mouseDoubleClick(MouseEvent e)
+			{
+				if (m_paramsTable.getSelectionIndex() != -1)
+				{
+					editParam(m_paramsTable);
+				}
+			}			
+		});		
 		m_addParamButton = new Button(getShell(), SWT.NONE);
 		m_addParamButton.setLocation(new Point(209, 284));
 		m_addParamButton.setText("A&dd Filter...");
@@ -236,8 +279,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				ParamDialog dialog = new ParamDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
-				dialog.open();
+				addParam(m_paramsTable);
 			}
 		});
 		m_editParamButton = new Button(getShell(), SWT.NONE);
@@ -245,11 +287,25 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_editParamButton.setText("&Edit Filter...");
 		m_editParamButton.setEnabled(false);
 		m_editParamButton.setSize(new Point(88, 25));
+		m_editParamButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				editParam(m_paramsTable);
+			}
+		});
 		m_removeParamButton = new Button(getShell(), SWT.NONE);
 		m_removeParamButton.setLocation(new Point(399, 284));
 		m_removeParamButton.setText("&Remove Filter");
 		m_removeParamButton.setEnabled(false);
 		m_removeParamButton.setSize(new Point(88, 25));
+		m_removeParamButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				deleteParam(m_paramsTable);
+			}
+		});
 		m_okButton = new Button(getShell(), SWT.NONE);
 		m_okButton.setText("O&k");
 		m_okButton.setSize(new Point(88, 25));

@@ -24,6 +24,31 @@ public class Type
 	}
 	
 	public TriStateMask m_typeProps = new TriStateMask();
-	
 	public String m_name;
+	
+	public static String typePropsToString(TriStateMask mask)
+	{
+		String str = "";
+		
+		for (Property p : Property.values())
+		{
+			switch (mask.getMask(p.value()))
+			{
+				case TRUE:
+					if (str.length() > 0)
+						str += ",";
+					
+					str += p.name().replace("_", " ");
+					break;
+					 
+				case EITHER:
+					if (str.length() > 0)
+						str += ",";
+					
+					str += "(" + p.name().replace("_", " ") + ")";			
+			}
+		}
+		
+		return str;
+	}
 }

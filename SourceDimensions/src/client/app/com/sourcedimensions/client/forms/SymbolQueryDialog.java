@@ -52,7 +52,6 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_cancelButton;
 	private Composite m_namespacesTab;
 	private Composite m_membersTab;
-	private Composite m_localDeclsTab;
 	private Composite m_typesTab;
 	private Table m_namespaceFilterTable;
 	private Label m_namespaceFilterLabel;
@@ -77,6 +76,7 @@ public class SymbolQueryDialog extends DialogBase
 	private Label m_queryNameLabel;
 	private Text m_queryNameText;
 	private Button m_saveButton;
+	
 	public SymbolQueryDialog(Display display, Shell parent)
 	{
 		m_display = display;
@@ -193,7 +193,6 @@ public class SymbolQueryDialog extends DialogBase
 		m_queryParamsTabFolder.setSize(new Point(644, 376));
 		createNamespacesTab();
 		createMembersTab();
-		createLocalDeclsTab();
 		createTypesTab();
 		TabItem tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
 		tabItem.setText("Namespaces");
@@ -204,9 +203,6 @@ public class SymbolQueryDialog extends DialogBase
 		tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
 		tabItem.setText("Members");
 		tabItem.setControl(m_membersTab);
-		tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
-		tabItem.setText("Local Declarations");
-		tabItem.setControl(m_localDeclsTab);
 	}
 
 	private void createNamespacesTab()
@@ -234,6 +230,7 @@ public class SymbolQueryDialog extends DialogBase
 		
 		new TableColumn(m_namespaceFilterTable, SWT.LEFT).setWidth(
 			m_namespaceFilterTable.getBounds().width - 2 * m_namespaceFilterTable.getBorderWidth());
+
 		m_addNamespaceFilterButton = new Button(m_namespacesTab, SWT.NONE);
 		m_addNamespaceFilterButton.setToolTipText("Login");
 		m_addNamespaceFilterButton.setSelection(true);
@@ -411,13 +408,15 @@ public class SymbolQueryDialog extends DialogBase
 					filter.m_modifiers = dialog.getModifiers();
 					filter.m_anyParams = dialog.getAnyParams();
 					filter.m_type = dialog.getType();
+					if (!filter.m_anyParams)
+						filter.m_paramList = dialog.getParams();
 					
 					TableItem item = new TableItem(m_memberFilterTable, SWT.NONE);
 					item.setText(0, memberCategoriesToString(filter.m_categories));
 					item.setText(1, modifiersToString(filter.m_modifiers));
 					item.setText(2, dialog.getMemberName());
 					item.setText(3, filter.m_type.m_name);
-					item.setText(4, typePropsToString(filter.m_type.m_typeProps));
+					item.setText(4, Type.typePropsToString(filter.m_type.m_typeProps));
 										
 			 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
 			  		{
@@ -442,13 +441,8 @@ public class SymbolQueryDialog extends DialogBase
 		m_removeMemberFilterButton.setText("Re&move Filter");
 		m_removeMemberFilterButton.setLocation(new Point(535, 152));
 		m_removeMemberFilterButton.setSize(new Point(88, 25));
-		m_removeMemberFilterButton.addSelectionListener(new RemoveFilterAdapter(m_shell, m_memberFilterTable, m_memberFilter));
-	}
-
-	private void createLocalDeclsTab()
-	{
-		m_localDeclsTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
-		m_localDeclsTab.setLayout(null);
+		m_removeMemberFilterButton.addSelectionListener(
+			new RemoveFilterAdapter(m_shell, m_memberFilterTable, m_memberFilter));
 	}
 
 	private void createTypesTab()
@@ -675,33 +669,6 @@ public class SymbolQueryDialog extends DialogBase
 		return str;
 	}
 	
-	protected String typePropsToString(TriStateMask mask)
-	{
-		String str = "";
-		
-		for (Type.Property p : Type.Property.values())
-		{
-			switch (mask.getMask(p.value()))
-			{
-				case TRUE:
-					if (str.length() > 0)
-						str += ",";
-					
-					str += p.name().replace("_", " ");
-					break;
-					 
-				case EITHER:
-					if (str.length() > 0)
-						str += ",";
-					
-					str += "(" + p.name().replace("_", " ") + ")";			
-			}
-		}
-		
-		return str;
-	}
-	
-	
 	protected String baseTypesToString(List<BaseType> types)
 	{
 		String str = "";
@@ -796,13 +763,13 @@ public class SymbolQueryDialog extends DialogBase
 	  			case JAVA14:
 	  			case JAVA15:
 	  				dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-	  					item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams);
+	  					item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams, filter.m_paramList);
 	  				break;
 	  				
 	  			case CSHARP11:
 	  			case CSHARP20:
 	  				dialog = new CSharpMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-		  				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams, filter.m_operators);
+		  				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams, filter.m_operators, filter.m_paramList);
 	  		}
 			
 			dialog.open();
@@ -813,12 +780,14 @@ public class SymbolQueryDialog extends DialogBase
 				filter.m_categories = dialog.getMemberCategories();
 				filter.m_anyParams = dialog.m_anyParams;
 				filter.m_type = dialog.getType();
+				if (!dialog.m_anyParams)
+					filter.m_paramList = dialog.getParams();
 				
 				item.setText(0, memberCategoriesToString(filter.m_categories));
 				item.setText(1, modifiersToString(filter.m_modifiers));
 				item.setText(2, dialog.getMemberName());
 				item.setText(3, dialog.getType().m_name);
-				item.setText(4, typePropsToString(dialog.getType().m_typeProps));				
+				item.setText(4, Type.typePropsToString(dialog.getType().m_typeProps));				
 				
 		 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
 		  		{
@@ -845,6 +814,7 @@ public class SymbolQueryDialog extends DialogBase
 		public int m_operators;
 		public boolean m_anyParams;
 		public Type m_type;
+		public List<Parameter> m_paramList;
 	}
 
 	protected Shell getShell()
