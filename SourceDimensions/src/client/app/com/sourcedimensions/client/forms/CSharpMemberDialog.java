@@ -37,6 +37,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	{
 		MemberCategory.FIELD,
 		MemberCategory.CONSTANT,
+		MemberCategory.LOCAL_VAR,
 		MemberCategory.CONSTRUCTOR,
 		MemberCategory.DESTRUCTOR,
 		MemberCategory.METHOD,

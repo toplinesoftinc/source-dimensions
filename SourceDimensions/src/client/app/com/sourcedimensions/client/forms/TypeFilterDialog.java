@@ -353,9 +353,9 @@ public class TypeFilterDialog extends DialogBase
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
 		m_internalTypeCheckBox.setHeaderVisible(false);
-		m_internalTypeCheckBox.setLocation(new Point(123, 110));
+		m_internalTypeCheckBox.setLocation(new Point(123, 21));
 		m_internalTypeCheckBox.setLinesVisible(false);
-		m_internalTypeCheckBox.setSize(new Point(103, 23));
+		m_internalTypeCheckBox.setSize(new Point(103, 20));
 		new TableItem(m_internalTypeCheckBox, 0).setText("Internal Types");
 		m_internalTypeCheckBox.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_allBaseTypesCheckBox.setBounds(new Rectangle(17, 186, 89, 13));
