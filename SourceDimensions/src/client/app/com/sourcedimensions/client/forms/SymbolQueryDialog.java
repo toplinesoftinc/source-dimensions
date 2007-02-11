@@ -585,7 +585,7 @@ public class SymbolQueryDialog extends DialogBase
 				if (str.length() > 0)
 					str += ",";
 				
-				str += t.name();
+				str += t.name().replace("_", ".");
 			}
 		}
 		
@@ -606,7 +606,7 @@ public class SymbolQueryDialog extends DialogBase
 				if (str.length() > 0)
 					str += ",";
 				
-				str += m.name();
+				str += m.name().replace("ANONYM_METHOD", "ANONYM.METHOD").replace("_", " ");
 			}
 		}
 		

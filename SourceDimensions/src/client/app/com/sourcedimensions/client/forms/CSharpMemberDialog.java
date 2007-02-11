@@ -41,6 +41,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		MemberCategory.CONSTRUCTOR,
 		MemberCategory.DESTRUCTOR,
 		MemberCategory.METHOD,
+		MemberCategory.ANONYM_METHOD,
 		MemberCategory.PROPERTY_GET,
 		MemberCategory.PROPERTY_SET,
 		MemberCategory.EVENT_ADD,
@@ -194,7 +195,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_modifierList = new Table(getShell(), SWT.HIDE_SELECTION | SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
 		for (int i = 0; i < m_categoryArray.length; i++)
 		{
-			new TableItem(m_memberCategoryList, 0, i).setText(m_categoryArray[i].toString().replace("_", " "));
+			new TableItem(m_memberCategoryList, 0, i).setText(m_categoryArray[i].toString().replace("ANONYM_METHOD", "ANONYM.METHOD").replace("_", " "));
 		}				
 		m_modifierListLabel.setBounds(new Rectangle(152, 8, 53, 13));
 		m_modifierListLabel.setText("Mo&difiers:");
@@ -328,9 +329,21 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 					return;
 				}
 
+				
+				m_memberCategories = 0;
+				
+				for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
+				{
+					if (m_memberCategoryList.getItem(i).getChecked())
+					{
+						m_memberCategories += m_categoryArray[i].value();
+					}
+				}				
+				
 				String val = m_typeNameText.getText().trim();
 				
-				if (val.length() == 0)
+				if (val.length() == 0 && ((m_memberCategories & ~(MemberCategory.CONSTRUCTOR.value() | 
+						MemberCategory.DESTRUCTOR.value() | MemberCategory.ANONYM_METHOD.value())) != 0))
 				{
 					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
 					return;
@@ -351,7 +364,8 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 				{
 					val = m_memberNameText.getText().trim();
 					
-					if (val.length() == 0)
+					if (val.length() == 0 && ((m_memberCategories & ~(MemberCategory.CONSTRUCTOR.value() | 
+								MemberCategory.DESTRUCTOR.value() | MemberCategory.ANONYM_METHOD.value())) != 0))
 					{
 						MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Member Name Filter");					
 						return;
@@ -374,17 +388,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 				{
 					m_name = "";
 				}
-				
-				m_memberCategories = 0;
-				
-				for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
-				{
-					if (m_memberCategoryList.getItem(i).getChecked())
-					{
-						m_memberCategories += m_categoryArray[i].value();
-					}
-				}
-				
+
 				m_modifiers.reset();
 				
 				for (int i = 0; i < m_modifierList.getItemCount(); i++)

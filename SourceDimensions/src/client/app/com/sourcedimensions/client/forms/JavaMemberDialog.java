@@ -275,9 +275,19 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 					return;
 				}
 
+				m_memberCategories = 0;
+				
+				for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
+				{
+					if (m_memberCategoryList.getItem(i).getChecked())
+					{
+						m_memberCategories += m_categoryArray[i].value();
+					}
+				}				
+
 				String val = m_typeNameText.getText().trim();
 				
-				if (val.length() == 0)
+				if (val.length() == 0 && ((m_memberCategories & ~MemberCategory.CONSTRUCTOR.value()) != 0))
 				{
 					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
 					return;
@@ -296,7 +306,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				
 				val = m_memberNameText.getText().trim();
 				
-				if (val.length() == 0)
+				if (val.length() == 0 && ((m_memberCategories & ~MemberCategory.CONSTRUCTOR.value()) != 0))
 				{
 					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Member Name Filter");					
 					return;
@@ -313,16 +323,6 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 					return;
 				}
 							
-				m_memberCategories = 0;
-				
-				for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
-				{
-					if (m_memberCategoryList.getItem(i).getChecked())
-					{
-						m_memberCategories += m_categoryArray[i].value();
-					}
-				}
-				
 				m_modifiers.reset();
 				
 				for (int i = 0; i < m_modifierList.getItemCount(); i++)

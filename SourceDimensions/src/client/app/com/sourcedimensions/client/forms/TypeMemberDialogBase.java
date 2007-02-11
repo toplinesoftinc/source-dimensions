@@ -28,15 +28,16 @@ public abstract class TypeMemberDialogBase extends DialogBase
 		CONSTRUCTOR(1<<3),
 		DESTRUCTOR(1<<4),
 		METHOD(1<<5),
-		PROPERTY_GET(1<<6),
-		PROPERTY_SET(1<<7),
-		EVENT_ADD(1<<8),
-		EVENT_REMOVE(1<<9),
-		INDEXER_GET(1<<10),
-		INDEXER_SET(1<<11),
-		OPERATOR(1<<12),
-		ENUM_CONST(1<<13),
-		ALL(1<<14);
+		ANONYM_METHOD(1<<6),
+		PROPERTY_GET(1<<7),
+		PROPERTY_SET(1<<8),
+		EVENT_ADD(1<<9),
+		EVENT_REMOVE(1<<10),
+		INDEXER_GET(1<<11),
+		INDEXER_SET(1<<12),
+		OPERATOR(1<<13),
+		ENUM_CONST(1<<14),
+		ALL(1<<15);
 		
 		MemberCategory(int val)
 		{

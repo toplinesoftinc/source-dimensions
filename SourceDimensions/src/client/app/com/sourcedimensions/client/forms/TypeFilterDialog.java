@@ -28,7 +28,7 @@ import org.eclipse.ui.PlatformUI;
 
 public class TypeFilterDialog extends DialogBase 
 {
-	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="6,-4"
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-5,-27"
 	private Table m_typeCategoryList;
 	private Label m_typeCategoryLabel;
 	private Label m_modifierListLabel;
@@ -56,10 +56,11 @@ public class TypeFilterDialog extends DialogBase
 		CLASS(1<<0),
 		INTERFACE(1<<1),
 		ENUM(1<<2),
-		ANONYMOUS(1<<3),
+		ANONYM_CLASS(1<<3),
 		ANNOTATION(1<<4),
 		STRUCT(1<<5),
-		ALL(1<<6);
+		DELEGATE(1<<6),
+		ALL(1<<7);
 		
 		TypeCategory(int val)
 		{
@@ -141,20 +142,20 @@ public class TypeFilterDialog extends DialogBase
 		
 		m_shell.setText("Type Filter");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
-		m_shell.setSize(new Point(437, 424));
+		m_shell.setSize(new Point(456, 424));
 		m_shell.setLayout(null);
 		m_typeCategoryLabel = new Label(m_shell, SWT.NONE);
 		m_typeCategoryList = new Table(m_shell, SWT.BORDER | SWT.SINGLE | SWT.CHECK | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
 		m_typeCategoryList.setHeaderVisible(false);
 		m_typeCategoryList.setLinesVisible(false);
-		m_typeCategoryList.setBounds(new Rectangle(17, 21, 100, 112));
+		m_typeCategoryList.setBounds(new Rectangle(17, 21, 112, 112));
 		m_typeCategoryList.addSelectionListener(new AllItemsAdapter());
 		m_typeCategoryLabel.setBounds(new Rectangle(18, 7, 89, 13));
 		m_typeCategoryLabel.setText("&Type Categories:");
 		m_internalTypeCheckBox = new Table(getShell(), SWT.CHECK | SWT.BORDER | SWT.HIDE_SELECTION | SWT.FULL_SELECTION);
 		m_typeNameLabel = new Label(m_shell, SWT.NONE);
 		m_typeNameText = new Text(m_shell, SWT.BORDER);
-		m_typeNameText.setBounds(new Rectangle(17, 158, 209, 19));
+		m_typeNameText.setBounds(new Rectangle(17, 158, 223, 19));
 		TypeCategory[] cats = getTypeCategoryArray();
 		
 		for (int i = 0; i < cats.length; i++)
@@ -162,17 +163,17 @@ public class TypeFilterDialog extends DialogBase
 			if (cats[i] == null)
 				break;
 			
-			new TableItem(m_typeCategoryList, 0, i).setText(cats[i].toString());
+			new TableItem(m_typeCategoryList, 0, i).setText(cats[i].toString().replace("_", "."));
 		}
 			
 		m_modifierListLabel = new Label(m_shell, SWT.NONE);
-		m_modifierListLabel.setBounds(new Rectangle(231, 7, 56, 13));
+		m_modifierListLabel.setBounds(new Rectangle(247, 7, 56, 13));
 		m_modifierListLabel.setText("&Modifiers:");
 
 		m_modifierList = new Table(m_shell, SWT.BORDER | SWT.CHECK | SWT.FULL_SELECTION | SWT.HIDE_SELECTION);
 		m_modifierList.setHeaderVisible(false);
 		m_modifierList.setLinesVisible(false);
-		m_modifierList.setBounds(new Rectangle(231, 21, 85, 156));
+		m_modifierList.setBounds(new Rectangle(247, 21, 85, 156));
 		m_modifierList.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_modifierList.addSelectionListener(new AllItemsAdapter());
 		
@@ -201,7 +202,7 @@ public class TypeFilterDialog extends DialogBase
 		m_baseTypesTable.setLinesVisible(true);
 		m_baseTypesTable.setEnabled(false);
 		m_baseTypesTable.setLocation(new Point(17, 230));
-		m_baseTypesTable.setSize(new Point(300, 149));
+		m_baseTypesTable.setSize(new Point(315, 149));
 		m_baseTypesTable.addMouseListener(new MouseAdapter()
 		{
 			public void mouseDoubleClick(MouseEvent e)
@@ -224,7 +225,7 @@ public class TypeFilterDialog extends DialogBase
 		column.setResizable(true);
 		column.setMoveable(true);
 		m_addBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_addBaseTypeButton.setLocation(new Point(329, 230));
+		m_addBaseTypeButton.setLocation(new Point(344, 229));
 		m_addBaseTypeButton.setText("A&dd filter...");
 		m_addBaseTypeButton.setEnabled(false);
 		m_addBaseTypeButton.setSize(new Point(88, 25));
@@ -246,7 +247,7 @@ public class TypeFilterDialog extends DialogBase
 			}		
 		});
 		m_editBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_editBaseTypeButton.setLocation(new Point(329, 272));
+		m_editBaseTypeButton.setLocation(new Point(344, 271));
 		m_editBaseTypeButton.setText("&Edit filter...");
 		m_editBaseTypeButton.setEnabled(false);
 		m_editBaseTypeButton.setSize(new Point(88, 25));
@@ -258,14 +259,14 @@ public class TypeFilterDialog extends DialogBase
 			}
 		});
 		m_removeBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_removeBaseTypeButton.setLocation(new Point(329, 314));
+		m_removeBaseTypeButton.setLocation(new Point(344, 313));
 		m_removeBaseTypeButton.setText("&Remove filter");
 		m_removeBaseTypeButton.setEnabled(false);
 		m_removeBaseTypeButton.setSize(new Point(88, 25));
 		m_removeBaseTypeButton.addSelectionListener(
 				new RemoveFilterAdapter(m_shell, m_baseTypesTable, m_baseTypes)); 
 		m_okButton = new Button(m_shell, SWT.NONE);
-		m_okButton.setLocation(new Point(330, 21));
+		m_okButton.setLocation(new Point(345, 20));
 		m_okButton.setText("O&k");
 		m_okButton.setSize(new Point(88, 25));
 		m_okButton.addSelectionListener(new SelectionAdapter() 
@@ -349,13 +350,13 @@ public class TypeFilterDialog extends DialogBase
 			}
 		});
 		m_cancelButton = new Button(m_shell, SWT.NONE);
-		m_cancelButton.setLocation(new Point(330, 61));
+		m_cancelButton.setLocation(new Point(345, 60));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
 		m_internalTypeCheckBox.setHeaderVisible(false);
-		m_internalTypeCheckBox.setLocation(new Point(123, 21));
+		m_internalTypeCheckBox.setLocation(new Point(135, 21));
 		m_internalTypeCheckBox.setLinesVisible(false);
-		m_internalTypeCheckBox.setSize(new Point(103, 20));
+		m_internalTypeCheckBox.setSize(new Point(106, 20));
 		new TableItem(m_internalTypeCheckBox, 0).setText("Internal Types");
 		m_internalTypeCheckBox.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_allBaseTypesCheckBox.setBounds(new Rectangle(17, 186, 89, 13));
@@ -412,7 +413,7 @@ public class TypeFilterDialog extends DialogBase
 	      				TypeCategory.CLASS,
 	      				TypeCategory.INTERFACE,
 	      				TypeCategory.ENUM,
-	      				TypeCategory.ANONYMOUS,
+	      				TypeCategory.ANONYM_CLASS,
 	      				TypeCategory.ANNOTATION,
 	      				TypeCategory.ALL
 	      			};
@@ -425,6 +426,7 @@ public class TypeFilterDialog extends DialogBase
   	      				TypeCategory.INTERFACE,
   	      				TypeCategory.ENUM,
   	      				TypeCategory.STRUCT,
+  	      				TypeCategory.DELEGATE,
   	      				TypeCategory.ALL
   	      			};
   				
