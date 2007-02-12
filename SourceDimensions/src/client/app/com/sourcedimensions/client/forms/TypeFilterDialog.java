@@ -51,12 +51,57 @@ public class TypeFilterDialog extends DialogBase
 	private TriStateBoolean m_internalType;
 	private Table m_internalTypeCheckBox = null;
 	
+	private final static Modifier[] javaModifiers = 
+	{
+		Modifier.PUBLIC,
+		Modifier.PROTECTED,
+		Modifier.PRIVATE,
+		Modifier.ABSTRACT,
+		Modifier.STATIC,
+		Modifier.FINAL,
+		Modifier.STRICTFP,
+		Modifier.ALL
+    };
+
+	public final static Modifier[] csharpModifiers =
+    {
+		Modifier.PUBLIC,
+		Modifier.PROTECTED,
+		Modifier.PRIVATE,
+		Modifier.ABSTRACT,
+		Modifier.STATIC,
+		Modifier.NEW,
+		Modifier.INTERNAL,
+		Modifier.SEALED,
+		Modifier.ALL
+    };	
+	
+	public final static TypeCategory[] javaTypeCategories = 
+    {
+		TypeCategory.CLASS,
+		TypeCategory.INTERFACE,
+		TypeCategory.ENUM,
+		TypeCategory.ANONYM_CLASS,
+		TypeCategory.ANNOTATION,
+		TypeCategory.ALL
+	};
+	
+	public final static TypeCategory[] csharpTypeCategories = 
+    {
+		TypeCategory.CLASS,
+		TypeCategory.INTERFACE,
+		TypeCategory.ENUM,
+		TypeCategory.STRUCT,
+		TypeCategory.DELEGATE,
+		TypeCategory.ALL
+	};	
+	
 	public enum TypeCategory
 	{
 		CLASS(1<<0),
 		INTERFACE(1<<1),
 		ENUM(1<<2),
-		ANONYM_CLASS(1<<3),
+		ANONYM_CLASS(1<<3, "ANONYM.CLASS"),
 		ANNOTATION(1<<4),
 		STRUCT(1<<5),
 		DELEGATE(1<<6),
@@ -65,14 +110,27 @@ public class TypeFilterDialog extends DialogBase
 		TypeCategory(int val)
 		{
 			value = val;
+			name = name();
+		}
+		
+		TypeCategory(int val, String n)
+		{
+			value = val;
+			name = n;
 		}
 		
 		private final int value;
+		private final String name;
 		
 		public int value()
 		{
 			return value;
 		}		
+		
+		public String toString()
+		{
+			return name;
+		}
 	}
 	
 	public class BaseType
@@ -87,8 +145,8 @@ public class TypeFilterDialog extends DialogBase
 		}		
 	}
 
-	public TypeFilterDialog(Display display, Shell parent, String typeName, 
-			int categories, TriStateMask modifiers, TriStateBoolean internalType, boolean allBaseTypes, List<BaseType> baseTypes)
+	public TypeFilterDialog(Display display, Shell parent, String typeName,	int categories, 
+		TriStateMask modifiers, TriStateBoolean internalType, boolean allBaseTypes, List<BaseType> baseTypes)
 	{
 		m_display = display;
 		createShell(parent);
@@ -123,6 +181,8 @@ public class TypeFilterDialog extends DialogBase
 		{
 			m_typeCategoryList.getItem(i).setChecked((categories & cf[i].value()) != 0);
 		}
+		
+		categorySelectionChanged();
 	}
 		
 	public TypeFilterDialog(Display display, Shell parent)
@@ -150,6 +210,16 @@ public class TypeFilterDialog extends DialogBase
 		m_typeCategoryList.setLinesVisible(false);
 		m_typeCategoryList.setBounds(new Rectangle(17, 21, 112, 112));
 		m_typeCategoryList.addSelectionListener(new AllItemsAdapter());
+		m_typeCategoryList.addSelectionListener(new SelectionAdapter()
+		{
+			public void widgetSelected(SelectionEvent e)
+			{
+				if (e.detail == SWT.CHECK)
+				{
+					categorySelectionChanged();
+				}
+			}
+		});
 		m_typeCategoryLabel.setBounds(new Rectangle(18, 7, 89, 13));
 		m_typeCategoryLabel.setText("&Type Categories:");
 		m_internalTypeCheckBox = new Table(getShell(), SWT.CHECK | SWT.BORDER | SWT.HIDE_SELECTION | SWT.FULL_SELECTION);
@@ -163,7 +233,7 @@ public class TypeFilterDialog extends DialogBase
 			if (cats[i] == null)
 				break;
 			
-			new TableItem(m_typeCategoryList, 0, i).setText(cats[i].toString().replace("_", "."));
+			new TableItem(m_typeCategoryList, 0, i).setText(cats[i].toString());
 		}
 			
 		m_modifierListLabel = new Label(m_shell, SWT.NONE);
@@ -184,10 +254,7 @@ public class TypeFilterDialog extends DialogBase
 			if (mods[i] == null)
 				break;
 			
-			if (i < (mods.length - 1))
-				new TableItem(m_modifierList, 0, i).setText(mods[i].toString().toLowerCase());
-			else
-				new TableItem(m_modifierList, 0, i).setText(mods[i].toString().toUpperCase());
+			new TableItem(m_modifierList, 0, i).setText(mods[i].toString());
 		}
 
 		m_typeNameLabel.setBounds(new Rectangle(17, 144, 101, 13));
@@ -286,40 +353,49 @@ public class TypeFilterDialog extends DialogBase
 					return;
 				}
 				
-				String val = m_typeNameText.getText().trim();
-				
-				if (val.length() == 0)
+				if (m_typeNameText.getEnabled())
 				{
-					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
-					return;
+					String val = m_typeNameText.getText().trim();
+					
+					if (val.length() == 0)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
+						return;
+					}
+	
+					String[] names = val.split("/");
+					
+					for (String name : names)
+					{
+						if (name.trim().length() == 0)
+						{
+							MessageDialog.openError(m_shell, "Incorrect input", "Namespace section cannot be empty (like \"com//abc\")");
+							return;
+						}
+						
+						if (name.equals("**"))
+						{
+							continue;
+						}
+						
+						try
+						{
+							Pattern.compile(name);
+						}
+						catch(PatternSyntaxException ex)
+						{
+							MessageDialog.openError(m_shell, "Incorrect input",
+								"Pattern \"" + name + "\" has the following error: " + ex.getMessage());
+							return;
+						}
+					}
+					
+					m_typeName = val;
 				}
-
-				String[] names = val.split("/");
-				
-				for (String name : names)
+				else
 				{
-					if (name.trim().length() == 0)
-					{
-						MessageDialog.openError(m_shell, "Incorrect input", "Namespace section cannot be empty (like \"com//abc\")");
-						return;
-					}
-					
-					if (name.equals("**"))
-					{
-						continue;
-					}
-					
-					try
-					{
-						Pattern.compile(name);
-					}
-					catch(PatternSyntaxException ex)
-					{
-						MessageDialog.openError(m_shell, "Incorrect input",
-							"Pattern \"" + name + "\" has the following error: " + ex.getMessage());
-						return;
-					}
-				}				
+					m_typeName = "";
+				}
 				
 				TypeCategory[] tc = getTypeCategoryArray();
 				
@@ -341,7 +417,6 @@ public class TypeFilterDialog extends DialogBase
 					m_modifiers.setMask(mf[i].value(), getTriStateBoolValue(m_modifierList.getItem(i)));
 				}
 											
-				m_typeName = m_typeNameText.getText();
 				m_allBaseTypes = m_allBaseTypesCheckBox.getSelection();
 				m_internalType = getTriStateBoolValue(m_internalTypeCheckBox.getItem(0));
 				
@@ -408,30 +483,14 @@ public class TypeFilterDialog extends DialogBase
   		{
   			case JAVA14:
   			case JAVA15:
-  				return new TypeCategory[] 
-	      		    {
-	      				TypeCategory.CLASS,
-	      				TypeCategory.INTERFACE,
-	      				TypeCategory.ENUM,
-	      				TypeCategory.ANONYM_CLASS,
-	      				TypeCategory.ANNOTATION,
-	      				TypeCategory.ALL
-	      			};
+  				return javaTypeCategories;
   				
   			case CSHARP11:
   			case CSHARP20:
-  				return new TypeCategory[] 
-  	      		    {
-  	      				TypeCategory.CLASS,
-  	      				TypeCategory.INTERFACE,
-  	      				TypeCategory.ENUM,
-  	      				TypeCategory.STRUCT,
-  	      				TypeCategory.DELEGATE,
-  	      				TypeCategory.ALL
-  	      			};
+  				return csharpTypeCategories;
   				
   			default:
-  				return new TypeCategory[] { };
+  				return null;
   		}
  	}
 	
@@ -441,35 +500,14 @@ public class TypeFilterDialog extends DialogBase
   		{
   			case JAVA14:
   			case JAVA15:
-  				return new Modifier[]
-				    {
-						Modifier.PUBLIC,
-						Modifier.PROTECTED,
-						Modifier.PRIVATE,
-						Modifier.ABSTRACT,
-						Modifier.STATIC,
-						Modifier.FINAL,
-						Modifier.STRICTFP,
-						Modifier.ALL
-				    };  				
-  				 				
+  				return javaModifiers;
+  				
   			case CSHARP11:
   			case CSHARP20:
-  				return new Modifier[]
-				    {
-						Modifier.PUBLIC,
-						Modifier.PROTECTED,
-						Modifier.PRIVATE,
-						Modifier.ABSTRACT,
-						Modifier.STATIC,
-						Modifier.NEW,
-						Modifier.INTERNAL,
-						Modifier.SEALED,
-						Modifier.ALL
-				    };  				
+  				return csharpModifiers;
 
   			default:
-  				return new Modifier[] {};
+  				return null;
   		}
 	}
 	
@@ -519,6 +557,22 @@ public class TypeFilterDialog extends DialogBase
 		}		
 	}
 
+	protected void categorySelectionChanged()
+	{
+		int cat = 0;
+		TypeCategory[] tc = getTypeCategoryArray();
+		
+		for (int i = 0; i < m_typeCategoryList.getItemCount(); i++)
+		{
+			if (m_typeCategoryList.getItem(i).getChecked())
+			{
+				cat += tc[i].value();
+			}
+		}
+		
+		m_typeNameText.setEnabled((cat == 0) || (cat & ~TypeCategory.ANONYM_CLASS.value()) != 0);
+	}
+	
 	protected Shell getShell()
 	{
 		return m_shell;

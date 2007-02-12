@@ -195,7 +195,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_modifierList = new Table(getShell(), SWT.HIDE_SELECTION | SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
 		for (int i = 0; i < m_categoryArray.length; i++)
 		{
-			new TableItem(m_memberCategoryList, 0, i).setText(m_categoryArray[i].toString().replace("ANONYM_METHOD", "ANONYM.METHOD").replace("_", " "));
+			new TableItem(m_memberCategoryList, 0, i).setText(m_categoryArray[i].toString());
 		}				
 		m_modifierListLabel.setBounds(new Rectangle(152, 8, 53, 13));
 		m_modifierListLabel.setText("Mo&difiers:");
@@ -328,8 +328,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 					MessageDialog.openError(m_shell, "Incorrect input",	"Please select at least one Type Member Category");
 					return;
 				}
-
-				
+		
 				m_memberCategories = 0;
 				
 				for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
@@ -444,10 +443,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		
 		for (int i = 0; i < m_modifierArray.length; i++)
 		{
-			if (i < m_modifierArray.length - 1)
-				new TableItem(m_modifierList, 0, i).setText(m_modifierArray[i].toString().toLowerCase());
-			else
-				new TableItem(m_modifierList, 0, i).setText(m_modifierArray[i].toString());
+			new TableItem(m_modifierList, 0, i).setText(m_modifierArray[i].toString());
 		}
 				
 		m_shell.setDefaultButton(m_okButton);
@@ -539,7 +535,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		Enum[] values = Type.Property.values();
 		for (int i = 0; i < values.length; i++)
 		{
-			new TableItem(m_typePropsList, 0, i).setText(values[i].toString().replace("_", " "));
+			new TableItem(m_typePropsList, 0, i).setText(values[i].toString());
 		}					
 	}
 

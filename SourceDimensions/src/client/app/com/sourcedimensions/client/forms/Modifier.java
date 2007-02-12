@@ -33,5 +33,13 @@ public enum Modifier
 	public int value()
 	{
 		return value;
-	}		
+	}
+	
+	public String toString()
+	{
+		if (this == ALL)
+			return name();
+		else
+			return name().toLowerCase();
+	}
 }

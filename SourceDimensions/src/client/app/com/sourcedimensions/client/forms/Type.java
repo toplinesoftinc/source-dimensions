@@ -6,21 +6,34 @@ public class Type
 	public enum Property
 	{
 		ARRAY(1<<0),
-		TYPE_PARAM(1<<1),		
+		TYPE_PARAM(1<<1, "TYPE PARAM"),		
 		POINTER(1<<2),
 		NULLABLE(1<<3);
 
 		Property(int val)
 		{
 			value = val;
+			name = name();
+		}
+		
+		Property(int val, String n)
+		{
+			value = val;
+			name = n;
 		}
 		
 		private final int value;
+		private final String name;
 		
 		public int value()
 		{
 			return value;
-		}				
+		}
+		
+		public String toString()
+		{
+			return name;
+		}
 	}
 	
 	public TriStateMask m_typeProps = new TriStateMask();

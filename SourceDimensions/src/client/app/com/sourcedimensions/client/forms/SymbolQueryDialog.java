@@ -585,7 +585,7 @@ public class SymbolQueryDialog extends DialogBase
 				if (str.length() > 0)
 					str += ",";
 				
-				str += t.name().replace("_", ".");
+				str += t.toString();
 			}
 		}
 		
@@ -606,7 +606,7 @@ public class SymbolQueryDialog extends DialogBase
 				if (str.length() > 0)
 					str += ",";
 				
-				str += m.name().replace("ANONYM_METHOD", "ANONYM.METHOD").replace("_", " ");
+				str += m.toString();
 			}
 		}
 		
@@ -626,22 +626,22 @@ public class SymbolQueryDialog extends DialogBase
 		
 		String str = "";
 		
-		for (Modifier f : Modifier.values())
+		for (Modifier m : Modifier.values())
 		{
-			switch (mask.getMask(f.value()))
+			switch (mask.getMask(m.value()))
 			{
 				case TRUE:
 					if (str.length() > 0)
 						str += ",";
 					
-					str += f.name().toLowerCase();
+					str += m.toString();
 					break;
 					 
 				case EITHER:
 					if (str.length() > 0)
 						str += ",";
 					
-					str += "(" + f.name().toLowerCase() + ")";
+					str += "(" + m.toString() + ")";
 			}
 		}
 		

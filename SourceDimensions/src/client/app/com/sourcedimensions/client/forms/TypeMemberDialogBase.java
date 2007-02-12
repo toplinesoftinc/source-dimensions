@@ -24,32 +24,45 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	{
 		FIELD(1<<0),
 		CONSTANT(1<<1),
-		LOCAL_VAR(1<<2),
+		LOCAL_VAR(1<<2, "LOCAL VAR"),
 		CONSTRUCTOR(1<<3),
 		DESTRUCTOR(1<<4),
 		METHOD(1<<5),
-		ANONYM_METHOD(1<<6),
-		PROPERTY_GET(1<<7),
-		PROPERTY_SET(1<<8),
-		EVENT_ADD(1<<9),
-		EVENT_REMOVE(1<<10),
-		INDEXER_GET(1<<11),
-		INDEXER_SET(1<<12),
+		ANONYM_METHOD(1<<6, "ANONYM.METHOD"),
+		PROPERTY_GET(1<<7, "PROPERTY GET"),
+		PROPERTY_SET(1<<8, "PROPERTY SET"),
+		EVENT_ADD(1<<9, "EVENT ADD"),
+		EVENT_REMOVE(1<<10, "EVENT REMOVE"),
+		INDEXER_GET(1<<11, "INDEXER GET"),
+		INDEXER_SET(1<<12, "INDEXER SET"),
 		OPERATOR(1<<13),
-		ENUM_CONST(1<<14),
+		ENUM_CONST(1<<14, "ENUM CONST."),
 		ALL(1<<15);
 		
 		MemberCategory(int val)
 		{
 			value = val;
+			name = name();
+		}
+		
+		MemberCategory(int val, String n)
+		{
+			value = val;
+			name = n;
 		}
 		
 		private final int value;
+		private final String name;
 		
 		public int value()
 		{
 			return value;
-		}		
+		}
+		
+		public String toString()
+		{
+			return name;
+		}
 	}	
 	
 	public TriStateMask getModifiers()
