@@ -303,25 +303,30 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 						"Pattern for type name \"" + val + "\" has the following error: " + ex.getMessage());
 					return;
 				}				
-				
-				val = m_memberNameText.getText().trim();
-				
-				if (val.length() == 0 && ((m_memberCategories & ~MemberCategory.CONSTRUCTOR.value()) != 0))
-				{
-					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Member Name Filter");					
-					return;
-				}
 
-				try
+				if (m_memberNameText.getEnabled())
 				{
-					Pattern.compile(val);
+					val = m_memberNameText.getText().trim();
+					
+					if (val.length() == 0 && ((m_memberCategories & ~MemberCategory.CONSTRUCTOR.value()) != 0))
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Member Name Filter");					
+						return;
+					}
+	
+					try
+					{
+						Pattern.compile(val);
+					}
+					catch(PatternSyntaxException ex)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",
+							"Pattern for member name \"" + val + "\" has the following error: " + ex.getMessage());
+						return;
+					}
 				}
-				catch(PatternSyntaxException ex)
-				{
-					MessageDialog.openError(m_shell, "Incorrect input",
-						"Pattern for member name \"" + val + "\" has the following error: " + ex.getMessage());
-					return;
-				}
+				else
+					m_memberNameText.setText("");
 							
 				m_modifiers.reset();
 				
@@ -336,6 +341,11 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				m_type.m_typeProps.reset();
 				m_type.m_typeProps.setMask(Type.Property.ARRAY.value(), getTriStateBoolValue(m_typePropsList.getItem(m_arrayItem)));
 				m_type.m_typeProps.setMask(Type.Property.TYPE_PARAM.value(), getTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem)));
+				
+				if (!m_paramsTable.getEnabled())
+				{
+					m_paramList.clear();
+				}
 				
 				m_cancel = false;
 				m_shell.close();				
@@ -377,21 +387,18 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 
 	private void categorySelectionChanged()
 	{
-		boolean func = false;
+		int cat = 0;
 		
 		for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
 		{
-			MemberCategory cat = m_categoryArray[i];
-			
-			if (cat == MemberCategory.CONSTRUCTOR || cat == MemberCategory.METHOD)
+			if (m_memberCategoryList.getItem(i).getChecked())
 			{
-				if (m_memberCategoryList.getItem(i).getChecked())
-				{
-					func = true;
-					break;
-				}
+				cat += m_categoryArray[i].value();
 			}
-		}
+		}				
+		
+		boolean func = (cat & (MemberCategory.CONSTRUCTOR.value() | MemberCategory.METHOD.value())) != 0;
+		boolean noname = (cat != 0) && ((cat & ~MemberCategory.CONSTRUCTOR.value()) == 0);
 		
 		m_anyParamsCheckBox.setEnabled(func);
 		
@@ -401,8 +408,10 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		}
 		else
 		{
-			enableParamControls(false);
-		}		
+			enableParamControls(func);
+		}
+		
+		m_memberNameText.setEnabled(!noname);
 	}
 	
 	protected Shell getShell()

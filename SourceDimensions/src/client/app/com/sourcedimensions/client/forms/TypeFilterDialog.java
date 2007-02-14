@@ -411,12 +411,15 @@ public class TypeFilterDialog extends DialogBase
 				
 				Modifier[] mf = getModifierArray();
 				m_modifiers.reset();
-				
-				for (int i = 0; i < m_modifierList.getItemCount(); i++)
+			
+				if (m_modifierList.getEnabled())
 				{
-					m_modifiers.setMask(mf[i].value(), getTriStateBoolValue(m_modifierList.getItem(i)));
+					for (int i = 0; i < m_modifierList.getItemCount(); i++)
+					{
+						m_modifiers.setMask(mf[i].value(), getTriStateBoolValue(m_modifierList.getItem(i)));
+					}
 				}
-											
+				
 				m_allBaseTypes = m_allBaseTypesCheckBox.getSelection();
 				m_internalType = getTriStateBoolValue(m_internalTypeCheckBox.getItem(0));
 				
@@ -570,7 +573,11 @@ public class TypeFilterDialog extends DialogBase
 			}
 		}
 		
-		m_typeNameText.setEnabled((cat == 0) || (cat & ~TypeCategory.ANONYM_CLASS.value()) != 0);
+		boolean enabled = (cat == 0) || (cat & ~TypeCategory.ANONYM_CLASS.value()) != 0;
+		
+		m_typeNameText.setEnabled(enabled);
+		m_internalTypeCheckBox.setEnabled(enabled);
+		m_modifierList.setEnabled(enabled);
 	}
 	
 	protected Shell getShell()

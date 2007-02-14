@@ -138,8 +138,10 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		enableParamControls(!anyParams);
 		
 		if (!anyParams)
+		{
 			populateParamList(m_paramsTable, paramList);
-		
+		}
+			
 		for (int i = 0; i < m_operatorList.getItemCount(); i++)
 		{
 			m_operatorList.getItem(i).setChecked((operators & Operator.values()[i].value()) != 0);
@@ -341,8 +343,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 				
 				String val = m_typeNameText.getText().trim();
 				
-				if (val.length() == 0 && ((m_memberCategories & ~(MemberCategory.CONSTRUCTOR.value() | 
-						MemberCategory.DESTRUCTOR.value() | MemberCategory.ANONYM_METHOD.value())) != 0))
+				if (val.length() == 0)
 				{
 					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
 					return;
@@ -417,6 +418,11 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 					m_type.m_typeProps.setMask(Type.Property.values()[i].value(), getTriStateBoolValue(m_typePropsList.getItem(i)));
 				}
 				
+				if (!m_paramsTable.getEnabled())
+				{
+					m_paramList.clear();
+				}
+				
 				m_cancel = false;
 				m_shell.close();
 			}
@@ -459,48 +465,39 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 
 	private void categorySelectionChanged()
 	{
-		boolean func = false;
-		boolean oper = false;
-		boolean oper_only = true;
+		int cat = 0;
 		
 		for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)
 		{
 			if (m_memberCategoryList.getItem(i).getChecked())
 			{
-				switch (m_categoryArray[i])
-				{
-					case CONSTRUCTOR:
-					case METHOD:
-					case INDEXER_GET:
-					case INDEXER_SET:
-						func = true;
-						oper_only = false;
-						break;
-	
-					case OPERATOR:
-						func = true;
-						oper = true;
-						break;
-						
-					default:
-						oper_only = false;
-				}
+				cat += m_categoryArray[i].value();
 			}
 		}
 		
-		m_anyParamsCheckBox.setEnabled(func);
+		boolean oper_only = (cat != 0) && ((cat & ~MemberCategory.OPERATOR.value()) == 0);
+		boolean oper = (cat & MemberCategory.OPERATOR.value()) != 0;
 		
-		if (func)
+		boolean param = (cat & (MemberCategory.CONSTRUCTOR.value() 
+				| MemberCategory.METHOD.value() | MemberCategory.ANONYM_METHOD.value() 
+				| MemberCategory.INDEXER_GET.value() | MemberCategory.INDEXER_SET.value() 
+				| MemberCategory.OPERATOR.value())) != 0; 
+
+		boolean noname = (cat != 0) && ((cat & ~(MemberCategory.CONSTRUCTOR.value() 
+				| MemberCategory.DESTRUCTOR.value() | MemberCategory.ANONYM_METHOD.value())) == 0);
+		
+		m_memberNameText.setEnabled(!oper_only && !noname);
+		m_operatorList.setEnabled(oper);
+		m_anyParamsCheckBox.setEnabled(param);
+		
+		if (param)
 		{
-			enableParamControls(!m_anyParamsCheckBox.getSelection());
+			enableParamControls(m_anyParamsCheckBox.getSelection());
 		}
 		else
 		{
-			enableParamControls(false);
+			enableParamControls(param);
 		}
-		
-		m_memberNameText.setEnabled(!oper_only);
-		m_operatorList.setEnabled(oper);
 	}
 	
 	
