@@ -48,8 +48,8 @@ public class TypeFilterDialog extends DialogBase
 	private TriStateMask m_modifiers = new TriStateMask();  //  @jve:decl-index=0:
 	private boolean m_allBaseTypes;
 	private String m_typeName = "";  //  @jve:decl-index=0:
-	private TriStateBoolean m_internalType;
-	private Table m_internalTypeCheckBox = null;
+	private TriStateBoolean m_innerType;
+	private Table m_innerTypeCheckBox;
 	
 	private final static Modifier[] javaModifiers = 
 	{
@@ -146,7 +146,7 @@ public class TypeFilterDialog extends DialogBase
 	}
 
 	public TypeFilterDialog(Display display, Shell parent, String typeName,	int categories, 
-		TriStateMask modifiers, TriStateBoolean internalType, boolean allBaseTypes, List<BaseType> baseTypes)
+		TriStateMask modifiers, TriStateBoolean innerType, boolean allBaseTypes, List<BaseType> baseTypes)
 	{
 		m_display = display;
 		createShell(parent);
@@ -154,7 +154,7 @@ public class TypeFilterDialog extends DialogBase
 		m_allBaseTypesCheckBox.setSelection(allBaseTypes);
 		setBaseTypeControls();
 	
-		setTriStateBoolValue(m_internalTypeCheckBox.getItem(0), internalType);
+		setTriStateBoolValue(m_innerTypeCheckBox.getItem(0), innerType);
 		
 		if (baseTypes != null & !allBaseTypes)
 		{
@@ -222,7 +222,7 @@ public class TypeFilterDialog extends DialogBase
 		});
 		m_typeCategoryLabel.setBounds(new Rectangle(18, 7, 89, 13));
 		m_typeCategoryLabel.setText("&Type Categories:");
-		m_internalTypeCheckBox = new Table(getShell(), SWT.CHECK | SWT.BORDER | SWT.HIDE_SELECTION | SWT.FULL_SELECTION);
+		m_innerTypeCheckBox = new Table(getShell(), SWT.CHECK | SWT.BORDER | SWT.HIDE_SELECTION | SWT.FULL_SELECTION);
 		m_typeNameLabel = new Label(m_shell, SWT.NONE);
 		m_typeNameText = new Text(m_shell, SWT.BORDER);
 		m_typeNameText.setBounds(new Rectangle(17, 158, 223, 19));
@@ -412,16 +412,13 @@ public class TypeFilterDialog extends DialogBase
 				Modifier[] mf = getModifierArray();
 				m_modifiers.reset();
 			
-				if (m_modifierList.getEnabled())
+				for (int i = 0; i < m_modifierList.getItemCount(); i++)
 				{
-					for (int i = 0; i < m_modifierList.getItemCount(); i++)
-					{
-						m_modifiers.setMask(mf[i].value(), getTriStateBoolValue(m_modifierList.getItem(i)));
-					}
+					m_modifiers.setMask(mf[i].value(), getTriStateBoolValue(m_modifierList.getItem(i)));
 				}
-				
+
 				m_allBaseTypes = m_allBaseTypesCheckBox.getSelection();
-				m_internalType = getTriStateBoolValue(m_internalTypeCheckBox.getItem(0));
+				m_innerType = getTriStateBoolValue(m_innerTypeCheckBox.getItem(0));
 				
 				m_cancel = false;
 				m_shell.close();
@@ -431,12 +428,12 @@ public class TypeFilterDialog extends DialogBase
 		m_cancelButton.setLocation(new Point(345, 60));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
-		m_internalTypeCheckBox.setHeaderVisible(false);
-		m_internalTypeCheckBox.setLocation(new Point(135, 21));
-		m_internalTypeCheckBox.setLinesVisible(false);
-		m_internalTypeCheckBox.setSize(new Point(106, 20));
-		new TableItem(m_internalTypeCheckBox, 0).setText("Internal Types");
-		m_internalTypeCheckBox.addSelectionListener(new TriStateCheckBoxAdapter());
+		m_innerTypeCheckBox.setHeaderVisible(false);
+		m_innerTypeCheckBox.setLocation(new Point(135, 21));
+		m_innerTypeCheckBox.setLinesVisible(false);
+		m_innerTypeCheckBox.setSize(new Point(106, 20));
+		new TableItem(m_innerTypeCheckBox, 0).setText("Inner Type");
+		m_innerTypeCheckBox.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_allBaseTypesCheckBox.setBounds(new Rectangle(17, 186, 89, 13));
 		m_allBaseTypesCheckBox.setText("&All Base Types");
 		m_allBaseTypesCheckBox.setSelection(true);
@@ -529,9 +526,9 @@ public class TypeFilterDialog extends DialogBase
 		return m_typeName;
 	}
 	
-	public TriStateBoolean getInternalType()
+	public TriStateBoolean getInnerType()
 	{
-		return m_internalType;
+		return m_innerType;
 	}
 	
 	private void editBaseType()
@@ -576,8 +573,7 @@ public class TypeFilterDialog extends DialogBase
 		boolean enabled = (cat == 0) || (cat & ~TypeCategory.ANONYM_CLASS.value()) != 0;
 		
 		m_typeNameText.setEnabled(enabled);
-		m_internalTypeCheckBox.setEnabled(enabled);
-		m_modifierList.setEnabled(enabled);
+		m_innerTypeCheckBox.setEnabled(enabled);
 	}
 	
 	protected Shell getShell()

@@ -60,10 +60,31 @@ public class ParamDialog extends DialogBase
 	private Button m_exactRadioButton;
 	private Spinner m_exactPosSpinner;
 
+	private static Parameter.Modifier[] m_javaModifiers = new Parameter.Modifier[]
+    {
+		Parameter.Modifier.FINAL,
+		Parameter.Modifier.VAR_ARITY
+    };
+	
+	private static Parameter.Modifier[] m_csharpModifiers = new Parameter.Modifier[]
+    {
+		Parameter.Modifier.OUT,
+		Parameter.Modifier.REF,
+		Parameter.Modifier.PARAMS
+    };
+
+	private static Type.Property[] m_javaTypeProps = new Type.Property[]
+	{
+		Type.Property.ARRAY,
+		Type.Property.TYPE_PARAM,
+    };
+	
 	public ParamDialog(Display display, Shell parent, Parameter param)
 	{
 		m_display = display;
 		createShell(parent);
+
+		m_anyRadioButton.setSelection(false);
 		
 		switch (param.m_posType)
 		{
@@ -80,13 +101,13 @@ public class ParamDialog extends DialogBase
 				break;
 
 			case GREATER_EQ:
-				m_noMoreRadioButton.setSelection(true);
-				m_noMorePosSpinner.setSelection(param.m_posMin);
+				m_notLessRadioButton.setSelection(true);
+				m_notLessPosSpinner.setSelection(param.m_posMax);				
 				break;
 								
 			case LESS_EQ:
-				m_notLessRadioButton.setSelection(true);
-				m_notLessPosSpinner.setSelection(param.m_posMax);				
+				m_noMoreRadioButton.setSelection(true);
+				m_noMorePosSpinner.setSelection(param.m_posMin);
 				break;
 				
 			case BETWEEN:
@@ -520,11 +541,7 @@ public class ParamDialog extends DialogBase
   		{
   			case JAVA14:
   			case JAVA15:
-  				return new Type.Property[]
-				    {
-						Type.Property.ARRAY,
-						Type.Property.TYPE_PARAM,
-				    };  				
+  				return m_javaTypeProps;
   				 				
   			case CSHARP11:
   			case CSHARP20:
@@ -541,20 +558,11 @@ public class ParamDialog extends DialogBase
   		{
   			case JAVA14:
   			case JAVA15:
-  				return new Parameter.Modifier[]
-				    {
-  						Parameter.Modifier.FINAL,
-  						Parameter.Modifier.VAR_ARITY
-				    };
+  				return m_javaModifiers;
   				 				
   			case CSHARP11:
   			case CSHARP20:
-  				return new Parameter.Modifier[]
-				    {
-  						Parameter.Modifier.OUT,
-  						Parameter.Modifier.REF,
-  						Parameter.Modifier.PARAMS
-				    };
+  				return m_csharpModifiers;
 
   			default:
   				return null;

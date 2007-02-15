@@ -492,7 +492,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		
 		if (param)
 		{
-			enableParamControls(m_anyParamsCheckBox.getSelection());
+			enableParamControls(!m_anyParamsCheckBox.getSelection());
 		}
 		else
 		{

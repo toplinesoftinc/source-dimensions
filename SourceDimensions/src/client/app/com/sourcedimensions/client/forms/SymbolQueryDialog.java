@@ -508,7 +508,7 @@ public class SymbolQueryDialog extends DialogBase
 		column.setWidth((int)(0.12 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Internal");
+		column.setText("Inner");
 		m_typeFilterLabel = new Label(m_typesTab, SWT.NONE);
 		m_typeFilterLabel.setBounds(new Rectangle(15, 40, 101, 16));
 		m_typeFilterLabel.setText("&Type Filter List:");
@@ -535,7 +535,7 @@ public class SymbolQueryDialog extends DialogBase
 					filter.m_categories = dialog.getTypeCategories();
 					filter.m_baseTypes = dialog.getBaseTypes();
 					filter.m_allBaseTypes = dialog.getAllBaseTypes();
-					filter.m_internalType = dialog.getInternalType();
+					filter.m_innerType = dialog.getInnerType();
 					m_typeFilter.add(filter);
 					
 					TableItem item = new TableItem(m_typeFilterTable, 0);
@@ -543,7 +543,7 @@ public class SymbolQueryDialog extends DialogBase
 					item.setText(1, modifiersToString(filter.m_modifiers));
 					item.setText(2, dialog.getTypeName());					
 					item.setText(3, dialog.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.m_baseTypes));
-					item.setText(4, m_triStateText[dialog.getInternalType().value()]);
+					item.setText(4, m_triStateText[dialog.getInnerType().value()]);
 				}
 			}
 		});
@@ -720,7 +720,7 @@ public class SymbolQueryDialog extends DialogBase
 			TableItem item = m_typeFilterTable.getItem(sel);
 			
 			TypeFilterDialog dialog = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_internalType, filter.m_allBaseTypes, filter.m_baseTypes);
+				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_innerType, filter.m_allBaseTypes, filter.m_baseTypes);
 			
 			dialog.open();
 			
@@ -730,13 +730,13 @@ public class SymbolQueryDialog extends DialogBase
 				filter.m_categories = dialog.getTypeCategories();
 				filter.m_baseTypes = dialog.getBaseTypes();
 				filter.m_allBaseTypes = dialog.getAllBaseTypes();
-				filter.m_internalType = dialog.getInternalType();
+				filter.m_innerType = dialog.getInnerType();
 
 				item.setText(0, typeCategoriesToString(filter.m_categories));			
 				item.setText(1, modifiersToString(filter.m_modifiers));
 				item.setText(2, dialog.getTypeName());				
 				item.setText(3, filter.m_allBaseTypes ? "<Any>" : baseTypesToString(filter.m_baseTypes));
-				item.setText(4, m_triStateText[dialog.getInternalType().value()]);
+				item.setText(4, m_triStateText[dialog.getInnerType().value()]);
 			}
 		}
 		
@@ -803,7 +803,7 @@ public class SymbolQueryDialog extends DialogBase
 		public int m_categories;
 		public TriStateMask m_modifiers;
 		public boolean m_allBaseTypes;
-		public TriStateBoolean m_internalType;
+		public TriStateBoolean m_innerType;
 		public List<BaseType> m_baseTypes;
 	}
 	
