@@ -168,11 +168,11 @@ public class ParamDialog extends DialogBase
 		m_paramModifiersList.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_paramNameFilterLabel = new Label(getShell(), SWT.NONE);
 		m_paramNameFilterLabel.setText("Parameter Name Filter:");
-		m_paramNameFilterLabel.setLocation(new Point(133, 334));
+		m_paramNameFilterLabel.setLocation(new Point(133, 368));
 		m_paramNameFilterLabel.setSize(new Point(120, 13));
 		m_paramNameFilterText = new Text(getShell(), SWT.BORDER);
 		m_paramNameFilterText.setSize(new Point(230, 19));
-		m_paramNameFilterText.setLocation(new Point(133, 348));
+		m_paramNameFilterText.setLocation(new Point(133, 382));
 		m_paramModifiersList.setHeaderVisible(false);
 		m_paramModifiersList.setLinesVisible(false);
 		m_paramModifiersList.setBounds(new Rectangle(12, 348, 104, 53));
@@ -527,7 +527,7 @@ public class ParamDialog extends DialogBase
 		m_typeNameLabel.setLocation(new Point(131, 21));
 		m_typeNameLabel.setSize(new Point(91, 13));
 		m_typeNameText = new Text(m_typeGroup, SWT.BORDER);
-		m_typeNameText.setBounds(new Rectangle(131, 35, 219, 19));
+		m_typeNameText.setBounds(new Rectangle(131, 35, 217, 19));
 		m_typePropsLabel.setBounds(new Rectangle(11, 21, 88, 13));
 		m_typePropsLabel.setText("Type Properties:");
 		m_typePropsList.setHeaderVisible(false);
