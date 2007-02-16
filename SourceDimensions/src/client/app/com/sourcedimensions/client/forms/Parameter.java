@@ -47,6 +47,73 @@ public class Parameter
 			return value;
 		}		
 	}
+	
+	public String positionToString()
+	{
+		switch (m_posType)
+		{
+			case LIST:
+				{
+					String str = "";
+					Object[] items = m_posList.toArray();
+					
+					for (int i = 0; i < items.length; i++)
+					{
+						if (i > 0)
+							str += ",";
+						
+						str += (Integer)items[i];
+					}
+					
+					return str;
+				}
+				
+			case BETWEEN:
+				return m_posMin + " - " + m_posMax;
+				
+			case LESS_EQ:
+				return "<= " + m_posMax;
+				
+			case GREATER_EQ:
+				return ">= " + m_posMin;
+				
+			case EXACT:
+				return Integer.toString(m_posValue);
+				
+			case ANY:
+				return "<ANY>";
+				
+			default:
+				return "";
+		}
+	}
+	
+	public String modifiersToString()
+	{
+		String str = "";
+		
+		for (Parameter.Modifier f : Parameter.Modifier.values())
+		{
+			switch (m_modifiers.getMask(f.value()))
+			{
+				case TRUE:
+					if (str.length() > 0)
+						str += ",";
+					
+					str += f.name().toLowerCase().replace("_", ".");
+					break;
+					 
+				case EITHER:
+					if (str.length() > 0)
+						str += ",";
+					
+					str += "(" + f.name().toLowerCase().replace("_", ".") + ")";
+			}
+		}
+		
+		return str;
+	}
+	
 
 	public TriStateMask m_modifiers = new TriStateMask();
 	public Type m_type = new Type();

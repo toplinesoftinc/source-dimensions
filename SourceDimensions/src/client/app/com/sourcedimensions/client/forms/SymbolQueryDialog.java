@@ -536,6 +536,7 @@ public class SymbolQueryDialog extends DialogBase
 					filter.m_baseTypes = dialog.getBaseTypes();
 					filter.m_allBaseTypes = dialog.getAllBaseTypes();
 					filter.m_innerType = dialog.getInnerType();
+					filter.m_delegate = dialog.getDelegate();
 					m_typeFilter.add(filter);
 					
 					TableItem item = new TableItem(m_typeFilterTable, 0);
@@ -720,7 +721,7 @@ public class SymbolQueryDialog extends DialogBase
 			TableItem item = m_typeFilterTable.getItem(sel);
 			
 			TypeFilterDialog dialog = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_innerType, filter.m_allBaseTypes, filter.m_baseTypes);
+				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_innerType, filter.m_allBaseTypes, filter.m_baseTypes, filter.m_delegate);
 			
 			dialog.open();
 			
@@ -731,6 +732,7 @@ public class SymbolQueryDialog extends DialogBase
 				filter.m_baseTypes = dialog.getBaseTypes();
 				filter.m_allBaseTypes = dialog.getAllBaseTypes();
 				filter.m_innerType = dialog.getInnerType();
+				filter.m_delegate = dialog.getDelegate();
 
 				item.setText(0, typeCategoriesToString(filter.m_categories));			
 				item.setText(1, modifiersToString(filter.m_modifiers));
@@ -805,6 +807,7 @@ public class SymbolQueryDialog extends DialogBase
 		public boolean m_allBaseTypes;
 		public TriStateBoolean m_innerType;
 		public List<BaseType> m_baseTypes;
+		public Delegate m_delegate;
 	}
 	
 	protected class MemberFilter

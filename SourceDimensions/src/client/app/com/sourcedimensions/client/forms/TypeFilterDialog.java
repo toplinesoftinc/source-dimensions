@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import com.sourcedimensions.client.TriStateBoolean;
+import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
@@ -45,6 +46,7 @@ public class TypeFilterDialog extends DialogBase
 	private List<BaseType> m_baseTypes = new ArrayList<BaseType>();  //  @jve:decl-index=0:
 	private Button m_allBaseTypesCheckBox;
 	private int m_typeCategories;
+	private Delegate m_delegate;
 	private TriStateMask m_modifiers = new TriStateMask();  //  @jve:decl-index=0:
 	private boolean m_allBaseTypes;
 	private String m_typeName = "";  //  @jve:decl-index=0:
@@ -94,7 +96,8 @@ public class TypeFilterDialog extends DialogBase
 		TypeCategory.STRUCT,
 		TypeCategory.DELEGATE,
 		TypeCategory.ALL
-	};	
+	};
+	private Button m_delegateButton;	
 	
 	public enum TypeCategory
 	{
@@ -146,10 +149,11 @@ public class TypeFilterDialog extends DialogBase
 	}
 
 	public TypeFilterDialog(Display display, Shell parent, String typeName,	int categories, 
-		TriStateMask modifiers, TriStateBoolean innerType, boolean allBaseTypes, List<BaseType> baseTypes)
+		TriStateMask modifiers, TriStateBoolean innerType, boolean allBaseTypes, List<BaseType> baseTypes, Delegate delegate)
 	{
 		m_display = display;
 		createShell(parent);
+		m_delegate = delegate;
 		m_typeNameText.setText(typeName);
 		m_allBaseTypesCheckBox.setSelection(allBaseTypes);
 		setBaseTypeControls();
@@ -223,6 +227,7 @@ public class TypeFilterDialog extends DialogBase
 		m_typeCategoryLabel.setBounds(new Rectangle(18, 7, 89, 13));
 		m_typeCategoryLabel.setText("&Type Categories:");
 		m_innerTypeCheckBox = new Table(getShell(), SWT.CHECK | SWT.BORDER | SWT.HIDE_SELECTION | SWT.FULL_SELECTION);
+		m_delegateButton = new Button(getShell(), SWT.NONE);
 		m_typeNameLabel = new Label(m_shell, SWT.NONE);
 		m_typeNameText = new Text(m_shell, SWT.BORDER);
 		m_typeNameText.setBounds(new Rectangle(17, 158, 223, 19));
@@ -292,7 +297,7 @@ public class TypeFilterDialog extends DialogBase
 		column.setResizable(true);
 		column.setMoveable(true);
 		m_addBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_addBaseTypeButton.setLocation(new Point(344, 229));
+		m_addBaseTypeButton.setLocation(new Point(345, 229));
 		m_addBaseTypeButton.setText("A&dd filter...");
 		m_addBaseTypeButton.setEnabled(false);
 		m_addBaseTypeButton.setSize(new Point(88, 25));
@@ -314,7 +319,7 @@ public class TypeFilterDialog extends DialogBase
 			}		
 		});
 		m_editBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_editBaseTypeButton.setLocation(new Point(344, 271));
+		m_editBaseTypeButton.setLocation(new Point(345, 271));
 		m_editBaseTypeButton.setText("&Edit filter...");
 		m_editBaseTypeButton.setEnabled(false);
 		m_editBaseTypeButton.setSize(new Point(88, 25));
@@ -326,14 +331,14 @@ public class TypeFilterDialog extends DialogBase
 			}
 		});
 		m_removeBaseTypeButton = new Button(m_shell, SWT.NONE);
-		m_removeBaseTypeButton.setLocation(new Point(344, 313));
+		m_removeBaseTypeButton.setLocation(new Point(345, 313));
 		m_removeBaseTypeButton.setText("&Remove filter");
 		m_removeBaseTypeButton.setEnabled(false);
 		m_removeBaseTypeButton.setSize(new Point(88, 25));
 		m_removeBaseTypeButton.addSelectionListener(
 				new RemoveFilterAdapter(m_shell, m_baseTypesTable, m_baseTypes)); 
 		m_okButton = new Button(m_shell, SWT.NONE);
-		m_okButton.setLocation(new Point(345, 20));
+		m_okButton.setLocation(new Point(345, 21));
 		m_okButton.setText("O&k");
 		m_okButton.setSize(new Point(88, 25));
 		m_okButton.addSelectionListener(new SelectionAdapter() 
@@ -420,14 +425,54 @@ public class TypeFilterDialog extends DialogBase
 				m_allBaseTypes = m_allBaseTypesCheckBox.getSelection();
 				m_innerType = getTriStateBoolValue(m_innerTypeCheckBox.getItem(0));
 				
+				if (!m_delegateButton.getEnabled())
+				{
+					m_delegate = null;
+				}
+				
 				m_cancel = false;
 				m_shell.close();
 			}
 		});
 		m_cancelButton = new Button(m_shell, SWT.NONE);
-		m_cancelButton.setLocation(new Point(345, 60));
+		m_cancelButton.setLocation(new Point(345, 56));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
+		
+		Language lang = ProjectView.getProject().getLanguage();
+		
+		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
+		{
+			m_delegateButton.setLocation(new Point(144, 63));
+			m_delegateButton.setSize(new Point(88, 25));
+			m_delegateButton.setText("Delegate...");
+			m_delegateButton.addSelectionListener(new SelectionAdapter() 
+			{
+				public void widgetSelected(SelectionEvent e) 
+				{
+					DelegateDialog dialog;
+					
+					if (m_delegate == null)
+						dialog = new DelegateDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+					else
+						dialog = new DelegateDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
+							m_delegate.m_type, m_delegate.m_anyParams, m_delegate.m_paramList);
+					
+					dialog.open();
+					
+					if (!dialog.isCancelled())
+					{
+						if (m_delegate == null)
+							m_delegate = new Delegate();
+						
+						m_delegate.m_type = dialog.getType();
+						m_delegate.m_anyParams = dialog.getAnyParams();
+						m_delegate.m_paramList = dialog.getParamList();
+					}
+				}
+			});
+		}
+		
 		m_innerTypeCheckBox.setHeaderVisible(false);
 		m_innerTypeCheckBox.setLocation(new Point(135, 21));
 		m_innerTypeCheckBox.setLinesVisible(false);
@@ -531,6 +576,11 @@ public class TypeFilterDialog extends DialogBase
 		return m_innerType;
 	}
 	
+	public Delegate getDelegate()
+	{
+		return m_delegate;
+	}
+	
 	private void editBaseType()
 	{
 		int sel = m_baseTypesTable.getSelectionIndex();
@@ -570,10 +620,15 @@ public class TypeFilterDialog extends DialogBase
 			}
 		}
 		
-		boolean enabled = (cat == 0) || (cat & ~TypeCategory.ANONYM_CLASS.value()) != 0;
+		boolean named = (cat == 0) || (cat & ~TypeCategory.ANONYM_CLASS.value()) != 0;
 		
-		m_typeNameText.setEnabled(enabled);
-		m_innerTypeCheckBox.setEnabled(enabled);
+		m_typeNameText.setEnabled(named);
+		m_innerTypeCheckBox.setEnabled(named);
+		
+		if (m_delegateButton != null)
+		{
+			m_delegateButton.setEnabled((cat & TypeCategory.DELEGATE.value()) != 0);
+		}
 	}
 	
 	protected Shell getShell()

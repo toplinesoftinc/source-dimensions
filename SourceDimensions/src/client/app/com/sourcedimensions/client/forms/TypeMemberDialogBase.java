@@ -98,73 +98,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	public boolean getAnyParams()
 	{
 		return m_anyParams;
-	}
-	
-	protected String positionToString(Parameter param)
-	{
-		switch (param.m_posType)
-		{
-			case LIST:
-				{
-					String str = "";
-					Object[] items = param.m_posList.toArray();
-					
-					for (int i = 0; i < items.length; i++)
-					{
-						if (i > 0)
-							str += ",";
-						
-						str += (Integer)items[i];
-					}
-					
-					return str;
-				}
-				
-			case BETWEEN:
-				return param.m_posMin + " - " + param.m_posMax;
-				
-			case LESS_EQ:
-				return "<= " + param.m_posMax;
-				
-			case GREATER_EQ:
-				return ">= " + param.m_posMin;
-				
-			case EXACT:
-				return Integer.toString(param.m_posValue);
-				
-			case ANY:
-				return "<ANY>";
-				
-			default:
-				return "";
-		}
-	}
-	
-	protected String modifiersToString(TriStateMask mask)
-	{
-		String str = "";
-		
-		for (Parameter.Modifier f : Parameter.Modifier.values())
-		{
-			switch (mask.getMask(f.value()))
-			{
-				case TRUE:
-					if (str.length() > 0)
-						str += ",";
-					
-					str += f.name().toLowerCase().replace("_", ".");
-					break;
-					 
-				case EITHER:
-					if (str.length() > 0)
-						str += ",";
-					
-					str += "(" + f.name().toLowerCase().replace("_", ".") + ")";
-			}
-		}
-		
-		return str;
-	}
+	}	
 	
 	protected void addParam(Table table)
 	{
@@ -178,8 +112,8 @@ public abstract class TypeMemberDialogBase extends DialogBase
 			TableItem item = new TableItem(table, SWT.NONE);
 			
 			m_paramList.add(param);
-			item.setText(0, positionToString(param));
-			item.setText(1, modifiersToString(param.m_modifiers));
+			item.setText(0, param.positionToString());
+			item.setText(1, param.modifiersToString());
 			item.setText(2, Type.typePropsToString(param.m_type.m_typeProps));
 			item.setText(3, param.m_type.m_name);
 			item.setText(4, param.m_name);
@@ -207,8 +141,8 @@ public abstract class TypeMemberDialogBase extends DialogBase
 				m_paramList.set(sel, param);
 				TableItem item = table.getItem(sel);
 				
-				item.setText(0, positionToString(param));
-				item.setText(1, modifiersToString(param.m_modifiers));
+				item.setText(0, param.positionToString());
+				item.setText(1, param.modifiersToString());
 				item.setText(2, Type.typePropsToString(param.m_type.m_typeProps));
 				item.setText(3, param.m_type.m_name);
 				item.setText(4, param.m_name);
@@ -246,8 +180,8 @@ public abstract class TypeMemberDialogBase extends DialogBase
 			
 			TableItem item = new TableItem(table, SWT.NONE);
 			
-			item.setText(0, positionToString(param));
-			item.setText(1, modifiersToString(param.m_modifiers));
+			item.setText(0, param.positionToString());
+			item.setText(1, param.modifiersToString());
 			item.setText(2, Type.typePropsToString(param.m_type.m_typeProps));
 			item.setText(3, param.m_type.m_name);
 			item.setText(4, param.m_name);			

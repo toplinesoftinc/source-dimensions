@@ -161,21 +161,21 @@ public class ParamDialog extends DialogBase
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		createParamPositionGroup();
 		createTypeGroup();
-		m_shell.setSize(new Point(396, 447));
+		m_shell.setSize(new Point(396, 453));
 		m_shell.setLayout(null);
 		m_paramModifiersLabel = new Label(getShell(), SWT.NONE);
 		m_paramModifiersList = new Table(getShell(), SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
 		m_paramModifiersList.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_paramNameFilterLabel = new Label(getShell(), SWT.NONE);
 		m_paramNameFilterLabel.setText("Parameter Name Filter:");
-		m_paramNameFilterLabel.setLocation(new Point(133, 368));
+		m_paramNameFilterLabel.setLocation(new Point(132, 374));
 		m_paramNameFilterLabel.setSize(new Point(120, 13));
 		m_paramNameFilterText = new Text(getShell(), SWT.BORDER);
 		m_paramNameFilterText.setSize(new Point(230, 19));
-		m_paramNameFilterText.setLocation(new Point(133, 382));
+		m_paramNameFilterText.setLocation(new Point(132, 388));
 		m_paramModifiersList.setHeaderVisible(false);
 		m_paramModifiersList.setLinesVisible(false);
-		m_paramModifiersList.setBounds(new Rectangle(12, 348, 104, 53));
+		m_paramModifiersList.setBounds(new Rectangle(11, 354, 104, 53));
 		for (Parameter.Modifier m : getModifierArray())
 		{
 			new TableItem(m_paramModifiersList, 0).setText(m.toString().replace("_", ".").toLowerCase());
@@ -299,7 +299,7 @@ public class ParamDialog extends DialogBase
 		});
 		m_paramModifiersLabel.setText("Parameter Modifiers:");
 		m_paramModifiersLabel.setSize(new Point(108, 13));
-		m_paramModifiersLabel.setLocation(new Point(12, 334));
+		m_paramModifiersLabel.setLocation(new Point(11, 340));
 		
 		super.createShell(parent);
 		

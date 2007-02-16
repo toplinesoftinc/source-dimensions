@@ -33,6 +33,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	private Table m_memberCategoryList;
 	private Label m_modifierListLabel;
 	private Table m_modifierList;
+	
 	private final static MemberCategory[] m_categoryArray = 
 	{
 		MemberCategory.FIELD,
@@ -117,7 +118,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	private Button m_removeParamButton;
 	private Label m_typePropsLabel;
 	private Table m_typePropsList;
-
+	
 	public CSharpMemberDialog(Display display, Shell parent)
 	{
 		m_display = display;
@@ -457,7 +458,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		
 		m_memberNameText.setFocus();
 	}
-
+	
 	protected Shell getShell()
 	{
 		return m_shell;
