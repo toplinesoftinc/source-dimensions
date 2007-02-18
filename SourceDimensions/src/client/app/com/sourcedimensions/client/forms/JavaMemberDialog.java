@@ -112,14 +112,11 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		
 		m_anyThrowCheckBox.setSelection(anyThrow);
 		enableThrowControls(!anyThrow);
+		m_throwList = throwList;
 		
-		if (!anyThrow)
+		for (String filter : throwList)
 		{
-			for (String filter : throwList)
-			{
-				m_throwList.add(filter);
-				m_throwFilterList.add(filter);
-			}
+			m_throwFilterList.add(filter);
 		}
 		
 		for (int i = 0; i < m_memberCategoryList.getItemCount(); i++)

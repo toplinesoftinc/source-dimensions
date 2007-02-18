@@ -159,6 +159,7 @@ public class TypeFilterDialog extends DialogBase
 		TriStateBoolean subtypes, boolean allBaseTypes, List<BaseType> baseTypes, Delegate delegate)
 	{
 		m_display = display;
+		m_baseTypes = baseTypes;
 		createShell(parent);
 		m_delegate = delegate;
 		m_typeNameText.setText(typeName);
@@ -170,9 +171,7 @@ public class TypeFilterDialog extends DialogBase
 		setTriStateBoolValue(m_attrCheckBox.getItem(m_subtypeItem), subtypes);
 		
 		if (baseTypes != null & !allBaseTypes)
-		{
-			m_baseTypes = baseTypes;
-			
+		{		
 			for (BaseType t : m_baseTypes)
 			{
 				TableItem item = new TableItem(m_baseTypesTable, 0);
@@ -180,7 +179,7 @@ public class TypeFilterDialog extends DialogBase
 				item.setText(1, t.m_name);
 			}
 		}
-		
+			
 		Modifier[] mf = getModifierArray();
 		
 		for (int i = 0; i < m_modifierList.getItemCount(); i++)
@@ -344,8 +343,7 @@ public class TypeFilterDialog extends DialogBase
 		m_removeBaseTypeButton.setText("&Remove filter");
 		m_removeBaseTypeButton.setEnabled(false);
 		m_removeBaseTypeButton.setSize(new Point(88, 25));
-		m_removeBaseTypeButton.addSelectionListener(
-				new RemoveFilterAdapter(m_shell, m_baseTypesTable, m_baseTypes)); 
+		m_removeBaseTypeButton.addSelectionListener(new RemoveFilterAdapter(m_shell, m_baseTypesTable, m_baseTypes)); 
 		m_okButton = new Button(m_shell, SWT.NONE);
 		m_okButton.setLocation(new Point(345, 21));
 		m_okButton.setText("O&k");
@@ -435,6 +433,11 @@ public class TypeFilterDialog extends DialogBase
 				m_innerTypes = getTriStateBoolValue(m_attrCheckBox.getItem(m_innerTypeItem));
 				m_supertypes = getTriStateBoolValue(m_attrCheckBox.getItem(m_supertypeItem));
 				m_subtypes = getTriStateBoolValue(m_attrCheckBox.getItem(m_subtypeItem));
+				
+				if (m_allBaseTypes)
+				{
+					m_baseTypes.clear();
+				}
 				
 				if (!m_delegateButton.getEnabled())
 				{

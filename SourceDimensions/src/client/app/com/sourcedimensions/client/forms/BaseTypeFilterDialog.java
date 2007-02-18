@@ -21,15 +21,15 @@ import com.sourcedimensions.client.views.ProjectView;
 
 public class BaseTypeFilterDialog extends DialogBase 
 {
-	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="11,6"
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="11,6"
 	private String m_value;  //  @jve:decl-index=0:
-	private Label m_typeCategoryLabel = null;
-	private Label m_baseTypeNameFilterLabel = null;
-	private Text m_baseTypeFilterText = null;
-	private Combo m_integralTypeCombo = null;
-	private Button m_okButton = null;
-	private Button m_cancelButton = null;
-	private Combo m_typeCategoryCombo = null;  //  @jve:decl-index=0:visual-constraint="369,103"
+	private Label m_typeCategoryLabel;
+	private Label m_baseTypeNameFilterLabel;
+	private Text m_baseTypeFilterText;
+	private Combo m_integralTypeCombo;
+	private Button m_okButton;
+	private Button m_cancelButton;
+	private Combo m_typeCategoryCombo;  //  @jve:decl-index=0:visual-constraint="369,103"
 	private TypeCategory m_categoryValue;
 	
 	protected static String[] m_typeCategoryNames = 

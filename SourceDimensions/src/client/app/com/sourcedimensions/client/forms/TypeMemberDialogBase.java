@@ -24,7 +24,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	{
 		FIELD(1<<0),
 		CONSTANT(1<<1),
-		LOCAL_VAR(1<<2, "LOCAL VAR"),
+		LOCAL_VAR(1<<2, "LOCAL VAR."),
 		CONSTRUCTOR(1<<3),
 		DESTRUCTOR(1<<4),
 		METHOD(1<<5),
@@ -172,12 +172,10 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	protected void populateParamList(Table table, List<Parameter> paramList)
 	{
 		table.removeAll();
-		m_paramList.clear();
+		m_paramList = paramList;
 		
 		for (Parameter param : paramList)
-		{
-			m_paramList.add(param);
-			
+		{		
 			TableItem item = new TableItem(table, SWT.NONE);
 			
 			item.setText(0, param.positionToString());
