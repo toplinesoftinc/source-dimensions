@@ -408,8 +408,15 @@ public class SymbolQueryDialog extends DialogBase
 					filter.m_modifiers = dialog.getModifiers();
 					filter.m_anyParams = dialog.getAnyParams();
 					filter.m_type = dialog.getType();
-					if (!filter.m_anyParams)
-						filter.m_paramList = dialog.getParams();
+					filter.m_paramList = dialog.getParams();
+					
+					if (dialog instanceof JavaMemberDialog)
+					{
+						JavaMemberDialog javaDialog = (JavaMemberDialog)dialog;
+						
+						filter.m_anyThrows = javaDialog.getAnyThrow();
+						filter.m_throwList = javaDialog.getThrowList();
+					}
 					
 					TableItem item = new TableItem(m_memberFilterTable, SWT.NONE);
 					item.setText(0, memberCategoriesToString(filter.m_categories));
@@ -509,6 +516,16 @@ public class SymbolQueryDialog extends DialogBase
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Inner");
+		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 5);
+		column.setWidth((int)(0.12 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Super");
+		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 6);
+		column.setWidth((int)(0.13 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Subtypes");		
 		m_typeFilterLabel = new Label(m_typesTab, SWT.NONE);
 		m_typeFilterLabel.setBounds(new Rectangle(15, 40, 101, 16));
 		m_typeFilterLabel.setText("&Type Filter List:");
@@ -535,7 +552,9 @@ public class SymbolQueryDialog extends DialogBase
 					filter.m_categories = dialog.getTypeCategories();
 					filter.m_baseTypes = dialog.getBaseTypes();
 					filter.m_allBaseTypes = dialog.getAllBaseTypes();
-					filter.m_innerType = dialog.getInnerType();
+					filter.m_innerTypes = dialog.getInnerTypes();
+					filter.m_supertypes = dialog.getSupertypes();
+					filter.m_subtypes = dialog.getSubtypes();					
 					filter.m_delegate = dialog.getDelegate();
 					m_typeFilter.add(filter);
 					
@@ -544,7 +563,9 @@ public class SymbolQueryDialog extends DialogBase
 					item.setText(1, modifiersToString(filter.m_modifiers));
 					item.setText(2, dialog.getTypeName());					
 					item.setText(3, dialog.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.m_baseTypes));
-					item.setText(4, m_triStateText[dialog.getInnerType().value()]);
+					item.setText(4, m_triStateText[dialog.getInnerTypes().value()]);
+					item.setText(5, m_triStateText[dialog.getSupertypes().value()]);
+					item.setText(6, m_triStateText[dialog.getSubtypes().value()]);
 				}
 			}
 		});
@@ -721,7 +742,8 @@ public class SymbolQueryDialog extends DialogBase
 			TableItem item = m_typeFilterTable.getItem(sel);
 			
 			TypeFilterDialog dialog = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_innerType, filter.m_allBaseTypes, filter.m_baseTypes, filter.m_delegate);
+				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_innerTypes, filter.m_supertypes,
+				filter.m_subtypes, filter.m_allBaseTypes, filter.m_baseTypes, filter.m_delegate);
 			
 			dialog.open();
 			
@@ -731,14 +753,18 @@ public class SymbolQueryDialog extends DialogBase
 				filter.m_categories = dialog.getTypeCategories();
 				filter.m_baseTypes = dialog.getBaseTypes();
 				filter.m_allBaseTypes = dialog.getAllBaseTypes();
-				filter.m_innerType = dialog.getInnerType();
+				filter.m_innerTypes = dialog.getInnerTypes();
+				filter.m_supertypes = dialog.getSupertypes();
+				filter.m_subtypes = dialog.getSubtypes();
 				filter.m_delegate = dialog.getDelegate();
 
 				item.setText(0, typeCategoriesToString(filter.m_categories));			
 				item.setText(1, modifiersToString(filter.m_modifiers));
 				item.setText(2, dialog.getTypeName());				
 				item.setText(3, filter.m_allBaseTypes ? "<Any>" : baseTypesToString(filter.m_baseTypes));
-				item.setText(4, m_triStateText[dialog.getInnerType().value()]);
+				item.setText(4, m_triStateText[dialog.getInnerTypes().value()]);
+				item.setText(5, m_triStateText[dialog.getSupertypes().value()]);
+				item.setText(6, m_triStateText[dialog.getSubtypes().value()]);
 			}
 		}
 		
@@ -764,14 +790,14 @@ public class SymbolQueryDialog extends DialogBase
 	  		{
 	  			case JAVA14:
 	  			case JAVA15:
-	  				dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-	  					item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams, filter.m_paramList);
+	  				dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, item.getText(2), filter.m_categories, 
+	  					filter.m_modifiers, filter.m_type, filter.m_anyParams, filter.m_paramList, filter.m_anyThrows, filter.m_throwList);
 	  				break;
 	  				
 	  			case CSHARP11:
 	  			case CSHARP20:
-	  				dialog = new CSharpMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-		  				item.getText(2), filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams, filter.m_operators, filter.m_paramList);
+	  				dialog = new CSharpMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, item.getText(2), 
+	  					filter.m_categories, filter.m_modifiers, filter.m_type, filter.m_anyParams, filter.m_operators, filter.m_paramList);
 	  		}
 			
 			dialog.open();
@@ -782,8 +808,15 @@ public class SymbolQueryDialog extends DialogBase
 				filter.m_categories = dialog.getMemberCategories();
 				filter.m_anyParams = dialog.m_anyParams;
 				filter.m_type = dialog.getType();
-				if (!dialog.m_anyParams)
-					filter.m_paramList = dialog.getParams();
+				filter.m_paramList = dialog.getParams();
+				
+				if (dialog instanceof JavaMemberDialog)
+				{
+					JavaMemberDialog javaDialog = (JavaMemberDialog)dialog;
+					
+					filter.m_anyThrows = javaDialog.getAnyThrow();
+					filter.m_throwList = javaDialog.getThrowList();
+				}
 				
 				item.setText(0, memberCategoriesToString(filter.m_categories));
 				item.setText(1, modifiersToString(filter.m_modifiers));
@@ -805,7 +838,9 @@ public class SymbolQueryDialog extends DialogBase
 		public int m_categories;
 		public TriStateMask m_modifiers;
 		public boolean m_allBaseTypes;
-		public TriStateBoolean m_innerType;
+		public TriStateBoolean m_innerTypes;
+		public TriStateBoolean m_supertypes;
+		public TriStateBoolean m_subtypes;
 		public List<BaseType> m_baseTypes;
 		public Delegate m_delegate;
 	}
@@ -818,6 +853,8 @@ public class SymbolQueryDialog extends DialogBase
 		public boolean m_anyParams;
 		public Type m_type;
 		public List<Parameter> m_paramList;
+		public boolean m_anyThrows;
+		public List<String> m_throwList;
 	}
 
 	protected Shell getShell()

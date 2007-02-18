@@ -20,7 +20,7 @@ public abstract class DialogBase
 {
 	protected Display m_display;
 	protected boolean m_cancel;
-	protected static final String[] m_triStateText = { "No", "Yes", "Optional" };
+	protected static final String[] m_triStateText = { "Exclude", "Only", "Include"};
 	
 	protected abstract Shell getShell();
 	
