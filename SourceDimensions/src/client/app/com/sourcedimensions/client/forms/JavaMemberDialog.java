@@ -152,6 +152,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_memberCategoryList.setLinesVisible(false);
 		m_memberCategoryList.setLocation(new Point(17, 22));
 		m_memberCategoryList.setSize(new Point(122, 98));
+		m_memberCategoryList.addSelectionListener(new AllItemsAdapter());
 		m_memberCategoryList.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
@@ -166,7 +167,6 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		{
 			new TableItem(m_memberCategoryList, 0, i).setText(m_categoryArray[i].toString().replace("_", " "));
 		}		
-		m_memberCategoryList.addSelectionListener(new AllItemsAdapter());
 		m_modifierListLabel = new Label(getShell(), SWT.NONE);
 		m_modifierList = new Table(getShell(), SWT.HIDE_SELECTION | SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
 		m_modifierList.setHeaderVisible(false);
@@ -448,6 +448,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		boolean noname = (cat != 0) && ((cat & ~MemberCategory.CONSTRUCTOR.value()) == 0);
 		
 		m_anyParamsCheckBox.setEnabled(func);
+		m_anyThrowCheckBox.setEnabled(func);
 		
 		if (func)
 		{

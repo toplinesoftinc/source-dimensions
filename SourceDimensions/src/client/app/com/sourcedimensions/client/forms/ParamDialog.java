@@ -102,12 +102,12 @@ public class ParamDialog extends DialogBase
 
 			case GREATER_EQ:
 				m_notLessRadioButton.setSelection(true);
-				m_notLessPosSpinner.setSelection(param.m_posMax);				
+				m_notLessPosSpinner.setSelection(param.m_posMin);				
 				break;
 								
 			case LESS_EQ:
 				m_noMoreRadioButton.setSelection(true);
-				m_noMorePosSpinner.setSelection(param.m_posMin);
+				m_noMorePosSpinner.setSelection(param.m_posMax);
 				break;
 				
 			case BETWEEN:
