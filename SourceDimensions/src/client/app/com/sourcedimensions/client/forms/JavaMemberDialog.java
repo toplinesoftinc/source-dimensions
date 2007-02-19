@@ -38,7 +38,6 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	private final static MemberCategory[] m_categoryArray = 
 	{
 		MemberCategory.FIELD,
-		MemberCategory.LOCAL_VAR,
 		MemberCategory.CONSTRUCTOR,
 		MemberCategory.METHOD,
 		MemberCategory.ENUM_CONST,
@@ -267,13 +266,8 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_removeParamButton.setSize(new Point(88, 25));
 		m_removeParamButton.setLocation(new Point(541, 392));
 		m_removeParamButton.setText("&Remove Filter");
-		m_removeParamButton.addSelectionListener(new SelectionAdapter() 
-		{
-			public void widgetSelected(SelectionEvent e)
-			{
-				deleteParam(m_paramsTable);
-			}
-		});
+		m_removeParamButton.addSelectionListener(
+			new RemoveFilterAdapter(m_shell, m_paramsTable, m_paramList)); 
 		m_okButton = new Button(getShell(), SWT.NONE);
 		m_okButton.setText("O&k");
 		m_okButton.setLocation(new Point(541, 23));
@@ -375,7 +369,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				}
 				
 				m_cancel = false;
-				m_shell.close();				
+				m_shell.close();
 			}
 		});
 		m_cancelButton = new Button(getShell(), SWT.NONE);

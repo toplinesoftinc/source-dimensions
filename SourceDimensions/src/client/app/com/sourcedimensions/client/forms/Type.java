@@ -39,13 +39,13 @@ public class Type
 	public TriStateMask m_typeProps = new TriStateMask();
 	public String m_name;
 	
-	public static String typePropsToString(TriStateMask mask)
+	public String typePropsToString()
 	{
 		String str = "";
 		
 		for (Property p : Property.values())
 		{
-			switch (mask.getMask(p.value()))
+			switch (m_typeProps.getMask(p.value()))
 			{
 				case TRUE:
 					if (str.length() > 0)

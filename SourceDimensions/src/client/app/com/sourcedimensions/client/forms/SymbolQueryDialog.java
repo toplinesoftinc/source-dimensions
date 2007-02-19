@@ -16,13 +16,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-
 import com.sourcedimensions.client.TriStateBoolean;
 import com.sourcedimensions.client.forms.TypeFilterDialog.BaseType;
 import com.sourcedimensions.client.forms.TypeFilterDialog.TypeCategory;
 import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
-
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Rectangle;
@@ -41,7 +39,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 
 public class SymbolQueryDialog extends DialogBase
 {
-	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-36,-68"
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-45,-79"
 	private Label m_destinationSnapshotLabel;
 	private Combo m_comboDestinationSnapshot;
 	private Text m_snapshotNameText;
@@ -67,6 +65,7 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_removeTypeFilterButton;
 	private List<TypeFilter> m_typeFilter = new ArrayList<TypeFilter>();
 	private List<MemberFilter> m_memberFilter = new ArrayList<MemberFilter>();  //  @jve:decl-index=0:
+	private List<LocalDeclFilter> m_localDeclFilter = new ArrayList<LocalDeclFilter>();
 	private Button m_allMembersCheckBox;
 	private Label m_memberFilterListLabel;
 	private Table m_memberFilterTable;
@@ -76,7 +75,13 @@ public class SymbolQueryDialog extends DialogBase
 	private Label m_queryNameLabel;
 	private Text m_queryNameText;
 	private Button m_saveButton;
-	
+	private Composite m_localDeclarationsTab = null;
+	private Button m_allLocalDeclCheckBox = null;
+	private Table m_localDeclFilterTable = null;
+	private Label m_localDeclFilterLabel = null;
+	private Button m_addFilterButton = null;
+	private Button m_editFilterButton = null;
+	private Button m_removeFilterButton = null;
 	public SymbolQueryDialog(Display display, Shell parent)
 	{
 		m_display = display;
@@ -194,6 +199,7 @@ public class SymbolQueryDialog extends DialogBase
 		createNamespacesTab();
 		createMembersTab();
 		createTypesTab();
+		createLocalDeclarationsTab();
 		TabItem tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
 		tabItem.setText("Namespaces");
 		tabItem.setControl(m_namespacesTab);
@@ -203,6 +209,9 @@ public class SymbolQueryDialog extends DialogBase
 		tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
 		tabItem.setText("Members");
 		tabItem.setControl(m_membersTab);
+		TabItem tabItem4 = new TabItem(m_queryParamsTabFolder, SWT.NONE);
+		tabItem4.setText("Local Declarations");
+		tabItem4.setControl(m_localDeclarationsTab);
 	}
 
 	private void createNamespacesTab()
@@ -287,6 +296,7 @@ public class SymbolQueryDialog extends DialogBase
 			public void widgetSelected(SelectionEvent e)
 			{
 				boolean sel = m_allNamespacesCheckBox.getSelection();
+				
 				m_namespaceFilterTable.setEnabled(!sel);
 				m_addNamespaceFilterButton.setEnabled(!sel);
 				m_editNamespaceFilterButton.setEnabled(!sel);
@@ -423,7 +433,7 @@ public class SymbolQueryDialog extends DialogBase
 					item.setText(1, modifiersToString(filter.m_modifiers));
 					item.setText(2, dialog.getMemberName());
 					item.setText(3, filter.m_type.m_name);
-					item.setText(4, Type.typePropsToString(filter.m_type.m_typeProps));
+					item.setText(4, filter.m_type.typePropsToString());
 										
 			 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
 			  		{
@@ -822,7 +832,7 @@ public class SymbolQueryDialog extends DialogBase
 				item.setText(1, modifiersToString(filter.m_modifiers));
 				item.setText(2, dialog.getMemberName());
 				item.setText(3, dialog.getType().m_name);
-				item.setText(4, Type.typePropsToString(dialog.getType().m_typeProps));				
+				item.setText(4, dialog.getType().typePropsToString());				
 				
 		 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
 		  		{
@@ -830,6 +840,37 @@ public class SymbolQueryDialog extends DialogBase
 		 			item.setText(5, operatorsToString(filter.m_operators));
 				}
 			}
+		}
+	}
+	
+	protected void editLocalDeclFilter()
+	{
+		int sel = m_localDeclFilterTable.getSelectionIndex();
+		
+		if (sel == -1)
+		{
+			MessageDialog.openWarning(m_shell, "Selection", "Please select filter");			
+		}
+		else
+		{
+			LocalDeclFilter filter = m_localDeclFilter.get(sel);
+			TableItem item = m_localDeclFilterTable.getItem(sel);
+
+			LocalDeclDialog  dialog = new LocalDeclDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
+				filter.m_type, filter.m_name, filter.m_final);
+
+			dialog.open();
+			
+			if (!dialog.isCancelled())
+			{
+				filter.m_type = dialog.getType();
+				filter.m_name = dialog.getName();
+				filter.m_final = dialog.getFinal();
+				
+				item.setText(0, filter.m_type.m_name);
+				item.setText(1, filter.m_type.typePropsToString());
+				item.setText(2, dialog.getName());
+			}			
 		}
 	}
 	
@@ -857,6 +898,13 @@ public class SymbolQueryDialog extends DialogBase
 		public List<String> m_throwList;
 	}
 
+	protected class LocalDeclFilter
+	{
+		public TriStateBoolean m_final;
+		public Type m_type;
+		public String m_name;
+	}
+	
 	protected Shell getShell()
 	{
 		return m_shell;
@@ -908,5 +956,106 @@ public class SymbolQueryDialog extends DialogBase
 				return true;
 			}
 		}
+	}
+
+	private void createLocalDeclarationsTab() 
+	{
+		m_localDeclarationsTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
+		m_allLocalDeclCheckBox = new Button(m_localDeclarationsTab, SWT.CHECK);
+		m_allLocalDeclCheckBox.setSize(new Point(124, 16));
+		m_allLocalDeclCheckBox.setText("&All Local Declarations");
+		m_allLocalDeclCheckBox.setLocation(new Point(15, 12));
+		m_allLocalDeclCheckBox.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				boolean sel = m_allLocalDeclCheckBox.getSelection();
+				
+				m_localDeclFilterTable.setEnabled(!sel);
+				m_addFilterButton.setEnabled(!sel);
+				m_editFilterButton.setEnabled(!sel);
+				m_removeFilterButton.setEnabled(!sel);
+			}
+		});
+		m_localDeclFilterTable = new Table(m_localDeclarationsTab, SWT.BORDER | SWT.FULL_SELECTION);
+		m_localDeclFilterTable.setHeaderVisible(true);
+		m_localDeclFilterTable.setLinesVisible(true);
+		m_localDeclFilterTable.setLocation(new Point(15, 57));
+		m_localDeclFilterTable.setSize(new Point(506, 272));
+		m_localDeclFilterTable.addMouseListener(new MouseAdapter()
+		{
+			public void mouseDoubleClick(MouseEvent e)
+			{
+				if (m_localDeclFilterTable.getSelectionIndex() != -1)
+				{
+					editLocalDeclFilter();
+				}
+			}			
+		});
+		
+		double width = m_localDeclFilterTable.getBounds().width - 2 * m_typeFilterTable.getBorderWidth(); 
+		TableColumn column = new TableColumn(m_localDeclFilterTable, SWT.LEFT, 0);
+		column.setWidth((int)(0.25 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Type");		
+		column = new TableColumn(m_localDeclFilterTable, SWT.LEFT, 1);
+		column.setWidth((int)(0.25 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Type Properties");		
+		column = new TableColumn(m_localDeclFilterTable, SWT.LEFT, 2);
+		column.setWidth((int)(0.5 * width));
+		column.setResizable(true);
+		column.setMoveable(true);
+		column.setText("Name");		
+		m_localDeclFilterLabel = new Label(m_localDeclarationsTab, SWT.NONE);
+		m_localDeclFilterLabel.setText("&Local Declarations Filter:");
+		m_localDeclFilterLabel.setLocation(new Point(15, 40));
+		m_localDeclFilterLabel.setSize(new Point(129, 15));
+		m_addFilterButton = new Button(m_localDeclarationsTab, SWT.NONE);
+		m_addFilterButton.setLocation(new Point(535, 57));
+		m_addFilterButton.setText("A&dd Filter...");
+		m_addFilterButton.setSize(new Point(88, 25));
+		m_addFilterButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				LocalDeclDialog dialog = new LocalDeclDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+				dialog.open();	
+				
+				if (!dialog.isCancelled())
+				{
+					LocalDeclFilter filter = new LocalDeclFilter();
+					
+					filter.m_type = dialog.getType();
+					filter.m_name = dialog.getName();
+					filter.m_final = dialog.getFinal();
+					m_localDeclFilter.add(filter);
+					
+					TableItem item = new TableItem(m_localDeclFilterTable, 0);
+					item.setText(0, filter.m_type.m_name);
+					item.setText(1, filter.m_type.typePropsToString());
+					item.setText(2, dialog.getName());					
+				}
+			}
+		});
+		m_editFilterButton = new Button(m_localDeclarationsTab, SWT.NONE);
+		m_editFilterButton.setLocation(new Point(535, 104));
+		m_editFilterButton.setText("&Edit Filter...");
+		m_editFilterButton.setSize(new Point(88, 25));
+		m_editFilterButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				editLocalDeclFilter();
+			}
+		});
+		m_removeFilterButton = new Button(m_localDeclarationsTab, SWT.NONE);
+		m_removeFilterButton.setLocation(new Point(535, 152));
+		m_removeFilterButton.setText("Re&move Filter");
+		m_removeFilterButton.setSize(new Point(88, 25));
+		m_removeFilterButton.addSelectionListener(
+			new RemoveFilterAdapter(m_shell, m_localDeclFilterTable, m_localDeclFilter)); 
 	}	
 }

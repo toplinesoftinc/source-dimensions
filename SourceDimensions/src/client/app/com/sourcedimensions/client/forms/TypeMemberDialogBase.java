@@ -24,20 +24,19 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	{
 		FIELD(1<<0),
 		CONSTANT(1<<1),
-		LOCAL_VAR(1<<2, "LOCAL VAR."),
-		CONSTRUCTOR(1<<3),
-		DESTRUCTOR(1<<4),
-		METHOD(1<<5),
-		ANONYM_METHOD(1<<6, "ANONYM.METHOD"),
-		PROPERTY_GET(1<<7, "PROPERTY GET"),
-		PROPERTY_SET(1<<8, "PROPERTY SET"),
-		EVENT_ADD(1<<9, "EVENT ADD"),
-		EVENT_REMOVE(1<<10, "EVENT REMOVE"),
-		INDEXER_GET(1<<11, "INDEXER GET"),
-		INDEXER_SET(1<<12, "INDEXER SET"),
-		OPERATOR(1<<13),
-		ENUM_CONST(1<<14, "ENUM CONST."),
-		ALL(1<<15);
+		CONSTRUCTOR(1<<2),
+		DESTRUCTOR(1<<3),
+		METHOD(1<<4),
+		ANONYM_METHOD(1<<5, "ANONYM.METHOD"),
+		PROPERTY_GET(1<<6, "PROPERTY GET"),
+		PROPERTY_SET(1<<7, "PROPERTY SET"),
+		EVENT_ADD(1<<8, "EVENT ADD"),
+		EVENT_REMOVE(1<<9, "EVENT REMOVE"),
+		INDEXER_GET(1<<10, "INDEXER GET"),
+		INDEXER_SET(1<<11, "INDEXER SET"),
+		OPERATOR(1<<12),
+		ENUM_CONST(1<<13, "ENUM CONST."),
+		ALL(1<<14);
 		
 		MemberCategory(int val)
 		{
@@ -114,7 +113,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 			m_paramList.add(param);
 			item.setText(0, param.positionToString());
 			item.setText(1, param.modifiersToString());
-			item.setText(2, Type.typePropsToString(param.m_type.m_typeProps));
+			item.setText(2, param.m_type.typePropsToString());
 			item.setText(3, param.m_type.m_name);
 			item.setText(4, param.m_name);
 		}		
@@ -143,32 +142,13 @@ public abstract class TypeMemberDialogBase extends DialogBase
 				
 				item.setText(0, param.positionToString());
 				item.setText(1, param.modifiersToString());
-				item.setText(2, Type.typePropsToString(param.m_type.m_typeProps));
+				item.setText(2, param.m_type.typePropsToString());
 				item.setText(3, param.m_type.m_name);
 				item.setText(4, param.m_name);
 			}
 		}
 	}
-	
-	protected void deleteParam(Table table)
-	{
-		int sel = table.getSelectionIndex();
-		
-		if (sel == -1)
-		{
-			MessageDialog.openWarning(getShell(), "Selection", "Please select parameter");
-		}
-		else
-		{
-			if (MessageDialog.openQuestion(getShell(), "Deletion confirmation", 
-				"Are you sure you want to delete selected parameter?"))
-			{
-				table.remove(sel);
-				m_paramList.remove(sel);
-			}
-		}					
-	}
-	
+
 	protected void populateParamList(Table table, List<Parameter> paramList)
 	{
 		table.removeAll();
@@ -180,7 +160,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 			
 			item.setText(0, param.positionToString());
 			item.setText(1, param.modifiersToString());
-			item.setText(2, Type.typePropsToString(param.m_type.m_typeProps));
+			item.setText(2, param.m_type.typePropsToString());
 			item.setText(3, param.m_type.m_name);
 			item.setText(4, param.m_name);			
 		}

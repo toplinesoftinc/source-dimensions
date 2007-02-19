@@ -74,7 +74,7 @@ public class DelegateDialog extends DialogBase
 				
 				item.setText(0, param.positionToString());
 				item.setText(1, param.modifiersToString());
-				item.setText(2, Type.typePropsToString(param.m_type.m_typeProps));
+				item.setText(2, param.m_type.typePropsToString());
 				item.setText(3, param.m_type.m_name);
 				item.setText(4, param.m_name);			
 			}
@@ -141,7 +141,7 @@ public class DelegateDialog extends DialogBase
 					m_paramList.add(param);
 					item.setText(0, param.positionToString());
 					item.setText(1, param.modifiersToString());
-					item.setText(2, Type.typePropsToString(param.m_type.m_typeProps));
+					item.setText(2, param.m_type.typePropsToString());
 					item.setText(3, param.m_type.m_name);
 					item.setText(4, param.m_name);
 				}		
@@ -365,7 +365,7 @@ public class DelegateDialog extends DialogBase
 				
 				item.setText(0, param.positionToString());
 				item.setText(1, param.modifiersToString());
-				item.setText(2, Type.typePropsToString(param.m_type.m_typeProps));
+				item.setText(2, param.m_type.typePropsToString());
 				item.setText(3, param.m_type.m_name);
 				item.setText(4, param.m_name);
 			}

@@ -71,7 +71,7 @@ public class TypeFilterDialog extends DialogBase
 		Modifier.ALL
     };
 
-	public final static Modifier[] csharpModifiers =
+	public final static Modifier[] m_csharpModifiers =
     {
 		Modifier.PUBLIC,
 		Modifier.PROTECTED,
@@ -84,7 +84,7 @@ public class TypeFilterDialog extends DialogBase
 		Modifier.ALL
     };	
 	
-	public final static TypeCategory[] javaTypeCategories = 
+	public final static TypeCategory[] m_javaTypeCategories = 
     {
 		TypeCategory.CLASS,
 		TypeCategory.INTERFACE,
@@ -94,7 +94,7 @@ public class TypeFilterDialog extends DialogBase
 		TypeCategory.ALL
 	};
 	
-	public final static TypeCategory[] csharpTypeCategories = 
+	public final static TypeCategory[] m_csharpTypeCategories = 
     {
 		TypeCategory.CLASS,
 		TypeCategory.INTERFACE,
@@ -544,11 +544,11 @@ public class TypeFilterDialog extends DialogBase
   		{
   			case JAVA14:
   			case JAVA15:
-  				return javaTypeCategories;
+  				return m_javaTypeCategories;
   				
   			case CSHARP11:
   			case CSHARP20:
-  				return csharpTypeCategories;
+  				return m_csharpTypeCategories;
   				
   			default:
   				return null;
@@ -565,7 +565,7 @@ public class TypeFilterDialog extends DialogBase
   				
   			case CSHARP11:
   			case CSHARP20:
-  				return csharpModifiers;
+  				return m_csharpModifiers;
 
   			default:
   				return null;

@@ -28,7 +28,7 @@ import com.sourcedimensions.client.TriStateBoolean;
 
 public class CSharpMemberDialog extends TypeMemberDialogBase 
 {
-	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="0,-4"
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-11,-16"
 	private Label m_memberCategoryLabel;
 	private Table m_memberCategoryList;
 	private Label m_modifierListLabel;
@@ -38,7 +38,6 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	{
 		MemberCategory.FIELD,
 		MemberCategory.CONSTANT,
-		MemberCategory.LOCAL_VAR,
 		MemberCategory.CONSTRUCTOR,
 		MemberCategory.DESTRUCTOR,
 		MemberCategory.METHOD,
@@ -304,13 +303,8 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_removeParamButton.setText("&Remove Filter");
 		m_removeParamButton.setEnabled(false);
 		m_removeParamButton.setSize(new Point(88, 25));
-		m_removeParamButton.addSelectionListener(new SelectionAdapter() 
-		{
-			public void widgetSelected(SelectionEvent e) 
-			{
-				deleteParam(m_paramsTable);
-			}
-		});
+		m_removeParamButton.addSelectionListener(
+			new RemoveFilterAdapter(m_shell, m_paramsTable, m_paramList));
 		m_okButton = new Button(getShell(), SWT.NONE);
 		m_okButton.setText("O&k");
 		m_okButton.setSize(new Point(88, 25));
