@@ -9,4 +9,5 @@ public interface IImageKeys
 	public final static String IMG_CROSS = "icons/cross.png";
 	public final static String IMG_SNAPSHOT = "icons/snapshot.png";
 	public final static String IMG_FOLDER = "icons/folder.png";
+	public final static String IMG_QUERY = "icons/query.png";
 }

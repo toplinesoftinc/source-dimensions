@@ -183,7 +183,20 @@ public class ProjectView extends ViewPart
 			return Util.getSharedImage(IImageKeys.IMG_PARENT);
 		}
 	}
+
 	
+	public static class QueryGroup extends TreeGroup
+	{
+		public QueryGroup()
+		{
+			super("Queries");
+		}
+		
+		public Image getImage()
+		{
+			return Util.getSharedImage(IImageKeys.IMG_QUERY);
+		}
+	}	
 
 	public static class SnapshotGroup extends TreeGroup
 	{
@@ -312,8 +325,8 @@ public class ProjectView extends ViewPart
 			}
 		}
 		
-		TreeGroup snapshot = new SnapshotGroup();
-		m_root.addChild(snapshot);
+		m_root.addChild(new SnapshotGroup());
+		m_root.addChild(new QueryGroup());
 	}
 	
 	public void createPartControl(Composite parent) 

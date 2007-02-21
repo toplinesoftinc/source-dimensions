@@ -112,6 +112,7 @@
                    enablesFor="1">
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotGroup"/>                   
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
+                 <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/>                 
                </action>               
           </actionSet>
    </extension>
@@ -121,7 +122,7 @@
               adaptable="false"
               id="com.sourcedimensions.client.folderContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$FolderObject">
-              <action
+               <action
                    class="com.sourcedimensions.client.actions.SymbolQueryAction"
                    icon="icons/symbol.png"
                    id="com.sourcedimensions.client.symbolQuery"
@@ -133,18 +134,18 @@
                    id="com.sourcedimensions.client.deleteFolder"
                    menubarPath="additions_folder"                   
                    label="Delete Folder"/>
-                 <action
-                     class="com.sourcedimensions.client.actions.RenameFolderAction"
-                     icon="icons/editfolder.png"
-                     id="com.sourcedimensions.client.renameFolder"
-                     menubarPath="additions_folder"                     
-                     label="Rename Folder..."/>
-                 <action
-                     class="com.sourcedimensions.client.actions.CreateFolderAction"
-                     icon="icons/addfolder.png"
-                     id="com.sourcedimensions.client.createFolder"
-                     menubarPath="additions_folder"                     
-                     label="Create Folder..."/>
+               <action
+                   class="com.sourcedimensions.client.actions.RenameFolderAction"
+                   icon="icons/editfolder.png"
+                   id="com.sourcedimensions.client.renameFolder"
+                   menubarPath="additions_folder"                     
+                   label="Rename Folder..."/>
+               <action
+                   class="com.sourcedimensions.client.actions.CreateFolderAction"
+                   icon="icons/addfolder.png"
+                   id="com.sourcedimensions.client.createFolder"
+                   menubarPath="additions_folder"                     
+                   label="Create Folder..."/>
          </objectContribution>
          <objectContribution
               adaptable="false"
@@ -156,12 +157,29 @@
                    id="com.sourcedimensions.client.symbolQuery"
                    menubarPath="additions_query"                                        
                    label="Symbol Query..."/>              
-                 <action
-                     class="com.sourcedimensions.client.actions.CreateFolderAction"
-                     icon="icons/addfolder.png"
-                     id="com.sourcedimensions.client.createFolder"
-                     menubarPath="additions_folder"                                          
-                     label="Create Folder..."/>
+              <action
+                   class="com.sourcedimensions.client.actions.CreateFolderAction"
+                   icon="icons/addfolder.png"
+                   id="com.sourcedimensions.client.createFolder"
+                   menubarPath="additions_folder"                                          
+                   label="Create Folder..."/>
+         </objectContribution>
+         <objectContribution
+              adaptable="false"
+              id="com.sourcedimensions.client.snapshotContributions"
+              objectClass="com.sourcedimensions.client.views.ProjectView$QueryGroup">
+              <action
+                   class="com.sourcedimensions.client.actions.SymbolQueryAction"
+                   icon="icons/symbol.png"
+                   id="com.sourcedimensions.client.symbolQuery"
+                   menubarPath="additions_query"                                        
+                   label="Symbol Query..."/>              
+              <action
+                   class="com.sourcedimensions.client.actions.CreateFolderAction"
+                   icon="icons/addfolder.png"
+                   id="com.sourcedimensions.client.createFolder"
+                   menubarPath="additions_folder"                                          
+                   label="Create Folder..."/>
          </objectContribution>
          <objectContribution
               adaptable="false"
