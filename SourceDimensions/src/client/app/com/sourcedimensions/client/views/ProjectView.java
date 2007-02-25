@@ -126,20 +126,22 @@ public class ProjectView extends ViewPart
 	public static class FolderObject extends TreeGroup
 	{
 		protected Integer m_id;
+		boolean m_query;
 		
-		public FolderObject(String name, Integer id)
+		public FolderObject(String name, Integer id, boolean query)
 		{
 			super(name);
 			m_id = id;
+			m_query = query;
 		}
 		
 		public void load()
 		{
-			List<Folder> list = DbAdapter.getFolderList(m_id, m_project.m_id);
+			List<Folder> list = DbAdapter.getFolderList(m_id, m_project.m_id, m_query);
 			
 			for (Folder f : list)
 			{
-				FolderObject o = new FolderObject(f.m_name, f.m_id);
+				FolderObject o = new FolderObject(f.m_name, f.m_id, m_query);
 				addChild(o);
 				o.load();
 			}
@@ -153,6 +155,11 @@ public class ProjectView extends ViewPart
 		public int getID()
 		{
 			return m_id;
+		}
+		
+		public boolean getQuery()
+		{
+			return m_query;
 		}
 	}
 
@@ -190,12 +197,25 @@ public class ProjectView extends ViewPart
 		public QueryGroup()
 		{
 			super("Queries");
+			load();
 		}
 		
 		public Image getImage()
 		{
 			return Util.getSharedImage(IImageKeys.IMG_QUERY);
 		}
+
+		protected void load()
+		{
+			List<Folder> list = DbAdapter.getFolderList(null, m_project.m_id, true);
+			
+			for (Folder f : list)
+			{
+				FolderObject o = new FolderObject(f.m_name, f.m_id, true);
+				addChild(o);
+				o.load();
+			}			
+		}	
 	}	
 
 	public static class SnapshotGroup extends TreeGroup
@@ -213,11 +233,11 @@ public class ProjectView extends ViewPart
 		
 		protected void load()
 		{
-			List<Folder> list = DbAdapter.getFolderList(null, m_project.m_id);
+			List<Folder> list = DbAdapter.getFolderList(null, m_project.m_id, false);
 			
 			for (Folder f : list)
 			{
-				FolderObject o = new FolderObject(f.m_name, f.m_id);
+				FolderObject o = new FolderObject(f.m_name, f.m_id, false);
 				addChild(o);
 				o.load();
 			}			

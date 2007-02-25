@@ -8,7 +8,6 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Point;
@@ -24,7 +23,6 @@ import com.sourcedimensions.client.views.ProjectView;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -40,10 +38,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 public class SymbolQueryDialog extends DialogBase
 {
 	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="-45,-79"
-	private Label m_destinationSnapshotLabel;
-	private Combo m_comboDestinationSnapshot;
 	private Text m_snapshotNameText;
-	private Button m_clearSnapshotCheckBox;
 	private Label m_snapshotNameLabel;
 	private TabFolder m_queryParamsTabFolder;
 	private Button m_runQueryButton;
@@ -82,6 +77,8 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_addFilterButton = null;
 	private Button m_editFilterButton = null;
 	private Button m_removeFilterButton = null;
+	private Button m_snapshotBrowseButton = null;
+	private Button m_queryBrowseButton = null;
 	public SymbolQueryDialog(Display display, Shell parent)
 	{
 		m_display = display;
@@ -97,43 +94,41 @@ public class SymbolQueryDialog extends DialogBase
 		
 		m_shell.setText("Symbol Query");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
-		m_shell.setSize(new Point(680, 536));
+		m_shell.setSize(new Point(680, 494));
 		m_shell.setLayout(null);
 		m_runQueryButton = new Button(m_shell, SWT.NONE);
 		m_saveButton = new Button(getShell(), SWT.NONE);
 		m_cancelButton = new Button(m_shell, SWT.NONE);
-		m_destinationSnapshotLabel = new Label(m_shell, SWT.NONE);
-		m_destinationSnapshotLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_destinationSnapshotLabel.setBounds(new Rectangle(122, 17, 115, 14));
-		m_destinationSnapshotLabel.setText("&Destination Snapshot:");
-		createComboDestinationSnapshot();
-		m_clearSnapshotCheckBox = new Button(m_shell, SWT.CHECK | SWT.RIGHT);
 		m_snapshotNameLabel = new Label(m_shell, SWT.NONE);
 		m_snapshotNameText = new Text(m_shell, SWT.BORDER | SWT.LEFT);
 		m_snapshotNameText.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_snapshotNameText.setSize(new Point(275, 18));
-		m_snapshotNameText.setLocation(new Point(385, 32));
-		m_clearSnapshotCheckBox.setBounds(new Rectangle(122, 64, 91, 15));
-		m_clearSnapshotCheckBox.setEnabled(false);
-		m_clearSnapshotCheckBox.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_clearSnapshotCheckBox.setText("Clear &Snapshot");
-		m_clearSnapshotCheckBox.setToolTipText("Delete all contents of the snapshot before putting results of this query");
-		m_snapshotNameLabel.setBounds(new Rectangle(385, 17, 109, 14));
+		m_snapshotNameText.setSize(new Point(251, 18));
+		m_snapshotNameText.setLocation(new Point(334, 23));
+		m_snapshotNameLabel.setBounds(new Rectangle(334, 8, 148, 14));
 		m_snapshotNameLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_snapshotNameLabel.setText("Ne&w Snapshot Name:");
+		m_snapshotNameLabel.setText("&Destination Snapshot Name:");
+		m_snapshotBrowseButton = new Button(getShell(), SWT.NONE);
+		m_snapshotBrowseButton.setSize(new Point(72, 23));
+		m_snapshotBrowseButton.setText("Browse...");
+		m_snapshotBrowseButton.setLocation(new Point(587, 19));
 		m_queryNameLabel = new Label(getShell(), SWT.NONE);
 		m_queryNameText = new Text(getShell(), SWT.BORDER);
-		m_queryNameText.setBounds(new Rectangle(385, 80, 275, 19));
+		m_queryNameText.setBounds(new Rectangle(334, 62, 251, 19));
+		m_queryBrowseButton = new Button(getShell(), SWT.NONE);
+		m_queryBrowseButton.setLocation(new Point(587, 59));
+		m_queryBrowseButton.setText("Browse...");
+		m_queryBrowseButton.setSize(new Point(72, 23));
 		createQueryParamsTabFolder();
-		m_queryNameLabel.setBounds(new Rectangle(385, 66, 69, 13));
 		m_queryNameLabel.setText("&Query Name:");
-		m_saveButton.setLocation(new Point(15, 46));
+		m_queryNameLabel.setLocation(new Point(334, 48));
+		m_queryNameLabel.setSize(new Point(69, 13));
+		m_saveButton.setLocation(new Point(115, 16));
 		m_saveButton.setSize(new Point(88, 25));
 		m_saveButton.setText("Sa&ve");
 		m_cancelButton.setToolTipText("Login");
 		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_cancelButton.setSize(new Point(88, 25));
-		m_cancelButton.setLocation(new Point(15, 81));
+		m_cancelButton.setLocation(new Point(215, 16));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSelection(true);
 		m_cancelButton.addSelectionListener(new SelectionAdapter()
@@ -147,7 +142,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_runQueryButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 
 		m_runQueryButton.setSize(new Point(88, 25));
-		m_runQueryButton.setLocation(new Point(15, 12));
+		m_runQueryButton.setLocation(new Point(15, 16));
 		m_runQueryButton.setText("&Run Query");
 		m_runQueryButton.setSelection(true);
 		
@@ -164,37 +159,11 @@ public class SymbolQueryDialog extends DialogBase
 		super.createShell(parent);
 	}
 	
-	private void createComboDestinationSnapshot()
-	{
-		m_comboDestinationSnapshot = new Combo(m_shell, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.V_SCROLL);
-		m_comboDestinationSnapshot.setLocation(new Point(122, 32));
-		m_comboDestinationSnapshot.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_comboDestinationSnapshot.setText("");
-		m_comboDestinationSnapshot.setToolTipText("Snapshot where to put results of this query into");
-		m_comboDestinationSnapshot.setVisibleItemCount(10);
-		m_comboDestinationSnapshot.setSize(new Point(247, 21));
-		m_comboDestinationSnapshot.addSelectionListener(new SelectionListener()
-		{
-			public void widgetSelected(SelectionEvent e)
-			{
-				boolean newSnapshot = (m_comboDestinationSnapshot.getSelectionIndex() == 0);
-				m_clearSnapshotCheckBox.setEnabled(!newSnapshot);
-				m_snapshotNameText.setEnabled(newSnapshot);
-			}
-			
-			public void widgetDefaultSelected(SelectionEvent e)
-			{
-			}
-		});
-		m_comboDestinationSnapshot.add("< New Snapshot >");
-		m_comboDestinationSnapshot.select(0);
-	}
-
 	private void createQueryParamsTabFolder()
 	{
 		m_queryParamsTabFolder = new TabFolder(m_shell, SWT.NONE);
 		m_queryParamsTabFolder.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_queryParamsTabFolder.setLocation(new Point(15, 118));
+		m_queryParamsTabFolder.setLocation(new Point(15, 73));
 		m_queryParamsTabFolder.setSize(new Point(644, 376));
 		createNamespacesTab();
 		createMembersTab();
@@ -284,7 +253,7 @@ public class SymbolQueryDialog extends DialogBase
 				editNamespaceFilter();
 			}
 		});
-		m_namespaceFilterLabel.setBounds(new Rectangle(15, 41, 115, 16));
+		m_namespaceFilterLabel.setBounds(new Rectangle(15, 41, 115, 15));
 		m_namespaceFilterLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_namespaceFilterLabel.setText("Namespace &Filter List:");
 		m_allNamespacesCheckBox.setBounds(new Rectangle(15, 12, 93, 16));

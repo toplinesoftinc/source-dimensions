@@ -180,7 +180,7 @@ public class DbAdapter
 	}
 	
 	
-	public static List<Folder> getFolderList(Integer parent_id, String projectId)
+	public static List<Folder> getFolderList(Integer parent_id, String projectId, boolean query)
 	{
 		List<Folder> list = new ArrayList<Folder>();
 		int p_id;
@@ -190,7 +190,7 @@ public class DbAdapter
 			Connection c = getConnection();
 			
 			if (parent_id == null)
-				p_id = getRootFolderID(c, projectId);
+				p_id = getRootFolderID(c, projectId, query);
 			else
 				p_id = parent_id.intValue();
 
@@ -202,10 +202,11 @@ public class DbAdapter
 			
 			int prjId = rs.getInt("id");
 
-			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND parent_id = ?");
+			ps = c.prepareStatement("SELECT * FROM folder WHERE query_folder = ? AND project_id = ? AND parent_id = ?");
 			
-			ps.setInt(1, prjId);
-			ps.setInt(2, p_id);
+			ps.setShort(1, (short)(query ? 1 : 0));
+			ps.setInt(2, prjId);
+			ps.setInt(3, p_id);
 			
 			rs = ps.executeQuery();
 			
@@ -230,7 +231,7 @@ public class DbAdapter
 	}
 	
 	
-	public static Folder addFolder(String name, Integer parent_id, String projectId) throws DupFolderNameException
+	public static Folder addFolder(String name, Integer parent_id, String projectId, boolean query) throws DupFolderNameException
 	{
 		try
 		{
@@ -239,36 +240,38 @@ public class DbAdapter
 			
 			if (parent_id == null)
 			{
-				real_id = getRootFolderID(c, projectId);
+				real_id = getRootFolderID(c, projectId, query);
 			}
 			else
 				real_id = parent_id.intValue();
+
+			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
 			
-			PreparedStatement ps = c.prepareStatement("SELECT * FROM folder WHERE parent_id = ? and name = ?");
-			
-			ps.setInt(1, real_id);			
-			ps.setString(2, name);
-			
+			ps.setString(1, projectId);
 			ResultSet rs = ps.executeQuery();
+			rs.next();
+			
+			int prjId = rs.getInt("id");		
+			
+			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND parent_id = ? AND name = ?");
+			
+			ps.setInt(1, prjId);
+			ps.setInt(2, real_id);
+			ps.setString(3, name);
+			
+			rs = ps.executeQuery();
 			
 			if (rs.next())
 			{
 				throw new DupFolderNameException();
 			}
 			
-			ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
-			
-			ps.setString(1, projectId);
-			rs = ps.executeQuery();
-			rs.next();
-			
-			int prjId = rs.getInt("id");
-			
-			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id, name) VALUES(?,?,?)");
+			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id, name, query_folder) VALUES(?,?,?,?)");
 			
 			ps.setInt(1, prjId);
 			ps.setInt(2, real_id);
 			ps.setString(3, name);
+			ps.setShort(4, (short)(query ? 1 : 0));
 			
 			ps.executeUpdate();
 			
@@ -307,20 +310,22 @@ public class DbAdapter
 		{
 			Connection c = getConnection();			
 			
-			PreparedStatement ps = c.prepareStatement("SELECT parent_id FROM folder WHERE id = ?");
+			PreparedStatement ps = c.prepareStatement("SELECT project_id, parent_id FROM folder WHERE id = ?");
 			
 			ps.setInt(1, id);
 			ResultSet rs = ps.executeQuery();
 			
 			rs.next();
 			
-			Integer parent_id = rs.getInt("parent_id");
+			int parent_id = rs.getInt("parent_id");
+			int prjId = rs.getInt("project_id");
 
-			ps = c.prepareStatement("SELECT * FROM folder WHERE parent_id = ? and name = ? and id <> ?");
+			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND parent_id = ? and name = ? and id <> ?");
 			
-			ps.setInt(1, parent_id);			
-			ps.setString(2, name);
-			ps.setInt(3, id);
+			ps.setInt(1, prjId);
+			ps.setInt(2, parent_id);			
+			ps.setString(3, name);
+			ps.setInt(4, id);
 			
 			rs = ps.executeQuery();
 			
@@ -385,13 +390,18 @@ public class DbAdapter
 	}
 	
 	
-	protected static int getRootFolderID(Connection c, String projectId) throws SQLException, IOException
+	protected static int getRootFolderID(Connection c, String projectId, boolean query) throws SQLException, IOException
 	{
-		ResultSet rs = c.prepareStatement("SELECT * FROM folder WHERE parent_id IS NULL").executeQuery();
+		short iqry = (short)(query ? 1 : 0);
+		
+		PreparedStatement ps = c.prepareStatement("SELECT * FROM folder WHERE query_folder = ? AND parent_id IS NULL");
+		
+		ps.setShort(1, iqry);
+		ResultSet rs = ps.executeQuery();
 		
 		if (!rs.next())
 		{
-			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
+			ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
 			
 			ps.setString(1, projectId);
 			rs = ps.executeQuery();
@@ -399,14 +409,16 @@ public class DbAdapter
 			
 			int prjId = rs.getInt("id");
 			
-			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id) VALUES (?, NULL)");
+			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id, query_folder) VALUES (?, NULL, ?)");
 			
 			ps.setInt(1, prjId);
+			ps.setShort(2, iqry);
 			ps.executeUpdate();
 			
-			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND parent_id IS NULL");
+			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND query_folder = ? AND parent_id IS NULL");
 			
 			ps.setInt(1, prjId);
+			ps.setShort(2, iqry);
 			rs = ps.executeQuery();
 			
 			rs.next();
@@ -470,6 +482,7 @@ public class DbAdapter
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"parent_id INT",
 				"project_id INT",
+				"query_folder SMALLINT",
 				"name VARCHAR(256)",
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (parent_id) REFERENCES FOLDER",
