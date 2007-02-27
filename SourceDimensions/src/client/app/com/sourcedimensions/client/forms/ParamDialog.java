@@ -198,14 +198,19 @@ public class ParamDialog extends DialogBase
 
 				try
 				{
-					Pattern.compile(val);
+					Type.validateTypeName(val);
 				}
-				catch(PatternSyntaxException ex)
+				catch (Type.EmptyNameSectionException ex)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input", "Type Name section cannot be empty (like \"com//abc\")");
+					return;					
+				}
+				catch (PatternSyntaxException ex)
 				{
 					MessageDialog.openError(m_shell, "Incorrect input",
-						"Pattern for type name \"" + val + "\" has the following error: " + ex.getMessage());
+							"Type Name pattern \"" + ex.getPattern() + "\" has the following error: " + ex.getMessage());			
 					return;
-				}				
+				}
 
 				val = m_paramNameFilterText.getText().trim();
 				

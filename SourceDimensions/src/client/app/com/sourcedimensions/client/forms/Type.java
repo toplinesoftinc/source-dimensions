@@ -1,5 +1,8 @@
 package com.sourcedimensions.client.forms;
 
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 
 public class Type 
 {
@@ -63,5 +66,31 @@ public class Type
 		}
 		
 		return str;
+	}
+	
+	public static void validateTypeName(String typeName) 
+		throws PatternSyntaxException, EmptyNameSectionException
+	{
+		String[] names = typeName.split("/");
+		
+		for (String name : names)
+		{
+			if (name.trim().length() == 0)
+			{
+				throw new EmptyNameSectionException();
+			}
+			
+			if (name.equals("**"))
+			{
+				continue;
+			}
+
+			Pattern.compile(name);
+		}		
+	}
+	
+	public static class EmptyNameSectionException extends Exception 
+	{
+		public static final long serialVersionUID = -1; 
 	}
 }

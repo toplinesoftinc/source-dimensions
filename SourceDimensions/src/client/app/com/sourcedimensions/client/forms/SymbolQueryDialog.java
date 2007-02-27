@@ -2,7 +2,6 @@ package com.sourcedimensions.client.forms;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -110,7 +109,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_snapshotBrowseButton = new Button(getShell(), SWT.NONE);
 		m_snapshotBrowseButton.setSize(new Point(72, 23));
 		m_snapshotBrowseButton.setText("Browse...");
-		m_snapshotBrowseButton.setLocation(new Point(587, 19));
+		m_snapshotBrowseButton.setLocation(new Point(587, 20));
 		m_queryNameLabel = new Label(getShell(), SWT.NONE);
 		m_queryNameText = new Text(getShell(), SWT.BORDER);
 		m_queryNameText.setBounds(new Rectangle(334, 62, 251, 19));
@@ -895,31 +894,21 @@ public class SymbolQueryDialog extends DialogBase
 			}
 			else
 			{
-				String[] names = value.split("/");
-				
-				for (String name : names)
+				try
 				{
-					if (name.trim().length() == 0)
-					{
-						MessageDialog.openError(shell, "Incorrect input", "Namespace section cannot be empty (like \"com//abc\")");
-						return false;
-					}
+					Type.validateTypeName(value);
+				}
+				catch (Type.EmptyNameSectionException e)
+				{
+					MessageDialog.openError(shell, "Incorrect input", "Namespace section cannot be empty (like \"com//abc\")");
+					return false;					
+				}
+				catch (PatternSyntaxException e)
+				{
+					MessageDialog.openError(shell, "Incorrect input",
+							"Pattern \"" + e.getPattern() + "\" has the following error: " + e.getMessage());
 					
-					if (name.equals("**"))
-					{
-						continue;
-					}
-					
-					try
-					{
-						Pattern.compile(name);
-					}
-					catch(PatternSyntaxException e)
-					{
-						MessageDialog.openError(shell, "Incorrect input",
-							"Pattern \"" + name + "\" has the following error: " + e.getMessage());
-						return false;
-					}
+					return false;
 				}
 				
 				return true;

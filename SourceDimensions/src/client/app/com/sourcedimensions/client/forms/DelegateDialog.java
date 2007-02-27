@@ -2,7 +2,6 @@ package com.sourcedimensions.client.forms;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.events.MouseAdapter;
@@ -203,15 +202,20 @@ public class DelegateDialog extends DialogBase
 
 				try
 				{
-					Pattern.compile(val);
+					Type.validateTypeName(val);
 				}
-				catch(PatternSyntaxException ex)
+				catch (Type.EmptyNameSectionException ex)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input", "Type Name section cannot be empty (like \"com//abc\")");
+					return;					
+				}
+				catch (PatternSyntaxException ex)
 				{
 					MessageDialog.openError(m_shell, "Incorrect input",
-						"Pattern for type name \"" + val + "\" has the following error: " + ex.getMessage());
+							"Type Name pattern \"" + ex.getPattern() + "\" has the following error: " + ex.getMessage());			
 					return;
-				}				
-
+				}
+				
 				m_type.m_name = val;
 				m_anyParams = m_anyParamsCheckBox.getSelection();
 				
@@ -295,10 +299,10 @@ public class DelegateDialog extends DialogBase
 		m_typePropsList = new Table(m_typeGroup, SWT.HIDE_SELECTION | SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION);
 		m_typeNameLabel = new Label(m_typeGroup, SWT.NONE);
 		m_typeNameLabel.setText("Type Name &Filter:");
-		m_typeNameLabel.setLocation(new Point(133, 71));
+		m_typeNameLabel.setLocation(new Point(132, 22));
 		m_typeNameLabel.setSize(new Point(91, 13));
 		m_typeNameText = new Text(m_typeGroup, SWT.BORDER);
-		m_typeNameText.setBounds(new Rectangle(133, 86, 205, 19));
+		m_typeNameText.setBounds(new Rectangle(132, 37, 205, 19));
 		m_typePropsLabel.setBounds(new Rectangle(11, 23, 88, 13));
 		m_typePropsLabel.setText("Type Properties:");
 		m_typePropsList.setHeaderVisible(false);
