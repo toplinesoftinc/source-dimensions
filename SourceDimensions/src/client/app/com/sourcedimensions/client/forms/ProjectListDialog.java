@@ -130,7 +130,7 @@ public class ProjectListDialog extends DialogBase
 				item.setImage(imgChkmark);
 
 			item.setText(0, prj.m_name);
-			item.setText(1, prj.getLangName());
+			item.setText(1, prj.langName());
 		}		
 	}
 	

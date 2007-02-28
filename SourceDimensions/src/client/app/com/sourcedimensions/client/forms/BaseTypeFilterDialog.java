@@ -240,7 +240,7 @@ public class BaseTypeFilterDialog extends DialogBase
 		});
 		
 		int namelen = m_typeCategoryNames.length;
-		Language lang = ProjectView.getProject().getLanguage();
+		Language lang = ProjectView.getProject().language();
 		
 		if (lang != Language.CSHARP11 && lang != Language.CSHARP20)
 			namelen--;

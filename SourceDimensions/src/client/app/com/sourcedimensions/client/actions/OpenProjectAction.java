@@ -19,7 +19,6 @@ import com.sourcedimensions.client.forms.ProjectListDialog;
 import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.ws.consumer.WSConsumer;
-import com.sourcedimensions.ws.provider.IProject;
 
 
 public class OpenProjectAction implements IWorkbenchWindowActionDelegate
@@ -47,7 +46,7 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 	public static void openProject(IWorkbenchWindow window)
 	{
 		WSConsumer consumer = new WSConsumer();
-		Set<IProject> prjSet = null;
+		Set<Project> prjSet = null;
 		Collection<Project> prjColl;
 		boolean offline = false;
 		Shell shell = window.getShell();
@@ -55,7 +54,7 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 		
 		try
 		{
-			prjSet = (Set<IProject>)consumer.invokeWebService(display, shell, "getProjectList", new Object[] { });			
+			prjSet = (Set<Project>)consumer.invokeWebService(display, shell, "getProjectList", new Object[] { });			
 		}
 		catch (Exception ex)
 		{
@@ -72,28 +71,9 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 		{
 			Map<String,Project> prjHash = new HashMap<String,Project>();
 			
-			for (IProject prj : prjSet)
-			{
-				Project p = new Project();
-				
-				p.m_id = prj.getID();
-				p.m_name = prj.getName();
-				p.m_language = prj.getLanguage();
-				p.m_readOnly = prj.getReadOnly();
-				
-				for (IProject parent : prj.getParents())
-				{
-					Project proj = new Project();
-					
-					proj.m_id = parent.getID();
-					proj.m_name = parent.getName();
-					proj.m_language = parent.getLanguage();
-					proj.m_readOnly = parent.getReadOnly();
-					
-					p.m_parents.add(proj);
-				}
-				
-				prjHash.put(prj.getID(), p);
+			for (Project prj : prjSet)
+			{				
+				prjHash.put(prj.m_id, prj);
 			}
 			
 			List<Project> prjList = DbAdapter.getProjectList();

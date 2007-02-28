@@ -179,7 +179,7 @@ public class LocalDeclDialog extends DialogBase
 			}
 		});
 		
-		Language lang = ProjectView.getProject().getLanguage();
+		Language lang = ProjectView.getProject().language();
 		if (lang == Language.JAVA14 || lang == Language.JAVA15)
 		{		
 			m_finalCheckBox = new Table(getShell(), SWT.BORDER | SWT.HIDE_SELECTION | SWT.CHECK);
@@ -228,7 +228,7 @@ public class LocalDeclDialog extends DialogBase
 
 	private Type.Property[] getTypePropArray()
 	{
-  		switch (ProjectView.getProject().getLanguage())
+  		switch (ProjectView.getProject().language())
   		{
   			case JAVA14:
   			case JAVA15:

@@ -4,7 +4,6 @@ import java.util.*;
 import org.codehaus.xfire.fault.XFireFault;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-
 import com.sourcedimensions.server.sys.profile.*;
 import com.sourcedimensions.server.sys.Project;
 
@@ -49,9 +48,9 @@ public class WebService implements IWebService
 			return true;
 	}
 	
-	public Set<IProject> getProjectList(String sessionID) throws XFireFault
+	public Set<com.sourcedimensions.client.model.Project> getProjectList(String sessionID) throws XFireFault
 	{
-		Set<IProject> prjSet = new HashSet<IProject>();
+		Set<com.sourcedimensions.client.model.Project> prjSet = new HashSet<com.sourcedimensions.client.model.Project>();
 		verifySession(sessionID);
 			
 		Session session = Database.getProfileSessionFactory().openSession();
@@ -78,19 +77,22 @@ public class WebService implements IWebService
 		for (String id : prjIDs)
 		{
 			Project p = (Project)session.get(Project.class, id);
-			WSProject prj = new WSProject();
+			
+			com.sourcedimensions.client.model.Project prj = 
+					new com.sourcedimensions.client.model.Project();
 
 			prj.m_id = p.getID();
 			prj.m_name = p.m_name;
-			prj.m_lang = p.getLangValue();
+			prj.m_language = p.getLangValue();
 			
 			for (Project pp : p.m_parents)
 			{
-				WSProject wpp = new WSProject();
+				com.sourcedimensions.client.model.Project wpp = 
+						new com.sourcedimensions.client.model.Project();
 
 				wpp.m_id = pp.getID();
 				wpp.m_name = pp.m_name;
-				wpp.m_lang = pp.getLangValue();
+				wpp.m_language = pp.getLangValue();
 
 				prj.m_parents.add(wpp);
 			}

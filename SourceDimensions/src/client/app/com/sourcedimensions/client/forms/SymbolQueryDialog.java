@@ -340,7 +340,7 @@ public class SymbolQueryDialog extends DialogBase
 		column.setMoveable(true);
 		column.setText("Type Properties");
 		
-		Language lang = ProjectView.getProject().getLanguage();
+		Language lang = ProjectView.getProject().language();
 		
  		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
   		{
@@ -361,7 +361,7 @@ public class SymbolQueryDialog extends DialogBase
 			{
 				TypeMemberDialogBase dialog = null;
 				
-				Language lang = ProjectView.getProject().getLanguage();
+				Language lang = ProjectView.getProject().language();
 				
 		 		switch (lang)
 		  		{
@@ -762,7 +762,7 @@ public class SymbolQueryDialog extends DialogBase
 			TableItem item = m_memberFilterTable.getItem(sel);
 			TypeMemberDialogBase dialog = null;
 
-			Language lang = ProjectView.getProject().getLanguage();			
+			Language lang = ProjectView.getProject().language();			
 			
 	 		switch (lang)
 	  		{

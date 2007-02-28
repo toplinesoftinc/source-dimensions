@@ -453,7 +453,7 @@ public class TypeFilterDialog extends DialogBase
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
 		
-		Language lang = ProjectView.getProject().getLanguage();
+		Language lang = ProjectView.getProject().language();
 		
 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
 		{
@@ -540,7 +540,7 @@ public class TypeFilterDialog extends DialogBase
 
 	protected TypeCategory[] getTypeCategoryArray()
 	{
-  		switch (ProjectView.getProject().getLanguage())
+  		switch (ProjectView.getProject().language())
   		{
   			case JAVA14:
   			case JAVA15:
@@ -557,7 +557,7 @@ public class TypeFilterDialog extends DialogBase
 	
 	protected Modifier[] getModifierArray()
 	{
-  		switch (ProjectView.getProject().getLanguage())
+  		switch (ProjectView.getProject().language())
   		{
   			case JAVA14:
   			case JAVA15:

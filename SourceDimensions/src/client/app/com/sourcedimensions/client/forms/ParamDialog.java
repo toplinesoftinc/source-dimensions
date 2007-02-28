@@ -542,7 +542,7 @@ public class ParamDialog extends DialogBase
 	
 	protected Type.Property[] getTypePropArray()
 	{
-  		switch (ProjectView.getProject().getLanguage())
+  		switch (ProjectView.getProject().language())
   		{
   			case JAVA14:
   			case JAVA15:
@@ -559,7 +559,7 @@ public class ParamDialog extends DialogBase
 	
 	protected Parameter.Modifier[] getModifierArray()
 	{
-  		switch (ProjectView.getProject().getLanguage())
+  		switch (ProjectView.getProject().language())
   		{
   			case JAVA14:
   			case JAVA15:
