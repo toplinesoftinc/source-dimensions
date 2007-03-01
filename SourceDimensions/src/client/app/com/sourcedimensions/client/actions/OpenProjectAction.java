@@ -73,23 +73,23 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 			
 			for (Project prj : prjSet)
 			{				
-				prjHash.put(prj.m_id, prj);
+				prjHash.put(prj.getId(), prj);
 			}
 			
 			List<Project> prjList = DbAdapter.getProjectList();
 			
 			for (Project prj : prjList)
 			{
-				if (prjHash.get(prj.m_id) == null)
+				if (prjHash.get(prj.getId()) == null)
 				{
-					prj.m_deleted = true;
-					prjHash.put(prj.m_id, prj);
+					prj.setDeleted(true);
+					prjHash.put(prj.getId(), prj);
 				}
 			}
 			
 			for (Project prj : prjHash.values())
 			{
-				if (!prj.m_deleted)
+				if (!prj.getDeleted())
 					DbAdapter.saveProject(prj);
 			}
 			

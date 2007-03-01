@@ -81,20 +81,20 @@ public class WebService implements IWebService
 			com.sourcedimensions.client.model.Project prj = 
 					new com.sourcedimensions.client.model.Project();
 
-			prj.m_id = p.getID();
-			prj.m_name = p.m_name;
-			prj.m_language = p.getLangValue();
+			prj.setId(p.getID());
+			prj.setName(p.m_name);
+			prj.setLanguage(p.getLangValue());
 			
 			for (Project pp : p.m_parents)
 			{
 				com.sourcedimensions.client.model.Project wpp = 
 						new com.sourcedimensions.client.model.Project();
 
-				wpp.m_id = pp.getID();
-				wpp.m_name = pp.m_name;
-				wpp.m_language = pp.getLangValue();
+				wpp.setId(pp.getID());
+				wpp.setName(pp.m_name);
+				wpp.setLanguage(pp.getLangValue());
 
-				prj.m_parents.add(wpp);
+				prj.getParents().add(wpp);
 			}
 
 			prjSet.add(prj);

@@ -5,12 +5,12 @@ import java.util.Set;
 
 public class Project 
 {
-	public String m_id;
-	public String m_name;
-	public int m_language;
-	public boolean m_readOnly;
-	public boolean m_deleted = false;
-	public Set<Project> m_parents = new HashSet<Project>();
+	protected String m_id;
+	protected String m_name;
+	protected int m_language;
+	protected boolean m_readOnly;
+	protected boolean m_deleted = false;
+	protected Set<Project> m_parents = new HashSet<Project>();
 
 	public String getId()
 	{

@@ -41,10 +41,10 @@ public class DbAdapter
 			{
 				Project p = new Project();
 
-				p.m_id = rs.getString("ext_id");
-				p.m_name = rs.getString("name");
-				p.m_language = rs.getInt("language");
-				p.m_readOnly = rs.getShort("readonly") > 0;
+				p.setId(rs.getString("ext_id"));
+				p.setName(rs.getString("name"));
+				p.setLanguage(rs.getInt("language"));
+				p.setReadOnly(rs.getShort("readonly") > 0);
 				
 				list.add(p);
 			}
@@ -76,10 +76,10 @@ public class DbAdapter
 			{
 				p = new Project();
 
-				p.m_id = rs.getString("ext_id");
-				p.m_name = rs.getString("name");
-				p.m_language = rs.getInt("language");
-				p.m_readOnly = rs.getShort("readonly") > 0;
+				p.setId(rs.getString("ext_id"));
+				p.setName(rs.getString("name"));
+				p.setLanguage(rs.getInt("language"));
+				p.setReadOnly(rs.getShort("readonly") > 0);
 			}
 			
 			s = c.prepareStatement("SELECT * FROM dependent_project WHERE parent_id = ?");
@@ -91,12 +91,12 @@ public class DbAdapter
 			{
 				Project dp = new Project();
 
-				dp.m_id = rs.getString("ext_id");
-				dp.m_name = rs.getString("name");
-				dp.m_language = rs.getInt("language");
-				dp.m_readOnly = rs.getShort("readonly") > 0;
+				dp.setId(rs.getString("ext_id"));
+				dp.setName(rs.getString("name"));
+				dp.setLanguage(rs.getInt("language"));
+				dp.setReadOnly(rs.getShort("readonly") > 0);
 				
-				p.m_parents.add(dp);
+				p.getParents().add(dp);
 			}		
 			
 			c.close();
@@ -120,7 +120,7 @@ public class DbAdapter
 			PreparedStatement ps = c.prepareStatement("SELECT * FROM project WHERE ext_id = ?", 
 					ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 			
-			ps.setString(1, prj.m_id);
+			ps.setString(1, prj.getId());
 			
 			ResultSet rs = ps.executeQuery();
 			boolean update = false;
@@ -133,10 +133,10 @@ public class DbAdapter
 			else
 				rs.moveToInsertRow();			
 				
-			rs.updateString("ext_id", prj.m_id);
-			rs.updateString("name", prj.m_name);
-			rs.updateInt("language", prj.m_language);
-			rs.updateShort("readonly", (short)(prj.m_readOnly ? 1 : 0));
+			rs.updateString("ext_id", prj.getId());
+			rs.updateString("name", prj.getName());
+			rs.updateInt("language", prj.getLanguage());
+			rs.updateShort("readonly", (short)(prj.getReadOnly() ? 1 : 0));
 				
 			if (update)
 			{
@@ -153,13 +153,13 @@ public class DbAdapter
 					rs.deleteRow();
 				}
 				
-				for (Project p : prj.m_parents)
+				for (Project p : prj.getParents())
 				{
 					rs.moveToInsertRow();
 					
-					rs.updateString("ext_id", p.m_id);
-					rs.updateString("name", p.m_name);
-					rs.updateInt("language", p.m_language);
+					rs.updateString("ext_id", p.getId());
+					rs.updateString("name", p.getName());
+					rs.updateInt("language", p.getLanguage());
 					
 					rs.insertRow();
 				}				

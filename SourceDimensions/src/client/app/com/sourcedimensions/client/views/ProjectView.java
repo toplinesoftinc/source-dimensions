@@ -113,7 +113,7 @@ public class ProjectView extends ViewPart
 	{
 		public ProjectObject(Project prj)
 		{
-			super(prj.m_name + " (" + prj.langName() + ")");
+			super(prj.getName() + " (" + prj.langName() + ")");
 		}
 		
 		public Image getImage()
@@ -137,7 +137,7 @@ public class ProjectView extends ViewPart
 		
 		public void load()
 		{
-			List<Folder> list = DbAdapter.getFolderList(m_id, m_project.m_id, m_query);
+			List<Folder> list = DbAdapter.getFolderList(m_id, m_project.getId(), m_query);
 			
 			for (Folder f : list)
 			{
@@ -168,7 +168,7 @@ public class ProjectView extends ViewPart
 	{
 		public RootGroup()
 		{
-			super(m_project.m_name + " (" + m_project.langName() + ")");			
+			super(m_project.getName() + " (" + m_project.langName() + ")");			
 		}
 		
 		public Image getImage()
@@ -207,7 +207,7 @@ public class ProjectView extends ViewPart
 
 		protected void load()
 		{
-			List<Folder> list = DbAdapter.getFolderList(null, m_project.m_id, true);
+			List<Folder> list = DbAdapter.getFolderList(null, m_project.getId(), true);
 			
 			for (Folder f : list)
 			{
@@ -233,7 +233,7 @@ public class ProjectView extends ViewPart
 		
 		protected void load()
 		{
-			List<Folder> list = DbAdapter.getFolderList(null, m_project.m_id, false);
+			List<Folder> list = DbAdapter.getFolderList(null, m_project.getId(), false);
 			
 			for (Folder f : list)
 			{
@@ -339,7 +339,7 @@ public class ProjectView extends ViewPart
 		
 		if (m_project != null)
 		{
-			for (Project p : m_project.m_parents)
+			for (Project p : m_project.getParents())
 			{
 				parents.addChild(new ProjectObject(p));
 			}

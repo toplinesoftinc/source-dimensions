@@ -124,12 +124,12 @@ public class ProjectListDialog extends DialogBase
 			m_prjSet.add(prj);
 			TableItem item = new TableItem(m_prjList, SWT.NONE);
 			
-			if (prj.m_deleted)
+			if (prj.getDeleted())
 				item.setImage(imgCross);
 			else
 				item.setImage(imgChkmark);
 
-			item.setText(0, prj.m_name);
+			item.setText(0, prj.getName());
 			item.setText(1, prj.langName());
 		}		
 	}

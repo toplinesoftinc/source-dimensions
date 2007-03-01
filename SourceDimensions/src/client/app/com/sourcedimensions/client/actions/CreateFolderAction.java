@@ -72,7 +72,7 @@ public class CreateFolderAction implements IWorkbenchWindowActionDelegate, IObje
 				
 				try
 				{
-					folder = DbAdapter.addFolder(name, id, ProjectView.getProject().m_id, query);
+					folder = DbAdapter.addFolder(name, id, ProjectView.getProject().getId(), query);
 				}
 				catch (DupFolderNameException e)
 				{
