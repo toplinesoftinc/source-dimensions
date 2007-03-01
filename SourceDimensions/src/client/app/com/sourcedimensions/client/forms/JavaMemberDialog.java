@@ -22,8 +22,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Group;
-import com.sourcedimensions.client.TriStateBoolean;
+import com.sourcedimensions.client.model.TriStateBoolean;
 import org.eclipse.ui.PlatformUI;
+import com.sourcedimensions.client.model.*;
 
 
 public class JavaMemberDialog extends TypeMemberDialogBase 

@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Table;
 import com.sourcedimensions.client.views.ProjectView;
-
+import com.sourcedimensions.client.model.*;
 
 public class ParamDialog extends DialogBase 
 {

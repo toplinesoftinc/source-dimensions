@@ -1,4 +1,4 @@
-package com.sourcedimensions.client.forms;
+package com.sourcedimensions.client.model;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;

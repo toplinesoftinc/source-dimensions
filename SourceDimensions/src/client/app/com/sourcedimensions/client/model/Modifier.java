@@ -1,4 +1,4 @@
-package com.sourcedimensions.client.forms;
+package com.sourcedimensions.client.model;
 
 public enum Modifier 
 {

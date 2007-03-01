@@ -1,7 +1,8 @@
-package com.sourcedimensions.client.forms;
+package com.sourcedimensions.client.model;
 
 import java.util.HashSet;
 import java.util.Set;
+import com.sourcedimensions.client.model.TriStateMask;
 
 public class Parameter 
 {

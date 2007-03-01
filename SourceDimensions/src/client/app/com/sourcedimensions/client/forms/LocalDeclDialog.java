@@ -17,9 +17,10 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
-import com.sourcedimensions.client.TriStateBoolean;
+import com.sourcedimensions.client.model.TriStateBoolean;
 import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
+import com.sourcedimensions.client.model.*;
 
 
 public class LocalDeclDialog extends DialogBase

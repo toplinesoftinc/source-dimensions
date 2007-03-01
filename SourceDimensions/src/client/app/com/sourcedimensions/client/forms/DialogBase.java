@@ -12,8 +12,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
-
-import com.sourcedimensions.client.TriStateBoolean;
+import com.sourcedimensions.client.model.TriStateBoolean;
 import com.sourcedimensions.client.Util;
 
 public abstract class DialogBase 

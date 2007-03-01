@@ -1,6 +1,6 @@
-package com.sourcedimensions.client.forms;
+package com.sourcedimensions.client.model;
 
-import com.sourcedimensions.client.TriStateBoolean;
+import com.sourcedimensions.client.model.TriStateBoolean;
 
 public class TriStateMask 
 {

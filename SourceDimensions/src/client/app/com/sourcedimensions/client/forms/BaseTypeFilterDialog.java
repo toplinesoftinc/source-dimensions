@@ -2,7 +2,6 @@ package com.sourcedimensions.client.forms;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -16,6 +15,8 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Combo;
+
+import com.sourcedimensions.client.model.BaseTypeCategory;
 import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
 
@@ -30,7 +31,7 @@ public class BaseTypeFilterDialog extends DialogBase
 	private Button m_okButton;
 	private Button m_cancelButton;
 	private Combo m_typeCategoryCombo;  //  @jve:decl-index=0:visual-constraint="369,103"
-	private TypeCategory m_categoryValue;
+	private BaseTypeCategory m_categoryValue;
 	
 	protected static String[] m_typeCategoryNames = 
 	{
@@ -40,31 +41,11 @@ public class BaseTypeFilterDialog extends DialogBase
 		"INTEGRAL TYPE"
 	};
 
-	public enum TypeCategory
-	{
-		CLASS(0),
-		INTERFACE(1),
-		CLASS_INTERFACE(2),
-		INTEGRAL_TYPE(3);
-		
-		TypeCategory(int val)
-		{
-			value = val;
-		}
-		
-		private final int value;
-		
-		public int value()
-		{
-			return value;
-		}
-	}
-
 	public BaseTypeFilterDialog(Display display, Shell parent)
 	{
 		m_display = display;
 		m_value = null;
-		m_categoryValue = TypeCategory.CLASS;
+		m_categoryValue = BaseTypeCategory.CLASS;
 		createShell(parent);
 	}		
 	
@@ -72,7 +53,7 @@ public class BaseTypeFilterDialog extends DialogBase
 	{
 		m_display = display;
 		m_value = value;
-		m_categoryValue = TypeCategory.values()[category];
+		m_categoryValue = BaseTypeCategory.values()[category];
 		createShell(parent);
 	}	
 	
@@ -107,7 +88,7 @@ public class BaseTypeFilterDialog extends DialogBase
 			{
 				String val;
 				
-				if (m_typeCategoryCombo.getSelectionIndex() == TypeCategory.INTEGRAL_TYPE.value())
+				if (m_typeCategoryCombo.getSelectionIndex() == BaseTypeCategory.INTEGRAL_TYPE.value())
 					val = m_integralTypeCombo.getText().trim();
 				else
 					val = m_baseTypeFilterText.getText().trim();
@@ -146,7 +127,7 @@ public class BaseTypeFilterDialog extends DialogBase
 				}
 				
 				m_value = val;
-				m_categoryValue = TypeCategory.values()[m_typeCategoryCombo.getSelectionIndex()];
+				m_categoryValue = BaseTypeCategory.values()[m_typeCategoryCombo.getSelectionIndex()];
 				m_shell.close();
 			}
 		});
@@ -165,9 +146,9 @@ public class BaseTypeFilterDialog extends DialogBase
 		
 		if (m_value != null)
 		{
-			m_typeCategoryCombo.select(m_categoryValue.value);
+			m_typeCategoryCombo.select(m_categoryValue.value());
 			
-			if (m_categoryValue == TypeCategory.INTEGRAL_TYPE)
+			if (m_categoryValue == BaseTypeCategory.INTEGRAL_TYPE)
 			{
 				m_integralTypeCombo.setVisible(true);
 				m_baseTypeFilterText.setVisible(false);				
@@ -186,14 +167,14 @@ public class BaseTypeFilterDialog extends DialogBase
 		return m_value;
 	}
 
-	public TypeCategory getTypeCategory()
+	public BaseTypeCategory getTypeCategory()
 	{
 		return m_categoryValue;
 	}
 	
 	public String getTypeCategoryName()
 	{
-		return m_typeCategoryNames[m_categoryValue.value];
+		return m_typeCategoryNames[m_categoryValue.value()];
 	}	
 	
 	public static String getTypeCategoryName(int code)
@@ -233,7 +214,7 @@ public class BaseTypeFilterDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				boolean integral_type = (m_typeCategoryCombo.getSelectionIndex() == TypeCategory.INTEGRAL_TYPE.value()); 
+				boolean integral_type = (m_typeCategoryCombo.getSelectionIndex() == BaseTypeCategory.INTEGRAL_TYPE.value()); 
 				m_integralTypeCombo.setVisible(integral_type);
 				m_baseTypeFilterText.setVisible(!integral_type);
 			}
@@ -250,7 +231,7 @@ public class BaseTypeFilterDialog extends DialogBase
 			m_typeCategoryCombo.add(m_typeCategoryNames[i]);
 		}
 		
-		m_typeCategoryCombo.select(m_categoryValue.value);		
+		m_typeCategoryCombo.select(m_categoryValue.value());		
 	}
 	
 	protected Shell getShell()

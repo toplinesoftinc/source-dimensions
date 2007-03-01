@@ -19,12 +19,13 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import com.sourcedimensions.client.TriStateBoolean;
+import com.sourcedimensions.client.model.TriStateBoolean;
 import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.ui.PlatformUI;
+import com.sourcedimensions.client.model.*;
 
 
 public class TypeFilterDialog extends DialogBase 
@@ -104,43 +105,6 @@ public class TypeFilterDialog extends DialogBase
 		TypeCategory.ALL
 	};
 	private Button m_delegateButton;	
-	
-	public enum TypeCategory
-	{
-		CLASS(1<<0),
-		INTERFACE(1<<1),
-		ENUM(1<<2),
-		ANONYM_CLASS(1<<3, "ANONYM.CLASS"),
-		ANNOTATION(1<<4),
-		STRUCT(1<<5),
-		DELEGATE(1<<6),
-		ALL(1<<7);
-		
-		TypeCategory(int val)
-		{
-			value = val;
-			name = name();
-		}
-		
-		TypeCategory(int val, String n)
-		{
-			value = val;
-			name = n;
-		}
-		
-		private final int value;
-		private final String name;
-		
-		public int value()
-		{
-			return value;
-		}		
-		
-		public String toString()
-		{
-			return name;
-		}
-	}
 	
 	public class BaseType
 	{

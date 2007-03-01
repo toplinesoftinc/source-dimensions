@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.ui.PlatformUI;
+import com.sourcedimensions.client.model.*;
 
 
 public class DelegateDialog extends DialogBase 

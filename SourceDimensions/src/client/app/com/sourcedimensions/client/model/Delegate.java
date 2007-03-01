@@ -1,4 +1,4 @@
-package com.sourcedimensions.client.forms;
+package com.sourcedimensions.client.model;
 
 import java.util.List;
 

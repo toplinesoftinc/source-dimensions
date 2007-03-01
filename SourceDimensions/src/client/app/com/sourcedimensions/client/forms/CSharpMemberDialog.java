@@ -21,9 +21,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
-
-
-import com.sourcedimensions.client.TriStateBoolean;
+import com.sourcedimensions.client.model.*;
+import com.sourcedimensions.client.model.TriStateBoolean;
+import com.sourcedimensions.client.model.Modifier;
+import com.sourcedimensions.client.model.Parameter;
+import com.sourcedimensions.client.model.TriStateMask;
+import com.sourcedimensions.client.model.Type;
 
 
 public class CSharpMemberDialog extends TypeMemberDialogBase 

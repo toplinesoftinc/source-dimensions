@@ -14,9 +14,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import com.sourcedimensions.client.TriStateBoolean;
+import com.sourcedimensions.client.model.TriStateBoolean;
 import com.sourcedimensions.client.forms.TypeFilterDialog.BaseType;
-import com.sourcedimensions.client.forms.TypeFilterDialog.TypeCategory;
 import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
 import org.eclipse.swt.widgets.Label;
@@ -32,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.jface.dialogs.MessageDialog;
+import com.sourcedimensions.client.model.*;
 
 
 public class SymbolQueryDialog extends DialogBase
@@ -121,13 +121,13 @@ public class SymbolQueryDialog extends DialogBase
 		m_queryNameLabel.setText("&Query Name:");
 		m_queryNameLabel.setLocation(new Point(334, 48));
 		m_queryNameLabel.setSize(new Point(69, 13));
-		m_saveButton.setLocation(new Point(115, 16));
+		m_saveButton.setLocation(new Point(110, 16));
 		m_saveButton.setSize(new Point(88, 25));
 		m_saveButton.setText("Sa&ve");
 		m_cancelButton.setToolTipText("Login");
 		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_cancelButton.setSize(new Point(88, 25));
-		m_cancelButton.setLocation(new Point(215, 16));
+		m_cancelButton.setLocation(new Point(205, 16));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSelection(true);
 		m_cancelButton.addSelectionListener(new SelectionAdapter()
@@ -594,12 +594,12 @@ public class SymbolQueryDialog extends DialogBase
 	
 	protected String memberCategoriesToString(int flags)
 	{
-		if ((flags & TypeMemberDialogBase.MemberCategory.ALL.value()) != 0)
+		if ((flags & MemberCategory.ALL.value()) != 0)
 			return "<All>";
 		
 		String str = "";
 		
-		for (TypeMemberDialogBase.MemberCategory m : TypeMemberDialogBase.MemberCategory.values())
+		for (MemberCategory m : MemberCategory.values())
 		{
 			if ((flags & m.value()) != 0)
 			{

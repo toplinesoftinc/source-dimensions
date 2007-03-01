@@ -1,4 +1,4 @@
-package com.sourcedimensions.client;
+package com.sourcedimensions.client.model;
 
 public enum TriStateBoolean 
 {
