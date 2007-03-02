@@ -14,7 +14,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import com.sourcedimensions.client.forms.TypeFilterDialog.BaseType;
 import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
 import org.eclipse.swt.widgets.Label;
@@ -679,7 +678,7 @@ public class SymbolQueryDialog extends DialogBase
 			if (str.length() > 0)
 				str += ",";
 			
-			str += t.m_name;
+			str += t.getName();
 		}
 		
 		return str;

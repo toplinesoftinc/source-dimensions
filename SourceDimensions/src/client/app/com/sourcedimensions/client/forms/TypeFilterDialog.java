@@ -105,18 +105,6 @@ public class TypeFilterDialog extends DialogBase
 		TypeCategory.ALL
 	};
 	private Button m_delegateButton;	
-	
-	public class BaseType
-	{
-		public String m_name;
-		public int m_category; 
-		
-		public BaseType(String name, int category)
-		{
-			m_name = name;
-			m_category = category;
-		}		
-	}
 
 	public TypeFilterDialog(Display display, Shell parent, String typeName,	int categories,	
 		TriStateMask modifiers, TriStateBoolean innerTypes, TriStateBoolean supertypes, 
@@ -139,8 +127,8 @@ public class TypeFilterDialog extends DialogBase
 			for (BaseType t : m_baseTypes)
 			{
 				TableItem item = new TableItem(m_baseTypesTable, 0);
-				item.setText(0, BaseTypeFilterDialog.getTypeCategoryName(t.m_category));				
-				item.setText(1, t.m_name);
+				item.setText(0, BaseTypeFilterDialog.getTypeCategoryName(t.getCategory()));				
+				item.setText(1, t.getName());
 			}
 		}
 			
@@ -582,7 +570,7 @@ public class TypeFilterDialog extends DialogBase
 		else
 		{
 			BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-				m_baseTypesTable.getItem(sel).getText(1), m_baseTypes.get(sel).m_category);
+				m_baseTypesTable.getItem(sel).getText(1), m_baseTypes.get(sel).getCategory());
 			
 			input.open();
 			String val = input.getValue();

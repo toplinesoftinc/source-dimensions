@@ -1,7 +1,6 @@
 package com.sourcedimensions.client.model;
 
 import java.util.List;
-import com.sourcedimensions.client.forms.TypeFilterDialog.BaseType;
 
 
 public class TypeFilter 
