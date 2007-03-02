@@ -434,7 +434,7 @@ public class TypeFilterDialog extends DialogBase
 						dialog = new DelegateDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
 					else
 						dialog = new DelegateDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-							m_delegate.m_type, m_delegate.m_anyParams, m_delegate.m_paramList);
+							m_delegate.getType(), m_delegate.getAnyParams(), m_delegate.getParamList());
 					
 					dialog.open();
 					
@@ -443,9 +443,9 @@ public class TypeFilterDialog extends DialogBase
 						if (m_delegate == null)
 							m_delegate = new Delegate();
 						
-						m_delegate.m_type = dialog.getType();
-						m_delegate.m_anyParams = dialog.getAnyParams();
-						m_delegate.m_paramList = dialog.getParamList();
+						m_delegate.setType(dialog.getType());
+						m_delegate.setAnyParams(dialog.getAnyParams());
+						m_delegate.setParamList(dialog.getParamList());
 					}
 				}
 			});

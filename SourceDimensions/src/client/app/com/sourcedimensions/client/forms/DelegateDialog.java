@@ -56,7 +56,7 @@ public class DelegateDialog extends DialogBase
 		m_display = display;
 		createShell(parent);
 
-		m_typeNameText.setText(type.m_name);
+		m_typeNameText.setText(type.getName());
 		m_anyParamsCheckBox.setSelection(anyParams);
 
 		setParamControls();
@@ -74,9 +74,9 @@ public class DelegateDialog extends DialogBase
 				
 				item.setText(0, param.positionToString());
 				item.setText(1, param.modifiersToString());
-				item.setText(2, param.m_type.typePropsToString());
-				item.setText(3, param.m_type.m_name);
-				item.setText(4, param.m_name);			
+				item.setText(2, param.getType().typePropsToString());
+				item.setText(3, param.getType().getName());
+				item.setText(4, param.getName());			
 			}
 			
 		}
@@ -84,7 +84,7 @@ public class DelegateDialog extends DialogBase
 		for (int i = 0; i < m_typePropsList.getItemCount(); i++)
 		{
 			setTriStateBoolValue(m_typePropsList.getItem(i), 
-					type.m_typeProps.getMask(Type.Property.values()[i].value()));
+					type.getTypeProps().getMask(Type.Property.values()[i].value()));
 		}		
 	}
 	
@@ -141,9 +141,9 @@ public class DelegateDialog extends DialogBase
 					m_paramList.add(param);
 					item.setText(0, param.positionToString());
 					item.setText(1, param.modifiersToString());
-					item.setText(2, param.m_type.typePropsToString());
-					item.setText(3, param.m_type.m_name);
-					item.setText(4, param.m_name);
+					item.setText(2, param.getType().typePropsToString());
+					item.setText(3, param.getType().getName());
+					item.setText(4, param.getName());
 				}		
 			}
 		});
@@ -217,14 +217,14 @@ public class DelegateDialog extends DialogBase
 					return;
 				}
 				
-				m_type.m_name = val;
+				m_type.setName(val);
 				m_anyParams = m_anyParamsCheckBox.getSelection();
 				
-				m_type.m_typeProps.reset();
+				m_type.getTypeProps().reset();
 				
 				for (int i = 0; i < m_typePropsList.getItemCount(); i++)
 				{
-					m_type.m_typeProps.setMask(Type.Property.values()[i].value(), getTriStateBoolValue(m_typePropsList.getItem(i)));
+					m_type.getTypeProps().setMask(Type.Property.values()[i].value(), getTriStateBoolValue(m_typePropsList.getItem(i)));
 				}
 				
 				if (!m_paramsTable.getEnabled())
@@ -370,9 +370,9 @@ public class DelegateDialog extends DialogBase
 				
 				item.setText(0, param.positionToString());
 				item.setText(1, param.modifiersToString());
-				item.setText(2, param.m_type.typePropsToString());
-				item.setText(3, param.m_type.m_name);
-				item.setText(4, param.m_name);
+				item.setText(2, param.getType().typePropsToString());
+				item.setText(3, param.getType().getName());
+				item.setText(4, param.getName());
 			}
 		}
 	}

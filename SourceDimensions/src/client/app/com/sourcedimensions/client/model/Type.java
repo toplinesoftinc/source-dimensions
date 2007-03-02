@@ -39,8 +39,28 @@ public class Type
 		}
 	}
 	
-	public TriStateMask m_typeProps = new TriStateMask();
-	public String m_name;
+	protected TriStateMask m_typeProps = new TriStateMask();
+	protected String m_name;
+	
+	public TriStateMask getTypeProps()
+	{
+		return m_typeProps;
+	}
+	
+	public void setTypeProps(TriStateMask typeProps)
+	{
+		m_typeProps = typeProps;
+	}
+	
+	public String getName()
+	{
+		return m_name;
+	}
+	
+	public void setName(String name)
+	{
+		m_name = name;
+	}
 	
 	public String typePropsToString()
 	{

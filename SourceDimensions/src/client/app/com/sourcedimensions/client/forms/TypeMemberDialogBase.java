@@ -16,7 +16,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	protected TriStateMask m_modifiers = new TriStateMask();
 	protected int m_memberCategories;
 	protected int m_operators;
-	protected Type m_type = new Type();
+	protected Type m_type = new Type();  //  @jve:decl-index=0:
 	protected String m_name;
 	protected List<Parameter> m_paramList = new ArrayList<Parameter>();
 	
@@ -70,9 +70,9 @@ public abstract class TypeMemberDialogBase extends DialogBase
 			m_paramList.add(param);
 			item.setText(0, param.positionToString());
 			item.setText(1, param.modifiersToString());
-			item.setText(2, param.m_type.typePropsToString());
-			item.setText(3, param.m_type.m_name);
-			item.setText(4, param.m_name);
+			item.setText(2, param.getType().typePropsToString());
+			item.setText(3, param.getType().getName());
+			item.setText(4, param.getName());
 		}		
 	}
 
@@ -99,9 +99,9 @@ public abstract class TypeMemberDialogBase extends DialogBase
 				
 				item.setText(0, param.positionToString());
 				item.setText(1, param.modifiersToString());
-				item.setText(2, param.m_type.typePropsToString());
-				item.setText(3, param.m_type.m_name);
-				item.setText(4, param.m_name);
+				item.setText(2, param.getType().typePropsToString());
+				item.setText(3, param.getType().getName());
+				item.setText(4, param.getName());
 			}
 		}
 	}
@@ -117,9 +117,9 @@ public abstract class TypeMemberDialogBase extends DialogBase
 			
 			item.setText(0, param.positionToString());
 			item.setText(1, param.modifiersToString());
-			item.setText(2, param.m_type.typePropsToString());
-			item.setText(3, param.m_type.m_name);
-			item.setText(4, param.m_name);			
+			item.setText(2, param.getType().typePropsToString());
+			item.setText(3, param.getType().getName());
+			item.setText(4, param.getName());			
 		}
 	}
 }

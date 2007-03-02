@@ -116,10 +116,90 @@ public class Parameter
 	}
 	
 
-	public TriStateMask m_modifiers = new TriStateMask();
-	public Type m_type = new Type();
-	public String m_name;
-	public Position m_posType;
-	public int m_posValue, m_posMin, m_posMax;
-	public Set<Integer> m_posList = new HashSet<Integer>();
+	protected TriStateMask m_modifiers = new TriStateMask();
+	protected Type m_type = new Type();
+	protected String m_name;
+	protected Position m_posType;
+	protected int m_posValue, m_posMin, m_posMax;
+	protected Set<Integer> m_posList = new HashSet<Integer>();
+
+	public TriStateMask getModifiers()
+	{
+		return m_modifiers;
+	}
+	
+	public void setModifiers(TriStateMask modifiers)
+	{
+		m_modifiers = modifiers;
+	}
+	
+	public Type getType()
+	{
+		return m_type;
+	}
+	
+	public void setType(Type type)
+	{
+		m_type = type;
+	}
+	
+	public String getName()
+	{
+		return m_name;
+	}
+	
+	public void setName(String name)
+	{
+		m_name = name;
+	}
+	
+	public Position getPosType()
+	{
+		return m_posType;
+	}
+	
+	public void setPosType(Position posType)
+	{
+		m_posType = posType;
+	}
+	
+	public int getPosValue()
+	{
+		return m_posValue;
+	}
+	
+	public void setPosValue(int value)
+	{
+		m_posValue = value;
+	}
+	
+	public int getPosMin()
+	{
+		return m_posMin;
+	}
+	
+	public void setPosMin(int posMin)
+	{
+		m_posMin = posMin;
+	}
+	
+	public int getPosMax()
+	{
+		return m_posMax;
+	}
+	
+	public void setPosMax(int posMax)
+	{
+		m_posMax = posMax;
+	}
+	
+	public Set<Integer> getPosList()
+	{
+		return m_posList;
+	}
+	
+	public void setPosList(Set<Integer> posList)
+	{
+		m_posList = posList;
+	}
 }

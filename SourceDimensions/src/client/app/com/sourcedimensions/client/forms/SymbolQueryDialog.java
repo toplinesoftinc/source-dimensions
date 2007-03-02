@@ -400,7 +400,7 @@ public class SymbolQueryDialog extends DialogBase
 					item.setText(0, memberCategoriesToString(filter.m_categories));
 					item.setText(1, modifiersToString(filter.m_modifiers));
 					item.setText(2, dialog.getMemberName());
-					item.setText(3, filter.m_type.m_name);
+					item.setText(3, filter.m_type.getName());
 					item.setText(4, filter.m_type.typePropsToString());
 										
 			 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
@@ -799,7 +799,7 @@ public class SymbolQueryDialog extends DialogBase
 				item.setText(0, memberCategoriesToString(filter.m_categories));
 				item.setText(1, modifiersToString(filter.m_modifiers));
 				item.setText(2, dialog.getMemberName());
-				item.setText(3, dialog.getType().m_name);
+				item.setText(3, dialog.getType().getName());
 				item.setText(4, dialog.getType().typePropsToString());				
 				
 		 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
@@ -835,7 +835,7 @@ public class SymbolQueryDialog extends DialogBase
 				filter.m_name = dialog.getName();
 				filter.m_final = dialog.getFinal();
 				
-				item.setText(0, filter.m_type.m_name);
+				item.setText(0, filter.m_type.getName());
 				item.setText(1, filter.m_type.typePropsToString());
 				item.setText(2, dialog.getName());
 			}			
@@ -992,7 +992,7 @@ public class SymbolQueryDialog extends DialogBase
 					m_localDeclFilter.add(filter);
 					
 					TableItem item = new TableItem(m_localDeclFilterTable, 0);
-					item.setText(0, filter.m_type.m_name);
+					item.setText(0, filter.m_type.getName());
 					item.setText(1, filter.m_type.typePropsToString());
 					item.setText(2, dialog.getName());					
 				}

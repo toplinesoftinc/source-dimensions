@@ -99,9 +99,9 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_display = display;
 		createShell(parent);
 		m_memberNameText.setText(name);
-		setTriStateBoolValue(m_typePropsList.getItem(m_arrayItem), type.m_typeProps.getMask(Type.Property.ARRAY.value()));
-		setTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem), type.m_typeProps.getMask(Type.Property.TYPE_PARAM.value()));
-		m_typeNameText.setText(type.m_name);
+		setTriStateBoolValue(m_typePropsList.getItem(m_arrayItem), type.getTypeProps().getMask(Type.Property.ARRAY.value()));
+		setTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem), type.getTypeProps().getMask(Type.Property.TYPE_PARAM.value()));
+		m_typeNameText.setText(type.getName());
 		m_anyParamsCheckBox.setSelection(anyParams);
 		enableParamControls(!anyParams);
 		
@@ -359,10 +359,10 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				m_name = m_memberNameText.getText();
 				m_anyParams = m_anyParamsCheckBox.getSelection();
 				m_anyThrow = m_anyThrowCheckBox.getSelection();
-				m_type.m_name = m_typeNameText.getText();				
-				m_type.m_typeProps.reset();
-				m_type.m_typeProps.setMask(Type.Property.ARRAY.value(), getTriStateBoolValue(m_typePropsList.getItem(m_arrayItem)));
-				m_type.m_typeProps.setMask(Type.Property.TYPE_PARAM.value(), getTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem)));
+				m_type.setName(m_typeNameText.getText());				
+				m_type.getTypeProps().reset();
+				m_type.getTypeProps().setMask(Type.Property.ARRAY.value(), getTriStateBoolValue(m_typePropsList.getItem(m_arrayItem)));
+				m_type.getTypeProps().setMask(Type.Property.TYPE_PARAM.value(), getTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem)));
 				
 				if (!m_paramsTable.getEnabled())
 				{

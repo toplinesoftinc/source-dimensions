@@ -4,7 +4,37 @@ import java.util.List;
 
 public class Delegate 
 {
-	public Type m_type;
-	public boolean m_anyParams;
-	public List<Parameter> m_paramList;
+	protected Type m_type;
+	protected boolean m_anyParams;
+	protected List<Parameter> m_paramList;
+	
+	public Type getType()
+	{
+		return m_type;
+	}
+	
+	public void setType(Type type)
+	{
+		m_type = type;
+	}
+	
+	public boolean getAnyParams()
+	{
+		return m_anyParams;
+	}
+	
+	public void setAnyParams(boolean anyParams)
+	{
+		m_anyParams = anyParams; 
+	}
+	
+	public List<Parameter> getParamList()
+	{
+		return m_paramList;
+	}
+	
+	public void setParamList(List<Parameter> paramList)
+	{
+		m_paramList = paramList;
+	}
 }

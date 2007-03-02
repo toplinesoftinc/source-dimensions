@@ -58,13 +58,13 @@ public class LocalDeclDialog extends DialogBase
 	{
 		m_display = display;
 		createShell(parent);
-		m_typeNameText.setText(type.m_name);
+		m_typeNameText.setText(type.getName());
 		m_localDeclNameText.setText(name);
 		
 		for (int i = 0; i < m_typePropsList.getItemCount(); i++)
 		{
 			setTriStateBoolValue(m_typePropsList.getItem(i), 
-					type.m_typeProps.getMask(Type.Property.values()[i].value()));
+					type.getTypeProps().getMask(Type.Property.values()[i].value()));
 		}		
 
 		if (finalFlag != null)
@@ -127,7 +127,7 @@ public class LocalDeclDialog extends DialogBase
 					return;
 				}
 
-				m_type.m_name = val;
+				m_type.setName(val);
 				
 				val = m_localDeclNameText.getText().trim();
 
@@ -149,10 +149,10 @@ public class LocalDeclDialog extends DialogBase
 				}
 				m_name = val;
 				
-				m_type.m_typeProps.reset();				
+				m_type.getTypeProps().reset();				
 				for (int i = 0; i < m_typePropsList.getItemCount(); i++)
 				{
-					m_type.m_typeProps.setMask(Type.Property.values()[i].value(), getTriStateBoolValue(m_typePropsList.getItem(i)));
+					m_type.getTypeProps().setMask(Type.Property.values()[i].value(), getTriStateBoolValue(m_typePropsList.getItem(i)));
 				}
 				
 				if (m_finalCheckBox != null)

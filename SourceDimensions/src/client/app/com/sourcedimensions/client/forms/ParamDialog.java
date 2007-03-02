@@ -86,13 +86,13 @@ public class ParamDialog extends DialogBase
 
 		m_anyRadioButton.setSelection(false);
 		
-		switch (param.m_posType)
+		switch (param.getPosType())
 		{
 			case LIST:
 				m_listPosRadioButton.setSelection(true);
 				
 				m_posListSet.clear();
-				for (Integer i : param.m_posList)
+				for (Integer i : param.getPosList())
 				{
 					m_posListSet.add(i);
 				}
@@ -102,23 +102,23 @@ public class ParamDialog extends DialogBase
 
 			case GREATER_EQ:
 				m_notLessRadioButton.setSelection(true);
-				m_notLessPosSpinner.setSelection(param.m_posMin);				
+				m_notLessPosSpinner.setSelection(param.getPosMin());				
 				break;
 								
 			case LESS_EQ:
 				m_noMoreRadioButton.setSelection(true);
-				m_noMorePosSpinner.setSelection(param.m_posMax);
+				m_noMorePosSpinner.setSelection(param.getPosMax());
 				break;
 				
 			case BETWEEN:
 				m_rangeRadioButton.setSelection(true);
-				m_rangeMinSpinner.setSelection(param.m_posMin);
-				m_rangeMaxSpinner.setSelection(param.m_posMax);
+				m_rangeMinSpinner.setSelection(param.getPosMin());
+				m_rangeMaxSpinner.setSelection(param.getPosMax());
 				break;				
 				
 			case EXACT:
 				m_exactRadioButton.setSelection(true);
-				m_exactPosSpinner.setSelection(param.m_posValue);
+				m_exactPosSpinner.setSelection(param.getPosValue());
 				break;
 				
 			case ANY:
@@ -130,18 +130,18 @@ public class ParamDialog extends DialogBase
 		for (int i = 0; i < m_typePropsList.getItemCount(); i++)
 		{
 			setTriStateBoolValue(m_typePropsList.getItem(i), 
-				param.m_type.m_typeProps.getMask(getTypePropArray()[i].value()));
+				param.getType().getTypeProps().getMask(getTypePropArray()[i].value()));
 		}
 				
-		m_typeNameText.setText(param.m_type.m_name);
+		m_typeNameText.setText(param.getType().getName());
 
 		for (int i = 0; i < m_paramModifiersList.getItemCount(); i++)
 		{
 			setTriStateBoolValue(m_paramModifiersList.getItem(i),
-				param.m_modifiers.getMask(getModifierArray()[i].value()));
+				param.getModifiers().getMask(getModifierArray()[i].value()));
 		}
 				
-		m_paramNameFilterText.setText(param.m_name);
+		m_paramNameFilterText.setText(param.getName());
 	}
 	
 	public ParamDialog(Display display, Shell parent)
@@ -233,57 +233,57 @@ public class ParamDialog extends DialogBase
 				
 				if (m_listPosRadioButton.getSelection())
 				{
-					m_param.m_posType = Parameter.Position.LIST;
-					m_param.m_posList.clear();
+					m_param.setPosType(Parameter.Position.LIST);
+					m_param.getPosList().clear();
 					
 					for (Integer i : m_posListSet)
 					{
-						m_param.m_posList.add(i);
+						m_param.getPosList().add(i);
 					}	
 				}
 				else if (m_notLessRadioButton.getSelection())
 				{
-					m_param.m_posType = Parameter.Position.GREATER_EQ;
-					m_param.m_posMin = m_notLessPosSpinner.getSelection();
+					m_param.setPosType(Parameter.Position.GREATER_EQ);
+					m_param.setPosMin(m_notLessPosSpinner.getSelection());
 				}
 				else if (m_noMoreRadioButton.getSelection())
 				{
-					m_param.m_posType = Parameter.Position.LESS_EQ;
-					m_param.m_posMax = m_noMorePosSpinner.getSelection();
+					m_param.setPosType(Parameter.Position.LESS_EQ);
+					m_param.setPosMax(m_noMorePosSpinner.getSelection());
 				}
 				else if (m_exactRadioButton.getSelection())
 				{
-					m_param.m_posType = Parameter.Position.EXACT;
-					m_param.m_posValue = m_exactPosSpinner.getSelection();
+					m_param.setPosType(Parameter.Position.EXACT);
+					m_param.setPosValue(m_exactPosSpinner.getSelection());
 				}
 				else if (m_rangeRadioButton.getSelection())
 				{
-					m_param.m_posType = Parameter.Position.BETWEEN;
-					m_param.m_posMin = m_rangeMinSpinner.getSelection();
-					m_param.m_posMax = m_rangeMaxSpinner.getSelection();
+					m_param.setPosType(Parameter.Position.BETWEEN);
+					m_param.setPosMin(m_rangeMinSpinner.getSelection());
+					m_param.setPosMax(m_rangeMaxSpinner.getSelection());
 				}
 				else if (m_anyRadioButton.getSelection())
 				{
-					m_param.m_posType = Parameter.Position.ANY;
+					m_param.setPosType(Parameter.Position.ANY);
 				}
 				
-				m_param.m_type.m_name = m_typeNameText.getText();
+				m_param.getType().setName(m_typeNameText.getText());
 				
-				m_param.m_type.m_typeProps.reset();
+				m_param.getType().getTypeProps().reset();
 
 				for (int i = 0; i < m_typePropsList.getItemCount(); i++)
 				{
-					m_param.m_type.m_typeProps.setMask(getTypePropArray()[i].value(), 
+					m_param.getType().getTypeProps().setMask(getTypePropArray()[i].value(), 
 						getTriStateBoolValue(m_typePropsList.getItem(i)));
 				}
 				
-				m_param.m_name = m_paramNameFilterText.getText();
+				m_param.setName(m_paramNameFilterText.getText());
 				
-				m_param.m_modifiers.reset();
+				m_param.getModifiers().reset();
 				
 				for (int i = 0; i < m_paramModifiersList.getItemCount(); i++)
 				{
-					m_param.m_modifiers.setMask(getModifierArray()[i].value(), 
+					m_param.getModifiers().setMask(getModifierArray()[i].value(), 
 						getTriStateBoolValue(m_paramModifiersList.getItem(i)));
 				}
 										

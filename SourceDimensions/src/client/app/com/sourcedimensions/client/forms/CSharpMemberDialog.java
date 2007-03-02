@@ -136,7 +136,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_display = display;
 		createShell(parent);
 		m_memberNameText.setText(name);
-		m_typeNameText.setText(type.m_name);
+		m_typeNameText.setText(type.getName());
 		m_anyParamsCheckBox.setSelection(anyParams);
 		enableParamControls(!anyParams);
 		
@@ -165,7 +165,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		for (int i = 0; i < m_typePropsList.getItemCount(); i++)
 		{
 			setTriStateBoolValue(m_typePropsList.getItem(i), 
-					type.m_typeProps.getMask(Type.Property.values()[i].value()));
+					type.getTypeProps().getMask(Type.Property.values()[i].value()));
 		}		
 	}
 	
@@ -413,12 +413,12 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 				}
 				
 				m_anyParams = m_anyParamsCheckBox.getSelection();
-				m_type.m_name = m_typeNameText.getText();
-				m_type.m_typeProps.reset();
+				m_type.setName(m_typeNameText.getText());
+				m_type.getTypeProps().reset();
 				
 				for (int i = 0; i < m_typePropsList.getItemCount(); i++)
 				{
-					m_type.m_typeProps.setMask(Type.Property.values()[i].value(), getTriStateBoolValue(m_typePropsList.getItem(i)));
+					m_type.getTypeProps().setMask(Type.Property.values()[i].value(), getTriStateBoolValue(m_typePropsList.getItem(i)));
 				}
 				
 				if (!m_paramsTable.getEnabled())
