@@ -57,12 +57,12 @@ public class SymbolQuery
 		m_typeFilter = typeFilter;
 	}
 
-	protected void setAllMembers(boolean allMembers) 
+	public void setAllMembers(boolean allMembers) 
 	{
 		m_allMembers = allMembers;
 	}
 
-	protected boolean getAllMembers() 
+	public boolean getAllMembers() 
 	{
 		return m_allMembers;
 	}

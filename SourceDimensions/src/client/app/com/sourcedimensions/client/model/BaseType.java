@@ -4,6 +4,10 @@ public class BaseType
 {
 	protected String m_name;
 	protected int m_category; 
+
+	public BaseType()
+	{
+	}
 	
 	public BaseType(String name, int category)
 	{

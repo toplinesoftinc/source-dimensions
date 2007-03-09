@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.jface.dialogs.MessageDialog;
 import com.sourcedimensions.client.model.*;
+import com.sourcedimensions.ws.consumer.WSConsumer;
 
 
 public class SymbolQueryDialog extends DialogBase
@@ -55,7 +56,7 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_addTypeFilterButton;
 	private Button m_editTypeFilterButton;
 	private Button m_removeTypeFilterButton;
-	private List<TypeFilter> m_typeFilter = new ArrayList<TypeFilter>();
+	private List<TypeFilter> m_typeFilter = new ArrayList<TypeFilter>();  //  @jve:decl-index=0:
 	private List<MemberFilter> m_memberFilter = new ArrayList<MemberFilter>();  //  @jve:decl-index=0:
 	private List<LocalDeclFilter> m_localDeclFilter = new ArrayList<LocalDeclFilter>();
 	private Button m_allMembersCheckBox;
@@ -67,15 +68,17 @@ public class SymbolQueryDialog extends DialogBase
 	private Label m_queryNameLabel;
 	private Text m_queryNameText;
 	private Button m_saveButton;
-	private Composite m_localDeclarationsTab = null;
-	private Button m_allLocalDeclCheckBox = null;
-	private Table m_localDeclFilterTable = null;
-	private Label m_localDeclFilterLabel = null;
-	private Button m_addFilterButton = null;
-	private Button m_editFilterButton = null;
-	private Button m_removeFilterButton = null;
-	private Button m_snapshotBrowseButton = null;
-	private Button m_queryBrowseButton = null;
+	private Composite m_localDeclarationsTab;
+	private Button m_allLocalDeclCheckBox;
+	private Table m_localDeclFilterTable;
+	private Label m_localDeclFilterLabel;
+	private Button m_addFilterButton;
+	private Button m_editFilterButton;
+	private Button m_removeFilterButton;
+	private Button m_snapshotBrowseButton;
+	private Button m_queryBrowseButton;
+	private boolean m_forceClose;
+	
 	public SymbolQueryDialog(Display display, Shell parent)
 	{
 		m_display = display;
@@ -142,13 +145,97 @@ public class SymbolQueryDialog extends DialogBase
 		m_runQueryButton.setLocation(new Point(15, 16));
 		m_runQueryButton.setText("&Run Query");
 		m_runQueryButton.setSelection(true);
+		m_runQueryButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
+			{
+				String destName = m_snapshotNameText.getText().trim();
+				
+				if (destName.length() == 0)
+				{
+					MessageDialog.openWarning(m_shell, "Snapshot Name", "Please enter Destination Snapshot Name");
+					return;
+				}
+
+				SymbolQuery query = new SymbolQuery();
+				
+				query.setAllNamespaces(m_allNamespacesCheckBox.getSelection());
+				
+				if (!query.getAllNamespaces())
+				{
+					List<String> list = new ArrayList<String>();
+					query.setNamespaceFilter(list);
+					
+					for (TableItem item : m_namespaceFilterTable.getItems())
+					{
+						list.add(item.getText(0));
+					}
+				}
+				
+				query.setAllTypes(m_allTypesCheckBox.getSelection());
+				
+				if (!query.getAllTypes())
+				{
+					query.setTypeFilter(m_typeFilter);
+				}
+				
+				query.setAllMembers(m_allMembersCheckBox.getSelection());
+				
+				if (!query.getAllMembers())
+				{
+					query.setMemberFilter(m_memberFilter);
+				}
+				
+				query.setAllLocalDecls(m_allLocalDeclCheckBox.getSelection());
+				
+				if (!query.getAllLocalDecls())
+				{
+					query.setLocalDeclFilter(m_localDeclFilter);
+				}
+				
+				
+				WSConsumer consumer = new WSConsumer();
+				SnapshotNode rootNode;
+				
+				try
+				{
+					rootNode = (SnapshotNode)consumer.invokeWebService(PlatformUI.getWorkbench().getDisplay(), 
+						m_shell, "runSymbolQuery", new Object[] { query });			
+				}
+				catch (Exception ex)
+				{
+					MessageDialog.openError(m_shell, "Web Service Error", ex.getMessage());
+					return;
+				}
+				
+				if (consumer.wasCancelled() || consumer.getFault() != null)
+				{
+					return;
+				}
+				
+				if (rootNode != null)
+				{
+					//TODO
+				}
+				
+				m_forceClose = true;
+				m_shell.close();
+			}
+		});
 		
 		m_shell.addShellListener(new ShellAdapter() 
 		{	
 			public void shellClosed(ShellEvent event) 
 			{
-				event.doit = MessageDialog.openQuestion(m_shell, "Close confirmation", "Do you want to close query window?");
-				m_cancel = event.doit;
+				if (!m_forceClose)
+				{
+					event.doit = MessageDialog.openQuestion(m_shell, "Close confirmation", "Do you want to close query window?");
+					m_cancel = event.doit;
+				}
+				else
+				{
+					event.doit = true;
+				}
 			}
 		});
 				
@@ -986,5 +1073,11 @@ public class SymbolQueryDialog extends DialogBase
 		m_removeFilterButton.setSize(new Point(88, 25));
 		m_removeFilterButton.addSelectionListener(
 			new RemoveFilterAdapter(m_shell, m_localDeclFilterTable, m_localDeclFilter)); 
-	}	
+	}
+	
+	public void open()
+	{
+		m_forceClose = false;
+		super.open();
+	}
 }

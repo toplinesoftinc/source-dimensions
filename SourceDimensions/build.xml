@@ -1,7 +1,8 @@
 <project name="SourceDimensions" default="all" basedir=".">
 
 	<!-- Debug flag -->
-	<property name="debug" value="false"/>
+	<property name="debug" value="true"/>
+	<property name="debug.cpp" value="false"/>
 
 
         <property name="cpptasks.jar" value="${basedir}/ant/lib/cpptasks.jar"/>
@@ -153,7 +154,7 @@
 		 rtti="true"
 		 exceptions="true"
 		 objdir="${parser.obj.dir}"
-		 debug="${debug}"
+		 debug="${debug.cpp}"
 		 runtime="${cc.runtime.libtype}"
 		 optimize="speed"
 		 multithreaded="true"
@@ -189,7 +190,7 @@
 		 rtti="true"
 		 exceptions="true"
 		 objdir="${parser.obj.dir}"
-		 debug="${debug}"
+		 debug="${debug.cpp}"
 		 runtime="${cc.runtime.libtype}"
 		 optimize="speed"
 		 multithreaded="true"
@@ -226,7 +227,7 @@
 		   name="${cpp.compiler}"
 	 	   outtype="executable"
 		   objdir="${tools.obj.dir}"
-		   debug="${debug}"
+		   debug="${debug.cpp}"
 		   runtime="${cc.runtime.libtype}"
 		   outfile="${tools.bin.dir}/bnf2xsd">
 			<fileset dir="${parser.tools.dir}/bnf2xsd">
@@ -239,7 +240,7 @@
 		   name="${cc.compiler}"
 		   outtype="executable"
 		   objdir="${tools.obj.dir}"
-		   debug="${debug}"
+		   debug="${debug.cpp}"
 		   runtime="${cc.runtime.libtype}"
 		   outfile="${tools.bin.dir}/jikespg">
 			<fileset dir="${parser.tools.dir}/jikespg">
@@ -252,7 +253,7 @@
 		   name="${cpp.compiler}"
 		   outtype="executable"
 		   objdir="${tools.obj.dir}"
-		   debug="${debug}"
+		   debug="${debug.cpp}"
 		   runtime="${cc.runtime.libtype}"
 		   outfile="${tools.bin.dir}/bnf2xsd">
 			<fileset dir="${parser.tools.dir}/bnf2xsd">
@@ -265,7 +266,7 @@
 		   name="${cpp.compiler}"
 		   outtype="executable"
 		   objdir="${tools.obj.dir}"
-		   debug="${debug}"
+		   debug="${debug.cpp}"
 		   runtime="${cc.runtime.libtype}"
 		   outfile="${tools.bin.dir}/gperf">
 			<fileset dir="${parser.tools.dir}/gperf">

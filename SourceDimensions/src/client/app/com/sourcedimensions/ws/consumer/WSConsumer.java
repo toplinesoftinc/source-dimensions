@@ -30,6 +30,7 @@ public class WSConsumer
 
 	protected Client m_client;
 	protected boolean m_cancelled = false;
+	protected XFireFault m_fault;
 
 	static
 	{
@@ -75,6 +76,8 @@ public class WSConsumer
 				return null;
 		}
 		
+		m_fault = null;
+		
 		while (true)
 		{
 			try
@@ -92,6 +95,8 @@ public class WSConsumer
 			}
 			catch (XFireFault fault)
 			{
+				m_fault = fault;
+				
 				if (fault.getDetail().equals(IWebService.FaultValues.SESSION_EXPIRED.name()))
 				{
 					MessageDialog.openWarning(null, "Session expired", "You session is expired. Please re-login");
@@ -100,11 +105,13 @@ public class WSConsumer
 					
 					if (LoginDialog.getSessionID() == null)
 						return null;
+					
+					m_fault = null;
 				}
 				else
 				{
 					MessageDialog.openError(null, "Error", fault.getMessage());
-					
+
 					return null;
 				}
 			}
@@ -158,6 +165,11 @@ public class WSConsumer
 	public boolean wasCancelled()
 	{
 		return m_cancelled;
+	}
+	
+	public XFireFault getFault()
+	{
+		return m_fault;
 	}
 	
 	

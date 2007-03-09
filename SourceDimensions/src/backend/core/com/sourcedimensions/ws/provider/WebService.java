@@ -4,6 +4,9 @@ import java.util.*;
 import org.codehaus.xfire.fault.XFireFault;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+
+import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.server.sys.profile.*;
 import com.sourcedimensions.server.sys.Project;
 
@@ -104,5 +107,12 @@ public class WebService implements IWebService
 		session.close();
 		
 		return prjSet;
+	}
+	
+	public SnapshotNode runSymbolQuery(String sessionID, SymbolQuery query) throws XFireFault
+	{
+		verifySession(sessionID);
+		
+		return null;
 	}
 }
