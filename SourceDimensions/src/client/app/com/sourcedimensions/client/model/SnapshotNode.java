@@ -6,6 +6,8 @@ public class SnapshotNode
 {
 	protected String m_name;
 	protected Type m_type;
+	protected String m_originId;
+	
 	protected List<SnapshotNode> m_children;
 	
 	public String getName()
@@ -38,33 +40,44 @@ public class SnapshotNode
 		m_children = children;
 	}
 	
+	public String getOriginID()
+	{
+		return m_originId;
+	}
+	
+	public void setOriginID(String originId)
+	{
+		m_originId = originId;
+	}
+	
 	public enum Type
 	{
-		NAMESPACE(0),
-		CLASS(1),
-		ANONYMOUS_CLASS(2),
-		INTERFACE(3),
-		DELEGATE(4),
-		ENUM(5),
-		STRUCT(6),
-		ANNOTATION(7),
-		ANONYMOUS_METHOD(8),
-		CONSTANT(9),
-		CONSTRUCTOR(10),
-		DESTRUCTOR(11),
-		ENUM_CONST(12),
-		EVENT(13),
-		EVENT_ADD(14),
-		EVENT_REMOVE(15),
-		FIELD(16),
-		INDEXER(17),
-		INDEXER_GET(18),
-		INDEXER_SET(19),
-		METHOD(20),
-		OPERATOR(21),
-		PROPERTY(22),
-		PROPERTY_GET(23),
-		PROPERTY_SET(24);
+		ROOT(0),
+		NAMESPACE(1),
+		CLASS(2),
+		ANONYMOUS_CLASS(3),
+		INTERFACE(4),
+		DELEGATE(5),
+		ENUM(6),
+		STRUCT(7),
+		ANNOTATION(8),
+		ANONYMOUS_METHOD(9),
+		CONSTANT(10),
+		CONSTRUCTOR(11),
+		DESTRUCTOR(12),
+		ENUM_CONST(13),
+		EVENT(14),
+		EVENT_ADD(15),
+		EVENT_REMOVE(16),
+		FIELD(17),
+		INDEXER(18),
+		INDEXER_GET(19),
+		INDEXER_SET(20),
+		METHOD(21),
+		OPERATOR(22),
+		PROPERTY(23),
+		PROPERTY_GET(24),
+		PROPERTY_SET(25);
 		
 		Type(int val)
 		{
