@@ -79,7 +79,7 @@ public class ProjectView extends ViewPart
 	
 	public abstract static class TreeGroup extends TreeObject
 	{
-		private ArrayList<TreeObject> m_children;
+		protected ArrayList<TreeObject> m_children;
 
 		public TreeGroup(String name)
 		{
@@ -95,7 +95,7 @@ public class ProjectView extends ViewPart
 			}
 			
 			m_children.add(object);
-			object.setParent(this);			
+			object.setParent(this);		
 		}
 		
 		public void deleteChild(TreeObject object)
@@ -124,7 +124,7 @@ public class ProjectView extends ViewPart
 			else
 				return m_children.size() > 0;
 		}
-
+		
 		protected abstract void load();
 	}
 
@@ -165,6 +165,12 @@ public class ProjectView extends ViewPart
 				addChild(o);
 			}
 		}
+
+		public void initNew()
+		{
+			if (m_children == null)
+				m_children = new ArrayList<TreeObject>();
+		}
 		
 		public Image getImage()
 		{
@@ -176,7 +182,7 @@ public class ProjectView extends ViewPart
 			return m_id;
 		}
 		
-		public boolean getQuery()
+		public boolean isQuery()
 		{
 			return m_isQuery;
 		}

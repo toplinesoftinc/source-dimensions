@@ -52,28 +52,28 @@ public class CreateFolderAction implements IWorkbenchWindowActionDelegate, IObje
 				Integer id;
 				Folder folder;
 				Object element = m_selection.getFirstElement();
-				boolean query;
+				boolean isQuery;
 				
 				if (element instanceof SnapshotGroup)
 				{
 					id = null;
-					query = false;
+					isQuery = false;
 				}
 				else if (element instanceof QueryGroup)
 				{
 					id = null;
-					query = true;
+					isQuery = true;
 				}
 				else
 				{
 					FolderObject f = (FolderObject)element;
 					id = f.getID();
-					query = f.getQuery();
+					isQuery = f.isQuery();
 				}
 				
 				try
 				{
-					folder = DbAdapter.addFolder(name, id, ProjectView.getProject().getId(), query);
+					folder = DbAdapter.addFolder(name, id, ProjectView.getProject().getId(), isQuery);
 				}
 				catch (DupFolderNameException e)
 				{
@@ -82,7 +82,9 @@ public class CreateFolderAction implements IWorkbenchWindowActionDelegate, IObje
 				}
 				
 				TreeGroup selected = (TreeGroup)m_selection.getFirstElement();
-				selected.addChild(new FolderObject(folder.m_name, folder.m_id, query));
+				FolderObject folderObject = new FolderObject(folder.m_name, folder.m_id, isQuery);
+				folderObject.initNew();
+				selected.addChild(folderObject);
 				
 				ProjectView view = (ProjectView)m_window.getActivePage().findView(ProjectView.ID);
 					

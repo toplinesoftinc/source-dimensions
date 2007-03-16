@@ -359,7 +359,7 @@ public class DbAdapter
 		{
 			Connection c = getConnection();
 			
-			PreparedStatement ps = c.prepareStatement("SELECT id FROM snapshot_node WHERE folder_id = ?");
+			PreparedStatement ps = c.prepareStatement("DELETE FROM snapshot_node WHERE folder_id = ?");
 			
 			ps.setInt(1, id);
 			ps.executeUpdate();
