@@ -202,7 +202,7 @@ public class DbAdapter
 			
 			int prjId = rs.getInt("id");
 
-			ps = c.prepareStatement("SELECT * FROM folder WHERE query_folder = ? AND project_id = ? AND parent_id = ?");
+			ps = c.prepareStatement("SELECT * FROM folder WHERE query_or_folder = ? AND project_id = ? AND parent_id = ?");
 			
 			ps.setShort(1, (short)(query ? 1 : 0));
 			ps.setInt(2, prjId);
@@ -231,7 +231,7 @@ public class DbAdapter
 	}
 	
 	
-	public static Folder addFolder(String name, Integer parent_id, String projectId, boolean query) throws DupFolderNameException
+	public static Folder addFolder(String name, Integer parent_id, String projectId, boolean queryFolder) throws DupFolderNameException
 	{
 		try
 		{
@@ -240,7 +240,7 @@ public class DbAdapter
 			
 			if (parent_id == null)
 			{
-				real_id = getRootFolderID(c, projectId, query);
+				real_id = getRootFolderID(c, projectId, queryFolder);
 			}
 			else
 				real_id = parent_id.intValue();
@@ -266,12 +266,12 @@ public class DbAdapter
 				throw new DupFolderNameException();
 			}
 			
-			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id, name, query_folder) VALUES(?,?,?,?)");
+			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id, name, query_or_folder) VALUES(?,?,?,?)");
 			
 			ps.setInt(1, prjId);
 			ps.setInt(2, real_id);
 			ps.setString(3, name);
-			ps.setShort(4, (short)(query ? 1 : 0));
+			ps.setShort(4, (short)(queryFolder ? 1 : 0));
 			
 			ps.executeUpdate();
 			
@@ -359,6 +359,11 @@ public class DbAdapter
 		{
 			Connection c = getConnection();
 			
+			PreparedStatement ps = c.prepareStatement("SELECT id FROM snapshot_node WHERE folder_id = ?");
+			
+			ps.setInt(1, id);
+			ps.executeUpdate();
+			
 			deleteFolder(c, id);
 			
 			c.commit();
@@ -394,7 +399,7 @@ public class DbAdapter
 	{
 		short iqry = (short)(query ? 1 : 0);
 		
-		PreparedStatement ps = c.prepareStatement("SELECT * FROM folder WHERE query_folder = ? AND parent_id IS NULL");
+		PreparedStatement ps = c.prepareStatement("SELECT * FROM folder WHERE query_or_folder = ? AND parent_id IS NULL");
 		
 		ps.setShort(1, iqry);
 		ResultSet rs = ps.executeQuery();
@@ -409,13 +414,13 @@ public class DbAdapter
 			
 			int prjId = rs.getInt("id");
 			
-			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id, query_folder) VALUES (?, NULL, ?)");
+			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id, query_or_folder) VALUES (?, NULL, ?)");
 			
 			ps.setInt(1, prjId);
 			ps.setShort(2, iqry);
 			ps.executeUpdate();
 			
-			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND query_folder = ? AND parent_id IS NULL");
+			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND query_or_folder = ? AND parent_id IS NULL");
 			
 			ps.setInt(1, prjId);
 			ps.setShort(2, iqry);
@@ -462,9 +467,9 @@ public class DbAdapter
 				"PROJECT",
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"ext_id VARCHAR(36)",
-				"name VARCHAR(256)",
-				"language INT",
-				"readonly SMALLINT",
+				"name VARCHAR(256) NOT NULL",
+				"language INT NOT NULL",
+				"readonly SMALLINT NOT NULL",
 				"PRIMARY KEY (id)"
 			},
 			{
@@ -472,8 +477,8 @@ public class DbAdapter
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"parent_id INT",
 				"ext_id VARCHAR(36)",
-				"name VARCHAR(256)",
-				"language INTEGER",				
+				"name VARCHAR(256) NOT NULL",
+				"language INTEGER NOT NULL",				
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (parent_id) REFERENCES PROJECT"
 			},
@@ -481,12 +486,26 @@ public class DbAdapter
 				"FOLDER",
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"parent_id INT",
-				"project_id INT",
-				"query_folder SMALLINT",
+				"project_id INT NOT NULL",
+				"query_or_folder SMALLINT NOT NULL",
 				"name VARCHAR(256)",
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (parent_id) REFERENCES FOLDER",
 				"FOREIGN KEY (project_id) REFERENCES PROJECT"
+			},
+			{
+				"SNAPSHOT_NODE",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"folder_id INT",
+				"parent_id INT",
+				"project_id INT NOT NULL",
+				"type INT NOT NULL",
+				"origin_id VARCHAR(36) NOT NULL",				
+				"name VARCHAR(256) NOT NULL",				
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (folder_id) REFERENCES FOLDER",
+				"FOREIGN KEY (parent_id) REFERENCES SNAPSHOT_NODE",				
+				"FOREIGN KEY (project_id) REFERENCES PROJECT"				
 			}
 		};
 	

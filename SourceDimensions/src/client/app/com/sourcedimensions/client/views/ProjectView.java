@@ -26,11 +26,12 @@ public class ProjectView extends ViewPart
 {
 	public final static String ID = "com.sourcedimensions.client.views.ProjectView";
 	
-	private TreeViewer m_viewer;
+	private static TreeViewer m_viewer;
 	//private DrillDownAdapter m_drillDownAdapter;
 	private static Project m_project;
-	private TreeGroup m_root;
-
+	private static TreeGroup m_root;
+	private static SnapshotGroup m_snapshotGroup;
+	private static QueryGroup m_queryGroup;
 	
 	abstract static class TreeObject implements IAdaptable 
 	{
@@ -46,8 +47,7 @@ public class ProjectView extends ViewPart
 		{
 			return m_name;
 		}
-		
-		
+				
 		public void setName(String name)
 		{
 			m_name = name;
@@ -79,7 +79,7 @@ public class ProjectView extends ViewPart
 	
 	public abstract static class TreeGroup extends TreeObject
 	{
-		private ArrayList<TreeObject> m_children = new ArrayList<TreeObject>();
+		private ArrayList<TreeObject> m_children;
 
 		public TreeGroup(String name)
 		{
@@ -88,24 +88,44 @@ public class ProjectView extends ViewPart
 	
 		public void addChild(TreeObject object)
 		{
+			if (m_children == null)
+			{
+				m_children = new ArrayList<TreeObject>();
+				load();
+			}
+			
 			m_children.add(object);
-			object.setParent(this);
+			object.setParent(this);			
 		}
 		
 		public void deleteChild(TreeObject object)
 		{
+			if (m_children == null)
+				return;
+			
 			m_children.remove(object);
 		}
 		
 		public Object[] getChildren() 
 		{
+			if (m_children == null)
+			{
+				m_children = new ArrayList<TreeObject>();
+				load();
+			}
+			
 			return m_children.toArray();
 		}
 		
 		public boolean hasChildren() 
 		{
-			return m_children.size() > 0;
+			if (m_children == null)
+				return true;
+			else
+				return m_children.size() > 0;
 		}
+
+		protected abstract void load();
 	}
 
 
@@ -126,24 +146,23 @@ public class ProjectView extends ViewPart
 	public static class FolderObject extends TreeGroup
 	{
 		protected Integer m_id;
-		boolean m_query;
+		boolean m_isQuery;
 		
-		public FolderObject(String name, Integer id, boolean query)
+		public FolderObject(String name, Integer id, boolean isQuery)
 		{
 			super(name);
 			m_id = id;
-			m_query = query;
+			m_isQuery = isQuery;
 		}
 		
-		public void load()
+		protected void load()
 		{
-			List<Folder> list = DbAdapter.getFolderList(m_id, m_project.getId(), m_query);
+			List<Folder> list = DbAdapter.getFolderList(m_id, m_project.getId(), m_isQuery);
 			
 			for (Folder f : list)
 			{
-				FolderObject o = new FolderObject(f.m_name, f.m_id, m_query);
+				FolderObject o = new FolderObject(f.m_name, f.m_id, m_isQuery);
 				addChild(o);
-				o.load();
 			}
 		}
 		
@@ -159,7 +178,7 @@ public class ProjectView extends ViewPart
 		
 		public boolean getQuery()
 		{
-			return m_query;
+			return m_isQuery;
 		}
 	}
 
@@ -175,6 +194,10 @@ public class ProjectView extends ViewPart
 		{
 			return Util.getSharedImage(IImageKeys.IMG_PROJECT);
 		}
+		
+		protected void load()
+		{			
+		}
 	}
 	
 	
@@ -189,6 +212,10 @@ public class ProjectView extends ViewPart
 		{
 			return Util.getSharedImage(IImageKeys.IMG_PARENT);
 		}
+		
+		protected void load()
+		{			
+		}
 	}
 
 	
@@ -197,7 +224,6 @@ public class ProjectView extends ViewPart
 		public QueryGroup()
 		{
 			super("Queries");
-			load();
 		}
 		
 		public Image getImage()
@@ -213,7 +239,6 @@ public class ProjectView extends ViewPart
 			{
 				FolderObject o = new FolderObject(f.m_name, f.m_id, true);
 				addChild(o);
-				o.load();
 			}			
 		}	
 	}	
@@ -223,7 +248,6 @@ public class ProjectView extends ViewPart
 		public SnapshotGroup()
 		{
 			super("Snapshots");
-			load();
 		}
 		
 		public Image getImage()
@@ -239,13 +263,12 @@ public class ProjectView extends ViewPart
 			{
 				FolderObject o = new FolderObject(f.m_name, f.m_id, false);
 				addChild(o);
-				o.load();
 			}			
 		}
 	}
 		
 	
-	class ViewContentProvider implements IStructuredContentProvider, ITreeContentProvider 
+	class ViewContentProvider implements ITreeContentProvider 
 	{
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) 
 		{
@@ -292,8 +315,8 @@ public class ProjectView extends ViewPart
 		{
 			if (parent instanceof TreeGroup)
 				return ((TreeGroup)parent).hasChildren();
-		
-			return false;
+			else
+				return false;
 		}
 	}
 
@@ -333,8 +356,8 @@ public class ProjectView extends ViewPart
 	protected void initializeTree()
 	{
 		m_root = new RootGroup();	
-		TreeGroup parents = new ParentPrjGroup();
 		
+		TreeGroup parents = new ParentPrjGroup();
 		m_root.addChild(parents);
 		
 		if (m_project != null)
@@ -344,9 +367,12 @@ public class ProjectView extends ViewPart
 				parents.addChild(new ProjectObject(p));
 			}
 		}
+
+		m_snapshotGroup = new SnapshotGroup();
+		m_root.addChild(m_snapshotGroup);
 		
-		m_root.addChild(new SnapshotGroup());
-		m_root.addChild(new QueryGroup());
+		m_queryGroup = new QueryGroup();
+		m_root.addChild(m_queryGroup);
 	}
 	
 	public void createPartControl(Composite parent) 
@@ -376,6 +402,16 @@ public class ProjectView extends ViewPart
 	public static Project getProject()
 	{
 		return m_project;
+	}
+	
+	public static SnapshotGroup getSnapshotGroup()
+	{
+		return m_snapshotGroup;
+	}
+	
+	public static QueryGroup getQueryGroup()
+	{
+		return m_queryGroup;
 	}
 	
 	public TreeViewer getViewer()

@@ -109,10 +109,13 @@ public class WebService implements IWebService
 		return prjSet;
 	}
 	
-	public SnapshotNode runSymbolQuery(String sessionID, SymbolQuery query) throws XFireFault
+	public SnapshotNode runSymbolQuery(String sessionID, String snapshotName, SymbolQuery query) throws XFireFault
 	{
 		verifySession(sessionID);
 		
-		return null;
+		SnapshotNode root = new SnapshotNode(snapshotName);
+		
+				
+		return root;
 	}
 }

@@ -149,9 +149,9 @@ public class SymbolQueryDialog extends DialogBase
 		{
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
 			{
-				String destName = m_snapshotNameText.getText().trim();
+				String snapshotName = m_snapshotNameText.getText().trim();
 				
-				if (destName.length() == 0)
+				if (snapshotName.length() == 0)
 				{
 					MessageDialog.openWarning(m_shell, "Snapshot Name", "Please enter Destination Snapshot Name");
 					return;
@@ -193,14 +193,13 @@ public class SymbolQueryDialog extends DialogBase
 					query.setLocalDeclFilter(m_localDeclFilter);
 				}
 				
-				
 				WSConsumer consumer = new WSConsumer();
 				SnapshotNode rootNode;
 				
 				try
 				{
 					rootNode = (SnapshotNode)consumer.invokeWebService(PlatformUI.getWorkbench().getDisplay(), 
-						m_shell, "runSymbolQuery", new Object[] { query });			
+						m_shell, "runSymbolQuery", new Object[] { snapshotName.split(Folder.DIVIDER_REGEX)[0], query });			
 				}
 				catch (Exception ex)
 				{
@@ -208,7 +207,7 @@ public class SymbolQueryDialog extends DialogBase
 					return;
 				}
 				
-				if (consumer.wasCancelled() || consumer.getFault() != null)
+				if (consumer.wasCancelled())
 				{
 					return;
 				}

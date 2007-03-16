@@ -4,6 +4,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
@@ -87,7 +88,14 @@ public class CreateFolderAction implements IWorkbenchWindowActionDelegate, IObje
 					
 				if (view != null)
 				{
-					view.getViewer().refresh(selected);
+					TreeViewer viewer = view.getViewer();
+					
+					viewer.refresh(selected);
+					
+					if (!viewer.getExpandedState(selected))
+					{
+						viewer.setExpandedState(selected, true);
+					}
 				}
 
 				return;

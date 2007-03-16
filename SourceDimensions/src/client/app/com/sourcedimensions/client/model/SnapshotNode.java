@@ -10,6 +10,21 @@ public class SnapshotNode
 	
 	protected List<SnapshotNode> m_children;
 	
+	public SnapshotNode()
+	{		
+	}
+	
+	public SnapshotNode(String name)
+	{
+		setType(Type.ROOT);
+		setName(name);
+	}
+	
+	public SnapshotNode(Type type)
+	{
+		m_type = type;
+	}
+	
 	public String getName()
 	{
 		return m_name;

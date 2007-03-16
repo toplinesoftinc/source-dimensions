@@ -18,5 +18,5 @@ public interface IWebService
 		
 	public String login(String userName, String password) throws XFireFault;
 	public Set<Project> getProjectList(String sessionID) throws XFireFault;
-	public SnapshotNode runSymbolQuery(String sessionID, SymbolQuery query) throws XFireFault;
+	public SnapshotNode runSymbolQuery(String sessionID, String snapshotName, SymbolQuery query) throws XFireFault;
 }
