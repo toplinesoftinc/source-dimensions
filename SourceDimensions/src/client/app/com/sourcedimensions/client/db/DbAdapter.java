@@ -4,12 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
-
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
-
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
+
 
 public class DbAdapter 
 {
@@ -26,6 +25,11 @@ public class DbAdapter
 		}
 	}
 
+	public static void tryConnection() throws SQLException, IOException
+	{
+		Connection c = getConnection();
+		c.close();
+	}
 	
 	public static List<Project> getProjectList()
 	{

@@ -1,10 +1,13 @@
 package com.sourcedimensions.client;
 
+import org.apache.derby.impl.jdbc.EmbedSQLException;
 import org.eclipse.core.runtime.IPlatformRunnable;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
+import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.forms.LoginDialog;
 
 
@@ -20,9 +23,24 @@ public class Application implements IPlatformRunnable
 		Display display = PlatformUI.createDisplay();
 		
 		try 
-		{
+		{			
+			try
+			{
+				DbAdapter.tryConnection();
+			}
+			catch (Exception e)
+			{
+				Platform.endSplash();
+				
+				MessageDialog.openError(null, "Error", "\n   Probably another instance of the program is already working. " +
+					"The application cannot have more than one instance running on the same computer." +
+					"\n\n(MESSAGE: " + e.getMessage() + ")");
+				
+				return IPlatformRunnable.EXIT_OK;
+			}
+		
 			Platform.endSplash();
-							
+			
 			new LoginDialog(display, null).open();
 			
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
@@ -31,6 +49,7 @@ public class Application implements IPlatformRunnable
 			{
 				return IPlatformRunnable.EXIT_RESTART;
 			}
+			
 			return IPlatformRunnable.EXIT_OK;
 		} 
 		finally 
