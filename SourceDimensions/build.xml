@@ -1,9 +1,6 @@
 <project name="SourceDimensions" default="all" basedir=".">
 
-	<!-- Debug flag -->
-	<property name="debug" value="true"/>
-	<property name="debug.cpp" value="false"/>
-
+	<property file="build.properties"/>
 
         <property name="cpptasks.jar" value="${basedir}/ant/lib/cpptasks.jar"/>
 	<property name="ant-contrib.jar" value="${basedir}/ant/lib/ant-contrib.jar"/>
@@ -59,14 +56,10 @@
 		<property name="parser.src.dir" value="${src.dir}/parser"/>
 		<property name="parser.icu.dir" value="${parser.src.dir}/icu"/>
 		<property name="parser.tools.dir" value="${parser.src.dir}/tools"/>
-		<property name="parser.test.dir" value="${basedir}/../testsources"/>
 		<property name="parser.testoutput.dir" value="${parser.test.dir}"/>
 
 		<property name="jni.common.dir" value="${parser.src.dir}/jni"/>
 
-		<property name="java.source.vm" value="1.5"/>
-		<property name="java.target.vm" value="1.5"/>
-	
 		<property name="backend.src.dir" value="${src.dir}/backend"/>
 		<property name="backend.core.dir" value="${backend.src.dir}/core"/>
 
@@ -75,6 +68,8 @@
 		<property name="xfire.lib.dir" value="${backend.src.dir}/lib/xfire"/>
 		<property name="hibernate.lib.dir" value="${backend.src.dir}/lib/hibernate"/>
 		<property name="jdbc.lib.dir" value="${backend.src.dir}/lib/jdbc"/>
+
+		<property name="tomcat.webapp.dir" value="${tomcat.home.dir}/webapps"/>
 
 		<osfamily property="os.family"/>
 		<if> 
@@ -280,7 +275,8 @@
 
 
 	<target name="parser.test.java" depends="init, parser.util">
-		<mkdir dir="${parser.testoutput.dir}"/>		
+		<mkdir dir="${parser.testoutput.dir}"/>
+		
 		<delete>
 			<fileset dir="${parser.testoutput.dir}" includes="*.log"/>
 		</delete>	
@@ -289,7 +285,7 @@
 		<apply executable="${parser.bin.dir}/parserutil" output="${parser.testoutput.dir}/java14test.log" append="true" failonerror="false" skipemptyfilesets="true">
 			<arg value="-j"/>
 			<srcfile/>
-			<fileset dir="${parser.test.dir}">
+			<fileset dir="${parser.test.dir.java}">
 				<include name="java14/**/*.java"/>						
 			</fileset>
 		</apply>
@@ -298,7 +294,7 @@
 		<apply executable="${parser.bin.dir}/parserutil" output="${parser.testoutput.dir}/java15test.log" append="true" failonerror="false" skipemptyfilesets="true">
 			<arg value="-j5"/>
 			<srcfile/>
-			<fileset dir="${parser.test.dir}">
+			<fileset dir="${parser.test.dir.java15}">
 				<include name="java15/**/*.java"/>						
 			</fileset>
 		</apply>
@@ -315,7 +311,7 @@
 		<apply executable="${parser.bin.dir}/parserutil" output="${parser.testoutput.dir}/csharptest.log" append="true" failonerror="false" skipemptyfilesets="true">
 			<arg value="-cs"/>
 			<srcfile/>
-			<fileset dir="${parser.test.dir}">
+			<fileset dir="${parser.test.dir.cs}">
 				<include name="csharp/**/*.cs"/>						
 			</fileset>
 		</apply>
@@ -324,7 +320,7 @@
 		<apply executable="${parser.bin.dir}/parserutil" output="${parser.testoutput.dir}/csharp2test.log" append="true" failonerror="false" skipemptyfilesets="true">
 			<arg value="-cs2"/>
 			<srcfile/>
-			<fileset dir="${parser.test.dir}">
+			<fileset dir="${parser.test.dir.cs2}">
 				<include name="csharp2/**/*.cs"/>						
 			</fileset>
 		</apply>
@@ -457,6 +453,19 @@
 			</fileset>
 		</war>
 		
+
+		<available file="${tomcat.webapp.dir}" type="dir" property="tomcat.webapp.present"/>
+
+		<if>
+			<equals arg1="${tomcat.webapp.present}" arg2="true"/>
+			<then>
+				<copy file="${webservice.bin.dir}/source-dimensions.war" todir="${tomcat.webapp.dir}"/>
+			</then>
+			<else>
+				<echo message="Cannot install service. Please check that Tomcat is installed and correct path to Tomcat home directory is provided" />
+			</else>
+		</if>
+
 	</target>
 
 
