@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
+import com.sourcedimensions.client.model.SnapshotNode;
 
 
 public class DbAdapter 
@@ -270,8 +271,8 @@ public class DbAdapter
 				throw new DupFolderNameException();
 			}
 			
-			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id, name, query_or_folder) VALUES(?,?,?,?)");
-			
+			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id, name, query_or_folder) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+
 			ps.setInt(1, prjId);
 			ps.setInt(2, real_id);
 			ps.setString(3, name);
@@ -279,18 +280,13 @@ public class DbAdapter
 			
 			ps.executeUpdate();
 			
-			ps = c.prepareStatement("SELECT * FROM folder WHERE parent_id = ? and name = ?");
-
-			ps.setInt(1, real_id);			
-			ps.setString(2, name);
-			
-			rs = ps.executeQuery();
+			rs = ps.getGeneratedKeys();
 			rs.next();
 			
 			Folder folder = new Folder();
-			folder.m_id = rs.getInt("id");
-			folder.m_name = rs.getString("name");
-					
+			folder.m_id = rs.getInt(1);
+			folder.m_name = name;
+			
 			c.commit();
 			c.close();
 			
@@ -392,12 +388,157 @@ public class DbAdapter
 			deleteFolder(c, rs.getInt("id"));
 		}
 		
+		ps = c.prepareStatement("DELETE FROM snapshot_node WHERE folder_id = ?");
+		
+		ps.setInt(1, id);
+		ps.executeUpdate();
+		
 		ps = c.prepareStatement("DELETE FROM folder WHERE id = ?");
 		
 		ps.setInt(1, id);
 		ps.executeUpdate();
 	}
 	
+	
+	public static void saveSnapshotTree(String projectId, Integer folderId, SnapshotNode root) throws SQLException, IOException
+	{
+		try
+		{
+			Connection c = getConnection();			
+	
+			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
+			
+			ps.setString(1, projectId);
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			
+			int prjId = rs.getInt("id");		
+
+			addSnapshotNode(c, prjId, null, folderId, root);
+			
+			c.commit();
+			c.close();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+		}
+	}
+
+	protected static void addSnapshotNode(Connection c, int projectId, Integer parentId, int folderId, SnapshotNode node) throws SQLException
+	{
+		PreparedStatement ps = c.prepareStatement("INSERT INTO snapshot_node(folder_id, parent_id, project_id, type, origin_id, name) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+		
+		ps.setInt(1, folderId);
+		ps.setInt(2, parentId);
+		ps.setInt(3, projectId);
+		ps.setInt(4, node.getType().value());
+		ps.setString(5, node.getOriginID());
+		ps.setString(6, node.getName());
+
+		ps.executeUpdate();
+		
+		ResultSet rs = ps.getGeneratedKeys();
+		rs.next();
+		
+		for (SnapshotNode n : node.getChildren())
+		{
+			addSnapshotNode(c, projectId, rs.getInt(1), folderId, n);
+		}
+	}
+	
+	public static List<SnapshotNode> getSnapshotNodeList(String projectId, Integer parentId, int folderId)
+	{
+		List<SnapshotNode> list = new ArrayList<SnapshotNode>();
+		
+		try
+		{
+			Connection c = getConnection();			
+	
+			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
+			
+			ps.setString(1, projectId);
+
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			
+			int prjId = rs.getInt("id");		
+
+			if (parentId == null)
+			{
+				ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE projectId = ? AND parent_id IS NULL AND folderId = ?");
+				
+				ps.setInt(1, prjId);
+				ps.setInt(2, folderId);
+			}
+			else
+			{
+				ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE projectId = ? AND parent_id = ? AND folderId = ?");
+				
+				ps.setInt(1, prjId);
+				ps.setInt(2, parentId);
+				ps.setInt(3, folderId);
+			}
+			
+			rs = ps.executeQuery();
+			
+			while (rs.next())
+			{
+				SnapshotNode node = new SnapshotNode();
+				
+				node.m_id = rs.getInt("id");
+				node.setType(SnapshotNode.Type.values()[rs.getInt("type")]);
+				node.setOriginID(rs.getString("origin_id"));
+				node.setName(rs.getString("name"));
+				
+				list.add(node);
+			}
+			
+			c.commit();
+			c.close();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+		}
+		
+		return list;
+	}
+
+	public static void deleteSnapshotTree(int id)
+	{
+		try
+		{
+			Connection c = getConnection();			
+	
+			deleteSnapshotNode(c, id);
+			
+			c.commit();
+			c.close();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+		}		
+	}
+	
+	protected static void deleteSnapshotNode(Connection c, int id) throws SQLException
+	{
+		PreparedStatement ps = c.prepareStatement("SELECT id FROM snapshot_node WHERE parent_id = ?");
+		
+		ps.setInt(1, id);
+
+		ResultSet rs = ps.executeQuery();
+		
+		while (rs.next())
+		{
+			deleteSnapshotNode(c, rs.getInt("id"));
+		}
+		
+		ps = c.prepareStatement("DELETE FROM snapshot_node WHERE id = ?");
+		
+		ps.executeUpdate();
+	}
 	
 	protected static int getRootFolderID(Connection c, String projectId, boolean query) throws SQLException, IOException
 	{

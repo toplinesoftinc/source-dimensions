@@ -4,6 +4,8 @@ import java.util.List;
 
 public class SnapshotNode 
 {
+	public int m_id;
+	
 	protected String m_name;
 	protected Type m_type;
 	protected String m_originId;
