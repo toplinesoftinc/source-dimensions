@@ -16,8 +16,11 @@ import org.eclipse.core.runtime.IAdaptable;
 import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.db.DbAdapter;
+import com.sourcedimensions.client.db.DupFolderNameException;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
+import com.sourcedimensions.client.model.SnapshotNode;
+
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
 
@@ -126,6 +129,64 @@ public class ProjectView extends ViewPart
 		}
 		
 		protected abstract void load();
+		
+		protected FolderObject makeFolderPath(String path, boolean isQuery)
+		{
+			String[] names = path.split(Folder.DIVIDER_REGEX);
+			
+			if (names.length == 1)
+				return null;
+			
+			TreeGroup cur = this;
+			boolean found = true;
+			
+			for (int i = 0; i < names.length - 1; i++)
+			{
+				if (cur.m_children == null)
+					cur.load();
+				
+				for (Object o : cur.getChildren())
+				{
+					if (o instanceof FolderObject)
+					{
+						FolderObject folder = (FolderObject)o;
+						
+						if (folder.getName().equals(names[i]))
+						{
+							cur = folder;
+							found = true;
+							break;
+						}
+					}
+				}
+				
+				if (!found)
+				{
+					for (int j = i; j < names.length - 1; j++)
+					{
+						Folder folder = null;
+						
+						try
+						{
+							folder = DbAdapter.addFolder(names[j], ((FolderObject)cur).getID(), ProjectView.getProject().getId(), isQuery);
+						}
+						catch (DupFolderNameException e)
+						{
+						}
+						
+						FolderObject folderObject = new FolderObject(folder.m_name, folder.m_id, isQuery);
+						folderObject.initNew();
+						cur.addChild(folderObject);
+						
+						m_viewer.setExpandedState(cur, true);
+						cur = folderObject;
+					}					
+					break;
+				}
+			}
+			
+			return (FolderObject)cur;			
+		}
 	}
 
 
@@ -224,7 +285,6 @@ public class ProjectView extends ViewPart
 		}
 	}
 
-	
 	public static class QueryGroup extends TreeGroup
 	{
 		public QueryGroup()
@@ -267,12 +327,53 @@ public class ProjectView extends ViewPart
 			
 			for (Folder f : list)
 			{
-				FolderObject o = new FolderObject(f.m_name, f.m_id, false);
-				addChild(o);
+				addChild(new FolderObject(f.m_name, f.m_id, false));
 			}			
 		}
-	}
 		
+		public void addSnapshotTree(SnapshotNode root, String name)
+		{
+			FolderObject folder = makeFolderPath(name, false);
+			Integer folderId = (folder == null) ? null : folder.getID();
+			
+			Integer id = DbAdapter.saveSnapshotTree(m_project.getId(), folderId, root);
+			
+			if (id != null)
+			{
+				addChild(new SnapshotItem(root.getName(), id, folderId));
+			}
+		}
+	}
+
+	
+	public static class SnapshotItem extends TreeGroup
+	{
+		protected int m_id;
+		protected int m_folderId;
+		
+		public SnapshotItem(String name, int id, int folderId)
+		{
+			super(name);
+			m_id = id;
+			m_folderId = folderId;
+		}
+		
+		public Image getImage()
+		{
+			return null; // TODO
+		}
+		
+		protected void load()
+		{
+			List<SnapshotNode> list = DbAdapter.getSnapshotNodeList(m_project.getId(), m_id, m_folderId);
+			
+			for (SnapshotNode node : list)
+			{
+				SnapshotItem item = new SnapshotItem(node.getName(), node.m_id, m_folderId);
+				addChild(item);
+			}			
+		}		
+	}
 	
 	class ViewContentProvider implements ITreeContentProvider 
 	{

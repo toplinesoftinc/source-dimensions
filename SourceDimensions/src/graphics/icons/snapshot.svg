@@ -12,28 +12,53 @@
    height="16"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.44.1"
+   inkscape:version="0.45"
    version="1.0"
    sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons"
    sodipodi:docname="snapshot.svg"
    inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\snapshot.png"
    inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-ydpi="90"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   sodipodi:modified="true">
   <defs
-     id="defs4" />
+     id="defs4">
+    <linearGradient
+       id="linearGradient20717">
+      <stop
+         style="stop-color:#020284;stop-opacity:1;"
+         offset="0"
+         id="stop20719" />
+      <stop
+         style="stop-color:#15159b;stop-opacity:0.94117647;"
+         offset="1"
+         id="stop20721" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient17792">
+      <stop
+         style="stop-color:#9e9191;stop-opacity:1;"
+         offset="0"
+         id="stop17794" />
+      <stop
+         style="stop-color:#ded0d0;stop-opacity:1;"
+         offset="1"
+         id="stop17796" />
+    </linearGradient>
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1.0"
-     gridtolerance="10000"
+     gridtolerance="50"
      guidetolerance="10"
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="49.875"
      inkscape:cx="8"
-     inkscape:cy="8"
+     inkscape:cy="9.7050536"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      width="16px"
@@ -42,7 +67,9 @@
      inkscape:window-width="1400"
      inkscape:window-height="994"
      inkscape:window-x="-4"
-     inkscape:window-y="-4" />
+     inkscape:window-y="-4"
+     inkscape:guide-bbox="false"
+     inkscape:grid-bbox="false" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -58,22 +85,43 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <path
+       style="fill:#fa9f0a;fill-opacity:1;stroke:#000000;stroke-width:0.22;stroke-miterlimit:4;stroke-opacity:1"
+       d="M 0.11055025,3.0548622 L 2.481478,3.0749123 L 3.4488967,0.24784461 L 10.391253,0.26789471 L 11.436365,3.1250375 L 15.9301,3.1150125 L 15.91005,13.267895 L 0.070450001,13.267895 C 0.070450001,9.5293819 0.11055025,14.867784 0.11055025,3.0548622 z "
+       id="rect6101"
+       sodipodi:nodetypes="ccccccccc" />
     <rect
-       style="opacity:1;fill:#030000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.79999995;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect1874"
-       width="16"
-       height="8"
-       x="2.220446e-016"
-       y="4" />
+       style="fill:#baaaaa;fill-opacity:1;stroke:#000000;stroke-width:0.28;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect13898"
+       width="11.78742"
+       height="7.7571678"
+       x="3.1214163"
+       y="5.1214161"
+       ry="2.3817759" />
     <path
        sodipodi:type="arc"
-       style="opacity:1;fill:#90a6dc;fill-opacity:1;fill-rule:nonzero;stroke:black;stroke-width:1.08996966;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="path2762"
-       sodipodi:cx="8.4010029"
-       sodipodi:cy="6.6265664"
-       sodipodi:rx="3.8696742"
-       sodipodi:ry="4.5413532"
-       d="M 12.270677 6.6265664 A 3.8696742 4.5413532 0 1 1  4.5313287,6.6265664 A 3.8696742 4.5413532 0 1 1  12.270677 6.6265664 z"
-       transform="matrix(1.292031,0,-1.647272e-2,1.100994,-2.671465,0.630763)" />
+       style="fill:#150bd3;fill-opacity:1;stroke:none;stroke-width:0.25;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path19746"
+       sodipodi:cx="11.218045"
+       sodipodi:cy="10.486216"
+       sodipodi:rx="2.0150375"
+       sodipodi:ry="1.9649123"
+       d="M 13.233083 10.486216 A 2.0150375 1.9649123 0 1 1  9.2030077,10.486216 A 2.0150375 1.9649123 0 1 1  13.233083 10.486216 z"
+       transform="matrix(-0.2970039,1.1302962,-1.1295232,-0.2968008,25.877066,-0.2158577)" />
+    <rect
+       style="fill:#240847;fill-opacity:1;stroke:none;stroke-width:0.25;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect23632"
+       width="2.5213032"
+       height="4.1002507"
+       x="2.0802004"
+       y="6.7192979"
+       ry="0" />
+    <rect
+       style="fill:#240847;fill-opacity:1;stroke:none;stroke-width:0.25;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect24603"
+       width="2.546366"
+       height="0.82205516"
+       x="5.6340847"
+       y="6.7167921" />
   </g>
 </svg>

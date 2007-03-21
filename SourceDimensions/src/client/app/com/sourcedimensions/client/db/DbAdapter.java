@@ -400,7 +400,7 @@ public class DbAdapter
 	}
 	
 	
-	public static void saveSnapshotTree(String projectId, Integer folderId, SnapshotNode root) throws SQLException, IOException
+	public static Integer saveSnapshotTree(String projectId, Integer folderId, SnapshotNode root)
 	{
 		try
 		{
@@ -414,18 +414,21 @@ public class DbAdapter
 			
 			int prjId = rs.getInt("id");		
 
-			addSnapshotNode(c, prjId, null, folderId, root);
+			int id = addSnapshotNode(c, prjId, null, folderId, root);
 			
 			c.commit();
 			c.close();
+			
+			return id;
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			return null;
 		}
 	}
 
-	protected static void addSnapshotNode(Connection c, int projectId, Integer parentId, int folderId, SnapshotNode node) throws SQLException
+	protected static int addSnapshotNode(Connection c, int projectId, Integer parentId, int folderId, SnapshotNode node) throws SQLException
 	{
 		PreparedStatement ps = c.prepareStatement("INSERT INTO snapshot_node(folder_id, parent_id, project_id, type, origin_id, name) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 		
@@ -445,6 +448,8 @@ public class DbAdapter
 		{
 			addSnapshotNode(c, projectId, rs.getInt(1), folderId, n);
 		}
+		
+		return rs.getInt(1);
 	}
 	
 	public static List<SnapshotNode> getSnapshotNodeList(String projectId, Integer parentId, int folderId)
