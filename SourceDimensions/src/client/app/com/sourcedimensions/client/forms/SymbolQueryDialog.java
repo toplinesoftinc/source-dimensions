@@ -149,9 +149,9 @@ public class SymbolQueryDialog extends DialogBase
 		{
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
 			{
-				String snapshotName = m_snapshotNameText.getText().trim();
+				String fullName = m_snapshotNameText.getText().trim();
 				
-				if (snapshotName.length() == 0)
+				if (fullName.split(Folder.DIVIDER_REGEX).length == 0)
 				{
 					MessageDialog.openWarning(m_shell, "Snapshot Name", "Please enter Destination Snapshot Name");
 					return;
@@ -199,7 +199,7 @@ public class SymbolQueryDialog extends DialogBase
 				try
 				{
 					rootNode = (SnapshotNode)consumer.invokeWebService(PlatformUI.getWorkbench().getDisplay(), 
-						m_shell, "runSymbolQuery", new Object[] { snapshotName.split(Folder.DIVIDER_REGEX)[0], query });			
+						m_shell, "runSymbolQuery", new Object[] { query });			
 				}
 				catch (Exception ex)
 				{
@@ -209,12 +209,20 @@ public class SymbolQueryDialog extends DialogBase
 				
 				if (consumer.wasCancelled())
 				{
+					m_forceClose = true;
+					m_shell.close();
+
 					return;
 				}
 				
 				if (rootNode != null)
 				{
-					//TODO
+					String[] nameParts = fullName.split(Folder.DIVIDER_REGEX);
+					String name = nameParts[nameParts.length - 1];
+					
+					rootNode.setName(name);
+
+					ProjectView.getSnapshotGroup().addSnapshotTree(rootNode, fullName);
 				}
 				
 				m_forceClose = true;

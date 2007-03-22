@@ -1,5 +1,6 @@
 package com.sourcedimensions.client.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SnapshotNode 
@@ -10,16 +11,11 @@ public class SnapshotNode
 	protected Type m_type;
 	protected String m_originId;
 	
-	protected List<SnapshotNode> m_children;
+	protected List<SnapshotNode> m_children = new ArrayList<SnapshotNode>();
 	
 	public SnapshotNode()
 	{		
-	}
-	
-	public SnapshotNode(String name)
-	{
-		setType(Type.ROOT);
-		setName(name);
+		setType(Type.ROOT);		
 	}
 	
 	public SnapshotNode(Type type)

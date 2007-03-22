@@ -428,12 +428,22 @@ public class DbAdapter
 		}
 	}
 
-	protected static int addSnapshotNode(Connection c, int projectId, Integer parentId, int folderId, SnapshotNode node) throws SQLException
+	protected static int addSnapshotNode(Connection c, int projectId, Integer parentId, Integer folderId, SnapshotNode node) throws SQLException
 	{
-		PreparedStatement ps = c.prepareStatement("INSERT INTO snapshot_node(folder_id, parent_id, project_id, type, origin_id, name) VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+		PreparedStatement ps;
+			
+		ps = c.prepareStatement("INSERT INTO snapshot_node(folder_id, parent_id, project_id, type, origin_id, name) VALUES(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+	
+		if (folderId == null)
+			ps.setNull(1, Types.INTEGER);
+		else
+			ps.setInt(1, folderId);
 		
-		ps.setInt(1, folderId);
-		ps.setInt(2, parentId);
+		if (parentId == null)
+			ps.setNull(2, Types.INTEGER);
+		else
+			ps.setInt(2, parentId);
+		
 		ps.setInt(3, projectId);
 		ps.setInt(4, node.getType().value());
 		ps.setString(5, node.getOriginID());
@@ -452,7 +462,7 @@ public class DbAdapter
 		return rs.getInt(1);
 	}
 	
-	public static List<SnapshotNode> getSnapshotNodeList(String projectId, Integer parentId, int folderId)
+	public static List<SnapshotNode> getSnapshotNodeList(String projectId, Integer parentId, Integer folderId)
 	{
 		List<SnapshotNode> list = new ArrayList<SnapshotNode>();
 		
@@ -469,21 +479,19 @@ public class DbAdapter
 			
 			int prjId = rs.getInt("id");		
 
+			ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE project_id = ? AND parent_id = ? AND folder_id = ?");
+			
+			ps.setInt(1, prjId);
+			
 			if (parentId == null)
-			{
-				ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE projectId = ? AND parent_id IS NULL AND folderId = ?");
-				
-				ps.setInt(1, prjId);
-				ps.setInt(2, folderId);
-			}
+				ps.setNull(2, Types.INTEGER);
 			else
-			{
-				ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE projectId = ? AND parent_id = ? AND folderId = ?");
-				
-				ps.setInt(1, prjId);
 				ps.setInt(2, parentId);
+			
+			if (folderId == null)
+				ps.setNull(3, Types.INTEGER);
+			else
 				ps.setInt(3, folderId);
-			}
 			
 			rs = ps.executeQuery();
 			

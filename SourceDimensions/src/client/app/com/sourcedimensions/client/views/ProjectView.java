@@ -130,15 +130,17 @@ public class ProjectView extends ViewPart
 		
 		protected abstract void load();
 		
-		protected FolderObject makeFolderPath(String path, boolean isQuery)
+		protected List<FolderObject> makeFolderPath(String path, boolean isQuery)
 		{
+			List<FolderObject> segments = new ArrayList<FolderObject>();
+			
 			String[] names = path.split(Folder.DIVIDER_REGEX);
 			
 			if (names.length == 1)
-				return null;
+				return segments;
 			
 			TreeGroup cur = this;
-			boolean found = true;
+			boolean found = false;
 			
 			for (int i = 0; i < names.length - 1; i++)
 			{
@@ -153,6 +155,7 @@ public class ProjectView extends ViewPart
 						
 						if (folder.getName().equals(names[i]))
 						{
+							segments.add(folder);
 							cur = folder;
 							found = true;
 							break;
@@ -168,7 +171,14 @@ public class ProjectView extends ViewPart
 						
 						try
 						{
-							folder = DbAdapter.addFolder(names[j], ((FolderObject)cur).getID(), ProjectView.getProject().getId(), isQuery);
+							Integer parentId;
+							
+							if (cur instanceof FolderObject)
+								parentId = ((FolderObject)cur).getID();
+							else
+								parentId = null;
+							
+							folder = DbAdapter.addFolder(names[j], parentId, ProjectView.getProject().getId(), isQuery);
 						}
 						catch (DupFolderNameException e)
 						{
@@ -178,14 +188,15 @@ public class ProjectView extends ViewPart
 						folderObject.initNew();
 						cur.addChild(folderObject);
 						
-						m_viewer.setExpandedState(cur, true);
-						cur = folderObject;
+						segments.add(folderObject);
+						cur = folderObject;				
 					}					
+
 					break;
 				}
 			}
 			
-			return (FolderObject)cur;			
+			return segments;			
 		}
 	}
 
@@ -218,12 +229,22 @@ public class ProjectView extends ViewPart
 		
 		protected void load()
 		{
-			List<Folder> list = DbAdapter.getFolderList(m_id, m_project.getId(), m_isQuery);
+			List<Folder> folderList = DbAdapter.getFolderList(m_id, m_project.getId(), m_isQuery);
 			
-			for (Folder f : list)
+			for (Folder f : folderList)
 			{
 				FolderObject o = new FolderObject(f.m_name, f.m_id, m_isQuery);
 				addChild(o);
+			}
+			
+			if (!m_isQuery)
+			{
+				List<SnapshotNode> snapshotList = DbAdapter.getSnapshotNodeList(m_project.getId(), null, m_id);
+				
+				for (SnapshotNode n : snapshotList)
+				{
+					addChild(new SnapshotItem(n.getName(), n.m_id, m_id));
+				}
 			}
 		}
 
@@ -285,6 +306,7 @@ public class ProjectView extends ViewPart
 		}
 	}
 
+	
 	public static class QueryGroup extends TreeGroup
 	{
 		public QueryGroup()
@@ -309,6 +331,7 @@ public class ProjectView extends ViewPart
 		}	
 	}	
 
+	
 	public static class SnapshotGroup extends TreeGroup
 	{
 		public SnapshotGroup()
@@ -328,19 +351,38 @@ public class ProjectView extends ViewPart
 			for (Folder f : list)
 			{
 				addChild(new FolderObject(f.m_name, f.m_id, false));
+			}
+			
+			List<SnapshotNode> snapshotList = DbAdapter.getSnapshotNodeList(m_project.getId(), null, null);
+			
+			for (SnapshotNode n : snapshotList)
+			{
+				addChild(new SnapshotItem(n.getName(), n.m_id, null));
 			}			
 		}
 		
 		public void addSnapshotTree(SnapshotNode root, String name)
-		{
-			FolderObject folder = makeFolderPath(name, false);
-			Integer folderId = (folder == null) ? null : folder.getID();
+		{		
+			List<FolderObject> segments = makeFolderPath(name, false);
+			Integer folderId = (segments.size() == 0) ? null : segments.get(segments.size() - 1).getID();
 			
 			Integer id = DbAdapter.saveSnapshotTree(m_project.getId(), folderId, root);
 			
 			if (id != null)
 			{
-				addChild(new SnapshotItem(root.getName(), id, folderId));
+				SnapshotItem item = new SnapshotItem(root.getName(), id, folderId);
+				
+				if (segments.size() == 0)
+					addChild(item);
+				else
+					segments.get(segments.size() - 1).addChild(item);
+			}
+			
+			m_viewer.refresh(this, true);
+			
+			for (FolderObject o : segments)
+			{
+				m_viewer.setExpandedState(o, true);
 			}
 		}
 	}
@@ -349,9 +391,9 @@ public class ProjectView extends ViewPart
 	public static class SnapshotItem extends TreeGroup
 	{
 		protected int m_id;
-		protected int m_folderId;
+		protected Integer m_folderId;
 		
-		public SnapshotItem(String name, int id, int folderId)
+		public SnapshotItem(String name, int id, Integer folderId)
 		{
 			super(name);
 			m_id = id;
