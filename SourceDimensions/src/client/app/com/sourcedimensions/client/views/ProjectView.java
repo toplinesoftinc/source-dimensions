@@ -178,7 +178,7 @@ public class ProjectView extends ViewPart
 							else
 								parentId = null;
 							
-							folder = DbAdapter.addFolder(names[j], parentId, ProjectView.getProject().getId(), isQuery);
+							folder = DbAdapter.addFolder(names[j], parentId, getProject().getId(), isQuery);
 						}
 						catch (DupFolderNameException e)
 						{
@@ -376,14 +376,11 @@ public class ProjectView extends ViewPart
 					addChild(item);
 				else
 					segments.get(segments.size() - 1).addChild(item);
-			}
-			
-			m_viewer.refresh(this, true);
-			
-			for (FolderObject o : segments)
-			{
-				m_viewer.setExpandedState(o, true);
-			}
+
+				m_viewer.refresh(this, true);
+				m_viewer.setSelection(new TreeSelection(new TreePath(segments.toArray()).createChildPath(item)), true);
+				
+			}			
 		}
 	}
 

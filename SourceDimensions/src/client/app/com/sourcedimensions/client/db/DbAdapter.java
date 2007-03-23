@@ -518,6 +518,101 @@ public class DbAdapter
 		return list;
 	}
 
+	
+	public static Object findObject(String projectId, String path, boolean isQuery)
+	{
+		Integer id = null;
+		String[] segments = path.split(Folder.DIVIDER_REGEX);
+
+		try
+		{
+			Connection c = getConnection();			
+						
+			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
+			
+			ps.setString(1, projectId);
+
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			
+			int prjId = rs.getInt("id");		
+			
+			for (int i = 0; i < segments.length; i++)
+			{
+				ps = c.prepareStatement("SELECT id FROM folder WHERE project_id = ? AND parent_id = ? AND name = ?");					
+				
+				ps.setInt(1, prjId);
+				
+				if (id == null)
+					ps.setNull(2, Types.INTEGER);
+				else
+					ps.setInt(2, id);
+				
+				ps.setString(3, segments[i]);
+				
+				rs = ps.executeQuery();
+			
+				if (i == segments.length - 1)
+				{				
+					if (rs.next())
+					{
+						Folder folder = new Folder();
+						folder.m_id = rs.getInt("id");
+						folder.m_name = segments[i];
+						
+						return folder;
+					}
+					else
+					{
+						if (!isQuery)
+							ps = c.prepareStatement("SELECT id FROM snapshot_node WHERE project_id = ? AND folder_id = ? AND parent_id IS NULL AND name = ?");						
+
+						ps.setInt(1, prjId);
+						
+						if (id == null)
+							ps.setNull(2, Types.INTEGER);
+						else
+							ps.setInt(2, id);
+						
+						ps.setString(3, segments[i]);
+						
+						rs = ps.executeQuery();
+
+						if (rs.next())
+						{
+							if (!isQuery)
+							{
+								SnapshotNode node = new SnapshotNode();
+								node.m_id = rs.getInt("id");
+								node.setName(segments[i]);
+								
+								return node;
+							}
+						}
+						else
+							return null;
+					}
+				}
+
+				if (rs.next())
+				{
+					id = rs.getInt("id");
+				}
+				else
+					return null;			
+			}
+			
+			c.commit();
+			c.close();			
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+		}
+		
+		return null;
+	}
+	
 	public static void deleteSnapshotTree(int id)
 	{
 		try

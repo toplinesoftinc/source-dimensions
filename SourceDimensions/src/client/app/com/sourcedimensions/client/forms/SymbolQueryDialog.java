@@ -14,6 +14,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+
+import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
 import org.eclipse.swt.widgets.Label;
@@ -151,12 +153,14 @@ public class SymbolQueryDialog extends DialogBase
 			{
 				String fullName = m_snapshotNameText.getText().trim();
 				
-				if (fullName.split(Folder.DIVIDER_REGEX).length == 0)
-				{
-					MessageDialog.openWarning(m_shell, "Snapshot Name", "Please enter Destination Snapshot Name");
+				if (!validatePath(false))
 					return;
-				}
-
+				
+				Object found = DbAdapter.findObject(ProjectView.getProject().getId(), fullName, false);
+				
+				if (!validateFoundObject(found, false))
+					return;
+				
 				SymbolQuery query = new SymbolQuery();
 				
 				query.setAllNamespaces(m_allNamespacesCheckBox.getSelection());
@@ -215,19 +219,28 @@ public class SymbolQueryDialog extends DialogBase
 					return;
 				}
 				
-				if (rootNode != null)
+				if (rootNode == null)
+				{
+					MessageDialog.openInformation(m_shell, "Query Results", "No item found for the specified query");
+					return;
+				}
+				else
 				{
 					String[] nameParts = fullName.split(Folder.DIVIDER_REGEX);
 					String name = nameParts[nameParts.length - 1];
 					
 					rootNode.setName(name);
 
+					if (found != null)
+						DbAdapter.deleteSnapshotTree(((SnapshotNode)found).m_id);
+					
 					ProjectView.getSnapshotGroup().addSnapshotTree(rootNode, fullName);
 				}
 				
 				m_forceClose = true;
 				m_shell.close();
 			}
+			
 		});
 		
 		m_shell.addShellListener(new ShellAdapter() 
@@ -937,7 +950,68 @@ public class SymbolQueryDialog extends DialogBase
 			}			
 		}
 	}
+
+	protected boolean validatePath(boolean isQuery)
+	{		
+		String fullName;
+		String[] segments;
+		String entityName = isQuery ? "Query Name" : "Snapshot Name"; 
+		
+		if (isQuery)
+			fullName = m_queryNameText.getText().trim();
+		else
+			fullName = m_snapshotNameText.getText().trim();
+		
+		segments = fullName.split(Folder.DIVIDER_REGEX);
+		
+		if (fullName.length() == 0 || segments.length == 0)
+		{
+			MessageDialog.openError(m_shell, "Incorrect Input", "Please enter " + entityName);
+			return false;
+		}
+		
+		for (String s : segments)
+		{
+			if (s.trim().length() == 0)
+			{
+				MessageDialog.openError(m_shell, "Incorrect Input", entityName +	" is incorrect. The name should have " +
+					"path components separated by path divider characters " + Folder.DIVIDER_REGEX.replaceAll("[\\x5B\\x5D]", "\"") +
+					". Starting/terminating and several consecutive path divider characters are not allowed.");
+				
+				return false;
+			}
+		}
+						
+		return true;
+	}
 	
+	protected boolean validateFoundObject(Object found, boolean isQuery)
+	{
+		String entityName = isQuery ? "query" : "snapshot";
+		
+		if (found != null)
+		{
+			if (found instanceof Folder)
+			{
+				MessageDialog.openError(m_shell, "Incorrect Input", "There is a folder on the same level" +
+					"with name specified for this " + entityName + ". Please use other name");
+				
+				return false;
+			}
+			else
+			{
+				if (MessageDialog.openQuestion(m_shell, "Overwrite confirmation", "There is a " + entityName + 
+						" with the same name which will be deleted and re-created with new contents." + 
+						"Do you want to continue?"))
+					return true;
+				else
+					return false;
+			}
+		}
+		else
+			return true;
+	}
+		
 	protected Shell getShell()
 	{
 		return m_shell;
@@ -965,7 +1039,10 @@ public class SymbolQueryDialog extends DialogBase
 				}
 				catch (Type.EmptyNameSectionException e)
 				{
-					MessageDialog.openError(shell, "Incorrect input", "Namespace section cannot be empty (like \"com//abc\")");
+					MessageDialog.openError(shell, "Incorrect Input", "Namespace is incorrect. The string should have " +
+							"namespace components separated by divider character \"/\" " +
+							"Starting/terminating and several consecutive divider characters are not allowed.");
+
 					return false;					
 				}
 				catch (PatternSyntaxException e)
