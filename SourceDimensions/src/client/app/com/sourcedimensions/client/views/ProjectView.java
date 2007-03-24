@@ -316,7 +316,7 @@ public class ProjectView extends ViewPart
 		
 		public Image getImage()
 		{
-			return Util.getSharedImage(IImageKeys.IMG_QUERY);
+			return Util.getSharedImage(IImageKeys.IMG_QUERY_FOLDER);
 		}
 
 		protected void load()
@@ -341,7 +341,7 @@ public class ProjectView extends ViewPart
 		
 		public Image getImage()
 		{
-			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT);
+			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_FOLDER);
 		}
 		
 		protected void load()
