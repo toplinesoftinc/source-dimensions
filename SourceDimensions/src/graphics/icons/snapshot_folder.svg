@@ -21,7 +21,7 @@
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   sodipodi:modified="TRUE">
+   sodipodi:modified="true">
   <defs
      id="defs4">
     <linearGradient
@@ -85,13 +85,13 @@
        x2="14.999958"
        y2="8.6416044"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1,0,0,0.9347826,0,0.4951509)" />
+       gradientTransform="matrix(1,0,0,0.795031,0,1.6593035)" />
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient9022"
        id="linearGradient11982"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.1311674,0,0,1.3339954,-1.9559245,9.4269898)"
+       gradientTransform="matrix(1.1279312,0,0,1.3339954,-1.9474892,8.5247342)"
        x1="2.6065159"
        y1="3.3884711"
        x2="14.997494"
@@ -109,7 +109,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="49.875"
      inkscape:cx="8"
-     inkscape:cy="7.3887544"
+     inkscape:cy="4.3003554"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      width="16px"
@@ -117,8 +117,8 @@
      showgrid="true"
      inkscape:window-width="1400"
      inkscape:window-height="994"
-     inkscape:window-x="0"
-     inkscape:window-y="22"
+     inkscape:window-x="-4"
+     inkscape:window-y="-4"
      inkscape:guide-bbox="false"
      inkscape:grid-bbox="false" />
   <metadata
@@ -137,12 +137,12 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:url(#linearGradient9028);fill-opacity:1.0;stroke:none;stroke-width:0.28;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:url(#linearGradient9028);fill-opacity:1;stroke:none;stroke-width:0.28;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3151"
        width="13.998684"
-       height="12.070175"
+       height="10.265664"
        x="1.0012743"
-       y="1.8446115" />
+       y="2.8070176" />
     <path
        sodipodi:type="arc"
        style="fill:#f1e700;fill-opacity:1;stroke:none;stroke-width:0.28;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -152,30 +152,30 @@
        sodipodi:rx="6.1954889"
        sodipodi:ry="1.5238096"
        d="M 14.997494 3.3884711 A 6.1954889 1.5238096 0 1 1  2.6065159,3.3884711 A 6.1954889 1.5238096 0 1 1  14.997494 3.3884711 z"
-       transform="matrix(1.1311674,0,0,1.1973684,-1.9471318,-2.232687)" />
+       transform="matrix(1.1311674,0,0,1.1973684,-1.9471318,-1.2301807)" />
     <path
        style="fill:url(#linearGradient11982);fill-opacity:1;stroke:none;stroke-width:0.28;stroke-miterlimit:4;stroke-opacity:1"
-       d="M 15.008752,13.947194 C 15.008752,15.069275 11.869107,15.97995 8.0006164,15.97995 C 4.1321258,15.97995 0.9924813,15.069275 0.9924813,13.947194 C 0.9924813,13.878159 15.008752,13.694133 15.008752,13.947194 z "
+       d="M 14.968652,13.044938 C 14.968652,14.167019 11.837989,15.077694 7.9805662,15.077694 C 4.1231433,15.077694 0.9924813,14.167019 0.9924813,13.044938 C 0.9924813,12.975903 14.968652,12.791877 14.968652,13.044938 z "
        id="path7068"
        sodipodi:nodetypes="cssc" />
     <path
-       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.35719249;stroke-miterlimit:4;stroke-opacity:1"
-       d="M 8.3894988,6.7453884 L 15.71073,6.7453884 L 15.733075,15.611392 L 8.3894988,15.630551 L 8.3894988,6.7453884 z "
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.34740457;stroke-miterlimit:4;stroke-opacity:1"
+       d="M 8.0638028,6.9610457 L 15.394792,6.9610457 L 15.417167,15.336645 L 8.0638028,15.354744 L 8.0638028,6.9610457 z "
        id="rect13003"
        sodipodi:nodetypes="ccccc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.53432024px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
-       d="M 10.424758,9.0426067 L 13.976246,9.0426067"
+       d="M 10.103956,8.9824562 L 13.655444,8.9824562"
        id="path13981"
        inkscape:connector-type="polyline" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.53432024px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
-       d="M 10.424758,11.228071 L 13.976245,11.228071"
+       d="M 10.103956,11.167921 L 13.655443,11.167921"
        id="path13983"
        inkscape:connector-type="polyline" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.53432024px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
-       d="M 10.404708,13.453633 L 13.956197,13.453633"
+       d="M 10.083906,13.393483 L 13.635395,13.393483"
        id="path13985"
        inkscape:connector-type="polyline" />
   </g>

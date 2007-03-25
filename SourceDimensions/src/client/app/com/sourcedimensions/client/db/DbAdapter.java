@@ -479,20 +479,34 @@ public class DbAdapter
 			
 			int prjId = rs.getInt("id");		
 
-			ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE project_id = ? AND parent_id = ? AND folder_id = ?");
-			
+			ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE project_id = ? AND "+
+					"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND " +
+					"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL))");
+
 			ps.setInt(1, prjId);
-			
+
 			if (parentId == null)
+			{
 				ps.setNull(2, Types.INTEGER);
-			else
-				ps.setInt(2, parentId);
-			
-			if (folderId == null)
 				ps.setNull(3, Types.INTEGER);
+			}
 			else
-				ps.setInt(3, folderId);
-			
+			{
+				ps.setInt(2, parentId);
+				ps.setInt(3, parentId);
+			}
+		
+			if (folderId == null)
+			{
+				ps.setNull(4, Types.INTEGER);
+				ps.setNull(5, Types.INTEGER);
+			}
+			else
+			{
+				ps.setInt(4, folderId);
+				ps.setInt(5, folderId);
+			}
+
 			rs = ps.executeQuery();
 			
 			while (rs.next())
@@ -539,16 +553,23 @@ public class DbAdapter
 			
 			for (int i = 0; i < segments.length; i++)
 			{
-				ps = c.prepareStatement("SELECT id FROM folder WHERE project_id = ? AND parent_id = ? AND name = ?");					
+				ps = c.prepareStatement("SELECT id FROM folder WHERE project_id = ? AND " +
+					"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND name = ?");					
 				
 				ps.setInt(1, prjId);
 				
 				if (id == null)
+				{
 					ps.setNull(2, Types.INTEGER);
+					ps.setNull(3, Types.INTEGER);
+				}
 				else
+				{
 					ps.setInt(2, id);
+					ps.setInt(3, id);
+				}
 				
-				ps.setString(3, segments[i]);
+				ps.setString(4, segments[i]);
 				
 				rs = ps.executeQuery();
 			
@@ -565,16 +586,23 @@ public class DbAdapter
 					else
 					{
 						if (!isQuery)
-							ps = c.prepareStatement("SELECT id FROM snapshot_node WHERE project_id = ? AND folder_id = ? AND parent_id IS NULL AND name = ?");						
+							ps = c.prepareStatement("SELECT id FROM snapshot_node WHERE project_id = ? AND " +
+								"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL)) AND parent_id IS NULL AND name = ?");						
 
 						ps.setInt(1, prjId);
 						
 						if (id == null)
+						{
 							ps.setNull(2, Types.INTEGER);
+							ps.setNull(3, Types.INTEGER);
+						}
 						else
+						{
 							ps.setInt(2, id);
+							ps.setInt(3, id);
+						}
 						
-						ps.setString(3, segments[i]);
+						ps.setString(4, segments[i]);
 						
 						rs = ps.executeQuery();
 
@@ -644,6 +672,8 @@ public class DbAdapter
 		}
 		
 		ps = c.prepareStatement("DELETE FROM snapshot_node WHERE id = ?");
+		
+		ps.setInt(1, id);
 		
 		ps.executeUpdate();
 	}

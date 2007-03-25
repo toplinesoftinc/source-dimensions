@@ -14,7 +14,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
@@ -226,13 +225,16 @@ public class SymbolQueryDialog extends DialogBase
 				}
 				else
 				{
-					String[] nameParts = fullName.split(Folder.DIVIDER_REGEX);
-					String name = nameParts[nameParts.length - 1];
+					String[] sections = fullName.split(Folder.DIVIDER_REGEX);
+					String name = sections[sections.length - 1];
 					
 					rootNode.setName(name);
 
 					if (found != null)
-						DbAdapter.deleteSnapshotTree(((SnapshotNode)found).m_id);
+					{
+						DbAdapter.deleteSnapshotTree(((SnapshotNode)found).m_id);						
+						ProjectView.getSnapshotGroup().deleteObject(sections);
+					}
 					
 					ProjectView.getSnapshotGroup().addSnapshotTree(rootNode, fullName);
 				}

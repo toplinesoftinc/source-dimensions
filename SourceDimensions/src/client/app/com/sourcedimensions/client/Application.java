@@ -1,6 +1,5 @@
 package com.sourcedimensions.client;
 
-import org.apache.derby.impl.jdbc.EmbedSQLException;
 import org.eclipse.core.runtime.IPlatformRunnable;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -32,7 +31,7 @@ public class Application implements IPlatformRunnable
 			{
 				Platform.endSplash();
 				
-				MessageDialog.openError(null, "Error", "\n   Probably another instance of the program is already working. " +
+				MessageDialog.openError(null, "Error", "\nAnother instance of the program has probably started on this computer. " +
 					"The application cannot have more than one instance running on the same computer." +
 					"\n\n(MESSAGE: " + e.getMessage() + ")");
 				

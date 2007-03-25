@@ -109,7 +109,7 @@ public class ProjectView extends ViewPart
 			m_children.remove(object);
 		}
 		
-		public Object[] getChildren() 
+		public TreeObject[] getChildren() 
 		{
 			if (m_children == null)
 			{
@@ -117,7 +117,7 @@ public class ProjectView extends ViewPart
 				load();
 			}
 			
-			return m_children.toArray();
+			return m_children.toArray(new TreeObject[0]);
 		}
 		
 		public boolean hasChildren() 
@@ -126,6 +126,46 @@ public class ProjectView extends ViewPart
 				return true;
 			else
 				return m_children.size() > 0;
+		}
+
+		public void deleteObject(String[] path)
+		{
+			TreeObject obj = findObject(path);
+			
+			if (obj != null)
+			{
+				obj.getParent().deleteChild(obj);				
+			}
+		}
+		
+		public TreeObject findObject(String[] path)
+		{
+			TreeGroup cur = this;
+			
+			for (int i = 0; i < path.length; i++)
+			{
+				boolean found = false;
+				
+				for (TreeObject o : cur.getChildren())
+				{
+					if (o instanceof TreeGroup)
+					{
+						TreeGroup group = (TreeGroup)o;
+						
+						if (group.getName().equals(path[i]))
+						{
+							cur = group;
+							found = true;
+							break;
+						}
+					}
+				
+					if (!found)
+						return null;
+				}
+			}
+			
+			return cur;
 		}
 		
 		protected abstract void load();
@@ -144,9 +184,6 @@ public class ProjectView extends ViewPart
 			
 			for (int i = 0; i < names.length - 1; i++)
 			{
-				if (cur.m_children == null)
-					cur.load();
-				
 				for (Object o : cur.getChildren())
 				{
 					if (o instanceof FolderObject)
