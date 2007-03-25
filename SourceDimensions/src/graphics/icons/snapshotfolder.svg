@@ -16,12 +16,12 @@
    inkscape:version="0.45"
    version="1.0"
    sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons"
-   sodipodi:docname="snapshot_folder.svg"
-   inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\snapshot_folder.png"
+   sodipodi:docname="snapshotfolder.svg"
+   inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\snapshotfolder.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   sodipodi:modified="true">
+   sodipodi:modified="TRUE">
   <defs
      id="defs4">
     <linearGradient
@@ -117,8 +117,8 @@
      showgrid="true"
      inkscape:window-width="1400"
      inkscape:window-height="994"
-     inkscape:window-x="-4"
-     inkscape:window-y="-4"
+     inkscape:window-x="0"
+     inkscape:window-y="22"
      inkscape:guide-bbox="false"
      inkscape:grid-bbox="false" />
   <metadata
@@ -164,19 +164,9 @@
        id="rect13003"
        sodipodi:nodetypes="ccccc" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.53432024px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
-       d="M 10.103956,8.9824562 L 13.655444,8.9824562"
-       id="path13981"
-       inkscape:connector-type="polyline" />
-    <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.53432024px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
-       d="M 10.103956,11.167921 L 13.655443,11.167921"
-       id="path13983"
-       inkscape:connector-type="polyline" />
-    <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.53432024px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
-       d="M 10.083906,13.393483 L 13.635395,13.393483"
-       id="path13985"
-       inkscape:connector-type="polyline" />
+       style="fill:#ffd809;fill-opacity:1;stroke:#000000;stroke-width:0.19814205;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 11.218016,8.0217528 L 12.442445,10.93336 L 15.060299,8.3030529 L 12.459986,13.491952 L 11.6706,11.661265 L 9.1270157,14.354188 L 11.218016,8.0217528 z "
+       id="rect2168"
+       sodipodi:nodetypes="ccccccc" />
   </g>
 </svg>

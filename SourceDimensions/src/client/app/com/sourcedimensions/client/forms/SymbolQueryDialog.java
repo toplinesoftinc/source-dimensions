@@ -993,22 +993,12 @@ public class SymbolQueryDialog extends DialogBase
 		
 		if (found != null)
 		{
-			if (found instanceof Folder)
-			{
-				MessageDialog.openError(m_shell, "Incorrect Input", "There is a folder on the same level" +
-					"with name specified for this " + entityName + ". Please use other name");
-				
-				return false;
-			}
+			if (MessageDialog.openQuestion(m_shell, "Overwrite confirmation", "There is a " + entityName + 
+					" with the same name which will be deleted and re-created with new contents. " + 
+					"Do you want to continue?"))
+				return true;
 			else
-			{
-				if (MessageDialog.openQuestion(m_shell, "Overwrite confirmation", "There is a " + entityName + 
-						" with the same name which will be deleted and re-created with new contents." + 
-						"Do you want to continue?"))
-					return true;
-				else
-					return false;
-			}
+				return false;
 		}
 		else
 			return true;

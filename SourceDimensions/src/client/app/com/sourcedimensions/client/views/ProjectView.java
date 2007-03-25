@@ -140,29 +140,31 @@ public class ProjectView extends ViewPart
 		
 		public TreeObject findObject(String[] path)
 		{
-			TreeGroup cur = this;
+			TreeObject cur = this;
 			
 			for (int i = 0; i < path.length; i++)
 			{
 				boolean found = false;
 				
-				for (TreeObject o : cur.getChildren())
+				if (cur instanceof TreeGroup)
 				{
-					if (o instanceof TreeGroup)
+					TreeGroup group = (TreeGroup)cur;
+					
+					for (TreeObject o : group.getChildren())
 					{
-						TreeGroup group = (TreeGroup)o;
-						
-						if (group.getName().equals(path[i]))
+						if (o.getName().equals(path[i]))
 						{
-							cur = group;
+							cur = o;
 							found = true;
 							break;
 						}
 					}
-				
+										
 					if (!found)
-						return null;
+						return null;					
 				}
+				else
+					return null;
 			}
 			
 			return cur;
@@ -422,7 +424,7 @@ public class ProjectView extends ViewPart
 	}
 
 	
-	public static class SnapshotItem extends TreeGroup
+	public static class SnapshotItem extends TreeObject
 	{
 		protected int m_id;
 		protected Integer m_folderId;
@@ -437,17 +439,6 @@ public class ProjectView extends ViewPart
 		public Image getImage()
 		{
 			return null; // TODO
-		}
-		
-		protected void load()
-		{
-			List<SnapshotNode> list = DbAdapter.getSnapshotNodeList(m_project.getId(), m_id, m_folderId);
-			
-			for (SnapshotNode node : list)
-			{
-				SnapshotItem item = new SnapshotItem(node.getName(), node.m_id, m_folderId);
-				addChild(item);
-			}			
 		}		
 	}
 	
