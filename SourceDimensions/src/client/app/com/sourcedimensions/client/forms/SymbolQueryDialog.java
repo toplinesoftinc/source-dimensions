@@ -85,6 +85,11 @@ public class SymbolQueryDialog extends DialogBase
 		m_display = display;
 		createShell(parent);
 	}
+
+	public void setSnapshotName(String name)
+	{
+		m_snapshotNameText.setText(name);
+	}
 	
 	protected void createShell(Shell parent) 
 	{

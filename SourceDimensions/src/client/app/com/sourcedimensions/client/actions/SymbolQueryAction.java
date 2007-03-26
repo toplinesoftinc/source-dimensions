@@ -10,6 +10,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.forms.SymbolQueryDialog;
+import com.sourcedimensions.client.views.ProjectView.FolderObject;
+import com.sourcedimensions.client.views.ProjectView.TreeObject;
 
 public class SymbolQueryAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate
 {
@@ -26,6 +28,22 @@ public class SymbolQueryAction implements IWorkbenchWindowActionDelegate, IObjec
  		Shell shell = m_window.getShell();
  
  		SymbolQueryDialog dialog = new SymbolQueryDialog(PlatformUI.getWorkbench().getDisplay(), shell);
+ 		
+ 		Object sel = m_selection.getFirstElement();
+ 		
+ 		if (sel instanceof FolderObject)
+ 		{
+ 			FolderObject folder = (FolderObject)sel;
+ 			String name = "";
+ 			
+ 			for (TreeObject cur = folder; cur instanceof FolderObject; cur = cur.getParent())
+ 			{
+ 				name = cur.getName() + "/" + name;
+ 			}
+ 			
+ 			dialog.setSnapshotName(name);
+ 		}
+ 		
  		dialog.open();
  	}
 

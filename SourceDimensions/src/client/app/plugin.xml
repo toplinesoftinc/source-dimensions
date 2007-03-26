@@ -65,6 +65,24 @@
          	label="Project"
          	visible="true">
                <action
+                   class="com.sourcedimensions.client.actions.DeleteSnapshotAction"
+                   icon="icons/delsnapshot.png"
+                   id="com.sourcedimensions.client.deleteSnapshot"
+                   label="&amp;Delete Snapshot"
+                   menubarPath="project/additions_snapshot"
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
+               </action>
+               <action
+                   class="com.sourcedimensions.client.actions.RenameSnapshotAction"
+                   icon="icons/editsnapshot.png"
+                   id="com.sourcedimensions.client.renameSnapshot"
+                   label="&amp;Rename Snapshot..."
+                   menubarPath="project/additions_snapshot"
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
+               </action>
+               <action
                    class="com.sourcedimensions.client.actions.OpenProjectAction"
                    icon="icons/project.png"
                    id="com.sourcedimensions.client.openProject"
@@ -108,11 +126,7 @@
                    id="com.sourcedimensions.client.symbolQuery"
                    label="&amp;Symbol Query..."
                    menubarPath="query/additions_query"
-                   toolbarPath="additions_query"
-                   enablesFor="1">
-                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotGroup"/>                   
-                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
-                 <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/>                 
+                   toolbarPath="additions_query">
                </action>               
           </actionSet>
    </extension>
@@ -149,7 +163,7 @@
          </objectContribution>
          <objectContribution
               adaptable="false"
-              id="com.sourcedimensions.client.snapshotContributions"
+              id="com.sourcedimensions.client.snapshotGroupContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$SnapshotGroup">
               <action
                    class="com.sourcedimensions.client.actions.SymbolQueryAction"
@@ -166,7 +180,7 @@
          </objectContribution>
          <objectContribution
               adaptable="false"
-              id="com.sourcedimensions.client.snapshotContributions"
+              id="com.sourcedimensions.client.queryGroupContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$QueryGroup">
               <action
                    class="com.sourcedimensions.client.actions.SymbolQueryAction"
@@ -180,6 +194,23 @@
                    id="com.sourcedimensions.client.createFolder"
                    menubarPath="additions_folder"                                          
                    label="Create Folder..."/>
+         </objectContribution>
+         <objectContribution
+              adaptable="false"
+              id="com.sourcedimensions.client.snapshotContributions"
+              objectClass="com.sourcedimensions.client.views.ProjectView$SnapshotObject">
+              <action
+                   class="com.sourcedimensions.client.actions.DeleteSnapshotAction"
+                   icon="icons/delsnapshot.png"
+                   id="com.sourcedimensions.client.deleteSnapshot"
+                   menubarPath="additions_snapshot"
+                   label="Delete Snapshot"/>              
+              <action
+                   class="com.sourcedimensions.client.actions.RenameSnapshotAction"
+                   icon="icons/editsnapshot.png"
+                   id="com.sourcedimensions.client.renameSnapshot"
+                   menubarPath="additions_snapshot"
+                   label="Rename Snapshot..."/>
          </objectContribution>
          <objectContribution
               adaptable="false"

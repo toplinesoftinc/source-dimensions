@@ -331,15 +331,31 @@ public class DbAdapter
 			
 			rs.next();
 			
-			int parentId = rs.getInt("parent_id");
+			Integer parentId = rs.getInt("parent_id");
+			
+			if (rs.wasNull())
+				parentId = null;
+			
 			int prjId = rs.getInt("project_id");
 
-			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND parent_id = ? and name = ? and id <> ?");
+			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND " +
+				"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND name = ? and id <> ?");
 			
 			ps.setInt(1, prjId);
-			ps.setInt(2, parentId);			
-			ps.setString(3, name);
-			ps.setInt(4, id);
+			
+			if (parentId == null)
+			{
+				ps.setNull(2, Types.INTEGER);
+				ps.setNull(3, Types.INTEGER);
+			}
+			else
+			{
+				ps.setInt(2, parentId);
+				ps.setInt(3, parentId);
+			}
+			
+			ps.setString(4, name);
+			ps.setInt(5, id);
 			
 			rs = ps.executeQuery();
 			
@@ -475,6 +491,71 @@ public class DbAdapter
 		
 		return rs.getInt(1);
 	}
+
+	public static void updateSnapshot(String name, int id) throws DupFolderNameException
+	{
+		try
+		{
+			Connection c = getConnection();			
+			
+			PreparedStatement ps = c.prepareStatement("SELECT project_id, parent_id FROM snapshot_node WHERE id = ?");
+			
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			
+			Integer parentId = rs.getInt("parent_id");
+
+			if (rs.wasNull())
+				parentId = null;
+			
+			int prjId = rs.getInt("project_id");
+
+			ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE project_id = ? AND " +
+				"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND name = ? and id <> ?");
+			
+			ps.setInt(1, prjId);
+			
+			if (parentId == null)
+			{
+				ps.setNull(2, Types.INTEGER);
+				ps.setNull(3, Types.INTEGER);
+			}
+			else
+			{
+				ps.setInt(2, parentId);
+				ps.setInt(3, parentId);
+			}
+			
+			ps.setString(4, name);
+			ps.setInt(5, id);
+			
+			rs = ps.executeQuery();
+			
+			if (rs.next())
+				throw new DupFolderNameException();
+			
+			ps = c.prepareStatement("UPDATE snapshot_node SET name = ? WHERE id = ?");
+			
+			ps.setString(1, name);
+			ps.setInt(2, id);
+			
+			ps.executeUpdate();
+					
+			c.commit();
+			c.close();
+		}
+		catch (DupFolderNameException e)
+		{
+			throw e;
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+		}				
+	}
+	
 	
 	public static List<SnapshotNode> getSnapshotNodeList(String projectId, Integer parentId, Integer folderId)
 	{

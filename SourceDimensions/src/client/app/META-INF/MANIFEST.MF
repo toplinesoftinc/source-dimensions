@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: SourceDimenions Client
+Bundle-Name: SourceDimensions Client
 Bundle-SymbolicName: com.sourcedimensions.client;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Localization: plugin

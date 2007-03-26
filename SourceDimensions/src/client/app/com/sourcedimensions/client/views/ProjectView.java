@@ -36,7 +36,7 @@ public class ProjectView extends ViewPart
 	private static SnapshotGroup m_snapshotGroup;
 	private static QueryGroup m_queryGroup;
 	
-	abstract static class TreeObject implements IAdaptable 
+	public abstract static class TreeObject implements IAdaptable 
 	{
 		protected String m_name;
 		protected TreeGroup m_parent;
@@ -184,8 +184,8 @@ public class ProjectView extends ViewPart
 			TreeGroup cur = this;
 			boolean found = false;
 			
-			for (int i = 0; i < names.length - 1; i++)
-			{
+			for (int i = 0; i < names.length - 1; i++, found = false)
+			{			
 				for (Object o : cur.getChildren())
 				{
 					if (o instanceof FolderObject)
@@ -282,7 +282,7 @@ public class ProjectView extends ViewPart
 				
 				for (SnapshotNode n : snapshotList)
 				{
-					addChild(new SnapshotItem(n.getName(), n.m_id, m_id));
+					addChild(new SnapshotObject(n.getName(), n.m_id, m_id));
 				}
 			}
 		}
@@ -396,7 +396,7 @@ public class ProjectView extends ViewPart
 			
 			for (SnapshotNode n : snapshotList)
 			{
-				addChild(new SnapshotItem(n.getName(), n.m_id, null));
+				addChild(new SnapshotObject(n.getName(), n.m_id, null));
 			}			
 		}
 		
@@ -409,7 +409,7 @@ public class ProjectView extends ViewPart
 			
 			if (id != null)
 			{
-				SnapshotItem item = new SnapshotItem(root.getName(), id, folderId);
+				SnapshotObject item = new SnapshotObject(root.getName(), id, folderId);
 				
 				if (segments.size() == 0)
 					addChild(item);
@@ -424,12 +424,12 @@ public class ProjectView extends ViewPart
 	}
 
 	
-	public static class SnapshotItem extends TreeObject
+	public static class SnapshotObject extends TreeObject
 	{
 		protected int m_id;
 		protected Integer m_folderId;
 		
-		public SnapshotItem(String name, int id, Integer folderId)
+		public SnapshotObject(String name, int id, Integer folderId)
 		{
 			super(name);
 			m_id = id;
@@ -438,8 +438,13 @@ public class ProjectView extends ViewPart
 		
 		public Image getImage()
 		{
-			return null; // TODO
-		}		
+			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT);
+		}
+		
+		public int getID()
+		{
+			return m_id;
+		}
 	}
 	
 	class ViewContentProvider implements ITreeContentProvider 
@@ -557,6 +562,7 @@ public class ProjectView extends ViewPart
 		m_viewer.setContentProvider(new ViewContentProvider());
 		getSite().setSelectionProvider(m_viewer);
 		m_viewer.setLabelProvider(new ViewLabelProvider());
+		m_viewer.setComparator(new ViewerSorter());
 		m_viewer.setInput(getViewSite());
 		
 		MenuManager menuMgr = new MenuManager("");
