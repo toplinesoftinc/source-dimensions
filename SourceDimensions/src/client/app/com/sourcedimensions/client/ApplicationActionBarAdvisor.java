@@ -44,6 +44,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     	prjMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_folder"));
     	prjMenu.add(new Separator());
     	prjMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_snapshot"));
+    	prjMenu.add(new Separator());
     	prjMenu.add(exitAction);
 
     	MenuManager queryMenu = new MenuManager("&Query", "query");

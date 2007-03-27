@@ -969,7 +969,10 @@ public class SymbolQueryDialog extends DialogBase
 		else
 			fullName = m_snapshotNameText.getText().trim();
 		
-		segments = fullName.split(Folder.DIVIDER_REGEX);
+		StringBuffer buf = new StringBuffer(fullName);
+		buf.reverse();
+		
+		segments = buf.toString().split(Folder.DIVIDER_REGEX);
 		
 		if (fullName.length() == 0 || segments.length == 0)
 		{
@@ -983,7 +986,7 @@ public class SymbolQueryDialog extends DialogBase
 			{
 				MessageDialog.openError(m_shell, "Incorrect Input", entityName +	" is incorrect. The name should have " +
 					"path components separated by path divider characters " + Folder.DIVIDER_REGEX.replaceAll("[\\x5B\\x5D]", "\"") +
-					". Starting/terminating and several consecutive path divider characters are not allowed.");
+					". Terminating and several consecutive path divider characters are not allowed.");
 				
 				return false;
 			}
