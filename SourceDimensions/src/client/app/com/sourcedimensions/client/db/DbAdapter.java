@@ -9,6 +9,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.SymbolQuery;
 
 
 public class DbAdapter 
@@ -444,7 +445,7 @@ public class DbAdapter
 			
 			int prjId = rs.getInt("id");		
 
-			int id = addSnapshotNode(c, prjId, null, folderId, root);
+			int id = addSnapshotNode(c, prjId, folderId, root);
 			
 			c.commit();
 			c.close();
@@ -458,36 +459,27 @@ public class DbAdapter
 		}
 	}
 
-	protected static int addSnapshotNode(Connection c, int projectId, Integer parentId, Integer folderId, SnapshotNode node) throws SQLException
+	protected static int addSnapshotNode(Connection c, int projectId, Integer folderId, SnapshotNode node) throws SQLException
 	{
 		PreparedStatement ps;
 			
-		ps = c.prepareStatement("INSERT INTO snapshot_node(folder_id, parent_id, project_id, type, origin_id, name) VALUES(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+		ps = c.prepareStatement("INSERT INTO snapshot_node(folder_id, project_id, type, origin_id, name) "+ 
+			"VALUES(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 	
 		if (folderId == null)
 			ps.setNull(1, Types.INTEGER);
 		else
 			ps.setInt(1, folderId);
 		
-		if (parentId == null)
-			ps.setNull(2, Types.INTEGER);
-		else
-			ps.setInt(2, parentId);
-		
-		ps.setInt(3, projectId);
-		ps.setInt(4, node.getType().value());
-		ps.setString(5, node.getOriginID());
-		ps.setString(6, node.getName());
+		ps.setInt(2, projectId);
+		ps.setInt(3, node.getType().value());
+		ps.setString(4, node.getOriginID());
+		ps.setString(5, node.getName());
 
 		ps.executeUpdate();
 		
 		ResultSet rs = ps.getGeneratedKeys();
 		rs.next();
-		
-		for (SnapshotNode n : node.getChildren())
-		{
-			addSnapshotNode(c, projectId, rs.getInt(1), folderId, n);
-		}
 		
 		return rs.getInt(1);
 	}
@@ -498,38 +490,20 @@ public class DbAdapter
 		{
 			Connection c = getConnection();			
 			
-			PreparedStatement ps = c.prepareStatement("SELECT project_id, parent_id FROM snapshot_node WHERE id = ?");
+			PreparedStatement ps = c.prepareStatement("SELECT project_id FROM snapshot_node WHERE id = ?");
 			
 			ps.setInt(1, id);
 			ResultSet rs = ps.executeQuery();
 			
 			rs.next();
-			
-			Integer parentId = rs.getInt("parent_id");
-
-			if (rs.wasNull())
-				parentId = null;
-			
+						
 			int prjId = rs.getInt("project_id");
 
-			ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE project_id = ? AND " +
-				"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND name = ? and id <> ?");
+			ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE project_id = ? AND name = ? and id <> ?");
 			
-			ps.setInt(1, prjId);
-			
-			if (parentId == null)
-			{
-				ps.setNull(2, Types.INTEGER);
-				ps.setNull(3, Types.INTEGER);
-			}
-			else
-			{
-				ps.setInt(2, parentId);
-				ps.setInt(3, parentId);
-			}
-			
-			ps.setString(4, name);
-			ps.setInt(5, id);
+			ps.setInt(1, prjId);			
+			ps.setString(2, name);
+			ps.setInt(3, id);
 			
 			rs = ps.executeQuery();
 			
@@ -557,7 +531,7 @@ public class DbAdapter
 	}
 	
 	
-	public static List<SnapshotNode> getSnapshotNodeList(String projectId, Integer parentId, Integer folderId)
+	public static List<SnapshotNode> getSnapshotNodeList(String projectId, Integer folderId)
 	{
 		List<SnapshotNode> list = new ArrayList<SnapshotNode>();
 		
@@ -575,31 +549,20 @@ public class DbAdapter
 			int prjId = rs.getInt("id");		
 
 			ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE project_id = ? AND "+
-					"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND " +
 					"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL))");
 
 			ps.setInt(1, prjId);
 
-			if (parentId == null)
+		
+			if (folderId == null)
 			{
 				ps.setNull(2, Types.INTEGER);
 				ps.setNull(3, Types.INTEGER);
 			}
 			else
 			{
-				ps.setInt(2, parentId);
-				ps.setInt(3, parentId);
-			}
-		
-			if (folderId == null)
-			{
-				ps.setNull(4, Types.INTEGER);
-				ps.setNull(5, Types.INTEGER);
-			}
-			else
-			{
-				ps.setInt(4, folderId);
-				ps.setInt(5, folderId);
+				ps.setInt(2, folderId);
+				ps.setInt(3, folderId);
 			}
 
 			rs = ps.executeQuery();
@@ -682,7 +645,7 @@ public class DbAdapter
 					{
 						if (!isQuery)
 							ps = c.prepareStatement("SELECT id FROM snapshot_node WHERE project_id = ? AND " +
-								"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL)) AND parent_id IS NULL AND name = ?");						
+								"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL)) AND name = ?");						
 
 						ps.setInt(1, prjId);
 						
@@ -755,18 +718,7 @@ public class DbAdapter
 	
 	protected static void deleteSnapshotNode(Connection c, int id) throws SQLException
 	{
-		PreparedStatement ps = c.prepareStatement("SELECT id FROM snapshot_node WHERE parent_id = ?");
-		
-		ps.setInt(1, id);
-
-		ResultSet rs = ps.executeQuery();
-		
-		while (rs.next())
-		{
-			deleteSnapshotNode(c, rs.getInt("id"));
-		}
-		
-		ps = c.prepareStatement("DELETE FROM snapshot_node WHERE id = ?");
+		PreparedStatement ps = c.prepareStatement("DELETE FROM snapshot_node WHERE id = ?");
 		
 		ps.setInt(1, id);
 		
@@ -797,6 +749,12 @@ public class DbAdapter
 		}
 		else
 			return DriverManager.getConnection(String.format(url, path));
+	}
+
+	
+	public static void saveSymbolQuery(SymbolQuery query)
+	{
+		
 	}
 	
 	
@@ -838,15 +796,134 @@ public class DbAdapter
 				"SNAPSHOT_NODE",
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"folder_id INT",
-				"parent_id INT",
 				"project_id INT NOT NULL",
 				"type INT NOT NULL",
 				"origin_id VARCHAR(36) NOT NULL",				
 				"name VARCHAR(256) NOT NULL",				
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (folder_id) REFERENCES FOLDER",
-				"FOREIGN KEY (parent_id) REFERENCES SNAPSHOT_NODE",				
+				"FOREIGN KEY (folder_id) REFERENCES FOLDER",			
 				"FOREIGN KEY (project_id) REFERENCES PROJECT"				
+			},
+			{
+				"SYMBOL_QUERY",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"folder_id INT",
+				"project_id INT NOT NULL",
+				"name VARCHAR(10000) NOT NULL",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (folder_id) REFERENCES FOLDER",
+				"FOREIGN KEY (project_id) REFERENCES PROJECT"				
+			},
+			{
+				"NAMESPACE_FILTER",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"query_id INT NOT NULL",
+				"name VARCHAR(10000) NOT NULL",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (query_id) REFERENCES SYMBOL_QUERY"
+			},
+			{
+				"TYPE_FILTER",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"query_id INT NOT NULL",
+				"categories INT",
+				"modifiers INT",
+				"all_types SMALLINT",
+				"inner_types SMALLINT",
+				"supertypes SMALLINT",
+				"subtypes SMALLINT",
+				"name VARCHAR(10000) NOT NULL",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (query_id) REFERENCES SYMBOL_QUERY"
+			},
+			{
+				"BASE_TYPE",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"query_id INT NOT NULL",
+				"category INT",
+				"name VARCHAR(10000) NOT NULL",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (query_id) REFERENCES TYPE_FILTER"				
+			},
+			{
+				"DELEGATE",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"base_type_id INT NOT NULL",
+				"type_props INT",
+				"type_name VARCHAR(10000) NOT NULL",
+				"any_params SMALLINT",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (base_type_id) REFERENCES TYPE_FILTER"				
+			},
+			{
+				"DELEGATE_PARAM",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"delegate_id INT NOT NULL",
+				"modifiers INT",
+				"type_props INT",
+				"type_name VARCHAR(10000) NOT NULL",
+				"name VARCHAR(10000) NOT NULL",
+				"position INT",
+				"pos_value INT",
+				"pos_min INT",
+				"pos_max INT",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (delegate_id) REFERENCES DELEGATE"				
+			},
+			{
+				"DELEGATE_PARAM_POS",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"delegate_param_id INT NOT NULL",
+				"position INT",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (delegate_param_id) REFERENCES DELEGATE" 
+			},
+			{
+				"MEMBER_FILTER",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"query_id INT NOT NULL",
+				"categories INT",
+				"modifiers INT",
+				"operators INT",
+				"any_params SMALLINT",
+				"type_props INT",
+				"type_name VARCHAR(10000) NOT NULL",
+				"any_throws SMALLINT",
+				"name VARCHAR(10000) NOT NULL",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (query_id) REFERENCES SYMBOL_QUERY" 
+			},
+			{
+				"THROW",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"member_id INT NOT NULL",
+				"name VARCHAR(10000) NOT NULL",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (member_id) REFERENCES MEMBER_FILTER" 				
+			},
+			{
+				"MEMBER_PARAM",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"member_id INT NOT NULL",
+				"modifiers INT",
+				"type_props INT",
+				"type_name VARCHAR(10000) NOT NULL",
+				"name VARCHAR(10000) NOT NULL",
+				"position INT",
+				"pos_value INT",
+				"pos_min INT",
+				"pos_max INT",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (member_id) REFERENCES MEMBER_FILTER"				
+			},
+			{
+				"LOCAL_DECL_FILTER",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"query_id INT NOT NULL",
+				"final SMALLINT",
+				"type_props INT",
+				"type_name VARCHAR(10000) NOT NULL",
+				"name VARCHAR(10000) NOT NULL"
 			}
 		};
 	

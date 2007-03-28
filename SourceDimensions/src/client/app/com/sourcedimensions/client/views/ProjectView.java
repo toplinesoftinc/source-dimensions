@@ -278,7 +278,7 @@ public class ProjectView extends ViewPart
 			
 			if (!m_isQuery)
 			{
-				List<SnapshotNode> snapshotList = DbAdapter.getSnapshotNodeList(m_project.getId(), null, m_id);
+				List<SnapshotNode> snapshotList = DbAdapter.getSnapshotNodeList(m_project.getId(), m_id);
 				
 				for (SnapshotNode n : snapshotList)
 				{
@@ -392,7 +392,7 @@ public class ProjectView extends ViewPart
 				addChild(new FolderObject(f.m_name, f.m_id, false));
 			}
 			
-			List<SnapshotNode> snapshotList = DbAdapter.getSnapshotNodeList(m_project.getId(), null, null);
+			List<SnapshotNode> snapshotList = DbAdapter.getSnapshotNodeList(m_project.getId(), null);
 			
 			for (SnapshotNode n : snapshotList)
 			{
