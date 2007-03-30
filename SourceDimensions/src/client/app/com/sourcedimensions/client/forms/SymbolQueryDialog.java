@@ -202,11 +202,11 @@ public class SymbolQueryDialog extends DialogBase
 				}
 				
 				WSConsumer consumer = new WSConsumer();
-				SnapshotNode rootNode;
+				SnapshotNode node;
 				
 				try
 				{
-					rootNode = (SnapshotNode)consumer.invokeWebService(PlatformUI.getWorkbench().getDisplay(), 
+					node = (SnapshotNode)consumer.invokeWebService(PlatformUI.getWorkbench().getDisplay(), 
 						m_shell, "runSymbolQuery", new Object[] { query });			
 				}
 				catch (Exception ex)
@@ -223,7 +223,7 @@ public class SymbolQueryDialog extends DialogBase
 					return;
 				}
 				
-				if (rootNode == null)
+				if (node == null)
 				{
 					MessageDialog.openInformation(m_shell, "Query Results", "No item found for the specified query");
 					return;
@@ -233,7 +233,7 @@ public class SymbolQueryDialog extends DialogBase
 					String[] sections = fullName.split(Folder.DIVIDER_REGEX);
 					String name = sections[sections.length - 1];
 					
-					rootNode.setName(name);
+					node.setName(name);
 
 					if (found != null)
 					{
@@ -241,7 +241,7 @@ public class SymbolQueryDialog extends DialogBase
 						ProjectView.getSnapshotGroup().deleteObject(sections);
 					}
 					
-					ProjectView.getSnapshotGroup().addSnapshotTree(rootNode, fullName);
+					ProjectView.getSnapshotGroup().addSnapshotNode(node, fullName);
 				}
 				
 				m_forceClose = true;

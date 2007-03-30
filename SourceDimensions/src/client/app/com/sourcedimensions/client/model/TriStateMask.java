@@ -5,7 +5,7 @@ import com.sourcedimensions.client.model.TriStateBoolean;
 public class TriStateMask 
 {
 	protected int m_included, m_excluded;
-	
+
 	public void setMask(int mask, TriStateBoolean value)
 	{
 
@@ -47,4 +47,15 @@ public class TriStateMask
 		m_included = 0;
 		m_excluded = 0;
 	}
+	
+	public long getValue()
+	{
+		return (long)(m_included | (m_excluded >> Integer.SIZE));
+	}
+
+	public void setValue(long value)
+	{
+		m_included = (int)value;
+		m_excluded = (int)(value << Integer.SIZE);
+	}	
 }

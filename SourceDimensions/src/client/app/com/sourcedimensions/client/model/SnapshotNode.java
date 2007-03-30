@@ -1,7 +1,5 @@
 package com.sourcedimensions.client.model;
 
-import java.util.List;
-
 public class SnapshotNode 
 {
 	public int m_id;

@@ -278,7 +278,7 @@ public class ProjectView extends ViewPart
 			
 			if (!m_isQuery)
 			{
-				List<SnapshotNode> snapshotList = DbAdapter.getSnapshotNodeList(m_project.getId(), m_id);
+				List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(m_project.getId(), m_id);
 				
 				for (SnapshotNode n : snapshotList)
 				{
@@ -392,7 +392,7 @@ public class ProjectView extends ViewPart
 				addChild(new FolderObject(f.m_name, f.m_id, false));
 			}
 			
-			List<SnapshotNode> snapshotList = DbAdapter.getSnapshotNodeList(m_project.getId(), null);
+			List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(m_project.getId(), null);
 			
 			for (SnapshotNode n : snapshotList)
 			{
@@ -400,16 +400,16 @@ public class ProjectView extends ViewPart
 			}			
 		}
 		
-		public void addSnapshotTree(SnapshotNode root, String name)
+		public void addSnapshotNode(SnapshotNode node, String name)
 		{		
 			List<FolderObject> segments = makeFolderPath(name, false);
 			Integer folderId = (segments.size() == 0) ? null : segments.get(segments.size() - 1).getID();
 			
-			Integer id = DbAdapter.saveSnapshotTree(m_project.getId(), folderId, root);
+			Integer id = DbAdapter.saveSnapshot(m_project.getId(), folderId, node);
 			
 			if (id != null)
 			{
-				SnapshotObject item = new SnapshotObject(root.getName(), id, folderId);
+				SnapshotObject item = new SnapshotObject(node.getName(), id, folderId);
 				
 				if (segments.size() == 0)
 					addChild(item);
@@ -417,8 +417,7 @@ public class ProjectView extends ViewPart
 					segments.get(segments.size() - 1).addChild(item);
 
 				m_viewer.refresh(this, true);
-				m_viewer.setSelection(new TreeSelection(new TreePath(segments.toArray()).createChildPath(item)), true);
-				
+				m_viewer.setSelection(new TreeSelection(new TreePath(segments.toArray()).createChildPath(item)), true);				
 			}			
 		}
 	}

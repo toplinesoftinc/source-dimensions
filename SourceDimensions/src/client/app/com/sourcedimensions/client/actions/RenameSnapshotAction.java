@@ -49,7 +49,7 @@ public class RenameSnapshotAction implements IWorkbenchWindowActionDelegate, IOb
 								
 				try
 				{
-					DbAdapter.updateSnapshot(name, id);
+					DbAdapter.renameSnapshot(name, id);
 				}
 				catch (DupFolderNameException e)
 				{

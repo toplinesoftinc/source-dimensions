@@ -14,8 +14,10 @@ public class SymbolQuery
 	protected boolean m_allMembers;
 	protected List<MemberFilter> m_memberFilter;
 	
-	private boolean m_allLocalDecls;
-	private List<LocalDeclFilter> m_localDeclFilter;
+	protected boolean m_allLocalDecls;
+	protected List<LocalDeclFilter> m_localDeclFilter;
+	
+	protected String m_name; 
 	
 	public boolean getAllNamespaces()
 	{
@@ -95,5 +97,15 @@ public class SymbolQuery
 	public List<LocalDeclFilter> getLocalDeclFilter() 
 	{
 		return m_localDeclFilter;
+	}
+	
+	public String getName()
+	{
+		return m_name;
+	}
+	
+	public void setName(String name)
+	{
+		m_name = name;
 	}
 }
