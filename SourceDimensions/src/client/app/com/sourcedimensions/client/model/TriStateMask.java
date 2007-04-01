@@ -6,6 +6,15 @@ public class TriStateMask
 {
 	protected int m_included, m_excluded;
 
+	public TriStateMask()
+	{
+	}
+	
+	public TriStateMask(long value)
+	{
+		setValue(value);
+	}
+	
 	public void setMask(int mask, TriStateBoolean value)
 	{
 

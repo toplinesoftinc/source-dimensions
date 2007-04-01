@@ -183,7 +183,7 @@ public class DbAdapter
 	}
 	
 	
-	public static List<Folder> getFolderList(Integer parentId, String projectId, boolean query)
+	public static List<Folder> getFolderList(Integer parentId, String projectId, boolean isQuery)
 	{
 		List<Folder> list = new ArrayList<Folder>();
 
@@ -202,7 +202,7 @@ public class DbAdapter
 			ps = c.prepareStatement("SELECT * FROM folder WHERE query_or_folder = ? AND project_id = ? AND " + 
 				"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL))");
 			
-			ps.setShort(1, (short)(query ? 1 : 0));
+			ps.setShort(1, (short)(isQuery ? 1 : 0));
 			ps.setInt(2, prjId);
 			
 			if (parentId == null)
@@ -388,12 +388,10 @@ public class DbAdapter
 		{
 			Connection c = getConnection();
 			
-			PreparedStatement ps = c.prepareStatement("DELETE FROM snapshot WHERE folder_id = ?");
+			PreparedStatement ps = c.prepareStatement("DELETE FROM folder WHERE id = ?");
 			
 			ps.setInt(1, id);
 			ps.executeUpdate();
-			
-			deleteFolder(c, id);
 			
 			c.commit();
 			c.close();
@@ -402,30 +400,6 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 		}						
-	}
-	
-	
-	protected static void deleteFolder(Connection c, int id) throws SQLException
-	{
-		PreparedStatement ps = c.prepareStatement("SELECT id FROM folder WHERE parent_id = ?");
-		
-		ps.setInt(1, id);
-		ResultSet rs = ps.executeQuery();
-		
-		while (rs.next())
-		{
-			deleteFolder(c, rs.getInt("id"));
-		}
-		
-		ps = c.prepareStatement("DELETE FROM snapshot WHERE folder_id = ?");
-		
-		ps.setInt(1, id);
-		ps.executeUpdate();
-		
-		ps = c.prepareStatement("DELETE FROM folder WHERE id = ?");
-		
-		ps.setInt(1, id);
-		ps.executeUpdate();
 	}
 	
 	
@@ -475,7 +449,7 @@ public class DbAdapter
 		}
 	}
 
-	public static void renameSnapshot(String name, int id) throws DupFolderNameException
+	public static void updateSnapshot(String name, int id) throws DupFolderNameException
 	{
 		try
 		{
@@ -770,7 +744,10 @@ public class DbAdapter
 		{
 			Connection c = getConnection();			
 	
-			deleteSnapshotNode(c, id);
+			PreparedStatement ps = c.prepareStatement("DELETE FROM snapshot WHERE id = ?");
+			
+			ps.setInt(1, id);			
+			ps.executeUpdate();
 			
 			c.commit();
 			c.close();
@@ -779,15 +756,6 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 		}		
-	}
-	
-	protected static void deleteSnapshotNode(Connection c, int id) throws SQLException
-	{
-		PreparedStatement ps = c.prepareStatement("DELETE FROM snapshot WHERE id = ?");
-		
-		ps.setInt(1, id);
-		
-		ps.executeUpdate();
 	}
 		
 	
@@ -816,218 +784,261 @@ public class DbAdapter
 			return DriverManager.getConnection(String.format(url, path));
 	}
 
-	
-	public static void saveSymbolQuery(String projectId, Integer folderId, SymbolQuery query)
+	public SymbolQuery getSymbolQuery(int queryId)
 	{
+		SymbolQuery query = new SymbolQuery();
+
 		try
 		{
 			Connection c = getConnection();			
 	
-			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
-			
-			ps.setString(1, projectId);
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM query WHERE id = ?");
+
+			ps.setInt(1, queryId);
 			ResultSet rs = ps.executeQuery();
-			rs.next();
 			
-			int prjId = rs.getInt("id");		
+			if (!rs.next())
+				return null;
 			
+			query.setName(rs.getString("name"));
+			query.setAllNamespaces(rs.getShort("all_namespaces") != 0);
+			query.setAllTypes(rs.getShort("all_types") != 0);
+			query.setAllMembers(rs.getShort("all_members") != 0);
+			query.setAllLocalDecls(rs.getShort("all_local_decls") != 0);
 			
-			ps = c.prepareStatement("INSERT INTO query(project_id, folder_id, name) VALUES(?,?,?)",
-				Statement.RETURN_GENERATED_KEYS);
-
-			ps.setInt(1, prjId);
-			
-			if (folderId == null)
-				ps.setNull(2, Types.INTEGER);
-			else
-				ps.setInt(2, folderId);
-			
-			ps.setString(3, query.getName());
-			
-			ps.executeUpdate();
-			
-			rs = ps.getGeneratedKeys();
-			rs.next();
-
-			int queryId = rs.getInt(1);
-			
-			for (String ns : query.getNamespaceFilter())
+			if (!query.getAllNamespaces())
 			{
-				ps = c.prepareStatement("INSERT INTO namespace_filter(query_id, name) VALUES(?,?)");
+				query.setNamespaceFilter(new ArrayList<String>());
+				
+				ps = c.prepareStatement("SELECT name FROM namespace_filter WHERE query_id = ?");
 				
 				ps.setInt(1, queryId);
-				ps.setString(2, ns);
+				rs = ps.executeQuery();
 				
-				ps.executeUpdate();
+				while (rs.next())
+				{
+					query.getNamespaceFilter().add(rs.getString("name"));
+				}
 			}
 			
-			for (TypeFilter tf : query.getTypeFilter())
+			if (!query.getAllTypes())
 			{
-				ps = c.prepareStatement("INSERT INTO type_filter(query_id, categories, modifiers, " +
-					"all_types, inner_types, supertypes, subtypes, name) VALUES(?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+				query.setTypeFilter(new ArrayList<TypeFilter>());
+				
+				ps = c.prepareStatement("SELECT * FROM type_filter WHERE query_id = ?");
 				
 				ps.setInt(1, queryId);
-				ps.setInt(2, tf.getCategories());
-				ps.setLong(3, tf.getModifiers().getValue());
-				ps.setShort(4, (short)(tf.getAllBaseTypes() ? 1 : 0));
-				ps.setShort(5, (short)tf.getInnerTypes().value());
-				ps.setShort(6, (short)tf.getSupertypes().value());
-				ps.setShort(7, (short)tf.getSubtypes().value());
-				ps.setString(8, tf.getName());
+				rs = ps.executeQuery();
 				
-				ps.executeUpdate();
-				
-				rs = ps.getGeneratedKeys();
-				rs.next();
-
-				int filterId = rs.getInt(1);
-				
-				for (BaseType bt : tf.getBaseTypes())
+				while (rs.next())
 				{
-					ps = c.prepareStatement("INSERT INTO base_type(filter_id, category, name) VALUES(?,?,?)");
-				
-					ps.setInt(1, filterId);
-					ps.setInt(2, bt.getCategory());
-					ps.setString(3, bt.getName());
+					TypeFilter filter = new TypeFilter();
+					query.getTypeFilter().add(filter);
 					
-					ps.executeUpdate();
-				}
-				
-				Delegate delegate = tf.getDelegate();
-				
-				if (delegate != null)
-				{
-					ps = c.prepareStatement("INSERT INTO delegate(filter_id, type_props, type_name, any_params) VALUES(?,?,?,?)",
-							Statement.RETURN_GENERATED_KEYS);
+					filter.setCategories(rs.getInt("categories"));
+					filter.setModifiers(new TriStateMask(rs.getLong("modifier")));
+					filter.setAllBaseTypes(rs.getShort("all_types") != 0);
+					filter.setInnerTypes(TriStateBoolean.values()[rs.getShort("inner_types")]);
+					filter.setSupertypes(TriStateBoolean.values()[rs.getShort("supertypes")]);
+					filter.setSubtypes(TriStateBoolean.values()[rs.getShort("subtypes")]);
+					filter.setName(rs.getString("name"));
 					
-					ps.setInt(1, filterId);
-					ps.setLong(2, delegate.getType().getTypeProps().getValue());
-					ps.setString(3, delegate.getType().getName());
-					ps.setShort(4, (short)(delegate.getAnyParams() ? 1 : 0));
+					int filterId = rs.getInt("id");
 					
-					ps.executeUpdate();
-
-					rs = ps.getGeneratedKeys();
-					rs.next();
-
-					int delegateId = rs.getInt(1);
-
-					for (Parameter p : delegate.getParamList())
+					if (!filter.getAllBaseTypes())
 					{
-						ps = c.prepareStatement("INSERT INTO delegate_param(delegate_id, modifiers, type_props, " +
-							"type_name, name, position, pos_value, pos_min, pos_max) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+						filter.setBaseTypes(new ArrayList<BaseType>());
 						
-						ps.setInt(1, delegateId);
-						ps.setLong(2, p.getModifiers().getValue());
-						ps.setLong(3, p.getType().getTypeProps().getValue());
-						ps.setString(4, p.getType().getName());
-						ps.setString(5, p.getName());
-						ps.setInt(6, p.getPosType().value());
-						ps.setInt(7, p.getPosValue());
-						ps.setInt(8, p.getPosMin());
-						ps.setInt(9, p.getPosMax());
-
-						ps.executeUpdate();
-
-						rs = ps.getGeneratedKeys();
-						rs.next();
-
-						int paramId = rs.getInt(1);
+						PreparedStatement ps2 = c.prepareStatement("SELECT * FROM base_type WHERE filter_id = ?");
 						
-						for (Integer pos : p.getPosList())
+						ps2.setInt(1, filterId);
+						ResultSet rs2 = ps2.executeQuery();
+						
+						while (rs2.next())
 						{
-							ps = c.prepareStatement("INSERT INTO delegate_param_pos(delegate_param_id, position) " +
-								"VALUES(?,?)");
+							BaseType bt = new BaseType();
+							filter.getBaseTypes().add(bt);
 							
-							ps.setInt(1, paramId);
-							ps.setInt(2, pos);
-							
-							ps.executeUpdate();
+							bt.setCategory(rs2.getInt("category"));
+							bt.setName(rs2.getString("name"));
 						}
 					}
-				}			
-			}
-	
-			for (MemberFilter mf : query.getMemberFilter())
-			{
-				ps = c.prepareStatement("INSERT INTO member_filter(query_id, categories, modifiers, operators, " +
-					"any_params, type_props, type_name, any_throws, name) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
-				
-				ps.setInt(1, queryId);
-				ps.setInt(2, mf.getCategories());
-				ps.setLong(3, mf.getModifiers().getValue());
-				ps.setInt(4, mf.getOperators());
-				ps.setShort(5, (short)(mf.getAnyParams() ? 1 : 0));
-				ps.setLong(6, mf.getType().getTypeProps().getValue());
-				ps.setString(7, mf.getType().getName());
-				ps.setShort(8, (short)(mf.getAnyThrows() ? 1 : 0));
-				ps.setString(9, mf.getName());
-				
-				ps.executeUpdate();
-				
-				rs = ps.getGeneratedKeys();
-				rs.next();
-
-				int memberId = rs.getInt(1);
-				
-				for (String t: mf.getThrowList())
-				{
-					ps = c.prepareStatement("INSERT INTO throw(member_id, name) VALUES(?,?)");
 					
-					ps.setInt(1, memberId);
-					ps.setString(2, t);
+					PreparedStatement ps2 = c.prepareStatement("SELECT * FROM delegate WHERE filter_id = ?");
 					
-					ps.executeUpdate();
-				}
-
-				for (Parameter p : mf.getParamList())
-				{
-					ps = c.prepareStatement("INSERT INTO member_param(member_id, modifiers, type_props, " +
-							"type_name, name, position, pos_value, pos_min, pos_max) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
-						
-					ps.setInt(1, memberId);
-					ps.setLong(2, p.getModifiers().getValue());
-					ps.setLong(3, p.getType().getTypeProps().getValue());
-					ps.setString(4, p.getType().getName());
-					ps.setString(5, p.getName());
-					ps.setInt(6, p.getPosType().value());
-					ps.setInt(7, p.getPosValue());
-					ps.setInt(8, p.getPosMin());
-					ps.setInt(9, p.getPosMax());
-	
-					ps.executeUpdate();
-	
-					rs = ps.getGeneratedKeys();
-					rs.next();
-	
-					int paramId = rs.getInt(1);
+					ps2.setInt(1, filterId);
+					ResultSet rs2 = ps2.executeQuery();
 					
-					for (Integer pos : p.getPosList())
+					if (rs2.next())
 					{
-						ps = c.prepareStatement("INSERT INTO member_param_pos(member_param_id, position) " +
-							"VALUES(?,?)");
+						Delegate delegate = new Delegate();
+						Type type = new Type();
 						
-						ps.setInt(1, paramId);
-						ps.setInt(2, pos);
+						filter.setDelegate(delegate);
+						delegate.setType(type);
 						
-						ps.executeUpdate();
+						delegate.setAnyParams(rs2.getShort("any_params") != 0);
+						type.setTypeProps(new TriStateMask(rs2.getLong("type_props")));
+						type.setName(rs2.getString("type_name"));
+						
+						if (!delegate.getAnyParams())
+						{
+							int delegateId = rs2.getInt("id");
+							delegate.setParamList(new ArrayList<Parameter>());
+							
+							ps2 = c.prepareStatement("SELECT * FROM delegate_param WHERE delegate_id = ?");
+							
+							ps2.setInt(1, delegateId);
+							
+							rs2 = ps2.executeQuery();
+							
+							while (rs2.next())
+							{
+								Parameter param = new Parameter();
+								Type t = new Type();
+								
+								delegate.getParamList().add(param);
+								param.setType(t);
+								
+								param.setModifiers(new TriStateMask(rs2.getLong("modifiers")));
+								param.setName(rs2.getString("name"));
+								param.setPosType(Parameter.Position.values()[rs2.getInt("pos_type")]);
+								param.setPosValue(rs2.getInt("pos_value"));
+								param.setPosMin(rs2.getInt("pos_min"));
+								param.setPosMax(rs2.getInt("pos_max"));
+								t.setTypeProps(new TriStateMask(rs2.getLong("type_props")));
+								t.setName(rs2.getString("type_name"));
+								
+								int paramId = rs2.getInt("id");
+								
+								PreparedStatement ps3 = c.prepareStatement("SELECT position FROM delegate_param_id WHERE delegate_param_id = ?");
+								
+								ps3.setInt(1, paramId);
+								
+								ResultSet rs3 = ps3.executeQuery();
+								
+								param.setPosList(new HashSet<Integer>());
+								
+								while (rs3.next())
+								{
+									param.getPosList().add(rs3.getInt("position"));
+								}
+							}							
+						}
 					}
 				}
-				
-			}	
-	
-			for (LocalDeclFilter local : query.getLocalDeclFilter())
+			}
+			
+			if (!query.getAllMembers())
 			{
-				ps = c.prepareStatement("INSERT INTO local_decl_filter(query_id, final, type_props, type_name, name)" +
-					"VALUES(?,?,?,?,?)");
+				query.setMemberFilter(new ArrayList<MemberFilter>());
+				
+				ps = c.prepareStatement("SELECT * FROM member_filter WHERE query_id = ?");
 				
 				ps.setInt(1, queryId);
-				ps.setShort(2, (short)local.getFinal().value());
-				ps.setLong(3, local.getType().getTypeProps().getValue());
-				ps.setString(4, local.getType().getName());
-				ps.setString(5, local.getName());
+				rs = ps.executeQuery();
 				
-				ps.executeUpdate();
+				int filterId = rs.getInt("id");
+				
+				while (rs.next())
+				{
+					MemberFilter filter = new MemberFilter();
+					Type type = new Type();
+
+					query.getMemberFilter().add(filter);
+					filter.setType(type);
+					
+					filter.setCategories(rs.getInt("categories"));
+					filter.setModifiers(new TriStateMask(rs.getLong("modifiers")));
+					filter.setOperators(rs.getInt("operators"));
+					filter.setAnyParams(rs.getShort("any_params") != 0);
+					filter.setAnyThrows(rs.getShort("any_throws") != 0);
+					filter.setName(rs.getString("name"));
+					type.setName(rs.getString("type_name"));
+					type.setTypeProps(new TriStateMask(rs.getLong("type_props")));
+					
+					PreparedStatement ps2 = c.prepareStatement("SELECT * FROM throw WHERE member_id = ?");
+					
+					ps2.setInt(1, filterId);
+					
+					ResultSet rs2 = ps2.executeQuery();
+					
+					filter.setThrowList(new ArrayList<String>());
+					
+					while (rs2.next())
+					{
+						filter.getThrowList().add(rs2.getString("name"));
+					}
+					
+					if (!filter.getAnyParams())
+					{
+						filter.setParamList(new ArrayList<Parameter>());
+						
+						ps2 = c.prepareStatement("SELECT * FROM member_param WHERE member_id = ?");
+						
+						ps2.setInt(1, filterId);
+						
+						rs2 = ps2.executeQuery();
+						
+						int paramId = rs2.getInt("id");
+						
+						while (rs2.next())
+						{
+							Parameter param = new Parameter();
+							Type t = new Type();
+
+							filter.getParamList().add(param);
+							param.setType(t);
+							
+							param.setModifiers(new TriStateMask(rs2.getLong("modifiers")));
+							t.setTypeProps(new TriStateMask(rs2.getLong("type_props")));
+							t.setName(rs2.getString("type_name"));
+							param.setName(rs2.getString("name"));
+							param.setPosType(Parameter.Position.values()[rs2.getInt("pos_type")]);
+							param.setPosValue(rs2.getInt("pos_value"));
+							param.setPosMin(rs2.getInt("pos_min"));
+							param.setPosMax(rs2.getInt("pos_max"));
+							
+							PreparedStatement ps3 = c.prepareStatement("SELECT position FROM member_param_pos WHERE member_param_id = ?");
+							
+							ps3.setInt(1, paramId);
+							
+							ResultSet rs3 = ps3.executeQuery();
+							
+							param.setPosList(new HashSet<Integer>());
+							
+							while (rs3.next())
+							{
+								param.getPosList().add(rs3.getInt("position"));
+							}
+						}
+					}
+				}
+			}
+			
+			if (!query.getAllLocalDecls())
+			{
+				query.setLocalDeclFilter(new ArrayList<LocalDeclFilter>());
+				
+				ps = c.prepareStatement("SELECT * FROM local_decl_filter WHERE query_id = ?");
+				
+				ps.setInt(1, queryId);
+				
+				rs = ps.executeQuery();
+				
+				while (rs.next())
+				{
+					LocalDeclFilter filter = new LocalDeclFilter();
+					Type type = new Type();
+					
+					query.getLocalDeclFilter().add(filter);
+					filter.setType(type);
+					
+					filter.setFinal(TriStateBoolean.values()[rs.getShort("final")]);
+					filter.setName(rs.getString("name"));
+					type.setTypeProps(new TriStateMask(rs.getLong("type_props")));
+					type.setName(rs.getString("type_name"));
+				}
 			}
 			
 			c.commit();
@@ -1037,8 +1048,279 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 		}				
+		
+		return query;
 	}
 	
+	public Integer updateSymbolQuery(String projectId, Integer folderId, Integer queryId, SymbolQuery query)
+	{
+		if (queryId != null)
+		{
+			deleteQuery(queryId);
+		}
+		
+		return saveSymbolQuery(projectId, folderId, query);
+	}
+	
+	protected static Integer saveSymbolQuery(String projectId, Integer folderId, SymbolQuery query)
+	{
+		try
+		{
+			Connection c = getConnection();			
+	
+			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
+			
+			ps.setString(1, projectId);
+
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			
+			int prjId = rs.getInt("id");		
+			
+			ps = c.prepareStatement("INSERT INTO query(project_id, folder_id, name, all_namespaces, " +
+				"all_types, all_members, all_local_decls) VALUES(?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+
+			ps.setInt(1, prjId);
+			
+			if (folderId == null)
+				ps.setNull(2, Types.INTEGER);
+			else
+				ps.setInt(2, folderId);
+			
+			ps.setString(3, query.getName());
+			ps.setShort(4, (short)(query.getAllNamespaces() ? 1 : 0));
+			ps.setShort(5, (short)(query.getAllTypes() ? 1 : 0));
+			ps.setShort(6, (short)(query.getAllMembers()? 1 : 0));
+			ps.setShort(7, (short)(query.getAllLocalDecls() ? 1 : 0));
+			
+			ps.executeUpdate();
+			
+			rs = ps.getGeneratedKeys();
+			rs.next();
+
+			int queryId = rs.getInt(1);
+			
+			if (!query.getAllNamespaces())
+			{
+				for (String ns : query.getNamespaceFilter())
+				{
+					ps = c.prepareStatement("INSERT INTO namespace_filter(query_id, name) VALUES(?,?)");
+					
+					ps.setInt(1, queryId);
+					ps.setString(2, ns);
+					
+					ps.executeUpdate();
+				}
+			}
+			
+			if (!query.getAllTypes())
+			{
+				for (TypeFilter tf : query.getTypeFilter())
+				{
+					ps = c.prepareStatement("INSERT INTO type_filter(query_id, categories, modifiers, " +
+						"all_types, inner_types, supertypes, subtypes, name) VALUES(?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+					
+					ps.setInt(1, queryId);
+					ps.setInt(2, tf.getCategories());
+					ps.setLong(3, tf.getModifiers().getValue());
+					ps.setShort(4, (short)(tf.getAllBaseTypes() ? 1 : 0));
+					ps.setShort(5, (short)tf.getInnerTypes().value());
+					ps.setShort(6, (short)tf.getSupertypes().value());
+					ps.setShort(7, (short)tf.getSubtypes().value());
+					ps.setString(8, tf.getName());
+					
+					ps.executeUpdate();
+					
+					rs = ps.getGeneratedKeys();
+					rs.next();
+	
+					int filterId = rs.getInt(1);
+					
+					for (BaseType bt : tf.getBaseTypes())
+					{
+						ps = c.prepareStatement("INSERT INTO base_type(filter_id, category, name) VALUES(?,?,?)");
+					
+						ps.setInt(1, filterId);
+						ps.setInt(2, bt.getCategory());
+						ps.setString(3, bt.getName());
+						
+						ps.executeUpdate();
+					}
+					
+					Delegate delegate = tf.getDelegate();
+					
+					if (delegate != null)
+					{
+						ps = c.prepareStatement("INSERT INTO delegate(filter_id, type_props, type_name, any_params) VALUES(?,?,?,?)",
+								Statement.RETURN_GENERATED_KEYS);
+						
+						ps.setInt(1, filterId);
+						ps.setLong(2, delegate.getType().getTypeProps().getValue());
+						ps.setString(3, delegate.getType().getName());
+						ps.setShort(4, (short)(delegate.getAnyParams() ? 1 : 0));
+						
+						ps.executeUpdate();
+	
+						rs = ps.getGeneratedKeys();
+						rs.next();
+	
+						int delegateId = rs.getInt(1);
+	
+						for (Parameter p : delegate.getParamList())
+						{
+							ps = c.prepareStatement("INSERT INTO delegate_param(delegate_id, modifiers, type_props, " +
+								"type_name, name, position, pos_value, pos_min, pos_max) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+							
+							ps.setInt(1, delegateId);
+							ps.setLong(2, p.getModifiers().getValue());
+							ps.setLong(3, p.getType().getTypeProps().getValue());
+							ps.setString(4, p.getType().getName());
+							ps.setString(5, p.getName());
+							ps.setInt(6, p.getPosType().value());
+							ps.setInt(7, p.getPosValue());
+							ps.setInt(8, p.getPosMin());
+							ps.setInt(9, p.getPosMax());
+	
+							ps.executeUpdate();
+	
+							rs = ps.getGeneratedKeys();
+							rs.next();
+	
+							int paramId = rs.getInt(1);
+							
+							for (Integer pos : p.getPosList())
+							{
+								ps = c.prepareStatement("INSERT INTO delegate_param_pos(delegate_param_id, position) " +
+									"VALUES(?,?)");
+								
+								ps.setInt(1, paramId);
+								ps.setInt(2, pos);
+								
+								ps.executeUpdate();
+							}
+						}
+					}			
+				}
+			}
+	
+			if (!query.getAllMembers())
+			{
+				for (MemberFilter mf : query.getMemberFilter())
+				{
+					ps = c.prepareStatement("INSERT INTO member_filter(query_id, categories, modifiers, operators, " +
+						"any_params, type_props, type_name, any_throws, name) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+					
+					ps.setInt(1, queryId);
+					ps.setInt(2, mf.getCategories());
+					ps.setLong(3, mf.getModifiers().getValue());
+					ps.setInt(4, mf.getOperators());
+					ps.setShort(5, (short)(mf.getAnyParams() ? 1 : 0));
+					ps.setLong(6, mf.getType().getTypeProps().getValue());
+					ps.setString(7, mf.getType().getName());
+					ps.setShort(8, (short)(mf.getAnyThrows() ? 1 : 0));
+					ps.setString(9, mf.getName());
+					
+					ps.executeUpdate();
+					
+					rs = ps.getGeneratedKeys();
+					rs.next();
+	
+					int memberId = rs.getInt(1);
+					
+					for (String t: mf.getThrowList())
+					{
+						ps = c.prepareStatement("INSERT INTO throw(member_id, name) VALUES(?,?)");
+						
+						ps.setInt(1, memberId);
+						ps.setString(2, t);
+						
+						ps.executeUpdate();
+					}
+	
+					for (Parameter p : mf.getParamList())
+					{
+						ps = c.prepareStatement("INSERT INTO member_param(member_id, modifiers, type_props, " +
+								"type_name, name, position, pos_value, pos_min, pos_max) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+							
+						ps.setInt(1, memberId);
+						ps.setLong(2, p.getModifiers().getValue());
+						ps.setLong(3, p.getType().getTypeProps().getValue());
+						ps.setString(4, p.getType().getName());
+						ps.setString(5, p.getName());
+						ps.setInt(6, p.getPosType().value());
+						ps.setInt(7, p.getPosValue());
+						ps.setInt(8, p.getPosMin());
+						ps.setInt(9, p.getPosMax());
+		
+						ps.executeUpdate();
+		
+						rs = ps.getGeneratedKeys();
+						rs.next();
+		
+						int paramId = rs.getInt(1);
+						
+						for (Integer pos : p.getPosList())
+						{
+							ps = c.prepareStatement("INSERT INTO member_param_pos(member_param_id, position) " +
+								"VALUES(?,?)");
+							
+							ps.setInt(1, paramId);
+							ps.setInt(2, pos);
+							
+							ps.executeUpdate();
+						}
+					}					
+				}	
+			}
+	
+			if (!query.getAllLocalDecls())
+			{
+				for (LocalDeclFilter local : query.getLocalDeclFilter())
+				{
+					ps = c.prepareStatement("INSERT INTO local_decl_filter(query_id, final, type_props, type_name, name)" +
+						"VALUES(?,?,?,?,?)");
+					
+					ps.setInt(1, queryId);
+					ps.setShort(2, (short)local.getFinal().value());
+					ps.setLong(3, local.getType().getTypeProps().getValue());
+					ps.setString(4, local.getType().getName());
+					ps.setString(5, local.getName());
+					
+					ps.executeUpdate();
+				}
+			}
+			
+			c.commit();
+			c.close();
+			
+			return queryId;
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			return null;
+		}				
+	}
+	
+	public static void deleteQuery(int id)
+	{
+		try
+		{
+			Connection c = getConnection();			
+	
+			PreparedStatement ps = c.prepareStatement("DELETE FROM query WHERE id = ?");
+			
+			ps.setInt(1, id);
+			ps.executeUpdate();
+			
+			c.commit();
+			c.close();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+		}		
+	}
 	
 	protected static void createDb(Connection c) throws SQLException
 	{
@@ -1071,7 +1353,7 @@ public class DbAdapter
 				"query_or_folder SMALLINT NOT NULL",
 				"name VARCHAR(256)",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (parent_id) REFERENCES FOLDER",
+				"FOREIGN KEY (parent_id) REFERENCES FOLDER ON DELETE CASCADE",
 				"FOREIGN KEY (project_id) REFERENCES PROJECT"
 			},
 			{
@@ -1083,8 +1365,8 @@ public class DbAdapter
 				"origin_id VARCHAR(36) NOT NULL",				
 				"name VARCHAR(256) NOT NULL",				
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (folder_id) REFERENCES FOLDER",			
-				"FOREIGN KEY (project_id) REFERENCES PROJECT"				
+				"FOREIGN KEY (folder_id) REFERENCES FOLDER ON DELETE CASCADE",
+				"FOREIGN KEY (project_id) REFERENCES PROJECT"
 			},
 			{
 				"QUERY",
@@ -1092,9 +1374,13 @@ public class DbAdapter
 				"folder_id INT",
 				"project_id INT NOT NULL",
 				"name VARCHAR(10000) NOT NULL",
+				"all_namespaces SMALLINT",
+				"all_types SMALLINT",
+				"all_members SMALLINT",
+				"all_local_decls SMALLINT",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (folder_id) REFERENCES FOLDER",
-				"FOREIGN KEY (project_id) REFERENCES PROJECT"				
+				"FOREIGN KEY (folder_id) REFERENCES FOLDER ON DELETE CASCADE",
+				"FOREIGN KEY (project_id) REFERENCES PROJECT ON DELETE CASCADE"
 			},
 			{
 				"NAMESPACE_FILTER",
@@ -1102,7 +1388,7 @@ public class DbAdapter
 				"query_id INT NOT NULL",
 				"name VARCHAR(10000) NOT NULL",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (query_id) REFERENCES QUERY"
+				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"
 			},
 			{
 				"TYPE_FILTER",
@@ -1116,7 +1402,7 @@ public class DbAdapter
 				"subtypes SMALLINT",
 				"name VARCHAR(10000) NOT NULL",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (query_id) REFERENCES QUERY"
+				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"
 			},
 			{
 				"BASE_TYPE",
@@ -1125,7 +1411,7 @@ public class DbAdapter
 				"category INT",
 				"name VARCHAR(10000) NOT NULL",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (filter_id) REFERENCES TYPE_FILTER"				
+				"FOREIGN KEY (filter_id) REFERENCES TYPE_FILTER ON DELETE CASCADE"
 			},
 			{
 				"DELEGATE",
@@ -1135,7 +1421,7 @@ public class DbAdapter
 				"type_name VARCHAR(10000) NOT NULL",
 				"any_params SMALLINT",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (filter_id) REFERENCES TYPE_FILTER"				
+				"FOREIGN KEY (filter_id) REFERENCES TYPE_FILTER ON DELETE CASCADE"
 			},
 			{
 				"DELEGATE_PARAM",
@@ -1145,12 +1431,12 @@ public class DbAdapter
 				"type_props BIGINT",
 				"type_name VARCHAR(10000) NOT NULL",
 				"name VARCHAR(10000) NOT NULL",
-				"position INT",
+				"pos_type INT",
 				"pos_value INT",
 				"pos_min INT",
 				"pos_max INT",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (delegate_id) REFERENCES DELEGATE"				
+				"FOREIGN KEY (delegate_id) REFERENCES DELEGATE ON DELETE CASCADE"
 			},
 			{
 				"DELEGATE_PARAM_POS",
@@ -1158,7 +1444,7 @@ public class DbAdapter
 				"delegate_param_id INT NOT NULL",
 				"position INT",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (delegate_param_id) REFERENCES DELEGATE_PARAM" 
+				"FOREIGN KEY (delegate_param_id) REFERENCES DELEGATE_PARAM ON DELETE CASCADE"
 			},
 			{
 				"MEMBER_FILTER",
@@ -1173,7 +1459,7 @@ public class DbAdapter
 				"any_throws SMALLINT",
 				"name VARCHAR(10000) NOT NULL",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (query_id) REFERENCES QUERY" 
+				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"
 			},
 			{
 				"THROW",
@@ -1181,22 +1467,22 @@ public class DbAdapter
 				"member_id INT NOT NULL",
 				"name VARCHAR(10000) NOT NULL",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (member_id) REFERENCES MEMBER_FILTER" 				
+				"FOREIGN KEY (member_id) REFERENCES MEMBER_FILTER ON DELETE CASCADE"
 			},
 			{
 				"MEMBER_PARAM",
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"member_id INT NOT NULL",
-				"modifiers INT",
-				"type_props INT",
+				"modifiers BIGINT",
+				"type_props BIGINT",
 				"type_name VARCHAR(10000) NOT NULL",
 				"name VARCHAR(10000) NOT NULL",
-				"position INT",
+				"pos_type INT",
 				"pos_value INT",
 				"pos_min INT",
 				"pos_max INT",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (member_id) REFERENCES MEMBER_FILTER"				
+				"FOREIGN KEY (member_id) REFERENCES MEMBER_FILTER ON DELETE CASCADE"
 			},
 			{
 				"MEMBER_PARAM_POS",
@@ -1204,7 +1490,7 @@ public class DbAdapter
 				"member_param_id INT NOT NULL",
 				"position INT",
 				"PRIMARY KEY (id)",
-				"FOREIGN KEY (member_param_id) REFERENCES MEMBER_PARAM" 
+				"FOREIGN KEY (member_param_id) REFERENCES MEMBER_PARAM ON DELETE CASCADE"
 			},
 			{
 				"LOCAL_DECL_FILTER",
@@ -1213,7 +1499,8 @@ public class DbAdapter
 				"final SMALLINT",
 				"type_props BIGINT",
 				"type_name VARCHAR(10000) NOT NULL",
-				"name VARCHAR(10000) NOT NULL"
+				"name VARCHAR(10000) NOT NULL",
+				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"
 			}
 		};
 	

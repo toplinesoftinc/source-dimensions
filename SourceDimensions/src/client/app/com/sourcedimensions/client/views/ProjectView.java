@@ -19,6 +19,7 @@ import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DupFolderNameException;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
+import com.sourcedimensions.client.model.QueryNode;
 import com.sourcedimensions.client.model.SnapshotNode;
 
 import org.eclipse.swt.graphics.Font;
@@ -276,13 +277,22 @@ public class ProjectView extends ViewPart
 				addChild(o);
 			}
 			
-			if (!m_isQuery)
+			if (m_isQuery)
+			{
+				List<QueryNode> queryList = DbAdapter.getQueryList(m_project.getId(), m_id);
+				
+				for (QueryNode q : queryList)
+				{
+					addChild(new QueryObject(q.m_name, q.m_id, m_id));
+				}				
+			}
+			else
 			{
 				List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(m_project.getId(), m_id);
 				
-				for (SnapshotNode n : snapshotList)
+				for (SnapshotNode s : snapshotList)
 				{
-					addChild(new SnapshotObject(n.getName(), n.m_id, m_id));
+					addChild(new SnapshotObject(s.getName(), s.m_id, m_id));
 				}
 			}
 		}
@@ -445,6 +455,30 @@ public class ProjectView extends ViewPart
 			return m_id;
 		}
 	}
+
+	public static class QueryObject extends TreeObject
+	{
+		protected int m_id;
+		protected Integer m_folderId;
+		
+		public QueryObject(String name, int id, Integer folderId)
+		{
+			super(name);
+			m_id = id;
+			m_folderId = folderId;
+		}
+		
+		public Image getImage()
+		{
+			return Util.getSharedImage(IImageKeys.IMG_SYMBOL_QUERY);
+		}
+		
+		public int getID()
+		{
+			return m_id;
+		}
+	}
+
 	
 	class ViewContentProvider implements ITreeContentProvider 
 	{
