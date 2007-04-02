@@ -738,7 +738,7 @@ public class DbAdapter
 		return null;
 	}
 	
-	public static void deleteSnapshotTree(int id)
+	public static void deleteSnapshot(int id)
 	{
 		try
 		{
@@ -1052,17 +1052,7 @@ public class DbAdapter
 		return query;
 	}
 	
-	public Integer updateSymbolQuery(String projectId, Integer folderId, Integer queryId, SymbolQuery query)
-	{
-		if (queryId != null)
-		{
-			deleteQuery(queryId);
-		}
-		
-		return saveSymbolQuery(projectId, folderId, query);
-	}
-	
-	protected static Integer saveSymbolQuery(String projectId, Integer folderId, SymbolQuery query)
+	public static Integer saveSymbolQuery(String projectId, Integer folderId, SymbolQuery query)
 	{
 		try
 		{

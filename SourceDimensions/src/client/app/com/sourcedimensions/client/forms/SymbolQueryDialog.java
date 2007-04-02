@@ -131,6 +131,33 @@ public class SymbolQueryDialog extends DialogBase
 		m_saveButton.setLocation(new Point(110, 16));
 		m_saveButton.setSize(new Point(88, 25));
 		m_saveButton.setText("Sa&ve");
+		m_saveButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				String fullName = m_queryNameText.getText().trim();
+				
+				if (!validatePath(true))
+					return;
+				
+				Object found = DbAdapter.findObject(ProjectView.getProject().getId(), fullName, false);
+				
+				if (!validateFoundObject(found, true))
+					return;
+				
+				Integer queryId = null;
+							
+				if (found != null)
+				{		
+					queryId = ((SnapshotNode)found).m_id;
+					
+					DbAdapter.deleteQuery(queryId);						
+					ProjectView.getQueryGroup().deleteObject(fullName.split(Folder.DIVIDER_REGEX));
+				}
+				
+				ProjectView.getQueryGroup().addQueryNode(createSymbolQuery(), queryId, fullName);				
+			}
+		});
 		m_cancelButton.setToolTipText("Login");
 		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_cancelButton.setSize(new Point(88, 25));
@@ -165,42 +192,7 @@ public class SymbolQueryDialog extends DialogBase
 				if (!validateFoundObject(found, false))
 					return;
 				
-				SymbolQuery query = new SymbolQuery();
-				
-				query.setAllNamespaces(m_allNamespacesCheckBox.getSelection());
-				
-				if (!query.getAllNamespaces())
-				{
-					List<String> list = new ArrayList<String>();
-					query.setNamespaceFilter(list);
-					
-					for (TableItem item : m_namespaceFilterTable.getItems())
-					{
-						list.add(item.getText(0));
-					}
-				}
-				
-				query.setAllTypes(m_allTypesCheckBox.getSelection());
-				
-				if (!query.getAllTypes())
-				{
-					query.setTypeFilter(m_typeFilter);
-				}
-				
-				query.setAllMembers(m_allMembersCheckBox.getSelection());
-				
-				if (!query.getAllMembers())
-				{
-					query.setMemberFilter(m_memberFilter);
-				}
-				
-				query.setAllLocalDecls(m_allLocalDeclCheckBox.getSelection());
-				
-				if (!query.getAllLocalDecls())
-				{
-					query.setLocalDeclFilter(m_localDeclFilter);
-				}
-				
+				SymbolQuery query = createSymbolQuery();				
 				WSConsumer consumer = new WSConsumer();
 				SnapshotNode node;
 				
@@ -237,7 +229,7 @@ public class SymbolQueryDialog extends DialogBase
 
 					if (found != null)
 					{
-						DbAdapter.deleteSnapshotTree(((SnapshotNode)found).m_id);						
+						DbAdapter.deleteSnapshot(((SnapshotNode)found).m_id);						
 						ProjectView.getSnapshotGroup().deleteObject(sections);
 					}
 					
@@ -1010,6 +1002,52 @@ public class SymbolQueryDialog extends DialogBase
 		}
 		else
 			return true;
+	}
+	
+	protected SymbolQuery createSymbolQuery()
+	{
+		SymbolQuery query = new SymbolQuery();
+		
+		String[] segments = m_queryNameText.getText().split(Folder.DIVIDER_REGEX);
+		
+		if (segments.length > 0)
+			query.setName(segments[segments.length-1]);
+		
+		query.setAllNamespaces(m_allNamespacesCheckBox.getSelection());
+		
+		if (!query.getAllNamespaces())
+		{
+			List<String> list = new ArrayList<String>();
+			query.setNamespaceFilter(list);
+			
+			for (TableItem item : m_namespaceFilterTable.getItems())
+			{
+				list.add(item.getText(0));
+			}
+		}
+		
+		query.setAllTypes(m_allTypesCheckBox.getSelection());
+		
+		if (!query.getAllTypes())
+		{
+			query.setTypeFilter(m_typeFilter);
+		}
+		
+		query.setAllMembers(m_allMembersCheckBox.getSelection());
+		
+		if (!query.getAllMembers())
+		{
+			query.setMemberFilter(m_memberFilter);
+		}
+		
+		query.setAllLocalDecls(m_allLocalDeclCheckBox.getSelection());
+		
+		if (!query.getAllLocalDecls())
+		{
+			query.setLocalDeclFilter(m_localDeclFilter);
+		}
+
+		return query;
 	}
 		
 	protected Shell getShell()

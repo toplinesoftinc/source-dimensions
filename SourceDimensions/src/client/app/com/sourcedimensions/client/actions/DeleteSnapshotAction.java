@@ -36,7 +36,7 @@ public class DeleteSnapshotAction implements IWorkbenchWindowActionDelegate, IOb
 			int id = selected.getID();			
 			TreeGroup parent = selected.getParent();
 
-			DbAdapter.deleteSnapshotTree(id);
+			DbAdapter.deleteSnapshot(id);
 			parent.deleteChild(selected);
 			
 			ProjectView view = (ProjectView)m_window.getActivePage().findView(ProjectView.ID);

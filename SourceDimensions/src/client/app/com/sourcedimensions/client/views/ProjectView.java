@@ -21,6 +21,7 @@ import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.client.model.QueryNode;
 import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.SymbolQuery;
 
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
@@ -377,7 +378,36 @@ public class ProjectView extends ViewPart
 				FolderObject o = new FolderObject(f.m_name, f.m_id, true);
 				addChild(o);
 			}			
-		}	
+			
+			List<QueryNode> queryList = DbAdapter.getQueryList(m_project.getId(), null);
+			
+			for (QueryNode q : queryList)
+			{
+				addChild(new QueryObject(q.m_name, q.m_id, null));
+			}			
+		}
+		
+		public void addQueryNode(SymbolQuery query, Integer queryId, String name)
+		{		
+			List<FolderObject> segments = makeFolderPath(name, false);
+			Integer folderId = (segments.size() == 0) ? null : segments.get(segments.size() - 1).getID();
+			
+			Integer id = DbAdapter.saveSymbolQuery(m_project.getId(), folderId, query);
+			
+			if (id != null)
+			{
+				QueryObject item = new QueryObject(query.getName(), id, folderId);
+				
+				if (segments.size() == 0)
+					addChild(item);
+				else
+					segments.get(segments.size() - 1).addChild(item);
+
+				m_viewer.refresh(this, true);
+				m_viewer.setSelection(new TreeSelection(new TreePath(segments.toArray()).createChildPath(item)), true);				
+			}			
+		}
+		
 	}	
 
 	
@@ -404,9 +434,9 @@ public class ProjectView extends ViewPart
 			
 			List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(m_project.getId(), null);
 			
-			for (SnapshotNode n : snapshotList)
+			for (SnapshotNode s : snapshotList)
 			{
-				addChild(new SnapshotObject(n.getName(), n.m_id, null));
+				addChild(new SnapshotObject(s.getName(), s.m_id, null));
 			}			
 		}
 		
