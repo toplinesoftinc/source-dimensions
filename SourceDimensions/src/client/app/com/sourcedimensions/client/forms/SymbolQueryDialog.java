@@ -140,7 +140,7 @@ public class SymbolQueryDialog extends DialogBase
 				if (!validatePath(true))
 					return;
 				
-				Object found = DbAdapter.findObject(ProjectView.getProject().getId(), fullName, false);
+				Object found = DbAdapter.findObject(ProjectView.getProject().getId(), fullName, true);
 				
 				if (!validateFoundObject(found, true))
 					return;

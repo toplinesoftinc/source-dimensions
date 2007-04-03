@@ -239,7 +239,7 @@ public class DbAdapter
 	}
 	
 	
-	public static Folder addFolder(String name, Integer parentId, String projectId, boolean queryFolder) throws DupFolderNameException
+	public static Folder addFolder(String name, Integer parentId, String projectId, boolean isQuery) throws DupFolderNameException
 	{
 		try
 		{
@@ -251,25 +251,27 @@ public class DbAdapter
 			ResultSet rs = ps.executeQuery();
 			rs.next();
 			
-			int prjId = rs.getInt("id");		
+			int prjId = rs.getInt("id");
+			short queryFlag = (short)(isQuery ? 1 : 0);
 			
-			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND " + 
+			ps = c.prepareStatement("SELECT * FROM folder WHERE query_or_folder = ? AND project_id = ? AND " + 
 				"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND name = ?");
 			
-			ps.setInt(1, prjId);
+			ps.setShort(1, queryFlag);
+			ps.setInt(2, prjId);
 			
 			if (parentId == null)
 			{
-				ps.setNull(2, Types.INTEGER);
 				ps.setNull(3, Types.INTEGER);
+				ps.setNull(4, Types.INTEGER);
 			}
 			else
 			{
-				ps.setInt(2, parentId);
 				ps.setInt(3, parentId);
+				ps.setInt(4, parentId);
 			}
 			
-			ps.setString(4, name);
+			ps.setString(5, name);
 			
 			rs = ps.executeQuery();
 			
@@ -289,7 +291,7 @@ public class DbAdapter
 				ps.setInt(2, parentId);
 			
 			ps.setString(3, name);
-			ps.setShort(4, (short)(queryFolder ? 1 : 0));
+			ps.setShort(4, queryFlag);
 			
 			ps.executeUpdate();
 			
@@ -323,7 +325,7 @@ public class DbAdapter
 		{
 			Connection c = getConnection();			
 			
-			PreparedStatement ps = c.prepareStatement("SELECT project_id, parent_id FROM folder WHERE id = ?");
+			PreparedStatement ps = c.prepareStatement("SELECT query_or_folder, project_id, parent_id FROM folder WHERE id = ?");
 			
 			ps.setInt(1, id);
 			ResultSet rs = ps.executeQuery();
@@ -331,30 +333,32 @@ public class DbAdapter
 			rs.next();
 			
 			Integer parentId = rs.getInt("parent_id");
+			short queryFlag = rs.getShort("query_or_folder");
 			
 			if (rs.wasNull())
 				parentId = null;
 			
 			int prjId = rs.getInt("project_id");
 
-			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND " +
+			ps = c.prepareStatement("SELECT * FROM folder WHERE query_or_folder = ? AND project_id = ? AND " +
 				"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND name = ? and id <> ?");
 			
-			ps.setInt(1, prjId);
+			ps.setShort(1, queryFlag);
+			ps.setInt(2, prjId);
 			
 			if (parentId == null)
 			{
-				ps.setNull(2, Types.INTEGER);
 				ps.setNull(3, Types.INTEGER);
+				ps.setNull(4, Types.INTEGER);
 			}
 			else
 			{
-				ps.setInt(2, parentId);
 				ps.setInt(3, parentId);
+				ps.setInt(4, parentId);
 			}
 			
-			ps.setString(4, name);
-			ps.setInt(5, id);
+			ps.setString(5, name);
+			ps.setInt(6, id);
 			
 			rs = ps.executeQuery();
 			
@@ -635,23 +639,24 @@ public class DbAdapter
 			
 			for (int i = 0; i < segments.length; i++)
 			{
-				ps = c.prepareStatement("SELECT id FROM folder WHERE project_id = ? AND " +
+				ps = c.prepareStatement("SELECT id FROM folder WHERE query_or_folder = ? AND project_id = ? AND " +
 					"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND name = ?");					
 				
-				ps.setInt(1, prjId);
+				ps.setShort(1, (short)(isQuery ? 1 : 0));
+				ps.setInt(2, prjId);
 				
 				if (id == null)
 				{
-					ps.setNull(2, Types.INTEGER);
 					ps.setNull(3, Types.INTEGER);
+					ps.setNull(4, Types.INTEGER);
 				}
 				else
 				{
-					ps.setInt(2, id);
 					ps.setInt(3, id);
+					ps.setInt(4, id);
 				}
 				
-				ps.setString(4, segments[i]);
+				ps.setString(5, segments[i]);
 				
 				rs = ps.executeQuery();
 			
@@ -670,7 +675,7 @@ public class DbAdapter
 						if (isQuery)
 						{
 							ps = c.prepareStatement("SELECT id FROM query WHERE project_id = ? AND " +
-							"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL)) AND name = ?");
+								"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL)) AND name = ?");
 						}
 						else
 						{

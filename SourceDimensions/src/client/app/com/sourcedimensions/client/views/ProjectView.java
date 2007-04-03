@@ -10,6 +10,7 @@ import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.SWT;
 import org.eclipse.core.runtime.IAdaptable;
@@ -389,7 +390,7 @@ public class ProjectView extends ViewPart
 		
 		public void addQueryNode(SymbolQuery query, Integer queryId, String name)
 		{		
-			List<FolderObject> segments = makeFolderPath(name, false);
+			List<FolderObject> segments = makeFolderPath(name, true);
 			Integer folderId = (segments.size() == 0) ? null : segments.get(segments.size() - 1).getID();
 			
 			Integer id = DbAdapter.saveSymbolQuery(m_project.getId(), folderId, query);
@@ -615,6 +616,14 @@ public class ProjectView extends ViewPart
 		
 		m_queryGroup = new QueryGroup();
 		m_root.addChild(m_queryGroup);
+	}
+	
+	protected void handleDoubleSelect(SelectionEvent event)
+	{
+		if (event.getSource() instanceof QueryObject)
+		{
+			
+		}
 	}
 	
 	public void createPartControl(Composite parent) 
