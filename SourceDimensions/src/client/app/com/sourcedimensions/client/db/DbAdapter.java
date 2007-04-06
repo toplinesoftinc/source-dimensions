@@ -789,7 +789,7 @@ public class DbAdapter
 			return DriverManager.getConnection(String.format(url, path));
 	}
 
-	public SymbolQuery getSymbolQuery(int queryId)
+	public static SymbolQuery getSymbolQuery(int queryId)
 	{
 		SymbolQuery query = new SymbolQuery();
 
@@ -841,7 +841,7 @@ public class DbAdapter
 					query.getTypeFilter().add(filter);
 					
 					filter.setCategories(rs.getInt("categories"));
-					filter.setModifiers(new TriStateMask(rs.getLong("modifier")));
+					filter.setModifiers(new TriStateMask(rs.getLong("modifiers")));
 					filter.setAllBaseTypes(rs.getShort("all_types") != 0);
 					filter.setInnerTypes(TriStateBoolean.values()[rs.getShort("inner_types")]);
 					filter.setSupertypes(TriStateBoolean.values()[rs.getShort("supertypes")]);
@@ -943,8 +943,6 @@ public class DbAdapter
 				ps.setInt(1, queryId);
 				rs = ps.executeQuery();
 				
-				int filterId = rs.getInt("id");
-				
 				while (rs.next())
 				{
 					MemberFilter filter = new MemberFilter();
@@ -961,6 +959,8 @@ public class DbAdapter
 					filter.setName(rs.getString("name"));
 					type.setName(rs.getString("type_name"));
 					type.setTypeProps(new TriStateMask(rs.getLong("type_props")));
+					
+					int filterId = rs.getInt("id");
 					
 					PreparedStatement ps2 = c.prepareStatement("SELECT * FROM throw WHERE member_id = ?");
 					
@@ -982,7 +982,6 @@ public class DbAdapter
 						ps2 = c.prepareStatement("SELECT * FROM member_param WHERE member_id = ?");
 						
 						ps2.setInt(1, filterId);
-						
 						rs2 = ps2.executeQuery();
 						
 						int paramId = rs2.getInt("id");

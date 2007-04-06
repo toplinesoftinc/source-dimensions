@@ -5,6 +5,7 @@ import java.util.List;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.MenuManager;
@@ -18,6 +19,7 @@ import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DupFolderNameException;
+import com.sourcedimensions.client.forms.SymbolQueryDialog;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.client.model.QueryNode;
@@ -617,19 +619,27 @@ public class ProjectView extends ViewPart
 		m_queryGroup = new QueryGroup();
 		m_root.addChild(m_queryGroup);
 	}
-	
-	protected void handleDoubleSelect(SelectionEvent event)
-	{
-		if (event.getSource() instanceof QueryObject)
-		{
-			
-		}
-	}
-	
+		
 	public void createPartControl(Composite parent) 
 	{
 		m_viewer = new TreeViewer(parent, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-		m_viewer.getTree().setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
+		m_viewer.addOpenListener(new IOpenListener() 
+		{
+			public void open(OpenEvent event) 
+			{
+				Object selection = ((StructuredSelection)event.getSelection()).getFirstElement();
+				
+				if (selection instanceof QueryObject)
+				{
+					QueryObject object = (QueryObject)selection;
+					SymbolQuery query = DbAdapter.getSymbolQuery(object.m_id);
+					
+					SymbolQueryDialog dialog = new SymbolQueryDialog(PlatformUI.getWorkbench().getDisplay(), getSite().getShell(), query);
+					dialog.open();
+				}				
+			} 
+		});
+		
 		//m_drillDownAdapter = new DrillDownAdapter(m_viewer);
 		m_viewer.setContentProvider(new ViewContentProvider());
 		getSite().setSelectionProvider(m_viewer);

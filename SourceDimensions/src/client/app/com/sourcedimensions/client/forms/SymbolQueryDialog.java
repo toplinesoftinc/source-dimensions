@@ -79,13 +79,43 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_snapshotBrowseButton;
 	private Button m_queryBrowseButton;
 	private boolean m_forceClose;
-	
+
 	public SymbolQueryDialog(Display display, Shell parent)
 	{
 		m_display = display;
 		createShell(parent);
 	}
 
+	public SymbolQueryDialog(Display display, Shell parent, SymbolQuery query)
+	{
+		m_display = display;
+		createShell(parent);
+		TableItem item;
+		
+		for (String namespace : query.getNamespaceFilter())
+		{
+			new TableItem(m_namespaceFilterTable, SWT.NONE).setText(0, namespace);
+		}
+		
+		for (TypeFilter type : query.getTypeFilter())
+		{
+			item = new TableItem(m_typeFilterTable, SWT.NONE);
+			fillTypeFilterItem(item, type);
+		}
+		
+		for (MemberFilter member : query.getMemberFilter())
+		{
+			item = new TableItem(m_memberFilterTable, SWT.NONE);
+			fillMemberFilterItem(item, member);
+		}
+		
+		for (LocalDeclFilter local : query.getLocalDeclFilter())
+		{
+			item = new TableItem(m_localDeclFilterTable, SWT.NONE);
+			fillLocalDeclFilterItem(item, local);
+		}	
+	}
+	
 	public void setSnapshotName(String name)
 	{
 		m_snapshotNameText.setText(name);
@@ -502,11 +532,8 @@ public class SymbolQueryDialog extends DialogBase
 					}
 					
 					TableItem item = new TableItem(m_memberFilterTable, SWT.NONE);
-					item.setText(0, memberCategoriesToString(filter.getCategories()));
-					item.setText(1, modifiersToString(filter.getModifiers()));
-					item.setText(2, filter.getName());
-					item.setText(3, filter.getType().getName());
-					item.setText(4, filter.getType().typePropsToString());
+					
+					fillMemberFilterItem(item, filter);
 										
 			 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
 			  		{
@@ -643,13 +670,8 @@ public class SymbolQueryDialog extends DialogBase
 					m_typeFilter.add(filter);
 					
 					TableItem item = new TableItem(m_typeFilterTable, 0);
-					item.setText(0, typeCategoriesToString(filter.getCategories()));
-					item.setText(1, modifiersToString(filter.getModifiers()));
-					item.setText(2, dialog.getTypeName());					
-					item.setText(3, dialog.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.getBaseTypes()));
-					item.setText(4, m_triStateText[dialog.getInnerTypes().value()]);
-					item.setText(5, m_triStateText[dialog.getSupertypes().value()]);
-					item.setText(6, m_triStateText[dialog.getSubtypes().value()]);
+					
+					fillTypeFilterItem(item, filter);
 				}
 			}
 		});
@@ -843,13 +865,7 @@ public class SymbolQueryDialog extends DialogBase
 				filter.setDelegate(dialog.getDelegate());
 				filter.setName(dialog.getTypeName());
 
-				item.setText(0, typeCategoriesToString(filter.getCategories()));			
-				item.setText(1, modifiersToString(filter.getModifiers()));
-				item.setText(2, dialog.getTypeName());				
-				item.setText(3, filter.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.getBaseTypes()));
-				item.setText(4, m_triStateText[dialog.getInnerTypes().value()]);
-				item.setText(5, m_triStateText[dialog.getSupertypes().value()]);
-				item.setText(6, m_triStateText[dialog.getSubtypes().value()]);
+				fillTypeFilterItem(item, filter);
 			}
 		}
 		
@@ -904,11 +920,7 @@ public class SymbolQueryDialog extends DialogBase
 					filter.setThrowList(javaDialog.getThrowList());
 				}
 				
-				item.setText(0, memberCategoriesToString(filter.getCategories()));
-				item.setText(1, modifiersToString(filter.getModifiers()));
-				item.setText(2, filter.getName());
-				item.setText(3, filter.getType().getName());
-				item.setText(4, filter.getType().typePropsToString());				
+				fillMemberFilterItem(item, filter);
 				
 		 		if (lang == Language.CSHARP11 || lang == Language.CSHARP20)
 		  		{
@@ -943,9 +955,7 @@ public class SymbolQueryDialog extends DialogBase
 				filter.setName(dialog.getName());
 				filter.setFinal(dialog.getFinal());
 				
-				item.setText(0, filter.getType().getName());
-				item.setText(1, filter.getType().typePropsToString());
-				item.setText(2, filter.getName());
+				fillLocalDeclFilterItem(item, filter);
 			}			
 		}
 	}
@@ -1055,6 +1065,33 @@ public class SymbolQueryDialog extends DialogBase
 		return m_shell;
 	}	
 
+	protected void fillMemberFilterItem(TableItem item, MemberFilter filter)
+	{
+		item.setText(0, memberCategoriesToString(filter.getCategories()));
+		item.setText(1, modifiersToString(filter.getModifiers()));
+		item.setText(2, filter.getName());
+		item.setText(3, filter.getType().getName());
+		item.setText(4, filter.getType().typePropsToString());		
+	}
+	
+	protected void fillTypeFilterItem(TableItem item, TypeFilter filter)
+	{
+		item.setText(0, typeCategoriesToString(filter.getCategories()));
+		item.setText(1, modifiersToString(filter.getModifiers()));
+		item.setText(2, filter.getName());					
+		item.setText(3, filter.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.getBaseTypes()));
+		item.setText(4, m_triStateText[filter.getInnerTypes().value()]);
+		item.setText(5, m_triStateText[filter.getSupertypes().value()]);
+		item.setText(6, m_triStateText[filter.getSubtypes().value()]);		
+	}
+	
+	protected void fillLocalDeclFilterItem(TableItem item, LocalDeclFilter filter)
+	{
+		item.setText(0, filter.getType().getName());
+		item.setText(1, filter.getType().typePropsToString());
+		item.setText(2, filter.getName());		
+	}
+	
 	
 	protected class NamespaceFilterValidator extends InputDialog.MandatoryFieldValidator
 	{
@@ -1172,9 +1209,8 @@ public class SymbolQueryDialog extends DialogBase
 					m_localDeclFilter.add(filter);
 					
 					TableItem item = new TableItem(m_localDeclFilterTable, 0);
-					item.setText(0, filter.getType().getName());
-					item.setText(1, filter.getType().typePropsToString());
-					item.setText(2, filter.getName());					
+					
+					fillLocalDeclFilterItem(item, filter);
 				}
 			}
 		});
