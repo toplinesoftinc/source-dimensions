@@ -67,7 +67,7 @@ public class LocalDeclDialog extends DialogBase
 					type.getTypeProps().getMask(Type.Property.values()[i].value()));
 		}		
 
-		if (finalFlag != null)
+		if (m_finalCheckBox != null)
 		{
 			setTriStateBoolValue(m_finalCheckBox.getItem(0), finalFlag);
 		}

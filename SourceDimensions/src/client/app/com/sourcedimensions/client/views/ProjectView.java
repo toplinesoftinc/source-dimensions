@@ -11,7 +11,6 @@ import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.SWT;
 import org.eclipse.core.runtime.IAdaptable;
@@ -25,9 +24,6 @@ import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.client.model.QueryNode;
 import com.sourcedimensions.client.model.SnapshotNode;
 import com.sourcedimensions.client.model.SymbolQuery;
-
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.widgets.Display;
 
 
 public class ProjectView extends ViewPart 

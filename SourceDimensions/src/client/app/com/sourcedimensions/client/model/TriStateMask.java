@@ -59,12 +59,12 @@ public class TriStateMask
 	
 	public long getValue()
 	{
-		return (long)(m_included | (m_excluded >> Integer.SIZE));
+		return (long)(m_included | ((long)m_excluded << Integer.SIZE));
 	}
 
 	public void setValue(long value)
 	{
 		m_included = (int)value;
-		m_excluded = (int)(value << Integer.SIZE);
+		m_excluded = (int)(value >> Integer.SIZE);
 	}	
 }

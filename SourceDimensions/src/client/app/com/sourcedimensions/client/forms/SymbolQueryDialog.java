@@ -101,18 +101,21 @@ public class SymbolQueryDialog extends DialogBase
 		{
 			item = new TableItem(m_typeFilterTable, SWT.NONE);
 			fillTypeFilterItem(item, type);
+			m_typeFilter.add(type);
 		}
 		
 		for (MemberFilter member : query.getMemberFilter())
 		{
 			item = new TableItem(m_memberFilterTable, SWT.NONE);
 			fillMemberFilterItem(item, member);
+			m_memberFilter.add(member);
 		}
 		
 		for (LocalDeclFilter local : query.getLocalDeclFilter())
 		{
 			item = new TableItem(m_localDeclFilterTable, SWT.NONE);
 			fillLocalDeclFilterItem(item, local);
+			m_localDeclFilter.add(local);
 		}	
 	}
 	
@@ -179,7 +182,7 @@ public class SymbolQueryDialog extends DialogBase
 							
 				if (found != null)
 				{		
-					queryId = ((SnapshotNode)found).m_id;
+					queryId = ((QueryNode)found).m_id;
 					
 					DbAdapter.deleteQuery(queryId);						
 					ProjectView.getQueryGroup().deleteObject(fullName.split(Folder.DIVIDER_REGEX));

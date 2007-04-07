@@ -27,16 +27,17 @@ public class DbAdapter
 	public static void tryConnection() throws SQLException, IOException
 	{
 		Connection c = getConnection();
-		c.close();
+		closeConn(c);
 	}
 	
 	public static List<Project> getProjectList()
 	{
+		Connection c = null;
 		List<Project> list = new ArrayList<Project>();
 		
 		try
 		{
-			Connection c = getConnection();
+			c = getConnection();
 			
 			ResultSet rs = c.createStatement().executeQuery("SELECT * FROM project");
 
@@ -52,11 +53,16 @@ public class DbAdapter
 				list.add(p);
 			}
 			
-			c.close();
+			c.commit();
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
 		}
 		
 		return list;
@@ -65,11 +71,12 @@ public class DbAdapter
 	
 	public static Project getProject(String id)
 	{
+		Connection c = null;
 		Project p = null;
 		
 		try
 		{
-			Connection c = getConnection();
+			c = getConnection();
 			PreparedStatement s = c.prepareStatement("SELECT * FROM project WHERE id = ?");
 			s.setString(1, id);
 			
@@ -102,11 +109,16 @@ public class DbAdapter
 				p.getParents().add(dp);
 			}		
 			
-			c.close();
+			c.commit();
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
 		}
 		
 		return p;
@@ -115,10 +127,12 @@ public class DbAdapter
 	
 	public static void saveProject(Project prj)
 	{
+		Connection c = null;
+
 		try
 		{
 			int id = 0;
-			Connection c = getConnection();
+			c = getConnection();
 			
 			PreparedStatement ps = c.prepareStatement("SELECT * FROM project WHERE ext_id = ?", 
 					ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
@@ -174,22 +188,27 @@ public class DbAdapter
 			}
 		
 			c.commit();
-			c.close();
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
 		}
 	}
 	
 	
 	public static List<Folder> getFolderList(Integer parentId, String projectId, boolean isQuery)
 	{
+		Connection c = null;
 		List<Folder> list = new ArrayList<Folder>();
 
 		try
 		{
-			Connection c = getConnection();
+			c = getConnection();
 			
 			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
 			
@@ -228,12 +247,16 @@ public class DbAdapter
 			}
 			
 			c.commit();
-			c.close();
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
-		}		
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
+		}
 				
 		return list;
 	}
@@ -241,9 +264,11 @@ public class DbAdapter
 	
 	public static Folder addFolder(String name, Integer parentId, String projectId, boolean isQuery) throws DupFolderNameException
 	{
+		Connection c = null;
+		
 		try
 		{
-			Connection c = getConnection();			
+			c = getConnection();			
 
 			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
 			
@@ -303,27 +328,35 @@ public class DbAdapter
 			folder.m_name = name;
 			
 			c.commit();
-			c.close();
 			
 			return folder;
 		}
 		catch (DupFolderNameException e)
 		{
+			rollbackTrans(c);
 			throw e;
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
 			return null;
-		}		
+		}
+		finally
+		{
+			closeConn(c);
+		}
 	}
 
 	
 	public static void updateFolder(String name, int id) throws DupFolderNameException
 	{
+		Connection c = null;
+		
 		try
 		{
-			Connection c = getConnection();			
+			c = getConnection();			
 			
 			PreparedStatement ps = c.prepareStatement("SELECT query_or_folder, project_id, parent_id FROM folder WHERE id = ?");
 			
@@ -373,24 +406,31 @@ public class DbAdapter
 			ps.executeUpdate();
 					
 			c.commit();
-			c.close();
 		}
 		catch (DupFolderNameException e)
 		{
+			rollbackTrans(c);
 			throw e;
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
-		}				
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
+		}
 	}
 	
 	
 	public static void deleteFolder(int id)
 	{
+		Connection c = null;
+		
 		try
 		{
-			Connection c = getConnection();
+			c = getConnection();
 			
 			PreparedStatement ps = c.prepareStatement("DELETE FROM folder WHERE id = ?");
 			
@@ -398,20 +438,25 @@ public class DbAdapter
 			ps.executeUpdate();
 			
 			c.commit();
-			c.close();
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
-		}						
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
+		}
 	}
 	
 	
 	public static Integer saveSnapshot(String projectId, Integer folderId, SnapshotNode node)
 	{
+		Connection c = null;
 		try
 		{
-			Connection c = getConnection();			
+			c = getConnection();			
 	
 			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
 			
@@ -442,22 +487,29 @@ public class DbAdapter
 			int id = rs.getInt(1);
 			
 			c.commit();
-			c.close();
 			
 			return id;
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
 			return null;
+		}
+		finally
+		{
+			closeConn(c);
 		}
 	}
 
 	public static void updateSnapshot(String name, int id) throws DupFolderNameException
 	{
+		Connection c = null;
+		
 		try
 		{
-			Connection c = getConnection();			
+			c = getConnection();			
 			
 			PreparedStatement ps = c.prepareStatement("SELECT project_id FROM snapshot WHERE id = ?");
 			
@@ -487,26 +539,32 @@ public class DbAdapter
 			ps.executeUpdate();
 					
 			c.commit();
-			c.close();
 		}
 		catch (DupFolderNameException e)
 		{
+			rollbackTrans(c);
 			throw e;
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
-		}				
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
+		}
 	}
 	
 	
 	public static List<SnapshotNode> getSnapshotList(String projectId, Integer folderId)
 	{
+		Connection c = null;
 		List<SnapshotNode> list = new ArrayList<SnapshotNode>();
 		
 		try
 		{
-			Connection c = getConnection();			
+			c = getConnection();			
 	
 			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
 			
@@ -549,11 +607,15 @@ public class DbAdapter
 			}
 			
 			c.commit();
-			c.close();
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
 		}
 		
 		return list;
@@ -562,11 +624,12 @@ public class DbAdapter
 	
 	public static List<QueryNode> getQueryList(String projectId, Integer folderId)
 	{
+		Connection c = null;
 		List<QueryNode> list = new ArrayList<QueryNode>();
 		
 		try
 		{
-			Connection c = getConnection();			
+			c = getConnection();			
 	
 			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
 			
@@ -607,11 +670,15 @@ public class DbAdapter
 			}
 			
 			c.commit();
-			c.close();
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
 		}
 		
 		return list;
@@ -621,12 +688,13 @@ public class DbAdapter
 	
 	public static Object findObject(String projectId, String path, boolean isQuery)
 	{
+		Connection c = null;
 		Integer id = null;
 		String[] segments = path.split(Folder.DIVIDER_REGEX);
 
 		try
 		{
-			Connection c = getConnection();			
+			c = getConnection();			
 						
 			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
 			
@@ -668,6 +736,7 @@ public class DbAdapter
 						folder.m_id = rs.getInt("id");
 						folder.m_name = segments[i];
 						
+						c.commit();
 						return folder;
 					}
 					else
@@ -708,6 +777,7 @@ public class DbAdapter
 								node.m_id = rs.getInt("id");
 								node.m_name = segments[i];
 								
+								c.commit();
 								return node;
 							}
 							else
@@ -716,11 +786,15 @@ public class DbAdapter
 								node.m_id = rs.getInt("id");
 								node.setName(segments[i]);
 								
+								c.commit();
 								return node;
 							}
 						}
 						else
+						{
+							c.commit();
 							return null;
+						}
 					}
 				}
 
@@ -729,15 +803,22 @@ public class DbAdapter
 					id = rs.getInt("id");
 				}
 				else
-					return null;			
+				{
+					c.commit();
+					return null;
+				}
 			}
 			
-			c.commit();
-			c.close();			
+			c.commit();		
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
 		}
 		
 		return null;
@@ -745,9 +826,11 @@ public class DbAdapter
 	
 	public static void deleteSnapshot(int id)
 	{
+		Connection c = null;
+		
 		try
 		{
-			Connection c = getConnection();			
+			c = getConnection();			
 	
 			PreparedStatement ps = c.prepareStatement("DELETE FROM snapshot WHERE id = ?");
 			
@@ -755,12 +838,16 @@ public class DbAdapter
 			ps.executeUpdate();
 			
 			c.commit();
-			c.close();
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
-		}		
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
+		}
 	}
 		
 	
@@ -768,6 +855,7 @@ public class DbAdapter
 	{	
 		String url = "jdbc:derby:%s/cachedb";
 		String path = Platform.getInstallLocation().getURL().getPath();
+		Connection c = null;
 		
 		if (path.startsWith("/"))
 			path = path.substring(1);
@@ -779,23 +867,27 @@ public class DbAdapter
 		if (!f.exists())
 		{
 			f.mkdir();
-			Connection c = DriverManager.getConnection(String.format(url + ";create=true", path));
-			
+			c = DriverManager.getConnection(String.format(url + ";create=true", path));
+
+			c.setAutoCommit(false);
 			createDb(c);
-			
-			return c;
+			c.close();
 		}
-		else
-			return DriverManager.getConnection(String.format(url, path));
+
+		c = DriverManager.getConnection(String.format(url, path));	
+		c.setAutoCommit(false);
+			
+		return c;
 	}
 
 	public static SymbolQuery getSymbolQuery(int queryId)
 	{
+		Connection c = null;
 		SymbolQuery query = new SymbolQuery();
 
 		try
 		{
-			Connection c = getConnection();			
+			c = getConnection();			
 	
 			PreparedStatement ps = c.prepareStatement("SELECT * FROM query WHERE id = ?");
 
@@ -803,7 +895,10 @@ public class DbAdapter
 			ResultSet rs = ps.executeQuery();
 			
 			if (!rs.next())
+			{
+				c.commit();
 				return null;
+			}
 			
 			query.setName(rs.getString("name"));
 			query.setAllNamespaces(rs.getShort("all_namespaces") != 0);
@@ -984,8 +1079,6 @@ public class DbAdapter
 						ps2.setInt(1, filterId);
 						rs2 = ps2.executeQuery();
 						
-						int paramId = rs2.getInt("id");
-						
 						while (rs2.next())
 						{
 							Parameter param = new Parameter();
@@ -993,6 +1086,8 @@ public class DbAdapter
 
 							filter.getParamList().add(param);
 							param.setType(t);
+
+							int paramId = rs2.getInt("id");
 							
 							param.setModifiers(new TriStateMask(rs2.getLong("modifiers")));
 							t.setTypeProps(new TriStateMask(rs2.getLong("type_props")));
@@ -1046,22 +1141,28 @@ public class DbAdapter
 			}
 			
 			c.commit();
-			c.close();
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
-		}				
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
+		}
 		
 		return query;
 	}
 	
 	public static Integer saveSymbolQuery(String projectId, Integer folderId, SymbolQuery query)
 	{
+		Connection c = null;
+		
 		try
-		{
-			Connection c = getConnection();			
-	
+		{						
+			c = getConnection();
+						
 			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
 			
 			ps.setString(1, projectId);
@@ -1094,7 +1195,7 @@ public class DbAdapter
 
 			int queryId = rs.getInt(1);
 			
-			if (!query.getAllNamespaces())
+			if (!query.getAllNamespaces() && query.getNamespaceFilter() != null)
 			{
 				for (String ns : query.getNamespaceFilter())
 				{
@@ -1107,7 +1208,7 @@ public class DbAdapter
 				}
 			}
 			
-			if (!query.getAllTypes())
+			if (!query.getAllTypes() && query.getTypeFilter() != null)
 			{
 				for (TypeFilter tf : query.getTypeFilter())
 				{
@@ -1130,15 +1231,18 @@ public class DbAdapter
 	
 					int filterId = rs.getInt(1);
 					
-					for (BaseType bt : tf.getBaseTypes())
+					if (tf.getBaseTypes() != null)
 					{
-						ps = c.prepareStatement("INSERT INTO base_type(filter_id, category, name) VALUES(?,?,?)");
-					
-						ps.setInt(1, filterId);
-						ps.setInt(2, bt.getCategory());
-						ps.setString(3, bt.getName());
+						for (BaseType bt : tf.getBaseTypes())
+						{
+							ps = c.prepareStatement("INSERT INTO base_type(filter_id, category, name) VALUES(?,?,?)");
 						
-						ps.executeUpdate();
+							ps.setInt(1, filterId);
+							ps.setInt(2, bt.getCategory());
+							ps.setString(3, bt.getName());
+							
+							ps.executeUpdate();
+						}
 					}
 					
 					Delegate delegate = tf.getDelegate();
@@ -1160,44 +1264,50 @@ public class DbAdapter
 	
 						int delegateId = rs.getInt(1);
 	
-						for (Parameter p : delegate.getParamList())
+						if (delegate.getParamList() != null)
 						{
-							ps = c.prepareStatement("INSERT INTO delegate_param(delegate_id, modifiers, type_props, " +
-								"type_name, name, position, pos_value, pos_min, pos_max) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
-							
-							ps.setInt(1, delegateId);
-							ps.setLong(2, p.getModifiers().getValue());
-							ps.setLong(3, p.getType().getTypeProps().getValue());
-							ps.setString(4, p.getType().getName());
-							ps.setString(5, p.getName());
-							ps.setInt(6, p.getPosType().value());
-							ps.setInt(7, p.getPosValue());
-							ps.setInt(8, p.getPosMin());
-							ps.setInt(9, p.getPosMax());
-	
-							ps.executeUpdate();
-	
-							rs = ps.getGeneratedKeys();
-							rs.next();
-	
-							int paramId = rs.getInt(1);
-							
-							for (Integer pos : p.getPosList())
+							for (Parameter p : delegate.getParamList())
 							{
-								ps = c.prepareStatement("INSERT INTO delegate_param_pos(delegate_param_id, position) " +
-									"VALUES(?,?)");
+								ps = c.prepareStatement("INSERT INTO delegate_param(delegate_id, modifiers, type_props, " +
+									"type_name, name, position, pos_value, pos_min, pos_max) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 								
-								ps.setInt(1, paramId);
-								ps.setInt(2, pos);
-								
+								ps.setInt(1, delegateId);
+								ps.setLong(2, p.getModifiers().getValue());
+								ps.setLong(3, p.getType().getTypeProps().getValue());
+								ps.setString(4, p.getType().getName());
+								ps.setString(5, p.getName());
+								ps.setInt(6, p.getPosType().value());
+								ps.setInt(7, p.getPosValue());
+								ps.setInt(8, p.getPosMin());
+								ps.setInt(9, p.getPosMax());
+		
 								ps.executeUpdate();
+		
+								rs = ps.getGeneratedKeys();
+								rs.next();
+		
+								int paramId = rs.getInt(1);
+						
+								if (p.getPosList() != null)
+								{
+									for (Integer pos : p.getPosList())
+									{
+										ps = c.prepareStatement("INSERT INTO delegate_param_pos(delegate_param_id, position) " +
+											"VALUES(?,?)");
+										
+										ps.setInt(1, paramId);
+										ps.setInt(2, pos);
+										
+										ps.executeUpdate();
+									}
+								}
 							}
 						}
 					}			
 				}
 			}
 	
-			if (!query.getAllMembers())
+			if (!query.getAllMembers() && query.getMemberFilter() != null)				
 			{
 				for (MemberFilter mf : query.getMemberFilter())
 				{
@@ -1221,53 +1331,62 @@ public class DbAdapter
 	
 					int memberId = rs.getInt(1);
 					
-					for (String t: mf.getThrowList())
+					if (mf.getThrowList() != null)
 					{
-						ps = c.prepareStatement("INSERT INTO throw(member_id, name) VALUES(?,?)");
-						
-						ps.setInt(1, memberId);
-						ps.setString(2, t);
-						
-						ps.executeUpdate();
-					}
-	
-					for (Parameter p : mf.getParamList())
-					{
-						ps = c.prepareStatement("INSERT INTO member_param(member_id, modifiers, type_props, " +
-								"type_name, name, position, pos_value, pos_min, pos_max) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
-							
-						ps.setInt(1, memberId);
-						ps.setLong(2, p.getModifiers().getValue());
-						ps.setLong(3, p.getType().getTypeProps().getValue());
-						ps.setString(4, p.getType().getName());
-						ps.setString(5, p.getName());
-						ps.setInt(6, p.getPosType().value());
-						ps.setInt(7, p.getPosValue());
-						ps.setInt(8, p.getPosMin());
-						ps.setInt(9, p.getPosMax());
-		
-						ps.executeUpdate();
-		
-						rs = ps.getGeneratedKeys();
-						rs.next();
-		
-						int paramId = rs.getInt(1);
-						
-						for (Integer pos : p.getPosList())
+						for (String t : mf.getThrowList())
 						{
-							ps = c.prepareStatement("INSERT INTO member_param_pos(member_param_id, position) " +
-								"VALUES(?,?)");
+							ps = c.prepareStatement("INSERT INTO throw(member_id, name) VALUES(?,?)");
 							
-							ps.setInt(1, paramId);
-							ps.setInt(2, pos);
+							ps.setInt(1, memberId);
+							ps.setString(2, t);
 							
 							ps.executeUpdate();
 						}
-					}					
+					}
+	
+					if (mf.getParamList() != null)
+					{
+						for (Parameter p : mf.getParamList())
+						{
+							ps = c.prepareStatement("INSERT INTO member_param(member_id, modifiers, type_props, " +
+									"type_name, name, pos_type, pos_value, pos_min, pos_max) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+								
+							ps.setInt(1, memberId);
+							ps.setLong(2, p.getModifiers().getValue());
+							ps.setLong(3, p.getType().getTypeProps().getValue());
+							ps.setString(4, p.getType().getName());
+							ps.setString(5, p.getName());
+							ps.setInt(6, p.getPosType().value());
+							ps.setInt(7, p.getPosValue());
+							ps.setInt(8, p.getPosMin());
+							ps.setInt(9, p.getPosMax());
+			
+							ps.executeUpdate();
+			
+							rs = ps.getGeneratedKeys();
+							rs.next();
+			
+							int paramId = rs.getInt(1);
+					
+							if (p.getPosList() != null)
+							{
+								for (Integer pos : p.getPosList())
+								{
+									ps = c.prepareStatement("INSERT INTO member_param_pos(member_param_id, position) " +
+										"VALUES(?,?)");
+									
+									ps.setInt(1, paramId);
+									ps.setInt(2, pos);
+									
+									ps.executeUpdate();
+								}
+							}
+						}
+					}
 				}	
 			}
 	
-			if (!query.getAllLocalDecls())
+			if (!query.getAllLocalDecls() && query.getLocalDeclFilter() != null)
 			{
 				for (LocalDeclFilter local : query.getLocalDeclFilter())
 				{
@@ -1275,7 +1394,12 @@ public class DbAdapter
 						"VALUES(?,?,?,?,?)");
 					
 					ps.setInt(1, queryId);
-					ps.setShort(2, (short)local.getFinal().value());
+					
+					if (local.getFinal() == null)
+						ps.setNull(2, Types.SMALLINT);
+					else
+						ps.setShort(2, (short)local.getFinal().value());
+					
 					ps.setLong(3, local.getType().getTypeProps().getValue());
 					ps.setString(4, local.getType().getName());
 					ps.setString(5, local.getName());
@@ -1285,22 +1409,29 @@ public class DbAdapter
 			}
 			
 			c.commit();
-			c.close();
 			
 			return queryId;
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());	
+			rollbackTrans(c);
+			
 			return null;
-		}				
+		}
+		finally
+		{
+			closeConn(c);
+		}
 	}
 	
 	public static void deleteQuery(int id)
 	{
+		Connection c = null;
+		
 		try
 		{
-			Connection c = getConnection();			
+			c = getConnection();			
 	
 			PreparedStatement ps = c.prepareStatement("DELETE FROM query WHERE id = ?");
 			
@@ -1308,12 +1439,47 @@ public class DbAdapter
 			ps.executeUpdate();
 			
 			c.commit();
-			c.close();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
+		}
+	}
+
+	protected static void closeConn(Connection c)
+	{
+		if (c == null)
+			return;
+		
+		try
+		{
+			if (!c.isClosed())
+				c.close();
 		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 		}		
+	}
+	
+	protected static void rollbackTrans(Connection c)
+	{
+		if (c == null)
+			return;
+		
+		try
+		{
+			c.rollback();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+		}
 	}
 	
 	protected static void createDb(Connection c) throws SQLException
