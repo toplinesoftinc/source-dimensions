@@ -906,6 +906,21 @@ public class DbAdapter
 			query.setAllMembers(rs.getShort("all_members") != 0);
 			query.setAllLocalDecls(rs.getShort("all_local_decls") != 0);
 			
+			Integer parentId = rs.getInt("folder_id");
+			
+			while (!rs.wasNull())
+			{
+				ps = c.prepareStatement("SELECT parent_id, name FROM folder WHERE id = ?");
+				ps.setInt(1, parentId);
+				
+				rs = ps.executeQuery();
+				rs.next();
+				
+				query.setName(rs.getString("name") + "/" + query.getName());
+				
+				parentId = rs.getInt("parent_id");
+			}
+			
 			if (!query.getAllNamespaces())
 			{
 				query.setNamespaceFilter(new ArrayList<String>());

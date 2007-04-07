@@ -90,7 +90,10 @@ public class SymbolQueryDialog extends DialogBase
 	{
 		m_display = display;
 		createShell(parent);
+		
 		TableItem item;
+		
+		m_queryNameText.setText(query.getName());
 		
 		for (String namespace : query.getNamespaceFilter())
 		{
