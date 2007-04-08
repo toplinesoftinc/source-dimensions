@@ -11,26 +11,44 @@ import org.eclipse.swt.widgets.Table;
 
 public class RemoveFilterAdapter extends SelectionAdapter 
 {
-	protected Table m_table;
+	protected org.eclipse.swt.widgets.List m_listCtrl;
+	protected Table m_tableCtrl;
 	protected Shell m_shell;
 	protected List m_list;
+
 	
-	public RemoveFilterAdapter(Shell shell, Table table)
+	public RemoveFilterAdapter(Shell shell, org.eclipse.swt.widgets.List control)
 	{
-		m_shell = shell;
-		m_table = table;
+		this(shell, control, null);
 	}
 	
-	public RemoveFilterAdapter(Shell shell, Table table, List list)
+	public RemoveFilterAdapter(Shell shell, org.eclipse.swt.widgets.List ctrl, List list)
 	{
 		m_shell = shell;
-		m_table = table;
+		m_listCtrl = ctrl;
+		m_list = list;
+	}	
+		
+	public RemoveFilterAdapter(Shell shell, Table ctrl)
+	{
+		this(shell, ctrl, null);
+	}
+	
+	public RemoveFilterAdapter(Shell shell, Table control, List list)
+	{
+		m_shell = shell;
+		m_tableCtrl = control;
 		m_list = list;
 	}
 	
 	public void widgetSelected(SelectionEvent e)
 	{
-		int[] sel = m_table.getSelectionIndices();
+		int[] sel;
+		
+		if (m_listCtrl != null)
+			sel = m_listCtrl.getSelectionIndices();
+		else
+			sel = m_tableCtrl.getSelectionIndices();
 		
 		if (sel.length == 0)
 		{
@@ -41,7 +59,10 @@ public class RemoveFilterAdapter extends SelectionAdapter
 			if (MessageDialog.openQuestion(m_shell, "Deletion confirmation", 
 				"Are you sure you want to delete selected filter(s)?"))
 			{
-				m_table.remove(sel);
+				if (m_listCtrl != null)
+					m_listCtrl.remove(sel);
+				else
+					m_tableCtrl.remove(sel);
 				
 				if (m_list != null)
 				{

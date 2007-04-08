@@ -519,15 +519,15 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_typeGroup.setLayout(null);
 		m_typeGroup.setLocation(new Point(270, 17));
 		m_typeGroup.setSize(new Point(218, 159));
+		m_typePropsLabel = new Label(m_typeGroup, SWT.NONE);
+		m_typePropsList = new Table(m_typeGroup, SWT.HIDE_SELECTION | SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION);
 		m_typeNameLabel = new Label(m_typeGroup, SWT.NONE);
 		m_typeNameLabel.setBounds(new Rectangle(11, 113, 91, 13));
 		m_typeNameLabel.setText("Type Name &Filter:");
 		m_typeNameText = new Text(m_typeGroup, SWT.BORDER);
 		m_typeNameText.setBounds(new Rectangle(11, 128, 196, 19));
-		m_typePropsLabel = new Label(m_typeGroup, SWT.NONE);
 		m_typePropsLabel.setBounds(new Rectangle(11, 23, 88, 13));
 		m_typePropsLabel.setText("Type Properties:");
-		m_typePropsList = new Table(m_typeGroup, SWT.HIDE_SELECTION | SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION);
 		m_typePropsList.setHeaderVisible(false);
 		m_typePropsList.setLinesVisible(false);
 		m_typePropsList.setBounds(new Rectangle(11, 37, 111, 68));

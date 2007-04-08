@@ -83,7 +83,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	private Button m_editThrowFilterButton;
 	private Button m_removeThrowFilterButton;
 	private boolean m_anyThrow;
-	private List<String> m_throwList = new ArrayList<String>();
+	private List<String> m_throwList = new ArrayList<String>();  //  @jve:decl-index=0:
 	
 	public JavaMemberDialog(Display display, Shell parent)
 	{
@@ -97,6 +97,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		Type type, boolean anyParams, List<Parameter> paramList, boolean anyThrow, List<String> throwList)
 	{
 		m_display = display;
+		m_throwList = throwList;
 		createShell(parent);
 		m_memberNameText.setText(name);
 		setTriStateBoolValue(m_typePropsList.getItem(m_arrayItem), type.getTypeProps().getMask(Type.Property.ARRAY.value()));
@@ -112,7 +113,6 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		
 		m_anyThrowCheckBox.setSelection(anyThrow);
 		enableThrowControls(!anyThrow);
-		m_throwList = throwList;
 		
 		for (String filter : throwList)
 		{
@@ -533,7 +533,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_throwGroup.setText("Throw Filter");
 		m_throwGroup.setEnabled(true);
 		m_throwGroup.setBounds(new Rectangle(274, 161, 258, 135));
-		m_throwFilterList = new org.eclipse.swt.widgets.List(m_throwGroup, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		m_throwFilterList = new org.eclipse.swt.widgets.List(m_throwGroup, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
 		m_throwFilterList.setBounds(new Rectangle(12, 19, 129, 103));
 		m_throwFilterList.setEnabled(false);
 		m_throwFilterList.addMouseListener(new MouseAdapter()
@@ -589,27 +589,8 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_removeThrowFilterButton.setText("Remove Filter");
 		m_removeThrowFilterButton.setEnabled(false);
 		m_removeThrowFilterButton.setSize(new Point(88, 25));
-		m_removeThrowFilterButton.addSelectionListener(new SelectionAdapter() 
-		{
-			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
-			{
-				int sel = m_throwFilterList.getSelectionIndex();
-				
-				if (sel == -1)
-				{
-					MessageDialog.openWarning(getShell(), "Selection", "Please select filter");
-				}
-				else
-				{
-					if (MessageDialog.openQuestion(getShell(), "Deletion confirmation", 
-						"Are you sure you want to delete selected filter?"))
-					{
-						m_throwFilterList.remove(sel);
-						m_throwList.remove(sel);
-					}
-				}
-			}
-		});
+		m_removeThrowFilterButton.addSelectionListener(
+			new RemoveFilterAdapter(getShell(), m_throwFilterList, m_throwList)); 
 	}
 	
 	
