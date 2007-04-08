@@ -5,7 +5,6 @@ import java.util.List;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.MenuManager;
@@ -19,7 +18,6 @@ import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.actions.EditQueryAction;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DupFolderNameException;
-import com.sourcedimensions.client.forms.SymbolQueryDialog;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.client.model.QueryNode;
@@ -91,6 +89,21 @@ public class ProjectView extends ViewPart
 			super(name);
 		}
 	
+		public boolean addDbChild(TreeObject object)
+		{
+			if (m_children == null)
+			{
+				m_children = new ArrayList<TreeObject>();
+				load();
+				return false;
+			}
+			
+			m_children.add(object);
+			object.setParent(this);
+			
+			return true;
+		}
+		
 		public void addChild(TreeObject object)
 		{
 			if (m_children == null)
@@ -398,11 +411,30 @@ public class ProjectView extends ViewPart
 			{
 				QueryObject item = new QueryObject(query.getName(), id, folderId);
 				
+				TreeGroup target;
+				
 				if (segments.size() == 0)
-					addChild(item);
+					target = this;
 				else
-					segments.get(segments.size() - 1).addChild(item);
-
+					target = segments.get(segments.size() - 1);
+				
+				if (!target.addDbChild(item))
+				{
+					for (TreeObject o : target.getChildren())
+					{
+						if (o instanceof QueryObject)
+						{
+							QueryObject q = (QueryObject)o;
+							
+							if (q.getID() == item.getID())
+							{
+								item = q;
+								break;
+							}
+						}
+					}
+				}
+				
 				m_viewer.refresh(this, true);
 				m_viewer.setSelection(new TreeSelection(new TreePath(segments.toArray()).createChildPath(item)), true);				
 			}			
@@ -450,11 +482,30 @@ public class ProjectView extends ViewPart
 			if (id != null)
 			{
 				SnapshotObject item = new SnapshotObject(node.getName(), id, folderId);
+
+				TreeGroup target;
 				
 				if (segments.size() == 0)
-					addChild(item);
+					target = this;
 				else
-					segments.get(segments.size() - 1).addChild(item);
+					target = segments.get(segments.size() - 1);
+				
+				if (!target.addDbChild(item))
+				{
+					for (TreeObject o : target.getChildren())
+					{
+						if (o instanceof SnapshotObject)
+						{
+							SnapshotObject s = (SnapshotObject)o;
+							
+							if (s.getID() == item.getID())
+							{
+								item = s;
+								break;
+							}
+						}
+					}
+				}
 
 				m_viewer.refresh(this, true);
 				m_viewer.setSelection(new TreeSelection(new TreePath(segments.toArray()).createChildPath(item)), true);				
