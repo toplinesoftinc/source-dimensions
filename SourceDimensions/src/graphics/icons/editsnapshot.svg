@@ -21,7 +21,7 @@
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   sodipodi:modified="TRUE">
+   sodipodi:modified="true">
   <defs
      id="defs4">
     <linearGradient
@@ -105,13 +105,13 @@
        id="rect2168"
        sodipodi:nodetypes="cccccccc" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.0739162px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
-       d="M 0.04372424,7.6783388 L 6.9010196,7.6783388"
+       style="fill:#051b75;fill-opacity:1;fill-rule:evenodd;stroke:#051b75;stroke-width:1.41175425px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
+       d="M 0.043724244,9.913928 L 6.9010196,9.913928"
        id="path2164"
        inkscape:connector-type="polyline" />
     <path
-       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.54100001;stroke-miterlimit:4;stroke-opacity:1"
-       d="M 8.2961324,7.6970521 L 4.8517329,10.191006 L 4.8837239,5.1160051 L 8.2961324,7.6970521 z "
+       style="fill:#051b75;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.54100001;stroke-miterlimit:4;stroke-opacity:1"
+       d="M 9.3788391,9.928591 L 4.9920838,13.338877 L 5.0328272,6.3992131 L 9.3788391,9.928591 z "
        id="rect2166"
        sodipodi:nodetypes="cccc" />
   </g>

@@ -1,5 +1,6 @@
 package com.sourcedimensions.client.forms;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -29,22 +30,45 @@ public class RemoveFilterAdapter extends SelectionAdapter
 	
 	public void widgetSelected(SelectionEvent e)
 	{
-		int sel = m_table.getSelectionIndex();
+		int[] sel = m_table.getSelectionIndices();
 		
-		if (sel == -1)
+		if (sel.length == 0)
 		{
-			MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
+			MessageDialog.openWarning(m_shell, "Selection", "Please select filter(s)");
 		}
 		else
 		{
 			if (MessageDialog.openQuestion(m_shell, "Deletion confirmation", 
-				"Are you sure you want to delete selected filter?"))
+				"Are you sure you want to delete selected filter(s)?"))
 			{
 				m_table.remove(sel);
 				
 				if (m_list != null)
 				{
-					m_list.remove(sel);
+					boolean[] flags = new boolean[m_list.size()];
+					
+					for (int i = 0; i < flags.length; i++)
+					{
+						flags[i] = true;
+					}
+					
+					for (int i : sel)
+					{
+						flags[i] = false;
+					}
+						
+					List lst = new ArrayList();
+					
+					for (int i = 0; i < m_list.size(); i++)
+					{
+						if (flags[i])
+						{
+							lst.add(m_list.get(i));
+						}
+					}
+						
+					m_list.clear();
+					m_list.addAll(lst);
 				}
 			}
 		}				

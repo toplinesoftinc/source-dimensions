@@ -229,7 +229,7 @@ public class TypeFilterDialog extends DialogBase
 		m_baseTypesLabel.setText("&Base Types Filter List:");
 		m_baseTypesLabel.setLocation(new Point(17, 215));
 		m_baseTypesLabel.setSize(new Point(110, 13));
-		m_baseTypesTable = new Table(m_shell, SWT.BORDER | SWT.FULL_SELECTION);
+		m_baseTypesTable = new Table(getShell(), SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
 		m_baseTypesTable.setHeaderVisible(true);
 		m_baseTypesTable.setLinesVisible(true);
 		m_baseTypesTable.setEnabled(false);

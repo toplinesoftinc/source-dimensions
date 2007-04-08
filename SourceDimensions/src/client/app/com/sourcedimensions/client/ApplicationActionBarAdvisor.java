@@ -43,18 +43,22 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     	prjMenu.add(new Separator());    	
     	prjMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_folder"));
     	prjMenu.add(new Separator());
-    	prjMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_snapshot"));
-    	prjMenu.add(new Separator());
     	prjMenu.add(exitAction);
 
     	MenuManager queryMenu = new MenuManager("&Query", "query");
     	queryMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_query"));
+    	queryMenu.add(new Separator());    	
+    	queryMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_query2"));    	
+    	
+    	MenuManager snapshotMenu = new MenuManager("&Snapshot", "snapshot");
+    	snapshotMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_snapshot"));
     	
     	MenuManager helpMenu = new MenuManager("&Help", "help");
     	helpMenu.add(aboutAction);
     	
     	menuBar.add(prjMenu);
     	menuBar.add(queryMenu);
+    	menuBar.add(snapshotMenu);
     	menuBar.add(helpMenu);
     }
     
@@ -65,5 +69,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_project"));    	
     	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_folder"));    	
     	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_query"));
+    	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_snapshot"));
     }
 }

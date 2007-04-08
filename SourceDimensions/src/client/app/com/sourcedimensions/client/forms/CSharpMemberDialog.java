@@ -236,7 +236,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_paramsLabel = new Label(getShell(), SWT.NONE);
 		m_paramsLabel.setBounds(new Rectangle(17, 297, 102, 13));
 		m_paramsLabel.setText("Parameter &Filter List:");
-		m_paramsTable = new Table(getShell(), SWT.BORDER | SWT.FULL_SELECTION);
+		m_paramsTable = new Table(getShell(), SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
 		m_paramsTable.setHeaderVisible(true);
 		m_paramsTable.setLinesVisible(true);
 		m_paramsTable.setEnabled(false);

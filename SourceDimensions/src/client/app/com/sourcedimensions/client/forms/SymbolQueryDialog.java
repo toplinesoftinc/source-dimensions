@@ -2,6 +2,7 @@ package com.sourcedimensions.client.forms;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -170,11 +171,11 @@ public class SymbolQueryDialog extends DialogBase
 		m_saveButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
-			{
-				String fullName = m_queryNameText.getText().trim();
-				
+			{				
 				if (!validatePath(true))
 					return;
+			
+				String fullName = m_queryNameText.getText().trim();
 				
 				Object found = DbAdapter.findObject(ProjectView.getProject().getId(), fullName, true);
 				
@@ -217,11 +218,11 @@ public class SymbolQueryDialog extends DialogBase
 		m_runQueryButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
-			{
-				String fullName = m_snapshotNameText.getText().trim();
-				
+			{			
 				if (!validatePath(false))
 					return;
+			
+				String fullName = m_snapshotNameText.getText().trim();
 				
 				Object found = DbAdapter.findObject(ProjectView.getProject().getId(), fullName, false);
 				
@@ -328,7 +329,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_namespacesTab.setLayout(null);
 		m_allNamespacesCheckBox = new Button(m_namespacesTab, SWT.CHECK | SWT.LEFT);
 		m_namespaceFilterLabel = new Label(m_namespacesTab, SWT.NONE);
-		m_namespaceFilterTable = new Table(m_namespacesTab, SWT.BORDER | SWT.FULL_SELECTION);
+		m_namespaceFilterTable = new Table(m_namespacesTab, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
 		m_namespaceFilterTable.setHeaderVisible(false);
 		m_namespaceFilterTable.setLinesVisible(true);
 		m_namespaceFilterTable.setLocation(new Point(15, 57));
@@ -437,7 +438,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_memberFilterListLabel.setText("&Members Filter &List:");
 		m_memberFilterListLabel.setLocation(new Point(15, 40));
 		m_memberFilterListLabel.setSize(new Point(108, 15));
-		m_memberFilterTable = new Table(m_membersTab, SWT.BORDER | SWT.FULL_SELECTION);
+		m_memberFilterTable = new Table(m_membersTab, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
 		m_memberFilterTable.setHeaderVisible(true);
 		m_memberFilterTable.setLocation(new Point(15, 57));
 		m_memberFilterTable.setLinesVisible(true);
@@ -590,7 +591,7 @@ public class SymbolQueryDialog extends DialogBase
 				m_removeTypeFilterButton.setEnabled(!sel);
 			}
 		});
-		m_typeFilterTable = new Table(m_typesTab, SWT.BORDER | SWT.FULL_SELECTION);
+		m_typeFilterTable = new Table(m_typesTab, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
 		m_typeFilterTable.setHeaderVisible(true);
 		m_typeFilterTable.setLinesVisible(true);
 		m_typeFilterTable.setLocation(new Point(15, 57));
@@ -987,15 +988,22 @@ public class SymbolQueryDialog extends DialogBase
 			MessageDialog.openError(m_shell, "Incorrect Input", "Please enter " + entityName);
 			return false;
 		}
+
+		String errorMsg = entityName + " is incorrect. The name should have " +	
+			"path components separated by path divider characters " + Folder.DIVIDER_REGEX.replaceAll("[\\x5B\\x5D]", "\"") +
+			". Starting, terminating and several consecutive path divider characters are not allowed.";
+		
+		if (Pattern.matches(Folder.DIVIDER_REGEX + ".*", fullName))
+		{
+			MessageDialog.openError(m_shell, "Incorrect Input", errorMsg);				
+			return false;			
+		}
 		
 		for (String s : segments)
 		{
 			if (s.trim().length() == 0)
 			{
-				MessageDialog.openError(m_shell, "Incorrect Input", entityName +	" is incorrect. The name should have " +
-					"path components separated by path divider characters " + Folder.DIVIDER_REGEX.replaceAll("[\\x5B\\x5D]", "\"") +
-					". Terminating and several consecutive path divider characters are not allowed.");
-				
+				MessageDialog.openError(m_shell, "Incorrect Input", errorMsg);				
 				return false;
 			}
 		}
@@ -1158,7 +1166,7 @@ public class SymbolQueryDialog extends DialogBase
 				m_removeFilterButton.setEnabled(!sel);
 			}
 		});
-		m_localDeclFilterTable = new Table(m_localDeclarationsTab, SWT.BORDER | SWT.FULL_SELECTION);
+		m_localDeclFilterTable = new Table(m_localDeclarationsTab, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
 		m_localDeclFilterTable.setHeaderVisible(true);
 		m_localDeclFilterTable.setLinesVisible(true);
 		m_localDeclFilterTable.setLocation(new Point(15, 57));

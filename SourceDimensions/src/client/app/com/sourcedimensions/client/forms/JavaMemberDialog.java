@@ -199,7 +199,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_paramsLabel.setText("Parameter &Filter List:");
 		m_paramsLabel.setLocation(new Point(17, 295));
 		m_paramsLabel.setSize(new Point(106, 13));
-		m_paramsTable = new Table(getShell(), SWT.BORDER | SWT.FULL_SELECTION);
+		m_paramsTable = new Table(getShell(), SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
 		m_paramsTable.setHeaderVisible(true);
 		m_paramsTable.setLinesVisible(true);
 		m_paramsTable.setEnabled(false);

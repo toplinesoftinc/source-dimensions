@@ -65,24 +65,6 @@
          	label="Project"
          	visible="true">
                <action
-                   class="com.sourcedimensions.client.actions.DeleteSnapshotAction"
-                   icon="icons/delsnapshot.png"
-                   id="com.sourcedimensions.client.deleteSnapshot"
-                   label="&amp;Delete Snapshot"
-                   menubarPath="project/additions_snapshot"
-                   enablesFor="1">
-                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
-               </action>
-               <action
-                   class="com.sourcedimensions.client.actions.RenameSnapshotAction"
-                   icon="icons/editsnapshot.png"
-                   id="com.sourcedimensions.client.renameSnapshot"
-                   label="&amp;Rename Snapshot..."
-                   menubarPath="project/additions_snapshot"
-                   enablesFor="1">
-                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
-               </action>
-               <action
                    class="com.sourcedimensions.client.actions.OpenProjectAction"
                    icon="icons/project.png"
                    id="com.sourcedimensions.client.openProject"
@@ -121,12 +103,52 @@
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>                 
                </action>
                <action
+                   class="com.sourcedimensions.client.actions.DeleteQueryAction"
+                   icon="icons/delquery.png"
+                   id="com.sourcedimensions.client.deleteQuery"
+                   label="&amp;Delete Query"
+                   menubarPath="query/additions_query2"
+                   toolbarPath="additions_query"
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/> 
+               </action>
+               <action
+                   class="com.sourcedimensions.client.actions.EditQueryAction"
+                   icon="icons/editquery.png"
+                   id="com.sourcedimensions.client.editQuery"
+                   label="&amp;Edit Query..."
+                   menubarPath="query/additions_query2"
+                   toolbarPath="additions_query"
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/> 
+               </action>
+               <action
                    class="com.sourcedimensions.client.actions.SymbolQueryAction"
                    icon="icons/symbol.png"
                    id="com.sourcedimensions.client.symbolQuery"
                    label="&amp;Symbol Query..."
                    menubarPath="query/additions_query"
                    toolbarPath="additions_query">
+               </action>               
+               <action
+                   class="com.sourcedimensions.client.actions.DeleteSnapshotAction"
+                   icon="icons/delsnapshot.png"
+                   id="com.sourcedimensions.client.deleteSnapshot"
+                   label="&amp;Delete Snapshot"
+                   menubarPath="snapshot/additions_snapshot"
+                   toolbarPath="additions_snapshot"                   
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
+               </action>
+               <action
+                   class="com.sourcedimensions.client.actions.RenameSnapshotAction"
+                   icon="icons/editsnapshot.png"
+                   id="com.sourcedimensions.client.renameSnapshot"
+                   label="&amp;Rename Snapshot..."
+                   menubarPath="snapshot/additions_snapshot"
+                   toolbarPath="additions_snapshot"                   
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
                </action>               
           </actionSet>
    </extension>
@@ -212,6 +234,23 @@
                    menubarPath="additions_snapshot"
                    label="Rename Snapshot..."/>
          </objectContribution>
+         <objectContribution
+              adaptable="false"
+              id="com.sourcedimensions.client.queryContributions"
+              objectClass="com.sourcedimensions.client.views.ProjectView$QueryObject">
+              <action
+                   class="com.sourcedimensions.client.actions.DeleteQueryAction"
+                   icon="icons/delquery.png"
+                   id="com.sourcedimensions.client.deleteQuery"
+                   menubarPath="additions_query"
+                   label="Delete Query"/>              
+              <action
+                   class="com.sourcedimensions.client.actions.EditQueryAction"
+                   icon="icons/editquery.png"
+                   id="com.sourcedimensions.client.editQuery"
+                   menubarPath="additions_query"
+                   label="Edit Query..."/>                   
+         </objectContribution>         
          <objectContribution
               adaptable="false"
               id="com.sourcedimensions.client.projectContributions"

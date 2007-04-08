@@ -690,6 +690,7 @@ public class DbAdapter
 	{
 		Connection c = null;
 		Integer id = null;
+				
 		String[] segments = path.split(Folder.DIVIDER_REGEX);
 
 		try

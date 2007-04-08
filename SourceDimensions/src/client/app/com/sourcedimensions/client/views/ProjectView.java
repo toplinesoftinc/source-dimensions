@@ -16,6 +16,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.core.runtime.IAdaptable;
 import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
+import com.sourcedimensions.client.actions.EditQueryAction;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DupFolderNameException;
 import com.sourcedimensions.client.forms.SymbolQueryDialog;
@@ -627,12 +628,8 @@ public class ProjectView extends ViewPart
 				
 				if (selection instanceof QueryObject)
 				{
-					QueryObject object = (QueryObject)selection;
-					SymbolQuery query = DbAdapter.getSymbolQuery(object.m_id);
-					
-					SymbolQueryDialog dialog = new SymbolQueryDialog(PlatformUI.getWorkbench().getDisplay(), getSite().getShell(), query);
-					dialog.open();
-				}				
+					EditQueryAction.runQueryEdit(getSite().getShell(), (QueryObject)selection);
+				}
 			} 
 		});
 		
