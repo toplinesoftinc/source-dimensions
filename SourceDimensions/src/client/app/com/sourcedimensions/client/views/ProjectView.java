@@ -561,7 +561,7 @@ public class ProjectView extends ViewPart
 	}
 
 	
-	class ViewContentProvider implements ITreeContentProvider 
+	public class ProjectContentProvider implements ITreeContentProvider 
 	{
 		public void inputChanged(Viewer v, Object oldInput, Object newInput) 
 		{
@@ -614,7 +614,7 @@ public class ProjectView extends ViewPart
 	}
 
 	
-	class ViewLabelProvider extends LabelProvider 
+	public class ProjectLabelProvider extends LabelProvider 
 	{
 		public String getText(Object obj) 
 		{
@@ -670,7 +670,7 @@ public class ProjectView extends ViewPart
 		
 	public void createPartControl(Composite parent) 
 	{
-		m_viewer = new TreeViewer(parent, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		m_viewer = new TreeViewer(parent, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
 		m_viewer.addOpenListener(new IOpenListener() 
 		{
 			public void open(OpenEvent event) 
@@ -685,9 +685,9 @@ public class ProjectView extends ViewPart
 		});
 		
 		//m_drillDownAdapter = new DrillDownAdapter(m_viewer);
-		m_viewer.setContentProvider(new ViewContentProvider());
+		m_viewer.setContentProvider(new ProjectContentProvider());
 		getSite().setSelectionProvider(m_viewer);
-		m_viewer.setLabelProvider(new ViewLabelProvider());
+		m_viewer.setLabelProvider(new ProjectLabelProvider());
 		m_viewer.setComparator(new ViewerSorter());
 		m_viewer.setInput(getViewSite());
 		
