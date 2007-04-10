@@ -154,6 +154,21 @@ public class SymbolQueryDialog extends DialogBase
 		m_snapshotBrowseButton.setSize(new Point(72, 23));
 		m_snapshotBrowseButton.setText("Browse...");
 		m_snapshotBrowseButton.setLocation(new Point(587, 20));
+		m_snapshotBrowseButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				ProjectBrowserDialog dialog = new ProjectBrowserDialog(
+					PlatformUI.getWorkbench().getDisplay(), getShell(), false);
+				
+				dialog.open();
+				
+				if (!dialog.isCancelled())
+				{
+					m_snapshotNameText.setText(dialog.getResultPath());
+				}
+			}
+		});
 		m_queryNameLabel = new Label(getShell(), SWT.NONE);
 		m_queryNameText = new Text(getShell(), SWT.BORDER);
 		m_queryNameText.setBounds(new Rectangle(334, 62, 251, 19));
@@ -161,6 +176,21 @@ public class SymbolQueryDialog extends DialogBase
 		m_queryBrowseButton.setLocation(new Point(587, 59));
 		m_queryBrowseButton.setText("Browse...");
 		m_queryBrowseButton.setSize(new Point(72, 23));
+		m_queryBrowseButton.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				ProjectBrowserDialog dialog = new ProjectBrowserDialog(
+						PlatformUI.getWorkbench().getDisplay(), getShell(), true);
+					
+				dialog.open();
+				
+				if (!dialog.isCancelled())
+				{
+					m_queryNameText.setText(dialog.getResultPath());
+				}
+			}
+		});
 		createQueryParamsTabFolder();
 		m_queryNameLabel.setText("&Query Name:");
 		m_queryNameLabel.setLocation(new Point(334, 48));

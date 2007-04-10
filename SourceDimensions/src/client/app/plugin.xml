@@ -54,7 +54,7 @@
             class="com.sourcedimensions.client.views.ProjectView"
             icon="icons/project.png"
             id="com.sourcedimensions.client.views.ProjectView"
-            name="Project view"/>
+            name="Project View"/>
    </extension>
    <extension
          id="com.sourcedimensions.client.projectActionSet"
