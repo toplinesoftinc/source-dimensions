@@ -91,26 +91,7 @@ public class ProjectBrowserDialog extends DialogBase
 				}
 				else
 				{
-					TreeItem selected = m_viewer.getSelection()[0];
-					m_resultPath = "";
-					ItemProps props = m_itemMap.get(selected);
-					
-					while (props.getType() != ItemType.ROOT)
-					{
-						if (props.getType() == ItemType.FOLDER)
-						{
-							m_resultPath += "/";
-						}
-						
-						m_resultPath += selected.getText();
-						
-						selected = props.getParent();
-						props = m_itemMap.get(selected);
-					}
-					
-					
-					m_cancel = false;
-					getShell().close();
+					makeSelection();
 				}
 			}
 		});
@@ -121,7 +102,7 @@ public class ProjectBrowserDialog extends DialogBase
 		m_cancelButton.setSize(new Point(88, 25));
 		m_cancelButton.setToolTipText("Cancel");
 		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.NORMAL));
-		m_viewer = new Tree(getShell(), SWT.BORDER);
+		m_viewer = new Tree(getShell(), SWT.VIRTUAL | SWT.BORDER);
 		m_viewer.setBounds(new Rectangle(16, 13, 333, 299));
 		m_cancelButton.addSelectionListener(new SelectionAdapter() 
 		{
@@ -153,7 +134,15 @@ public class ProjectBrowserDialog extends DialogBase
 
 		item.setItemCount(1);
 		m_itemMap.put(item, new ItemProps());
-		
+
+		m_viewer.addSelectionListener(new SelectionAdapter()
+		{
+			public void widgetDefaultSelected(SelectionEvent e)
+			{
+				makeSelection();
+			}
+		});
+
 		m_viewer.addTreeListener(new TreeAdapter()
 		{
 			public void treeExpanded(TreeEvent e)
@@ -167,13 +156,15 @@ public class ProjectBrowserDialog extends DialogBase
 					
 					List<Folder> folderList = DbAdapter.getFolderList(props.getID(), projectId, m_isQuery);
 					
+					source.setItemCount(0);
+					
 					for (Folder f : folderList)
 					{
 						TreeItem item = new TreeItem(source, SWT.NONE);
 						item.setItemCount(1);
-						m_itemMap.put(item, new ItemProps(item, f.m_id, ItemType.FOLDER));
-						source.setText(f.m_name);
-						source.setImage(Util.getSharedImage(IImageKeys.IMG_FOLDER));
+						m_itemMap.put(item, new ItemProps(source, f.m_id, ItemType.FOLDER));
+						item.setText(f.m_name);
+						item.setImage(Util.getSharedImage(IImageKeys.IMG_FOLDER));
 					}
 					
 					if (m_isQuery)
@@ -183,9 +174,9 @@ public class ProjectBrowserDialog extends DialogBase
 						for (QueryNode q : queryList)
 						{
 							TreeItem item = new TreeItem(source, SWT.NONE);
-							m_itemMap.put(item, new ItemProps(item, q.m_id, ItemType.LEAF));
-							source.setText(q.m_name);
-							source.setImage(Util.getSharedImage(IImageKeys.IMG_SYMBOL_QUERY));
+							m_itemMap.put(item, new ItemProps(source, q.m_id, ItemType.LEAF));
+							item.setText(q.m_name);
+							item.setImage(Util.getSharedImage(IImageKeys.IMG_SYMBOL_QUERY));
 						}	
 					}
 					else
@@ -195,9 +186,9 @@ public class ProjectBrowserDialog extends DialogBase
 						for (SnapshotNode s : snapshotList)
 						{
 							TreeItem item = new TreeItem(source, SWT.NONE);
-							m_itemMap.put(item, new ItemProps(item, s.m_id, ItemType.LEAF));
-							source.setText(s.getName());
-							source.setImage(Util.getSharedImage(IImageKeys.IMG_SNAPSHOT));						
+							m_itemMap.put(item, new ItemProps(source, s.m_id, ItemType.LEAF));
+							item.setText(s.getName());
+							item.setImage(Util.getSharedImage(IImageKeys.IMG_SNAPSHOT));						
 						}
 					}
 					
@@ -213,7 +204,32 @@ public class ProjectBrowserDialog extends DialogBase
 	{
 		return m_shell;
 	}
-
+	
+	public void makeSelection()
+	{
+		TreeItem selected = m_viewer.getSelection()[0];
+		ItemProps props = m_itemMap.get(selected);
+		m_resultPath = "";
+		
+		while (props.getType() != ItemType.ROOT)
+		{					
+			if (props.getType() == ItemType.FOLDER)
+			{
+				m_resultPath = "/" + m_resultPath;
+			}
+		
+			m_resultPath = selected.getText() + m_resultPath;
+			
+			selected = props.getParent();
+			props = m_itemMap.get(selected);
+		}
+		
+		
+		m_cancel = false;
+		getShell().close();			
+	}
+	
+	
 	
 	protected enum ItemType
 	{
@@ -237,10 +253,10 @@ public class ProjectBrowserDialog extends DialogBase
 			m_type = ItemType.ROOT;
 		}
 		
-		public ItemProps(TreeItem item, int id, ItemType type)
+		public ItemProps(TreeItem parent, int id, ItemType type)
 		{
 			m_id = id;
-			m_parent = item;
+			m_parent = parent;
 			m_type = type;
 		}
 		
