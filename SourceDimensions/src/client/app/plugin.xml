@@ -169,13 +169,13 @@
                    icon="icons/delfolder.png"
                    id="com.sourcedimensions.client.deleteFolder"
                    menubarPath="additions_folder"                   
-                   label="Delete Folder"/>
+                   label="Delete"/>
                <action
                    class="com.sourcedimensions.client.actions.RenameFolderAction"
                    icon="icons/editfolder.png"
                    id="com.sourcedimensions.client.renameFolder"
                    menubarPath="additions_folder"                     
-                   label="Rename Folder..."/>
+                   label="Rename..."/>
                <action
                    class="com.sourcedimensions.client.actions.CreateFolderAction"
                    icon="icons/addfolder.png"
@@ -226,13 +226,13 @@
                    icon="icons/delsnapshot.png"
                    id="com.sourcedimensions.client.deleteSnapshot"
                    menubarPath="additions_snapshot"
-                   label="Delete Snapshot"/>              
+                   label="Delete"/>              
               <action
                    class="com.sourcedimensions.client.actions.RenameSnapshotAction"
                    icon="icons/editsnapshot.png"
                    id="com.sourcedimensions.client.renameSnapshot"
                    menubarPath="additions_snapshot"
-                   label="Rename Snapshot..."/>
+                   label="Rename..."/>
          </objectContribution>
          <objectContribution
               adaptable="false"
@@ -243,13 +243,13 @@
                    icon="icons/delquery.png"
                    id="com.sourcedimensions.client.deleteQuery"
                    menubarPath="additions_query"
-                   label="Delete Query"/>              
+                   label="Delete"/>              
               <action
                    class="com.sourcedimensions.client.actions.EditQueryAction"
                    icon="icons/editquery.png"
                    id="com.sourcedimensions.client.editQuery"
                    menubarPath="additions_query"
-                   label="Edit Query..."/>                   
+                   label="Edit..."/>                   
          </objectContribution>         
          <objectContribution
               adaptable="false"

@@ -44,6 +44,78 @@ public class ProjectBrowserDialog extends DialogBase
 		m_isQuery = isQuery;
 		createShell(parent);
 	}
+
+	
+	public ProjectBrowserDialog(Display display, Shell parent, boolean isQuery, String path)
+	{
+		m_display = display;
+		m_isQuery = isQuery;
+		createShell(parent);
+
+		String projectId = ProjectView.getProject().getId();
+		
+		Object sel = DbAdapter.findObject(projectId, path, isQuery);
+		
+		if (sel != null)
+		{
+			String[] segments = path.split(Folder.DIVIDER_REGEX);
+
+			TreeItem curItem = m_viewer.getItems()[0];
+			
+			for (int i = 0; i < segments.length; i++)
+			{
+				m_itemMap.get(curItem).setLoaded();
+				curItem.setItemCount(0);
+				
+				if (i == segments.length - 1 && !(sel instanceof Folder))
+				{
+					if (m_isQuery)
+					{
+						List<QueryNode> queryList = DbAdapter.getQueryList(projectId, m_itemMap.get(curItem).m_id);
+						
+						for (QueryNode q : queryList)
+						{
+							TreeItem item = addItem(curItem, q.m_id, q.m_name, ItemType.LEAF, Util.getSharedImage(IImageKeys.IMG_SYMBOL_QUERY));
+							
+							if (q.m_name.equals(segments[i]))
+								curItem = item; 
+						}	
+					}
+					else
+					{
+						List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(projectId, m_itemMap.get(curItem).m_id);
+						
+						for (SnapshotNode s : snapshotList)
+						{
+							TreeItem item = addItem(curItem, s.m_id, s.getName(), ItemType.LEAF, Util.getSharedImage(IImageKeys.IMG_SNAPSHOT));
+							
+							if (s.getName().equals(segments[i]))
+								curItem = item; 
+						}
+					}					
+				}
+				else
+				{
+					List<Folder> list = DbAdapter.getFolderList(m_itemMap.get(curItem).m_id, projectId, isQuery);
+					TreeItem cur = null;
+					
+					for (Folder f : list)
+					{
+						TreeItem item = addItem(curItem, f.m_id, f.m_name, ItemType.FOLDER, Util.getSharedImage(IImageKeys.IMG_FOLDER));
+						
+						if (f.m_name.equals(segments[i]))
+							cur = item;
+					}
+					
+					curItem = cur;
+				}
+			}
+			
+			m_viewer.showItem(curItem);
+			m_viewer.setSelection(curItem);
+		}
+	}
+
 	
 	public void open()
 	{
@@ -160,11 +232,7 @@ public class ProjectBrowserDialog extends DialogBase
 					
 					for (Folder f : folderList)
 					{
-						TreeItem item = new TreeItem(source, SWT.NONE);
-						item.setItemCount(1);
-						m_itemMap.put(item, new ItemProps(source, f.m_id, ItemType.FOLDER));
-						item.setText(f.m_name);
-						item.setImage(Util.getSharedImage(IImageKeys.IMG_FOLDER));
+						addItem(source, f.m_id, f.m_name, ItemType.FOLDER, Util.getSharedImage(IImageKeys.IMG_FOLDER));
 					}
 					
 					if (m_isQuery)
@@ -173,10 +241,7 @@ public class ProjectBrowserDialog extends DialogBase
 						
 						for (QueryNode q : queryList)
 						{
-							TreeItem item = new TreeItem(source, SWT.NONE);
-							m_itemMap.put(item, new ItemProps(source, q.m_id, ItemType.LEAF));
-							item.setText(q.m_name);
-							item.setImage(Util.getSharedImage(IImageKeys.IMG_SYMBOL_QUERY));
+							addItem(source, q.m_id, q.m_name, ItemType.LEAF, Util.getSharedImage(IImageKeys.IMG_SYMBOL_QUERY));
 						}	
 					}
 					else
@@ -185,10 +250,7 @@ public class ProjectBrowserDialog extends DialogBase
 						
 						for (SnapshotNode s : snapshotList)
 						{
-							TreeItem item = new TreeItem(source, SWT.NONE);
-							m_itemMap.put(item, new ItemProps(source, s.m_id, ItemType.LEAF));
-							item.setText(s.getName());
-							item.setImage(Util.getSharedImage(IImageKeys.IMG_SNAPSHOT));						
+							addItem(source, s.m_id, s.getName(), ItemType.LEAF, Util.getSharedImage(IImageKeys.IMG_SNAPSHOT));
 						}
 					}
 					
@@ -198,6 +260,22 @@ public class ProjectBrowserDialog extends DialogBase
 		});
 		
 		super.createShell(parent);
+	}
+	
+	protected TreeItem addItem(TreeItem parent, int id, String name, ItemType type, Image image)
+	{
+		TreeItem item = new TreeItem(parent, SWT.NONE);
+		
+		m_itemMap.put(item, new ItemProps(parent, id, type));
+		item.setText(name);		
+		item.setImage(image);
+		
+		if (type == ItemType.FOLDER)
+		{
+			item.setItemCount(1);
+		}
+		
+		return item;
 	}
 	
 	protected Shell getShell()

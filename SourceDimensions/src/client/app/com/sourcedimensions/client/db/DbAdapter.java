@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import java.util.regex.Pattern;
+
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
 import com.sourcedimensions.client.model.*;
@@ -731,14 +733,22 @@ public class DbAdapter
 			
 				if (i == segments.length - 1)
 				{				
-					if (rs.next())
+					if (Pattern.matches(".*" + Folder.DIVIDER_REGEX, path))
 					{
-						Folder folder = new Folder();
-						folder.m_id = rs.getInt("id");
-						folder.m_name = segments[i];
-						
-						c.commit();
-						return folder;
+						if (rs.next())
+						{
+							Folder folder = new Folder();
+							folder.m_id = rs.getInt("id");
+							folder.m_name = segments[i];
+							
+							c.commit();
+							return folder;
+						}
+						else
+						{
+							c.commit();
+							return null;
+						}
 					}
 					else
 					{

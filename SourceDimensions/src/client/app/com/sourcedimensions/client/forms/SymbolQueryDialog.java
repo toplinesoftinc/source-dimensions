@@ -159,7 +159,7 @@ public class SymbolQueryDialog extends DialogBase
 			public void widgetSelected(SelectionEvent e) 
 			{
 				ProjectBrowserDialog dialog = new ProjectBrowserDialog(
-					PlatformUI.getWorkbench().getDisplay(), getShell(), false);
+					PlatformUI.getWorkbench().getDisplay(), getShell(), false, m_snapshotNameText.getText());
 				
 				dialog.open();
 				
@@ -181,7 +181,7 @@ public class SymbolQueryDialog extends DialogBase
 			public void widgetSelected(SelectionEvent e) 
 			{
 				ProjectBrowserDialog dialog = new ProjectBrowserDialog(
-						PlatformUI.getWorkbench().getDisplay(), getShell(), true);
+						PlatformUI.getWorkbench().getDisplay(), getShell(), true, m_queryNameText.getText());
 					
 				dialog.open();
 				
