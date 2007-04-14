@@ -72,45 +72,15 @@
                    menubarPath="project/additions_project"
                    toolbarPath="additions_project"/>
                <action
-                   class="com.sourcedimensions.client.actions.DeleteFolderAction"
-                   icon="icons/delfolder.png"
-                   id="com.sourcedimensions.client.deleteFolder"
-                   label="&amp;Delete Folder"
-                   menubarPath="project/additions_folder"
-                   toolbarPath="additions_folder"
-                   enablesFor="1">
-                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
-               </action>
-               <action
-                   class="com.sourcedimensions.client.actions.RenameFolderAction"
-                   icon="icons/editfolder.png"
-                   id="com.sourcedimensions.client.renameFolder"
-                   label="&amp;Rename Folder..."
-                   menubarPath="project/additions_folder"
-                   toolbarPath="additions_folder"
-                   enablesFor="1">
-                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
-               </action>
-               <action
                    class="com.sourcedimensions.client.actions.CreateFolderAction"
                    icon="icons/addfolder.png"
                    id="com.sourcedimensions.client.createFolder"
-                   label="Create &amp;Folder..."
+                   label="New &amp;Folder..."
                    menubarPath="project/additions_folder"
                    toolbarPath="additions_folder"
                    enablesFor="1">
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotGroup"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>                 
-               </action>
-               <action
-                   class="com.sourcedimensions.client.actions.DeleteQueryAction"
-                   icon="icons/delquery.png"
-                   id="com.sourcedimensions.client.deleteQuery"
-                   label="&amp;Delete Query"
-                   menubarPath="query/additions_query2"
-                   toolbarPath="additions_query"
-                   enablesFor="1">
-                 <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/> 
                </action>
                <action
                    class="com.sourcedimensions.client.actions.EditQueryAction"
@@ -126,29 +96,31 @@
                    class="com.sourcedimensions.client.actions.SymbolQueryAction"
                    icon="icons/symbol.png"
                    id="com.sourcedimensions.client.symbolQuery"
-                   label="&amp;Symbol Query..."
+                   label="&amp;New Symbol Query..."
                    menubarPath="query/additions_query"
                    toolbarPath="additions_query">
                </action>               
                <action
-                   class="com.sourcedimensions.client.actions.DeleteSnapshotAction"
-                   icon="icons/delsnapshot.png"
-                   id="com.sourcedimensions.client.deleteSnapshot"
-                   label="&amp;Delete Snapshot"
-                   menubarPath="snapshot/additions_snapshot"
-                   toolbarPath="additions_snapshot"                   
+                   class="com.sourcedimensions.client.actions.DeleteObjectAction"
+                   icon="icons/delete.png"
+                   id="com.sourcedimensions.client.deleteObject"
+                   label="&amp;Delete"
+                   menubarPath="project/additions_object"
+                   toolbarPath="additions_object"
                    enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
+                 <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/>
                </action>
                <action
-                   class="com.sourcedimensions.client.actions.RenameSnapshotAction"
-                   icon="icons/editsnapshot.png"
-                   id="com.sourcedimensions.client.renameSnapshot"
-                   label="&amp;Rename Snapshot..."
-                   menubarPath="snapshot/additions_snapshot"
-                   toolbarPath="additions_snapshot"                   
+                   class="com.sourcedimensions.client.actions.RenameObjectAction"
+                   id="com.sourcedimensions.client.renameObject"
+                   label="&amp;Rename..."
+                   menubarPath="project/additions_object"
                    enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
+                 <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/>
                </action>               
           </actionSet>
    </extension>
@@ -159,29 +131,28 @@
               id="com.sourcedimensions.client.folderContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$FolderObject">
                <action
+                   class="com.sourcedimensions.client.actions.DeleteObjectAction"
+                   icon="icons/delete.png"
+                   id="com.sourcedimensions.client.deleteFolder"
+                   menubarPath="additions_object"                   
+                   label="Delete"/>
+               <action
+                   class="com.sourcedimensions.client.actions.RenameObjectAction"
+                   id="com.sourcedimensions.client.renameFolder"
+                   menubarPath="additions_object"                     
+                   label="Rename..."/>
+               <action
                    class="com.sourcedimensions.client.actions.SymbolQueryAction"
                    icon="icons/symbol.png"
                    id="com.sourcedimensions.client.symbolQuery"
                    menubarPath="additions_query"
-                   label="Symbol Query..."/>              
-               <action
-                   class="com.sourcedimensions.client.actions.DeleteFolderAction"
-                   icon="icons/delfolder.png"
-                   id="com.sourcedimensions.client.deleteFolder"
-                   menubarPath="additions_folder"                   
-                   label="Delete"/>
-               <action
-                   class="com.sourcedimensions.client.actions.RenameFolderAction"
-                   icon="icons/editfolder.png"
-                   id="com.sourcedimensions.client.renameFolder"
-                   menubarPath="additions_folder"                     
-                   label="Rename..."/>
+                   label="New Symbol Query..."/>              
                <action
                    class="com.sourcedimensions.client.actions.CreateFolderAction"
                    icon="icons/addfolder.png"
                    id="com.sourcedimensions.client.createFolder"
                    menubarPath="additions_folder"                     
-                   label="Create Folder..."/>
+                   label="New Folder..."/>
          </objectContribution>
          <objectContribution
               adaptable="false"
@@ -192,13 +163,13 @@
                    icon="icons/symbol.png"
                    id="com.sourcedimensions.client.symbolQuery"
                    menubarPath="additions_query"                                        
-                   label="Symbol Query..."/>              
+                   label="New Symbol Query..."/>              
               <action
                    class="com.sourcedimensions.client.actions.CreateFolderAction"
                    icon="icons/addfolder.png"
                    id="com.sourcedimensions.client.createFolder"
                    menubarPath="additions_folder"                                          
-                   label="Create Folder..."/>
+                   label="New Folder..."/>
          </objectContribution>
          <objectContribution
               adaptable="false"
@@ -209,29 +180,28 @@
                    icon="icons/symbol.png"
                    id="com.sourcedimensions.client.symbolQuery"
                    menubarPath="additions_query"                                        
-                   label="Symbol Query..."/>              
+                   label="New Symbol Query..."/>              
               <action
                    class="com.sourcedimensions.client.actions.CreateFolderAction"
                    icon="icons/addfolder.png"
                    id="com.sourcedimensions.client.createFolder"
                    menubarPath="additions_folder"                                          
-                   label="Create Folder..."/>
+                   label="New Folder..."/>
          </objectContribution>
          <objectContribution
               adaptable="false"
               id="com.sourcedimensions.client.snapshotContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$SnapshotObject">
               <action
-                   class="com.sourcedimensions.client.actions.DeleteSnapshotAction"
-                   icon="icons/delsnapshot.png"
+                   class="com.sourcedimensions.client.actions.DeleteObjectAction"
+                   icon="icons/delete.png"
                    id="com.sourcedimensions.client.deleteSnapshot"
-                   menubarPath="additions_snapshot"
-                   label="Delete"/>              
+                   menubarPath="additions_object"
+                   label="Delete"/>
               <action
-                   class="com.sourcedimensions.client.actions.RenameSnapshotAction"
-                   icon="icons/editsnapshot.png"
+                   class="com.sourcedimensions.client.actions.RenameObjectAction"
                    id="com.sourcedimensions.client.renameSnapshot"
-                   menubarPath="additions_snapshot"
+                   menubarPath="additions_object"
                    label="Rename..."/>
          </objectContribution>
          <objectContribution
@@ -239,11 +209,16 @@
               id="com.sourcedimensions.client.queryContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$QueryObject">
               <action
-                   class="com.sourcedimensions.client.actions.DeleteQueryAction"
-                   icon="icons/delquery.png"
+                   class="com.sourcedimensions.client.actions.DeleteObjectAction"
+                   icon="icons/delete.png"
                    id="com.sourcedimensions.client.deleteQuery"
-                   menubarPath="additions_query"
-                   label="Delete"/>              
+                   menubarPath="additions_object"
+                   label="Delete"/>
+              <action
+                   class="com.sourcedimensions.client.actions.RenameObjectAction"
+                   id="com.sourcedimensions.client.renameQuery"
+                   menubarPath="additions_object"
+                   label="Rename..."/>              
               <action
                    class="com.sourcedimensions.client.actions.EditQueryAction"
                    icon="icons/editquery.png"

@@ -76,6 +76,11 @@ public class ProjectView extends ViewPart
 			return null;
 		}
 		
+		public Integer getID()
+		{
+			return null;
+		}
+		
 		abstract public Image getImage();
 	}
 
@@ -322,7 +327,7 @@ public class ProjectView extends ViewPart
 			return Util.getSharedImage(IImageKeys.IMG_FOLDER);
 		}
 		
-		public int getID()
+		public Integer getID()
 		{
 			return m_id;
 		}
@@ -531,7 +536,7 @@ public class ProjectView extends ViewPart
 			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT);
 		}
 		
-		public int getID()
+		public Integer getID()
 		{
 			return m_id;
 		}
@@ -554,7 +559,7 @@ public class ProjectView extends ViewPart
 			return Util.getSharedImage(IImageKeys.IMG_SYMBOL_QUERY);
 		}
 		
-		public int getID()
+		public Integer getID()
 		{
 			return m_id;
 		}

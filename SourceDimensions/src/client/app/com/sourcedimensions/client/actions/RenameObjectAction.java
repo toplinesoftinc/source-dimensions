@@ -10,14 +10,17 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
+
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DupFolderNameException;
 import com.sourcedimensions.client.forms.InputDialog;
 import com.sourcedimensions.client.views.ProjectView;
+import com.sourcedimensions.client.views.ProjectView.FolderObject;
+import com.sourcedimensions.client.views.ProjectView.QueryObject;
 import com.sourcedimensions.client.views.ProjectView.SnapshotObject;
+import com.sourcedimensions.client.views.ProjectView.TreeObject;
 
-
-public class RenameSnapshotAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate 
+public class RenameObjectAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate 
 {	
 	protected IStructuredSelection m_selection;	
 	protected IWorkbenchWindow m_window;
@@ -30,13 +33,29 @@ public class RenameSnapshotAction implements IWorkbenchWindowActionDelegate, IOb
 	public void run(IAction action) 
 	{
 		Shell shell = m_window.getShell();
-		SnapshotObject selected = (SnapshotObject)m_selection.getFirstElement();
+		TreeObject selected = (TreeObject)m_selection.getFirstElement();
 		String name = selected.getName();
 		
+		String object = "";
+		
+		if (selected instanceof QueryObject)
+		{
+			object = "Query";
+		}
+		else if (selected instanceof SnapshotObject)
+		{
+			object = "Snapshot";
+		}
+		else if (selected instanceof FolderObject)
+		{
+			object = "Folder";
+		}
+
 		while (true)
 		{
-			InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), 
-				shell, "Snapshot", "&Snapshot name:", name, new InputDialog.MandatoryFieldValidator("Please enter snapshot name"));
+			InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), shell,
+				object, "&" + object + " name:", name, new InputDialog.MandatoryFieldValidator("Please enter " + object + " name"));
+			
 			dialog.open();
 			
 			name = dialog.getValue();
@@ -49,11 +68,22 @@ public class RenameSnapshotAction implements IWorkbenchWindowActionDelegate, IOb
 								
 				try
 				{
-					DbAdapter.updateSnapshot(name, id);
+					if (selected instanceof QueryObject)
+					{
+						DbAdapter.renameQuery(name, id);
+					}
+					else if (selected instanceof SnapshotObject)
+					{
+						DbAdapter.updateSnapshot(name, id);
+					}
+					else if (selected instanceof FolderObject)
+					{
+						DbAdapter.updateFolder(name, id);
+					}					
 				}
 				catch (DupFolderNameException e)
 				{
-					MessageDialog.openError(shell, "Error", "Duplicate snapshot name");
+					MessageDialog.openError(shell, "Error", "Duplicate name");
 					continue;
 				}
 				
@@ -83,6 +113,5 @@ public class RenameSnapshotAction implements IWorkbenchWindowActionDelegate, IOb
 
 	public void dispose() 
 	{
-	}	
-	
+	}		
 }

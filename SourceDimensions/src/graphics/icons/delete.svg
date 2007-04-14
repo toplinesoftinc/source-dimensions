@@ -13,13 +13,15 @@
    height="16"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.44.1"
+   inkscape:version="0.45"
    version="1.0"
    sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons"
-   sodipodi:docname="delfolder.svg"
+   sodipodi:docname="delete.svg"
    inkscape:export-filename="C:\delfolder.png"
    inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-ydpi="90"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   sodipodi:modified="true">
   <defs
      id="defs4">
     <linearGradient
@@ -55,7 +57,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="49.875"
      inkscape:cx="8"
-     inkscape:cy="7.9241222"
+     inkscape:cy="8.4182207"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      width="16px"
@@ -81,23 +83,13 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:#fae705;fill-opacity:1;fill-rule:evenodd;stroke:#846824;stroke-width:0.46039841;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1"
-       d="M 0.23002386,5.0272583 L 1.8270744,2.2502493 L 7.0071017,2.25051 L 7.9418405,4.1191738 L 12.769801,4.1626722 L 12.737309,14.769801 L 0.23004062,14.769799 L 0.23002386,5.0272583 z "
-       id="rect1880"
-       sodipodi:nodetypes="cccccccc" />
-    <path
-       style="fill:url(#linearGradient3683);fill-opacity:1.0;fill-rule:nonzero;stroke:#846824;stroke-width:0.527;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="M 2.7516199,8.3724453 L 8.288267,8.3523952 L 9.5889899,6.2635195 L 14.168665,6.2635195 L 15.736481,6.2635195 L 12.80605,14.73648 L 0.26351923,14.73648 L 2.7516199,8.3724453 z "
-       id="rect2787"
-       sodipodi:nodetypes="cccccccc" />
-    <path
-       style="fill:none;fill-rule:evenodd;stroke:#d31b1b;stroke-width:1.74957275px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="M 7.1529818,13.62396 L 12.135336,8.5248518"
+       style="fill:none;fill-rule:evenodd;stroke:#d31b1b;stroke-width:4.12546062px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 2.0627303,13.93727 L 13.93727,2.0627303"
        id="path1912"
        inkscape:connector-type="polyline" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#d31b1b;stroke-width:1.74957275px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="M 7.2519839,8.6042334 L 12.045158,13.479206"
+       style="fill:none;fill-rule:evenodd;stroke:#d31b1b;stroke-width:4.26194239px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 2.0218082,2.0858583 L 13.806373,13.85197"
        id="path1914"
        inkscape:connector-type="polyline" />
   </g>

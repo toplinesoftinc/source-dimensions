@@ -9,13 +9,16 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.views.ProjectView;
+import com.sourcedimensions.client.views.ProjectView.FolderObject;
 import com.sourcedimensions.client.views.ProjectView.QueryObject;
+import com.sourcedimensions.client.views.ProjectView.SnapshotObject;
 import com.sourcedimensions.client.views.ProjectView.TreeGroup;
+import com.sourcedimensions.client.views.ProjectView.TreeObject;
 
-
-public class DeleteQueryAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate
+public class DeleteObjectAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate 
 {
 	protected IStructuredSelection m_selection;	
 	protected IWorkbenchWindow m_window;
@@ -30,13 +33,25 @@ public class DeleteQueryAction implements IWorkbenchWindowActionDelegate, IObjec
 		Shell shell = m_window.getShell();
 		
 		if (MessageDialog.openQuestion(shell, "Deletion confirmation", 
-			"Are you sure you want to delete selected query?"))
+			"Are you sure you want to delete selected object?"))
 		{
-			QueryObject selected = (QueryObject)m_selection.getFirstElement();
+			TreeObject selected = (TreeObject)m_selection.getFirstElement();
 			int id = selected.getID();			
 			TreeGroup parent = selected.getParent();
 
-			DbAdapter.deleteQuery(id);
+			if (selected instanceof QueryObject)
+			{
+				DbAdapter.deleteQuery(id);
+			}
+			else if (selected instanceof SnapshotObject)
+			{
+				DbAdapter.deleteSnapshot(id);
+			}
+			else if (selected instanceof FolderObject)
+			{
+				DbAdapter.deleteFolder(id);
+			}
+			
 			parent.deleteChild(selected);
 			
 			ProjectView view = (ProjectView)m_window.getActivePage().findView(ProjectView.ID);

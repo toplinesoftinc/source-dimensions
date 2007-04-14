@@ -150,7 +150,7 @@ public class DbAdapter
 				update = true;
 			}
 			else
-				rs.moveToInsertRow();			
+				rs.moveToInsertRow();
 				
 			rs.updateString("ext_id", prj.getId());
 			rs.updateString("name", prj.getName());
@@ -1450,6 +1450,64 @@ public class DbAdapter
 			closeConn(c);
 		}
 	}
+
+	
+	public static void renameQuery(String name, int id) throws DupFolderNameException
+	{
+		Connection c = null;
+		
+		try
+		{
+			c = getConnection();			
+			
+			PreparedStatement ps = c.prepareStatement("SELECT project_id, folder_id FROM query WHERE id = ?");
+			
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			
+			Integer folderId = rs.getInt("folder_id");
+			
+			int prjId = rs.getInt("project_id");
+
+			ps = c.prepareStatement("SELECT * FROM query WHERE project_id = ? AND folder_id = ? AND name = ? and id <> ?");
+			
+			ps.setInt(1, prjId);
+			ps.setInt(2, folderId);		
+			ps.setString(3, name);
+			ps.setInt(4, id);
+			
+			rs = ps.executeQuery();
+			
+			if (rs.next())
+				throw new DupFolderNameException();
+			
+			ps = c.prepareStatement("UPDATE query SET name = ? WHERE id = ?");
+			
+			ps.setString(1, name);
+			ps.setInt(2, id);
+			
+			ps.executeUpdate();
+					
+			c.commit();
+		}
+		catch (DupFolderNameException e)
+		{
+			rollbackTrans(c);
+			throw e;
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
+		}
+	}
+	
 	
 	public static void deleteQuery(int id)
 	{

@@ -43,6 +43,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     	prjMenu.add(new Separator());    	
     	prjMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_folder"));
     	prjMenu.add(new Separator());
+    	prjMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_object"));
+    	prjMenu.add(new Separator());
     	prjMenu.add(exitAction);
 
     	MenuManager queryMenu = new MenuManager("&Query", "query");
@@ -70,5 +72,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_folder"));    	
     	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_query"));
     	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_snapshot"));
+    	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_object"));    	
     }
 }
