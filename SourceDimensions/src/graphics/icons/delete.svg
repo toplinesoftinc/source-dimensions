@@ -17,13 +17,24 @@
    version="1.0"
    sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons"
    sodipodi:docname="delete.svg"
-   inkscape:export-filename="C:\delfolder.png"
+   inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\delete.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   sodipodi:modified="true">
+   sodipodi:modified="TRUE">
   <defs
      id="defs4">
+    <linearGradient
+       id="linearGradient4198">
+      <stop
+         style="stop-color:#ff6147;stop-opacity:1;"
+         offset="0"
+         id="stop4200" />
+      <stop
+         style="stop-color:#a10e0e;stop-opacity:1;"
+         offset="1"
+         id="stop4202" />
+    </linearGradient>
     <linearGradient
        id="linearGradient3677">
       <stop
@@ -44,6 +55,34 @@
        x2="6.6566415"
        y2="15.111528"
        gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4198"
+       id="linearGradient4208"
+       x1="-0.10916299"
+       y1="7.968914"
+       x2="15.937344"
+       y2="7.968914"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4198"
+       id="linearGradient4228"
+       x1="-0.10916299"
+       y1="7.968914"
+       x2="15.937344"
+       y2="7.968914"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4198"
+       id="linearGradient5217"
+       x1="-1.2347414e-008"
+       y1="8"
+       x2="16"
+       y2="8"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(-0.9998837,-1.5248772e-2,1.5248772e-2,-0.9998837,15.87708,16.12106)" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -83,12 +122,12 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#d31b1b;stroke-width:4.12546062px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="M 2.0627303,13.93727 L 13.93727,2.0627303"
+       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:url(#linearGradient5217);stroke-width:4.12546062px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 14.027116,2.1539567 L 1.9728845,13.846044"
        id="path1912"
        inkscape:connector-type="polyline" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#d31b1b;stroke-width:4.26194239px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="fill:url(#linearGradient4208);fill-rule:evenodd;stroke:url(#linearGradient4228);stroke-width:4.26194239px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1.0"
        d="M 2.0218082,2.0858583 L 13.806373,13.85197"
        id="path1914"
        inkscape:connector-type="polyline" />
