@@ -218,7 +218,9 @@ public class SymbolQueryDialog extends DialogBase
 				{		
 					queryId = ((QueryNode)found).m_id;
 					
-					DbAdapter.deleteQuery(queryId);						
+					if (!DbAdapter.deleteQuery(queryId))
+						return;
+					
 					ProjectView.getQueryGroup().deleteObject(fullName.split(Folder.DIVIDER_REGEX));
 				}
 				
@@ -296,7 +298,9 @@ public class SymbolQueryDialog extends DialogBase
 
 					if (found != null)
 					{
-						DbAdapter.deleteSnapshot(((SnapshotNode)found).m_id);						
+						if (!DbAdapter.deleteSnapshot(((SnapshotNode)found).m_id))
+							return;
+						
 						ProjectView.getSnapshotGroup().deleteObject(sections);
 					}
 					

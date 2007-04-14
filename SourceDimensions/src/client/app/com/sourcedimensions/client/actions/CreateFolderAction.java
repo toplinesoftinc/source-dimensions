@@ -12,7 +12,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.db.DbAdapter;
-import com.sourcedimensions.client.db.DupFolderNameException;
+import com.sourcedimensions.client.db.DuplicateNameException;
 import com.sourcedimensions.client.forms.InputDialog;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.views.ProjectView;
@@ -75,7 +75,7 @@ public class CreateFolderAction implements IWorkbenchWindowActionDelegate, IObje
 				{
 					folder = DbAdapter.addFolder(name, id, ProjectView.getProject().getId(), isQuery);
 				}
-				catch (DupFolderNameException e)
+				catch (DuplicateNameException e)
 				{
 					MessageDialog.openError(shell, "Error", "Duplicate folder name");
 					continue;

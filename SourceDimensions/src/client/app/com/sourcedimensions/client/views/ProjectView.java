@@ -17,7 +17,7 @@ import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.actions.EditQueryAction;
 import com.sourcedimensions.client.db.DbAdapter;
-import com.sourcedimensions.client.db.DupFolderNameException;
+import com.sourcedimensions.client.db.DuplicateNameException;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.client.model.QueryNode;
@@ -239,7 +239,7 @@ public class ProjectView extends ViewPart
 							
 							folder = DbAdapter.addFolder(names[j], parentId, getProject().getId(), isQuery);
 						}
-						catch (DupFolderNameException e)
+						catch (DuplicateNameException e)
 						{
 						}
 						

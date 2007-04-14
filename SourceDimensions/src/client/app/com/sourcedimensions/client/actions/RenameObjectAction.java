@@ -12,7 +12,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PlatformUI;
 
 import com.sourcedimensions.client.db.DbAdapter;
-import com.sourcedimensions.client.db.DupFolderNameException;
+import com.sourcedimensions.client.db.DuplicateNameException;
 import com.sourcedimensions.client.forms.InputDialog;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
@@ -68,20 +68,25 @@ public class RenameObjectAction implements IWorkbenchWindowActionDelegate, IObje
 								
 				try
 				{
+					boolean success = true;
+					
 					if (selected instanceof QueryObject)
 					{
-						DbAdapter.renameQuery(name, id);
+						success = DbAdapter.renameQuery(name, id);
 					}
 					else if (selected instanceof SnapshotObject)
 					{
-						DbAdapter.updateSnapshot(name, id);
+						success = DbAdapter.updateSnapshot(name, id);
 					}
 					else if (selected instanceof FolderObject)
 					{
-						DbAdapter.updateFolder(name, id);
+						success = DbAdapter.updateFolder(name, id);
 					}					
+					
+					if (!success)
+						return;
 				}
-				catch (DupFolderNameException e)
+				catch (DuplicateNameException e)
 				{
 					MessageDialog.openError(shell, "Error", "Duplicate name");
 					continue;

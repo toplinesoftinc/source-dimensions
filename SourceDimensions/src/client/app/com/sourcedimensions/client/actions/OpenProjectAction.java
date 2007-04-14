@@ -90,7 +90,10 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 			for (Project prj : prjHash.values())
 			{
 				if (!prj.getDeleted())
-					DbAdapter.saveProject(prj);
+				{
+					if (!DbAdapter.saveProject(prj))
+						return;
+				}
 			}
 			
 			prjColl = prjHash.values();

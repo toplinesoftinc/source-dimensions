@@ -38,19 +38,23 @@ public class DeleteObjectAction implements IWorkbenchWindowActionDelegate, IObje
 			TreeObject selected = (TreeObject)m_selection.getFirstElement();
 			int id = selected.getID();			
 			TreeGroup parent = selected.getParent();
-
+			boolean success = true;
+			
 			if (selected instanceof QueryObject)
 			{
-				DbAdapter.deleteQuery(id);
+				success = DbAdapter.deleteQuery(id);
 			}
 			else if (selected instanceof SnapshotObject)
 			{
-				DbAdapter.deleteSnapshot(id);
+				success = DbAdapter.deleteSnapshot(id);
 			}
 			else if (selected instanceof FolderObject)
 			{
-				DbAdapter.deleteFolder(id);
+				success = DbAdapter.deleteFolder(id);
 			}
+			
+			if (!success)
+				return;
 			
 			parent.deleteChild(selected);
 			
