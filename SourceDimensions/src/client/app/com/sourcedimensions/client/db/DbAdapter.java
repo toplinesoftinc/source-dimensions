@@ -930,6 +930,7 @@ public class DbAdapter
 			}
 			
 			query.setName(rs.getString("name"));
+			query.setDestination(rs.getString("destination"));
 			query.setAllNamespaces(rs.getShort("all_namespaces") != 0);
 			query.setAllTypes(rs.getShort("all_types") != 0);
 			query.setAllMembers(rs.getShort("all_members") != 0);
@@ -1216,8 +1217,8 @@ public class DbAdapter
 			
 			int prjId = rs.getInt("id");		
 			
-			ps = c.prepareStatement("INSERT INTO query(project_id, folder_id, name, all_namespaces, " +
-				"all_types, all_members, all_local_decls) VALUES(?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+			ps = c.prepareStatement("INSERT INTO query(project_id, folder_id, name, destination, all_namespaces, " +
+				"all_types, all_members, all_local_decls) VALUES(?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 
 			ps.setInt(1, prjId);
 			
@@ -1227,10 +1228,11 @@ public class DbAdapter
 				ps.setInt(2, folderId);
 			
 			ps.setString(3, query.getName());
-			ps.setShort(4, (short)(query.getAllNamespaces() ? 1 : 0));
-			ps.setShort(5, (short)(query.getAllTypes() ? 1 : 0));
-			ps.setShort(6, (short)(query.getAllMembers()? 1 : 0));
-			ps.setShort(7, (short)(query.getAllLocalDecls() ? 1 : 0));
+			ps.setString(4, query.getDestination());
+			ps.setShort(5, (short)(query.getAllNamespaces() ? 1 : 0));
+			ps.setShort(6, (short)(query.getAllTypes() ? 1 : 0));
+			ps.setShort(7, (short)(query.getAllMembers()? 1 : 0));
+			ps.setShort(8, (short)(query.getAllLocalDecls() ? 1 : 0));
 			
 			ps.executeUpdate();
 			
@@ -1644,6 +1646,7 @@ public class DbAdapter
 				"folder_id INT",
 				"project_id INT NOT NULL",
 				"name VARCHAR(10000) NOT NULL",
+				"destination VARCHAR(10000)",
 				"all_namespaces SMALLINT",
 				"all_types SMALLINT",
 				"all_members SMALLINT",

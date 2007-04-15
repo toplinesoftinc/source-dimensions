@@ -1071,6 +1071,8 @@ public class SymbolQueryDialog extends DialogBase
 		if (segments.length > 0)
 			query.setName(segments[segments.length-1]);
 		
+		query.setDestination(m_snapshotNameText.getText());
+		
 		query.setAllNamespaces(m_allNamespacesCheckBox.getSelection());
 		
 		if (!query.getAllNamespaces())
