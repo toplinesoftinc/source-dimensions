@@ -126,9 +126,9 @@ public class SymbolQueryDialog extends DialogBase
 		}	
 	}
 	
-	public void setSnapshotName(String name)
+	public void setQueryName(String name)
 	{
-		m_snapshotNameText.setText(name);
+		m_queryNameText.setText(name);
 	}
 	
 	protected void createShell(Shell parent) 

@@ -13,7 +13,7 @@ import com.sourcedimensions.client.forms.SymbolQueryDialog;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
 import com.sourcedimensions.client.views.ProjectView.TreeObject;
 
-public class SymbolQueryAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate
+public class CreateSymbolQueryAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate
 {
  	protected IStructuredSelection m_selection;
  	protected IWorkbenchWindow m_window;
@@ -41,7 +41,7 @@ public class SymbolQueryAction implements IWorkbenchWindowActionDelegate, IObjec
  				name = cur.getName() + "/" + name;
  			}
  			
- 			dialog.setSnapshotName(name);
+ 			dialog.setQueryName(name);
  		}
  		
  		dialog.open();
