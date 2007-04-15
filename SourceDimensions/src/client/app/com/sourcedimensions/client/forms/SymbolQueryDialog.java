@@ -15,6 +15,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+
+import com.sourcedimensions.client.actions.ExecuteQueryAction;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
@@ -95,6 +97,7 @@ public class SymbolQueryDialog extends DialogBase
 		TableItem item;
 		
 		m_queryNameText.setText(query.getName());
+		m_snapshotNameText.setText(query.getDestination());
 		
 		for (String namespace : query.getNamespaceFilter())
 		{
@@ -209,9 +212,15 @@ public class SymbolQueryDialog extends DialogBase
 				
 				Object found = DbAdapter.findObject(ProjectView.getProject().getId(), fullName, true);
 				
-				if (!validateFoundObject(found, true))
-					return;
-				
+				if (found != null)
+				{
+					if (!MessageDialog.openQuestion(m_shell, "Overwrite confirmation", "There is a query"  + 
+						" with the same name which will be deleted and re-created with new contents. Do you want to continue" )) 
+					{
+						return;
+					}
+				}
+								
 				Integer queryId = null;
 							
 				if (found != null)
@@ -224,7 +233,10 @@ public class SymbolQueryDialog extends DialogBase
 					ProjectView.getQueryGroup().deleteObject(fullName.split(Folder.DIVIDER_REGEX));
 				}
 				
-				ProjectView.getQueryGroup().addQueryNode(createSymbolQuery(), queryId, fullName);				
+				ProjectView.getQueryGroup().addQueryNode(createSymbolQuery(), queryId, fullName);
+				
+				m_forceClose = true;
+				m_shell.close();
 			}
 		});
 		m_cancelButton.setToolTipText("Login");
@@ -254,63 +266,11 @@ public class SymbolQueryDialog extends DialogBase
 				if (!validatePath(false))
 					return;
 			
-				String fullName = m_snapshotNameText.getText().trim();
-				
-				Object found = DbAdapter.findObject(ProjectView.getProject().getId(), fullName, false);
-				
-				if (!validateFoundObject(found, false))
-					return;
-				
-				SymbolQuery query = createSymbolQuery();				
-				WSConsumer consumer = new WSConsumer();
-				SnapshotNode node;
-				
-				try
-				{
-					node = (SnapshotNode)consumer.invokeWebService(PlatformUI.getWorkbench().getDisplay(), 
-						m_shell, "runSymbolQuery", new Object[] { query });			
-				}
-				catch (Exception ex)
-				{
-					MessageDialog.openError(m_shell, "Web Service Error", ex.getMessage());
-					return;
-				}
-				
-				if (consumer.wasCancelled())
-				{
-					m_forceClose = true;
-					m_shell.close();
-
-					return;
-				}
-				
-				if (node == null)
-				{
-					MessageDialog.openInformation(m_shell, "Query Results", "No item found for the specified query");
-					return;
-				}
-				else
-				{
-					String[] sections = fullName.split(Folder.DIVIDER_REGEX);
-					String name = sections[sections.length - 1];
-					
-					node.setName(name);
-
-					if (found != null)
-					{
-						if (!DbAdapter.deleteSnapshot(((SnapshotNode)found).m_id))
-							return;
-						
-						ProjectView.getSnapshotGroup().deleteObject(sections);
-					}
-					
-					ProjectView.getSnapshotGroup().addSnapshotNode(node, fullName);
-				}
+				ExecuteQueryAction.executeQuery(getShell(), createSymbolQuery());
 				
 				m_forceClose = true;
 				m_shell.close();
-			}
-			
+			}			
 		});
 		
 		m_shell.addShellListener(new ShellAdapter() 
@@ -1043,23 +1003,6 @@ public class SymbolQueryDialog extends DialogBase
 		}
 						
 		return true;
-	}
-	
-	protected boolean validateFoundObject(Object found, boolean isQuery)
-	{
-		String entityName = isQuery ? "query" : "snapshot";
-		
-		if (found != null)
-		{
-			if (MessageDialog.openQuestion(m_shell, "Overwrite confirmation", "There is a " + entityName + 
-					" with the same name which will be deleted and re-created with new contents. " + 
-					"Do you want to continue?"))
-				return true;
-			else
-				return false;
-		}
-		else
-			return true;
 	}
 	
 	protected SymbolQuery createSymbolQuery()

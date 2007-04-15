@@ -83,10 +83,20 @@
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>                 
                </action>
                <action
+                   class="com.sourcedimensions.client.actions.ExecuteQueryAction"
+                   icon="icons/execute.png"
+                   id="com.sourcedimensions.client.executeQuery"
+                   label="E&amp;xecute"
+                   menubarPath="query/additions_query2"
+                   toolbarPath="additions_query"
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/> 
+               </action>
+               <action
                    class="com.sourcedimensions.client.actions.EditQueryAction"
                    icon="icons/editquery.png"
                    id="com.sourcedimensions.client.editQuery"
-                   label="&amp;Edit Query..."
+                   label="&amp;Edit..."
                    menubarPath="query/additions_query2"
                    toolbarPath="additions_query"
                    enablesFor="1">
@@ -219,6 +229,12 @@
                    id="com.sourcedimensions.client.renameQuery"
                    menubarPath="additions_object"
                    label="Rename..."/>              
+              <action
+                   class="com.sourcedimensions.client.actions.ExecuteQueryAction"
+                   icon="icons/execute.png"
+                   id="com.sourcedimensions.client.executeQuery"
+                   menubarPath="additions_query"
+                   label="Execute"/>                   
               <action
                    class="com.sourcedimensions.client.actions.EditQueryAction"
                    icon="icons/editquery.png"

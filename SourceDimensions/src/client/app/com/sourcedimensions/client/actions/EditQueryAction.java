@@ -32,11 +32,14 @@ public class EditQueryAction implements IWorkbenchWindowActionDelegate, IObjectA
 	
 	public static void runQueryEdit(Shell shell, QueryObject object)
 	{
-		SymbolQuery query = DbAdapter.getSymbolQuery(object.getID());
-		
-		SymbolQueryDialog dialog = new SymbolQueryDialog(PlatformUI.getWorkbench().getDisplay(), shell, query);
-		dialog.open();
+		runQueryEdit(shell, DbAdapter.getSymbolQuery(object.getID()));
 	}
+	
+	public static void runQueryEdit(Shell shell, SymbolQuery query)
+	{
+		SymbolQueryDialog dialog = new SymbolQueryDialog(PlatformUI.getWorkbench().getDisplay(), shell, query);		
+		dialog.open();
+	}	
 
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) 
 	{

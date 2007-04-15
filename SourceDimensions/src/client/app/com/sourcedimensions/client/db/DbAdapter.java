@@ -660,7 +660,6 @@ public class DbAdapter
 					"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL))");
 
 			ps.setInt(1, prjId);
-
 		
 			if (folderId == null)
 			{
