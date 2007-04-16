@@ -34,7 +34,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.jface.dialogs.MessageDialog;
 import com.sourcedimensions.client.model.*;
-import com.sourcedimensions.ws.consumer.WSConsumer;
 
 
 public class SymbolQueryDialog extends DialogBase
@@ -43,7 +42,7 @@ public class SymbolQueryDialog extends DialogBase
 	private Text m_snapshotNameText;
 	private Label m_snapshotNameLabel;
 	private TabFolder m_queryParamsTabFolder;
-	private Button m_runQueryButton;
+	private Button m_execQueryButton;
 	private Button m_cancelButton;
 	private Composite m_namespacesTab;
 	private Composite m_membersTab;
@@ -142,7 +141,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		m_shell.setSize(new Point(680, 494));
 		m_shell.setLayout(null);
-		m_runQueryButton = new Button(m_shell, SWT.NONE);
+		m_execQueryButton = new Button(m_shell, SWT.NONE);
 		m_saveButton = new Button(getShell(), SWT.NONE);
 		m_cancelButton = new Button(m_shell, SWT.NONE);
 		m_snapshotNameLabel = new Label(m_shell, SWT.NONE);
@@ -252,14 +251,14 @@ public class SymbolQueryDialog extends DialogBase
 				cancelClose();
 			}
 		});
-		m_runQueryButton.setToolTipText("Login");
-		m_runQueryButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
+		m_execQueryButton.setToolTipText("Login");
+		m_execQueryButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 
-		m_runQueryButton.setSize(new Point(88, 25));
-		m_runQueryButton.setLocation(new Point(15, 16));
-		m_runQueryButton.setText("&Run Query");
-		m_runQueryButton.setSelection(true);
-		m_runQueryButton.addSelectionListener(new SelectionAdapter() 
+		m_execQueryButton.setSize(new Point(88, 25));
+		m_execQueryButton.setLocation(new Point(15, 16));
+		m_execQueryButton.setText("E&xecute");
+		m_execQueryButton.setSelection(true);
+		m_execQueryButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
 			{			
@@ -289,7 +288,7 @@ public class SymbolQueryDialog extends DialogBase
 			}
 		});
 				
-		m_shell.setDefaultButton(m_runQueryButton);
+		m_shell.setDefaultButton(m_execQueryButton);
 		super.createShell(parent);
 	}
 	

@@ -66,49 +66,44 @@ public class ProjectBrowserDialog extends DialogBase
 			{
 				m_itemMap.get(curItem).setLoaded();
 				curItem.setItemCount(0);
+
+				List<Folder> folderList = DbAdapter.getFolderList(m_itemMap.get(curItem).m_id, projectId, isQuery);
+				TreeItem cur = null;
 				
-				if (i == segments.length - 1 && !(sel instanceof Folder))
+				for (Folder f : folderList)
 				{
-					if (m_isQuery)
+					TreeItem item = addItem(curItem, f.m_id, f.m_name, ItemType.FOLDER, Util.getSharedImage(IImageKeys.IMG_FOLDER));
+					
+					if (f.m_name.equals(segments[i]) && ((i < segments.length - 1) || (sel instanceof Folder)))
+						cur = item;
+				}
+
+				if (m_isQuery)
+				{
+					List<QueryNode> queryList = DbAdapter.getQueryList(projectId, m_itemMap.get(curItem).m_id);
+					
+					for (QueryNode q : queryList)
 					{
-						List<QueryNode> queryList = DbAdapter.getQueryList(projectId, m_itemMap.get(curItem).m_id);
+						TreeItem item = addItem(curItem, q.m_id, q.m_name, ItemType.LEAF, Util.getSharedImage(IImageKeys.IMG_SYMBOL_QUERY));
 						
-						for (QueryNode q : queryList)
-						{
-							TreeItem item = addItem(curItem, q.m_id, q.m_name, ItemType.LEAF, Util.getSharedImage(IImageKeys.IMG_SYMBOL_QUERY));
-							
-							if (q.m_name.equals(segments[i]))
-								curItem = item; 
-						}	
-					}
-					else
-					{
-						List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(projectId, m_itemMap.get(curItem).m_id);
-						
-						for (SnapshotNode s : snapshotList)
-						{
-							TreeItem item = addItem(curItem, s.m_id, s.getName(), ItemType.LEAF, Util.getSharedImage(IImageKeys.IMG_SNAPSHOT));
-							
-							if (s.getName().equals(segments[i]))
-								curItem = item; 
-						}
-					}					
+						if (q.m_name.equals(segments[i]) && i == segments.length - 1 && !(sel instanceof Folder))
+							cur = item; 
+					}	
 				}
 				else
 				{
-					List<Folder> list = DbAdapter.getFolderList(m_itemMap.get(curItem).m_id, projectId, isQuery);
-					TreeItem cur = null;
+					List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(projectId, m_itemMap.get(curItem).m_id);
 					
-					for (Folder f : list)
+					for (SnapshotNode s : snapshotList)
 					{
-						TreeItem item = addItem(curItem, f.m_id, f.m_name, ItemType.FOLDER, Util.getSharedImage(IImageKeys.IMG_FOLDER));
+						TreeItem item = addItem(curItem, s.m_id, s.getName(), ItemType.LEAF, Util.getSharedImage(IImageKeys.IMG_SNAPSHOT));
 						
-						if (f.m_name.equals(segments[i]))
-							cur = item;
+						if (s.getName().equals(segments[i]) && i == segments.length - 1 && !(sel instanceof Folder))
+							cur = item; 
 					}
-					
-					curItem = cur;
 				}
+				
+				curItem = cur;
 			}
 			
 			m_viewer.showItem(curItem);
@@ -195,13 +190,13 @@ public class ProjectBrowserDialog extends DialogBase
 		{
 			m_shell.setText("Query Selection");			
 			item.setText("Queries");
-			item.setImage(Util.getSharedImage(IImageKeys.IMG_QUERY_FOLDER));
+			item.setImage(Util.getSharedImage(IImageKeys.IMG_QUERY_GROUP));
 		}
 		else
 		{
 			m_shell.setText("Snapshot Selection");			
 			item.setText("Snapshots");
-			item.setImage(Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_FOLDER));
+			item.setImage(Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_GROUP));
 		}
 
 		item.setItemCount(1);

@@ -6,9 +6,9 @@ public interface IImageKeys
 	public final static String IMG_PARENT = "icons/parent.png";
 	public final static String IMG_CHECKMARK = "icons/checkmark.png";
 	public final static String IMG_CROSS = "icons/cross.png";
-	public final static String IMG_SNAPSHOT_FOLDER = "icons/snapshotfolder.png";
+	public final static String IMG_SNAPSHOT_GROUP = "icons/snapshotgroup.png";
 	public final static String IMG_FOLDER = "icons/folder.png";
-	public final static String IMG_QUERY_FOLDER = "icons/queryfolder.png";
+	public final static String IMG_QUERY_GROUP = "icons/querygroup.png";
 	public final static String IMG_SNAPSHOT = "icons/snapshot.png";
 	public final static String IMG_SYMBOL_QUERY = "icons/symbol.png";
 }
