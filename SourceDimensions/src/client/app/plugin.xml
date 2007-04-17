@@ -126,7 +126,19 @@
                  <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/>
                </action>
                <action
-                   class="com.sourcedimensions.client.actions.CopyAction"
+                   class="com.sourcedimensions.client.actions.PasteObjectAction"
+                   icon="icons/paste_edit.gif"
+                   id="com.sourcedimensions.client.paste"
+                   label="&amp;Paste"
+                   menubarPath="project/additions_object"
+                   toolbarPath="additions_object"
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
+                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotGroup"/>
+                 <selection class="com.sourcedimensions.client.views.ProjectView$QueryGroup"/>
+               </action>
+               <action
+                   class="com.sourcedimensions.client.actions.CopyObjectAction"
                    icon="icons/copy_edit.gif"
                    id="com.sourcedimensions.client.cut"
                    label="&amp;Copy"
@@ -138,7 +150,7 @@
                  <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/>
                </action>
                <action
-                   class="com.sourcedimensions.client.actions.CutAction"
+                   class="com.sourcedimensions.client.actions.CutObjectAction"
                    icon="icons/cut_edit.gif"
                    id="com.sourcedimensions.client.cut"
                    label="Cu&amp;t"
@@ -174,13 +186,19 @@
                    menubarPath="additions_object"                   
                    label="Delete"/>
                <action
-                   class="com.sourcedimensions.client.actions.CopyAction"
+                   class="com.sourcedimensions.client.actions.PasteObjectAction"
+                   icon="icons/paste_edit.gif"
+                   id="com.sourcedimensions.client.pasteObject"
+                   menubarPath="additions_object"                   
+                   label="Paste"/>
+               <action
+                   class="com.sourcedimensions.client.actions.CopyObjectAction"
                    icon="icons/copy_edit.gif"
                    id="com.sourcedimensions.client.copyFolder"
                    menubarPath="additions_object"                   
                    label="Copy"/>                   
                <action
-                   class="com.sourcedimensions.client.actions.CutAction"
+                   class="com.sourcedimensions.client.actions.CutObjectAction"
                    icon="icons/cut_edit.gif"
                    id="com.sourcedimensions.client.cutFolder"
                    menubarPath="additions_object"                   
@@ -207,6 +225,12 @@
               adaptable="false"
               id="com.sourcedimensions.client.snapshotGroupContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$SnapshotGroup">
+               <action
+                   class="com.sourcedimensions.client.actions.PasteObjectAction"
+                   icon="icons/paste_edit.gif"
+                   id="com.sourcedimensions.client.pasteObject2"
+                   menubarPath="additions_object"                   
+                   label="Paste"/>              
               <action
                    class="com.sourcedimensions.client.actions.CreateSymbolQueryAction"
                    icon="icons/symbol.png"
@@ -224,6 +248,12 @@
               adaptable="false"
               id="com.sourcedimensions.client.queryGroupContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$QueryGroup">
+               <action
+                   class="com.sourcedimensions.client.actions.PasteObjectAction"
+                   icon="icons/paste_edit.gif"
+                   id="com.sourcedimensions.client.pasteObject3"
+                   menubarPath="additions_object"                   
+                   label="Paste"/>              
               <action
                    class="com.sourcedimensions.client.actions.CreateSymbolQueryAction"
                    icon="icons/symbol.png"
@@ -248,13 +278,13 @@
                    menubarPath="additions_object"
                    label="Delete"/>
                <action
-                   class="com.sourcedimensions.client.actions.CopyAction"
+                   class="com.sourcedimensions.client.actions.CopyObjectAction"
                    icon="icons/copy_edit.gif"
                    id="com.sourcedimensions.client.copyFolder"
                    menubarPath="additions_object"                   
                    label="Copy"/>                   
                <action
-                   class="com.sourcedimensions.client.actions.CutAction"
+                   class="com.sourcedimensions.client.actions.CutObjectAction"
                    icon="icons/cut_edit.gif"
                    id="com.sourcedimensions.client.cutFolder"
                    menubarPath="additions_object"                   
@@ -276,13 +306,13 @@
                    menubarPath="additions_object"
                    label="Delete"/>
                <action
-                   class="com.sourcedimensions.client.actions.CopyAction"
+                   class="com.sourcedimensions.client.actions.CopyObjectAction"
                    icon="icons/copy_edit.gif"
                    id="com.sourcedimensions.client.copyFolder"
                    menubarPath="additions_object"                   
                    label="Copy"/>                   
                <action
-                   class="com.sourcedimensions.client.actions.CutAction"
+                   class="com.sourcedimensions.client.actions.CutObjectAction"
                    icon="icons/cut_edit.gif"
                    id="com.sourcedimensions.client.cutFolder"
                    menubarPath="additions_object"                   

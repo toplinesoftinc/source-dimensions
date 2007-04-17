@@ -68,7 +68,7 @@ public class CreateFolderAction implements IWorkbenchWindowActionDelegate, IObje
 				{
 					FolderObject f = (FolderObject)element;
 					id = f.getID();
-					isQuery = f.isQuery();
+					isQuery = f.isQueryGroup();
 				}
 				
 				try

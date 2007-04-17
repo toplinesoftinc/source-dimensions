@@ -11,7 +11,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import com.sourcedimensions.client.Clipboard;
 
 
-public class CopyAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate
+public class CopyObjectAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate
 {
 	protected IStructuredSelection m_selection;
 	protected IWorkbenchWindow m_window;

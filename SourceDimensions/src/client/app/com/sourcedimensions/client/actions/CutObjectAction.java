@@ -11,7 +11,7 @@ import com.sourcedimensions.client.Clipboard;
 import com.sourcedimensions.client.views.ProjectView.TreeObject;
 
 
-public class CutAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate
+public class CutObjectAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate
 {
 	protected IStructuredSelection m_selection;
 	protected IWorkbenchWindow m_window;
@@ -23,7 +23,15 @@ public class CutAction implements IWorkbenchWindowActionDelegate, IObjectActionD
 
 	public void run(IAction action)
 	{
-		Clipboard.setSource(m_selection.getFirstElement(), true);		
+		TreeObject object = (TreeObject)Clipboard.getSource();
+
+		if (object != null)
+			object.setFading(false);
+
+		object = (TreeObject)m_selection.getFirstElement();
+		object.setFading(true);
+		
+		Clipboard.setSource(object, true);		
 	}
 
 	public void setActivePart(IAction action, IWorkbenchPart targetPart)

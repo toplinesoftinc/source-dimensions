@@ -40,6 +40,7 @@ public class ProjectView extends ViewPart
 	{
 		protected String m_name;
 		protected TreeGroup m_parent;
+		protected boolean m_faded = false;
 
 		public TreeObject(String name) 
 		{
@@ -82,6 +83,25 @@ public class ProjectView extends ViewPart
 		}
 		
 		abstract public Image getImage();
+		
+		public Boolean isQueryGroup()
+		{
+			return null;
+		}
+		
+		protected Image getImage(String key)
+		{
+			if (m_faded)
+				return Util.getFadedImage(key);
+			else
+				return Util.getSharedImage(key);
+		}
+		
+		public void setFading(boolean faded)
+		{
+			m_faded = faded;
+			m_viewer.refresh(this);
+		}
 	}
 
 	
@@ -115,9 +135,13 @@ public class ProjectView extends ViewPart
 			{
 				m_children = new ArrayList<TreeObject>();
 				load();
+				
+				for (TreeObject o : m_children)
+					o.setFading(m_faded);				
 			}
 			
 			m_children.add(object);
+			object.setFading(m_faded);
 			object.setParent(this);		
 		}
 		
@@ -135,6 +159,9 @@ public class ProjectView extends ViewPart
 			{
 				m_children = new ArrayList<TreeObject>();
 				load();
+				
+				for (TreeObject o : m_children)
+					o.setFading(m_faded);
 			}
 			
 			return m_children.toArray(new TreeObject[0]);
@@ -257,6 +284,17 @@ public class ProjectView extends ViewPart
 			
 			return segments;			
 		}
+		
+		public void setFading(boolean faded)
+		{
+			super.setFading(faded);
+			
+			if (m_children != null)
+			{
+				for (TreeObject o : m_children)
+					o.setFading(faded);
+			}
+		}
 	}
 
 
@@ -269,7 +307,7 @@ public class ProjectView extends ViewPart
 		
 		public Image getImage()
 		{
-			return Util.getSharedImage(IImageKeys.IMG_PROJECT);
+			return getImage(IImageKeys.IMG_PROJECT);
 		}
 	}
 
@@ -324,7 +362,7 @@ public class ProjectView extends ViewPart
 		
 		public Image getImage()
 		{
-			return Util.getSharedImage(IImageKeys.IMG_FOLDER);
+			return getImage(IImageKeys.IMG_FOLDER);
 		}
 		
 		public Integer getID()
@@ -332,7 +370,7 @@ public class ProjectView extends ViewPart
 			return m_id;
 		}
 		
-		public boolean isQuery()
+		public Boolean isQueryGroup()
 		{
 			return m_isQuery;
 		}
@@ -348,7 +386,7 @@ public class ProjectView extends ViewPart
 		
 		public Image getImage()
 		{
-			return Util.getSharedImage(IImageKeys.IMG_PROJECT);
+			return getImage(IImageKeys.IMG_PROJECT);
 		}
 		
 		protected void load()
@@ -366,7 +404,7 @@ public class ProjectView extends ViewPart
 		
 		public Image getImage()
 		{
-			return Util.getSharedImage(IImageKeys.IMG_PARENT);
+			return getImage(IImageKeys.IMG_PARENT);
 		}
 		
 		protected void load()
@@ -384,7 +422,7 @@ public class ProjectView extends ViewPart
 		
 		public Image getImage()
 		{
-			return Util.getSharedImage(IImageKeys.IMG_QUERY_GROUP);
+			return getImage(IImageKeys.IMG_QUERY_GROUP);
 		}
 
 		protected void load()
@@ -444,7 +482,11 @@ public class ProjectView extends ViewPart
 				m_viewer.setSelection(new TreeSelection(new TreePath(segments.toArray()).createChildPath(item)), true);				
 			}			
 		}
-		
+
+		public Boolean isQueryGroup()
+		{
+			return true;
+		}		
 	}	
 
 	
@@ -457,7 +499,7 @@ public class ProjectView extends ViewPart
 		
 		public Image getImage()
 		{
-			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_GROUP);
+			return getImage(IImageKeys.IMG_SNAPSHOT_GROUP);
 		}
 		
 		protected void load()
@@ -516,6 +558,11 @@ public class ProjectView extends ViewPart
 				m_viewer.setSelection(new TreeSelection(new TreePath(segments.toArray()).createChildPath(item)), true);				
 			}			
 		}
+		
+		public Boolean isQueryGroup()
+		{
+			return false;
+		}		
 	}
 
 	
@@ -533,12 +580,17 @@ public class ProjectView extends ViewPart
 		
 		public Image getImage()
 		{
-			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT);
+			return getImage(IImageKeys.IMG_SNAPSHOT);
 		}
 		
 		public Integer getID()
 		{
 			return m_id;
+		}
+		
+		public Boolean isQueryGroup()
+		{
+			return false;
 		}
 	}
 
@@ -556,13 +608,18 @@ public class ProjectView extends ViewPart
 		
 		public Image getImage()
 		{
-			return Util.getSharedImage(IImageKeys.IMG_SYMBOL_QUERY);
+			return getImage(IImageKeys.IMG_SYMBOL_QUERY);
 		}
 		
 		public Integer getID()
 		{
 			return m_id;
 		}
+		
+		public Boolean isQueryGroup()
+		{
+			return true;
+		}		
 	}
 
 	
@@ -693,7 +750,6 @@ public class ProjectView extends ViewPart
 		m_viewer.setContentProvider(new ProjectContentProvider());
 		getSite().setSelectionProvider(m_viewer);
 		m_viewer.setLabelProvider(new ProjectLabelProvider());
-		m_viewer.setComparator(new ViewerSorter());
 		m_viewer.setInput(getViewSite());
 		
 		MenuManager menuMgr = new MenuManager("");
