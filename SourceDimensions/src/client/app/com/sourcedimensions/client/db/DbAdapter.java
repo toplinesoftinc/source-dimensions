@@ -307,9 +307,7 @@ public class DbAdapter
 			rs = ps.executeQuery();
 			
 			if (rs.next())
-			{
 				throw new DuplicateNameException();
-			}
 			
 			ps = c.prepareStatement("INSERT INTO folder(project_id, parent_id, name, query_or_folder) " +
 				"VALUES(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
@@ -356,7 +354,7 @@ public class DbAdapter
 	}
 
 	
-	public static boolean updateFolder(String name, int id) throws DuplicateNameException
+	public static boolean updateFolder(int id, String name) throws DuplicateNameException
 	{
 		Connection c = null;
 		boolean success = true;
@@ -377,26 +375,22 @@ public class DbAdapter
 			if (rs.wasNull())
 				parentId = null;
 			
-			int prjId = rs.getInt("project_id");
-
-			ps = c.prepareStatement("SELECT * FROM folder WHERE project_id = ? AND " +
-				"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND name = ? and id <> ?");
-			
-			ps.setInt(1, prjId);
-			
+			ps = c.prepareStatement("SELECT * FROM folder WHERE (parent_id = ? OR " +
+				"(parent_id IS NULL AND ? IS NULL)) AND name = ? and id <> ?");
+					
 			if (parentId == null)
 			{
+				ps.setNull(1, Types.INTEGER);
 				ps.setNull(2, Types.INTEGER);
-				ps.setNull(3, Types.INTEGER);
 			}
 			else
 			{
+				ps.setInt(1, parentId);
 				ps.setInt(2, parentId);
-				ps.setInt(3, parentId);
 			}
 			
-			ps.setString(4, name);
-			ps.setInt(5, id);
+			ps.setString(3, name);
+			ps.setInt(4, id);
 			
 			rs = ps.executeQuery();
 			
@@ -407,6 +401,70 @@ public class DbAdapter
 			
 			ps.setString(1, name);
 			ps.setInt(2, id);
+			
+			ps.executeUpdate();
+					
+			c.commit();
+		}
+		catch (DuplicateNameException e)
+		{
+			rollbackTrans(c);
+			throw e;
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			success = false;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+		
+		return success;
+	}
+	
+	public static boolean moveFolder(int id, Integer parentId, String name) throws DuplicateNameException
+	{
+		Connection c = null;
+		boolean success = true;
+		
+		try
+		{
+			c = getConnection();			
+			
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM folder WHERE (parent_id = ? " +
+				"OR (parent_id IS NULL AND ? IS NULL)) AND name = ? AND id <> ?");
+						
+			if (parentId == null)
+			{
+				ps.setNull(1, Types.INTEGER);
+				ps.setNull(2, Types.INTEGER);
+			}
+			else
+			{
+				ps.setInt(1, parentId);
+				ps.setInt(2, parentId);
+			}
+			
+			ps.setString(3, name);
+			ps.setInt(4, id);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			if (rs.next())
+				throw new DuplicateNameException();
+			
+			ps = c.prepareStatement("UPDATE folder SET parent_id = ?, name = ? WHERE id = ?");
+			
+			if (parentId == null)
+				ps.setNull(1, Types.INTEGER);
+			else
+				ps.setInt(1, parentId);
+			
+			ps.setString(2, name);
+			ps.setInt(3, id);			
 			
 			ps.executeUpdate();
 					
@@ -463,7 +521,7 @@ public class DbAdapter
 	}
 	
 	
-	public static Integer saveSnapshot(String projectId, Integer folderId, SnapshotNode node)
+	public static Integer addSnapshot(String projectId, Integer folderId, SnapshotNode node) throws DuplicateNameException
 	{
 		Connection c = null;
 		try
@@ -477,7 +535,30 @@ public class DbAdapter
 			rs.next();
 			
 			int prjId = rs.getInt("id");		
-
+		
+			ps = c.prepareStatement("SELECT * FROM snapshot WHERE project_id = ? AND " + 
+				"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND name = ?");
+			
+			ps.setInt(1, prjId);
+			
+			if (folderId == null)
+			{
+				ps.setNull(2, Types.INTEGER);
+				ps.setNull(3, Types.INTEGER);
+			}
+			else
+			{
+				ps.setInt(2, folderId);
+				ps.setInt(3, folderId);
+			}
+			
+			ps.setString(4, node.getName());
+			
+			rs = ps.executeQuery();
+			
+			if (rs.next())
+				throw new DuplicateNameException();
+			
 			ps = c.prepareStatement("INSERT INTO snapshot(folder_id, project_id, type, origin_id, name) "+ 
 					"VALUES(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 			
@@ -514,8 +595,9 @@ public class DbAdapter
 			closeConn(c);
 		}
 	}
-
-	public static boolean updateSnapshot(String name, int id) throws DuplicateNameException
+	
+	
+	public static boolean updateSnapshot(int id, String name) throws DuplicateNameException
 	{
 		Connection c = null;
 		boolean success = true;
@@ -524,20 +606,33 @@ public class DbAdapter
 		{
 			c = getConnection();			
 			
-			PreparedStatement ps = c.prepareStatement("SELECT project_id FROM snapshot WHERE id = ?");
+			PreparedStatement ps = c.prepareStatement("SELECT folder_id FROM snapshot WHERE id = ?");
 			
 			ps.setInt(1, id);
 			ResultSet rs = ps.executeQuery();
 			
 			rs.next();
 						
-			int prjId = rs.getInt("project_id");
-
-			ps = c.prepareStatement("SELECT * FROM snapshot WHERE project_id = ? AND name = ? and id <> ?");
+			Integer parentId = rs.getInt("folder_id");
 			
-			ps.setInt(1, prjId);			
-			ps.setString(2, name);
-			ps.setInt(3, id);
+			if (rs.wasNull())
+				parentId = null;
+
+			ps = c.prepareStatement("SELECT * FROM snapshot WHERE " +
+				"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL)) AND name = ? and id <> ?");
+			
+			if (parentId == null)
+			{
+				ps.setNull(1, Types.INTEGER);
+				ps.setNull(2, Types.INTEGER);
+			}
+			else
+			{
+				ps.setInt(1, parentId);
+				ps.setInt(2, parentId);				
+			}
+			ps.setString(3, name);
+			ps.setInt(4, id);
 			
 			rs = ps.executeQuery();
 			
@@ -571,7 +666,110 @@ public class DbAdapter
 		
 		return success;
 	}
+
+
+	public static SnapshotNode getSnapshot(int id)
+	{
+		Connection c = null;
+		SnapshotNode node = null;
+		
+		try
+		{
+			c = getConnection();
+			
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM snapshot WHERE id = ?");
+			
+			ps.setInt(1, id);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			
+			node = new SnapshotNode();
+			
+			node.setName(rs.getString("name"));
+			node.setType(SnapshotNode.Type.values()[rs.getInt("type")]);
+			node.setOriginID(rs.getString("origin_id"));
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+		}
+		finally
+		{
+			closeConn(c);
+		}
+		
+		return node;
+	}
 	
+		
+	public static boolean moveSnapshot(int id, Integer parentId, String name) throws DuplicateNameException
+	{
+		Connection c = null;
+		boolean success = true;
+		
+		try
+		{
+			c = getConnection();			
+			
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM snapshot WHERE (folder_id = ? " +
+				"OR (folder_id IS NULL AND ? IS NULL)) AND name = ? AND id <> ?");
+						
+			if (parentId == null)
+			{
+				ps.setNull(1, Types.INTEGER);
+				ps.setNull(2, Types.INTEGER);
+			}
+			else
+			{
+				ps.setInt(1, parentId);
+				ps.setInt(2, parentId);
+			}
+			
+			ps.setString(3, name);
+			ps.setInt(4, id);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			if (rs.next())
+				throw new DuplicateNameException();
+			
+			ps = c.prepareStatement("UPDATE snapshot SET folder_id = ?, name = ? WHERE id = ?");
+			
+			if (parentId == null)
+				ps.setNull(1, Types.INTEGER);
+			else
+				ps.setInt(1, parentId);
+
+			ps.setString(2, name);			
+			ps.setInt(3, id);
+			
+			ps.executeUpdate();
+					
+			c.commit();
+		}
+		catch (DuplicateNameException e)
+		{
+			rollbackTrans(c);
+			throw e;
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			success = false;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+		
+		return success;
+	}	
 	
 	public static List<SnapshotNode> getSnapshotList(String projectId, Integer folderId)
 	{
@@ -1199,7 +1397,7 @@ public class DbAdapter
 		return query;
 	}
 	
-	public static Integer saveSymbolQuery(String projectId, Integer folderId, SymbolQuery query)
+	public static Integer addSymbolQuery(String projectId, Integer folderId, SymbolQuery query) throws DuplicateNameException
 	{
 		Connection c = null;
 		
@@ -1215,6 +1413,29 @@ public class DbAdapter
 			rs.next();
 			
 			int prjId = rs.getInt("id");		
+			
+			ps = c.prepareStatement("SELECT * FROM query WHERE project_id = ? AND " + 
+			"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND name = ?");
+		
+			ps.setInt(1, prjId);
+			
+			if (folderId == null)
+			{
+				ps.setNull(2, Types.INTEGER);
+				ps.setNull(3, Types.INTEGER);
+			}
+			else
+			{
+				ps.setInt(2, folderId);
+				ps.setInt(3, folderId);
+			}
+			
+			ps.setString(4, query.getName());
+			
+			rs = ps.executeQuery();
+			
+			if (rs.next())
+				throw new DuplicateNameException();		
 			
 			ps = c.prepareStatement("INSERT INTO query(project_id, folder_id, name, destination, all_namespaces, " +
 				"all_types, all_members, all_local_decls) VALUES(?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
@@ -1471,7 +1692,7 @@ public class DbAdapter
 	}
 
 	
-	public static boolean renameQuery(String name, int id) throws DuplicateNameException
+	public static boolean updateQuery(int id, String name) throws DuplicateNameException
 	{
 		Connection c = null;
 		boolean success = true;
@@ -1480,21 +1701,32 @@ public class DbAdapter
 		{
 			c = getConnection();			
 			
-			PreparedStatement ps = c.prepareStatement("SELECT project_id, folder_id FROM query WHERE id = ?");
+			PreparedStatement ps = c.prepareStatement("SELECT folder_id FROM query WHERE id = ?");
 			
 			ps.setInt(1, id);
 			ResultSet rs = ps.executeQuery();
 			
 			rs.next();
 			
-			Integer folderId = rs.getInt("folder_id");
+			Integer parentId = rs.getInt("folder_id");
 			
-			int prjId = rs.getInt("project_id");
-
-			ps = c.prepareStatement("SELECT * FROM query WHERE project_id = ? AND folder_id = ? AND name = ? and id <> ?");
+			if (rs.wasNull())
+				parentId = null;
 			
-			ps.setInt(1, prjId);
-			ps.setInt(2, folderId);		
+			ps = c.prepareStatement("SELECT * FROM query WHERE (folder_id = ? " +
+				"OR (folder_id IS NULL AND ? IS NULL)) AND name = ? and id <> ?");
+			
+			if (parentId == null)
+			{
+				ps.setNull(1, Types.INTEGER);
+				ps.setNull(2, Types.INTEGER);
+			}
+			else
+			{
+				ps.setInt(1, parentId);
+				ps.setInt(2, parentId);
+			}
+				
 			ps.setString(3, name);
 			ps.setInt(4, id);
 			
@@ -1530,7 +1762,71 @@ public class DbAdapter
 		
 		return success;
 	}
+
 	
+	public static boolean moveQuery(int id, Integer parentId, String name) throws DuplicateNameException
+	{
+		Connection c = null;
+		boolean success = true;
+		
+		try
+		{
+			c = getConnection();			
+			
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM query WHERE (folder_id = ? " +
+				"OR (folder_id IS NULL AND ? IS NULL)) AND name = ?");
+						
+			if (parentId == null)
+			{
+				ps.setNull(1, Types.INTEGER);
+				ps.setNull(2, Types.INTEGER);
+			}
+			else
+			{
+				ps.setInt(1, parentId);
+				ps.setInt(2, parentId);
+			}
+			
+			ps.setString(3, name);
+			
+			ResultSet rs = ps.executeQuery();
+		
+			if (rs.next())
+				throw new DuplicateNameException();
+			
+			ps = c.prepareStatement("UPDATE query SET folder_id = ?, name = ? WHERE id = ?");
+			
+			if (parentId == null)
+				ps.setNull(1, Types.INTEGER);
+			else
+				ps.setInt(1, parentId);
+
+			ps.setString(2, name);			
+			ps.setInt(3, id);
+			
+			ps.executeUpdate();
+					
+			c.commit();
+		}
+		catch (DuplicateNameException e)
+		{
+			rollbackTrans(c);
+			throw e;
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			success = false;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+		
+		return success;
+	}	
+		
 	
 	public static boolean deleteQuery(int id)
 	{

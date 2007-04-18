@@ -14,6 +14,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+
+import com.sourcedimensions.client.Clipboard;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.forms.ProjectListDialog;
 import com.sourcedimensions.client.model.Project;
@@ -105,6 +107,7 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 		prjWindow.loadProjects(prjColl);
 		prjWindow.open();
 		Project prj = prjWindow.getSelected();
+		Clipboard.resetSource();
 
 		if (prj != null)
 		{

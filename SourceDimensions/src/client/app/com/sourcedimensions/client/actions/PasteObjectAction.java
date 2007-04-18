@@ -1,21 +1,19 @@
 package com.sourcedimensions.client.actions;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.List;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import com.sourcedimensions.client.Clipboard;
 import com.sourcedimensions.client.db.DbAdapter;
-import com.sourcedimensions.client.model.Folder;
-import com.sourcedimensions.client.model.QueryNode;
+import com.sourcedimensions.client.db.DuplicateNameException;
 import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
 import com.sourcedimensions.client.views.ProjectView.QueryObject;
@@ -36,8 +34,14 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 
 	public void run(IAction action)
 	{
+		if (Clipboard.getSource() == null)
+		{
+			action.setEnabled(false);
+			return;
+		}
+		
 		TreeObject source = (TreeObject)Clipboard.getSource();
-		TreeGroup dest = (TreeGroup)m_selection;
+		TreeGroup dest = (TreeGroup)m_selection.getFirstElement();
 		
 		if (source.isQueryGroup() != dest.isQueryGroup())
 		{
@@ -46,58 +50,115 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 			return;
 		}
 		
-		Set<String> names = new HashSet<String>();
-		String prjId = ProjectView.getProject().getId();
-		Integer parentId;
+		String name = source.getName();
+		int i = 0;
 		
-		if (dest instanceof FolderObject)
-			parentId = dest.getID(); 
+		if (Clipboard.isCut())
+		{
+			while (true)
+			{
+				try
+				{
+					if (source instanceof FolderObject)
+					{
+						DbAdapter.moveFolder(source.getID(), dest.getID(), name);
+					}
+					else if (source instanceof QueryObject)
+					{
+						DbAdapter.moveQuery(source.getID(), dest.getID(), name);
+					}
+					else if (source instanceof SnapshotObject)
+					{
+						DbAdapter.moveSnapshot(source.getID(), dest.getID(), name);
+					}
+					
+					source.setName(name);
+					break;
+				}
+				catch (DuplicateNameException e)
+				{
+					name = "Copy " + ((i == 0) ? "" : "(" + Integer.toString(i)+ ") ") + "of " + source.getName();
+					i++;
+				}
+			}
+			
+			source.getParent().deleteChild(source);			
+			dest.addDbChild(source);
+			
+			source.setFading(false);
+			
+			Clipboard.resetSource();
+		}
 		else
-			parentId = null;
-		
-		if (source instanceof FolderObject)
 		{
-			List<Folder> folderList = DbAdapter.getFolderList(parentId, prjId, dest.isQueryGroup());
+			int id = 0;
+			String projectId = ProjectView.getProject().getId();
+			Integer parentId;
 			
-			for (Folder f : folderList)
-				names.add(f.m_name);
-		}
-		else if (source instanceof QueryObject)
-		{
-			List<QueryNode> queryList = DbAdapter.getQueryList(prjId, parentId);
+			if (dest instanceof FolderObject)
+				parentId = dest.getID();
+			else
+				parentId = null;
 			
-			for (QueryNode q : queryList)
-				names.add(q.m_name);
+			while (true)
+			{
+				try
+				{
+					if (source instanceof FolderObject)
+					{
+						id = DbAdapter.addFolder(name, parentId, projectId, source.isQueryGroup()).m_id;
+					}
+					else if (source instanceof QueryObject)
+					{
+						SymbolQuery query = DbAdapter.getSymbolQuery(source.getID());
+						id = DbAdapter.addSymbolQuery(projectId, parentId, query);
+					}
+					else if (source instanceof SnapshotObject)
+					{
+						id = DbAdapter.addSnapshot(projectId, parentId, DbAdapter.getSnapshot(source.getID()));
+					}
+					
+					source.setID(id);
+					source.setName(name);
+				
+					dest.addDbChild(source);
+					
+					break;
+				}
+				catch (DuplicateNameException e)
+				{
+					name = "Copy " + ((i == 0) ? "" : "(" + Integer.toString(i)+ ") ") + "of " + source.getName();
+					i++;
+				}
+				
+				if (source instanceof TreeGroup)
+				{
+					copyTreeGroup(projectId, (TreeGroup)source, dest);
+				}
+			}			
 		}
-		else if (source instanceof SnapshotObject)
+		
+		ProjectView view = (ProjectView)m_window.getActivePage().findView(ProjectView.ID);
+		
+		if (view != null)
 		{
-			List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(prjId, parentId);
+			TreeViewer viewer = view.getViewer();
 			
-			for (SnapshotNode s : snapshotList)
-				names.add(s.getName());
+			viewer.setExpandedState(dest, true);
+			viewer.refresh();
 		}
-		
-		String copyName = source.getName();
-		
-		for (int i = 0; names.contains(copyName); i++)
-		{
-			copyName = "Copy " + ((i == 0) ? "" : "(" + Integer.toString(i)+ ") ") + "of " + source.getName();
-		}
-		
-		//TODO
-	}
+	}	
 
 	public void setActivePart(IAction action, IWorkbenchPart targetPart)
 	{	
+		action.setEnabled(Clipboard.getSource() != null);		
 		m_window = targetPart.getSite().getWorkbenchWindow();
 	}		
 	
 	public void selectionChanged(IAction action, ISelection selection)
 	{
 		if (Clipboard.getSource() == null)
-		{
 			action.setEnabled(false);
-		}
 
 		if (selection instanceof IStructuredSelection)
 			m_selection = (IStructuredSelection)selection;
@@ -105,5 +166,52 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 
 	public void dispose()
 	{
+	}
+	
+	protected void copyTreeGroup(String projectId, TreeGroup source, TreeGroup dest)
+	{
+		for (TreeObject o : source.getChildren())
+		{
+			TreeObject newObj = addNewObject(projectId, source.getID(), o.getName(), source, dest);
+			
+			if (o instanceof TreeGroup)
+			{
+				copyTreeGroup(projectId, (TreeGroup)o, (TreeGroup)newObj);
+			}
+		}
+	}
+	
+	protected TreeObject addNewObject(String projectId, Integer parentId, String name, TreeObject source, TreeGroup dest)
+	{
+		int id = 0;
+		TreeObject newObj = null;
+		
+		try
+		{
+			if (source instanceof FolderObject)
+			{
+				id = DbAdapter.addFolder(name, parentId, projectId, source.isQueryGroup()).m_id;
+				newObj = new FolderObject(name, id, source.isQueryGroup());
+			}
+			else if (source instanceof QueryObject)
+			{
+				SymbolQuery query = DbAdapter.getSymbolQuery(source.getID());
+				id = DbAdapter.addSymbolQuery(projectId, parentId, query);
+				newObj = new QueryObject(name, id, parentId);
+			}
+			else if (source instanceof SnapshotObject)
+			{
+				SnapshotNode node = DbAdapter.getSnapshot(source.getID());
+				id = DbAdapter.addSnapshot(projectId, parentId, node);
+				newObj = new SnapshotObject(name, id, parentId);
+			}
+		}
+		catch (DuplicateNameException e)
+		{			
+		}
+		
+		dest.addDbChild(newObj);
+		
+		return newObj;
 	}
 }

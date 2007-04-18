@@ -72,15 +72,15 @@ public class RenameObjectAction implements IWorkbenchWindowActionDelegate, IObje
 					
 					if (selected instanceof QueryObject)
 					{
-						success = DbAdapter.renameQuery(name, id);
+						success = DbAdapter.updateQuery(id, name);
 					}
 					else if (selected instanceof SnapshotObject)
 					{
-						success = DbAdapter.updateSnapshot(name, id);
+						success = DbAdapter.updateSnapshot(id, name);
 					}
 					else if (selected instanceof FolderObject)
 					{
-						success = DbAdapter.updateFolder(name, id);
+						success = DbAdapter.updateFolder(id, name);
 					}					
 					
 					if (!success)
@@ -96,9 +96,7 @@ public class RenameObjectAction implements IWorkbenchWindowActionDelegate, IObje
 				ProjectView view = (ProjectView)m_window.getActivePage().findView(ProjectView.ID);
 					
 				if (view != null)
-				{
-					view.getViewer().update(selected, null);
-				}
+					view.getViewer().refresh();
 
 				return;
 			}

@@ -82,6 +82,10 @@ public class ProjectView extends ViewPart
 			return null;
 		}
 		
+		public void setID(int id)
+		{			
+		}
+		
 		abstract public Image getImage();
 		
 		public Boolean isQueryGroup()
@@ -370,6 +374,11 @@ public class ProjectView extends ViewPart
 			return m_id;
 		}
 		
+		public void setID(int id)
+		{
+			m_id = id;
+		}
+		
 		public Boolean isQueryGroup()
 		{
 			return m_isQuery;
@@ -446,9 +455,16 @@ public class ProjectView extends ViewPart
 		public void addQueryNode(SymbolQuery query, Integer queryId, String name)
 		{		
 			List<FolderObject> segments = makeFolderPath(name, true);
-			Integer folderId = (segments.size() == 0) ? null : segments.get(segments.size() - 1).getID();
+			Integer folderId = (segments.size() == 0) ? null : segments.get(segments.size() - 1).getID();						
+			Integer id = null;
 			
-			Integer id = DbAdapter.saveSymbolQuery(m_project.getId(), folderId, query);
+			try
+			{
+				id = DbAdapter.addSymbolQuery(m_project.getId(), folderId, query);
+			}
+			catch (DuplicateNameException e)
+			{				
+			}
 			
 			if (id != null)
 			{
@@ -522,9 +538,16 @@ public class ProjectView extends ViewPart
 		public void addSnapshotNode(SnapshotNode node, String name)
 		{		
 			List<FolderObject> segments = makeFolderPath(name, false);
-			Integer folderId = (segments.size() == 0) ? null : segments.get(segments.size() - 1).getID();
+			Integer folderId = (segments.size() == 0) ? null : segments.get(segments.size() - 1).getID();			
+			Integer id = null;
 			
-			Integer id = DbAdapter.saveSnapshot(m_project.getId(), folderId, node);
+			try
+			{
+				id = DbAdapter.addSnapshot(m_project.getId(), folderId, node);
+			}
+			catch (DuplicateNameException e)
+			{				
+			}
 			
 			if (id != null)
 			{
@@ -588,6 +611,11 @@ public class ProjectView extends ViewPart
 			return m_id;
 		}
 		
+		public void setID(int id)
+		{
+			m_id = id;
+		}
+		
 		public Boolean isQueryGroup()
 		{
 			return false;
@@ -615,6 +643,11 @@ public class ProjectView extends ViewPart
 		{
 			return m_id;
 		}
+		
+		public void setID(int id)
+		{
+			m_id = id;
+		}		
 		
 		public Boolean isQueryGroup()
 		{
@@ -751,6 +784,20 @@ public class ProjectView extends ViewPart
 		getSite().setSelectionProvider(m_viewer);
 		m_viewer.setLabelProvider(new ProjectLabelProvider());
 		m_viewer.setInput(getViewSite());
+		
+		m_viewer.setComparator(new ViewerComparator()
+		{
+			public int category(Object element)
+			{
+				if (element instanceof FolderObject)
+					return 1;
+				else if (element instanceof SnapshotObject || 
+						 element instanceof QueryObject)
+					return 2;
+				else
+					return 0;
+			}
+		});
 		
 		MenuManager menuMgr = new MenuManager("");
 		menuMgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS + "_folder"));

@@ -65,7 +65,7 @@ public class SnapshotNode
 		DESTRUCTOR(12),
 		ENUM_CONST(13),
 		EVENT(14),
-		EVENT_ADD(15),
+		EVENT_ADD(15), 
 		EVENT_REMOVE(16),
 		FIELD(17),
 		INDEXER(18),
