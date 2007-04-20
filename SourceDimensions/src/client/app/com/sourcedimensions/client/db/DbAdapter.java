@@ -32,7 +32,7 @@ public class DbAdapter
 		closeConn(c);
 	}
 	
-	public static List<Project> getProjectList()
+	public static List<Project> getProjectList() throws Exception
 	{
 		Connection c = null;
 		List<Project> list = new ArrayList<Project>();
@@ -61,6 +61,8 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
+			
+			throw e;
 		}
 		finally
 		{
@@ -71,7 +73,7 @@ public class DbAdapter
 	}
 
 	
-	public static Project getProject(String id)
+	public static Project getProject(String id) throws Exception
 	{
 		Connection c = null;
 		Project p = null;
@@ -117,6 +119,8 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
+			
+			throw e;
 		}
 		finally
 		{
@@ -127,10 +131,9 @@ public class DbAdapter
 	}
 	
 	
-	public static boolean saveProject(Project prj)
+	public static void saveProject(Project prj) throws Exception
 	{
 		Connection c = null;
-		boolean success = true;
 		
 		try
 		{
@@ -196,18 +199,17 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
-			success = false;
+			
+			throw e;			
 		}
 		finally
 		{
 			closeConn(c);
 		}
-		
-		return success;
 	}
 	
 	
-	public static List<Folder> getFolderList(Integer parentId, String projectId, boolean isQuery)
+	public static List<Folder> getFolderList(Integer parentId, String projectId, boolean isQuery) throws Exception
 	{
 		Connection c = null;
 		List<Folder> list = new ArrayList<Folder>();
@@ -258,6 +260,8 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
+			
+			throw e;
 		}
 		finally
 		{
@@ -268,7 +272,7 @@ public class DbAdapter
 	}
 	
 	
-	public static Folder addFolder(String name, Integer parentId, String projectId, boolean isQuery) throws DuplicateNameException
+	public static Folder addFolder(String name, Integer parentId, String projectId, boolean isQuery) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
 		
@@ -345,7 +349,7 @@ public class DbAdapter
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
 			
-			return null;
+			throw e;
 		}
 		finally
 		{
@@ -354,10 +358,9 @@ public class DbAdapter
 	}
 
 	
-	public static boolean updateFolder(int id, String name) throws DuplicateNameException
+	public static void updateFolder(int id, String name) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
-		boolean success = true;
 		
 		try
 		{
@@ -415,20 +418,18 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
-			success = false;
+			
+			throw e;
 		}
 		finally
 		{
 			closeConn(c);
 		}
-		
-		return success;
 	}
 	
-	public static boolean moveFolder(int id, Integer parentId, String name) throws DuplicateNameException
+	public static void moveFolder(int id, Integer parentId, String name) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
-		boolean success = true;
 		
 		try
 		{
@@ -479,21 +480,19 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
-			success = false;
+			
+			throw e;
 		}
 		finally
 		{
 			closeConn(c);
 		}
-		
-		return success;
 	}
 	
 	
-	public static boolean deleteFolder(int id)
+	public static void deleteFolder(int id) throws Exception
 	{
 		Connection c = null;
-		boolean success = true;
 		
 		try
 		{
@@ -510,20 +509,20 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
-			success = false;
+			
+			throw e;
 		}
 		finally
 		{
 			closeConn(c);
 		}
-		
-		return success;
 	}
 	
 	
-	public static Integer addSnapshot(String projectId, Integer folderId, SnapshotNode node) throws DuplicateNameException
+	public static Integer addSnapshot(String projectId, Integer folderId, SnapshotNode node) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
+
 		try
 		{
 			c = getConnection();			
@@ -537,7 +536,7 @@ public class DbAdapter
 			int prjId = rs.getInt("id");		
 		
 			ps = c.prepareStatement("SELECT * FROM snapshot WHERE project_id = ? AND " + 
-				"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND name = ?");
+				"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL)) AND name = ?");
 			
 			ps.setInt(1, prjId);
 			
@@ -583,12 +582,17 @@ public class DbAdapter
 			
 			return id;
 		}
+		catch (DuplicateNameException e)
+		{
+			rollbackTrans(c);
+			throw e;
+		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
 			
-			return null;
+			throw e;
 		}
 		finally
 		{
@@ -597,10 +601,9 @@ public class DbAdapter
 	}
 	
 	
-	public static boolean updateSnapshot(int id, String name) throws DuplicateNameException
+	public static void updateSnapshot(int id, String name) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
-		boolean success = true;
 		
 		try
 		{
@@ -657,18 +660,17 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
-			success = false;
+			
+			throw e;
 		}
 		finally
 		{
 			closeConn(c);
 		}
-		
-		return success;
 	}
 
 
-	public static SnapshotNode getSnapshot(int id)
+	public static SnapshotNode getSnapshot(int id) throws Exception
 	{
 		Connection c = null;
 		SnapshotNode node = null;
@@ -697,6 +699,8 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
+			
+			throw e;
 		}
 		finally
 		{
@@ -707,10 +711,9 @@ public class DbAdapter
 	}
 	
 		
-	public static boolean moveSnapshot(int id, Integer parentId, String name) throws DuplicateNameException
+	public static void moveSnapshot(int id, Integer parentId, String name) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
-		boolean success = true;
 		
 		try
 		{
@@ -761,17 +764,16 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
-			success = false;
+			
+			throw e;
 		}
 		finally
 		{
 			closeConn(c);
 		}
-		
-		return success;
 	}	
 	
-	public static List<SnapshotNode> getSnapshotList(String projectId, Integer folderId)
+	public static List<SnapshotNode> getSnapshotList(String projectId, Integer folderId) throws Exception
 	{
 		Connection c = null;
 		List<SnapshotNode> list = new ArrayList<SnapshotNode>();
@@ -826,6 +828,8 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
+			
+			throw e;
 		}
 		finally
 		{
@@ -836,7 +840,7 @@ public class DbAdapter
 	}
 
 	
-	public static List<QueryNode> getQueryList(String projectId, Integer folderId)
+	public static List<QueryNode> getQueryList(String projectId, Integer folderId) throws Exception
 	{
 		Connection c = null;
 		List<QueryNode> list = new ArrayList<QueryNode>();
@@ -888,6 +892,8 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
+			
+			throw e;
 		}
 		finally
 		{
@@ -899,7 +905,7 @@ public class DbAdapter
 
 	
 	
-	public static Object findObject(String projectId, String path, boolean isQuery)
+	public static Object findObject(String projectId, String path, boolean isQuery) throws Exception
 	{
 		Connection c = null;
 		Integer id = null;
@@ -1037,6 +1043,8 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
+			
+			throw e;
 		}
 		finally
 		{
@@ -1046,10 +1054,9 @@ public class DbAdapter
 		return null;
 	}
 	
-	public static boolean deleteSnapshot(int id)
+	public static void deleteSnapshot(int id) throws Exception
 	{
 		Connection c = null;
-		boolean success = true;
 		
 		try
 		{
@@ -1066,14 +1073,13 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
-			success = false;
+			
+			throw e;
 		}
 		finally
 		{
 			closeConn(c);
 		}
-		
-		return success;
 	}
 		
 	
@@ -1106,7 +1112,7 @@ public class DbAdapter
 		return c;
 	}
 
-	public static SymbolQuery getSymbolQuery(int queryId)
+	public static SymbolQuery getSymbolQuery(int queryId) throws Exception
 	{
 		Connection c = null;
 		SymbolQuery query = new SymbolQuery();
@@ -1127,6 +1133,7 @@ public class DbAdapter
 			}
 			
 			query.setName(rs.getString("name"));
+			query.setFullName(rs.getString("full_name"));
 			query.setDestination(rs.getString("destination"));
 			query.setAllNamespaces(rs.getShort("all_namespaces") != 0);
 			query.setAllTypes(rs.getShort("all_types") != 0);
@@ -1388,6 +1395,8 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
+			
+			throw e;
 		}
 		finally
 		{
@@ -1397,7 +1406,7 @@ public class DbAdapter
 		return query;
 	}
 	
-	public static Integer addSymbolQuery(String projectId, Integer folderId, SymbolQuery query) throws DuplicateNameException
+	public static Integer addSymbolQuery(String projectId, Integer folderId, SymbolQuery query) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
 		
@@ -1415,7 +1424,7 @@ public class DbAdapter
 			int prjId = rs.getInt("id");		
 			
 			ps = c.prepareStatement("SELECT * FROM query WHERE project_id = ? AND " + 
-			"(parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND name = ?");
+			"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL)) AND name = ?");
 		
 			ps.setInt(1, prjId);
 			
@@ -1437,8 +1446,8 @@ public class DbAdapter
 			if (rs.next())
 				throw new DuplicateNameException();		
 			
-			ps = c.prepareStatement("INSERT INTO query(project_id, folder_id, name, destination, all_namespaces, " +
-				"all_types, all_members, all_local_decls) VALUES(?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+			ps = c.prepareStatement("INSERT INTO query(project_id, folder_id, name, full_name, destination, all_namespaces, " +
+				"all_types, all_members, all_local_decls) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 
 			ps.setInt(1, prjId);
 			
@@ -1448,11 +1457,12 @@ public class DbAdapter
 				ps.setInt(2, folderId);
 			
 			ps.setString(3, query.getName());
-			ps.setString(4, query.getDestination());
-			ps.setShort(5, (short)(query.getAllNamespaces() ? 1 : 0));
-			ps.setShort(6, (short)(query.getAllTypes() ? 1 : 0));
-			ps.setShort(7, (short)(query.getAllMembers()? 1 : 0));
-			ps.setShort(8, (short)(query.getAllLocalDecls() ? 1 : 0));
+			ps.setString(4, query.getFullName());
+			ps.setString(5, query.getDestination());
+			ps.setShort(6, (short)(query.getAllNamespaces() ? 1 : 0));
+			ps.setShort(7, (short)(query.getAllTypes() ? 1 : 0));
+			ps.setShort(8, (short)(query.getAllMembers()? 1 : 0));
+			ps.setShort(9, (short)(query.getAllLocalDecls() ? 1 : 0));
 			
 			ps.executeUpdate();
 			
@@ -1678,12 +1688,17 @@ public class DbAdapter
 			
 			return queryId;
 		}
+		catch (DuplicateNameException e)
+		{
+			rollbackTrans(c);
+			throw e;
+		}
 		catch (Exception e)
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());	
 			rollbackTrans(c);
 			
-			return null;
+			throw e;
 		}
 		finally
 		{
@@ -1692,10 +1707,9 @@ public class DbAdapter
 	}
 
 	
-	public static boolean updateQuery(int id, String name) throws DuplicateNameException
+	public static void updateQuery(int id, String name) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
-		boolean success = true;
 		
 		try
 		{
@@ -1753,25 +1767,23 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
-			success = false;
+			
+			throw e;
 		}
 		finally
 		{
 			closeConn(c);
 		}
-		
-		return success;
 	}
 
 	
-	public static boolean moveQuery(int id, Integer parentId, String name) throws DuplicateNameException
+	public static void moveQuery(int id, Integer parentId, String name, String fullName) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
-		boolean success = true;
 		
 		try
 		{
-			c = getConnection();			
+			c = getConnection();		
 			
 			PreparedStatement ps = c.prepareStatement("SELECT * FROM query WHERE (folder_id = ? " +
 				"OR (folder_id IS NULL AND ? IS NULL)) AND name = ?");
@@ -1794,15 +1806,16 @@ public class DbAdapter
 			if (rs.next())
 				throw new DuplicateNameException();
 			
-			ps = c.prepareStatement("UPDATE query SET folder_id = ?, name = ? WHERE id = ?");
+			ps = c.prepareStatement("UPDATE query SET folder_id = ?, name = ?, full_name = ? WHERE id = ?");
 			
 			if (parentId == null)
 				ps.setNull(1, Types.INTEGER);
 			else
 				ps.setInt(1, parentId);
 
-			ps.setString(2, name);			
-			ps.setInt(3, id);
+			ps.setString(2, name);
+			ps.setString(3, fullName);
+			ps.setInt(4, id);
 			
 			ps.executeUpdate();
 					
@@ -1817,21 +1830,19 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
-			success = false;
+			
+			throw e;
 		}
 		finally
 		{
 			closeConn(c);
 		}
-		
-		return success;
 	}	
 		
 	
-	public static boolean deleteQuery(int id)
+	public static void deleteQuery(int id) throws Exception
 	{
 		Connection c = null;
-		boolean success = true;
 		
 		try
 		{
@@ -1848,16 +1859,71 @@ public class DbAdapter
 		{
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 			rollbackTrans(c);
-			success = false;
+			
+			throw e;
 		}
 		finally
 		{
 			closeConn(c);
 		}
-		
-		return success;
 	}
 
+	
+	public static void deleteAll(String projectId, boolean isQuery) throws Exception
+	{
+		Connection c = null;
+		
+		try
+		{
+			c = getConnection();
+			
+			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
+			
+			ps.setString(1, projectId);
+
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			
+			int prjId = rs.getInt("id");
+			
+			ps = c.prepareStatement("DELETE FROM folder WHERE parent_id IS NULL AND project_id = ? AND query_or_folder = ?");
+			
+			ps.setInt(1, prjId);
+			ps.setShort(2, (short)(isQuery ? 1 : 0));
+			
+			ps.executeUpdate();
+			
+			if (isQuery)
+			{
+				ps = c.prepareStatement("DELETE FROM query WHERE project_id = ?");				
+				ps.setInt(1, prjId);
+				
+				ps.executeUpdate();
+			}
+			else
+			{
+				ps = c.prepareStatement("DELETE FROM snapshot WHERE project_id = ?");				
+				ps.setInt(1, prjId);
+				
+				ps.executeUpdate();				
+			}
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);			
+		}
+	}
+	
+	
 	protected static void closeConn(Connection c)
 	{
 		if (c == null)
@@ -1873,6 +1939,7 @@ public class DbAdapter
 			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
 		}		
 	}
+	
 	
 	protected static void rollbackTrans(Connection c)
 	{
@@ -1941,6 +2008,7 @@ public class DbAdapter
 				"folder_id INT",
 				"project_id INT NOT NULL",
 				"name VARCHAR(10000) NOT NULL",
+				"full_name VARCHAR(10000) NOT NULL",
 				"destination VARCHAR(10000)",
 				"all_namespaces SMALLINT",
 				"all_types SMALLINT",

@@ -28,22 +28,11 @@ public class LoginDialog extends DialogBase
 
 	private static String m_sessionID;
 	
-	public LoginDialog(Display display, Shell parent)
+	public LoginDialog(Shell parent)
 	{
-		m_display = display;
 		createShell(parent);
 	}
 	
-	public void open()
-	{
-		m_shell.open();
-
-		while (!m_shell.isDisposed()) 
-		{
-			if (!m_display.readAndDispatch()) 
-				m_display.sleep();
-		}		
-	}
 	
 	protected void createShell(Shell parent) 
 	{
@@ -94,7 +83,7 @@ public class LoginDialog extends DialogBase
 				try
 				{
 					Object[] params = new Object[] {m_userNameText.getText(), m_passwordText.getText()};
-					m_sessionID = (String)consumer.loginToServer(m_display, m_shell, "login", params);
+					m_sessionID = (String)consumer.loginToServer(m_shell, "login", params);
 				}
 				catch (XFireFault fault)
 				{

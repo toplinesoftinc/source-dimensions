@@ -15,7 +15,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-
 import com.sourcedimensions.client.actions.ExecuteQueryAction;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.model.Project.Language;
@@ -31,7 +30,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.jface.dialogs.MessageDialog;
 import com.sourcedimensions.client.model.*;
 
@@ -82,20 +80,18 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_queryBrowseButton;
 	private boolean m_forceClose;
 
-	public SymbolQueryDialog(Display display, Shell parent)
+	public SymbolQueryDialog(Shell parent)
 	{
-		m_display = display;
 		createShell(parent);
 	}
 
-	public SymbolQueryDialog(Display display, Shell parent, SymbolQuery query)
+	public SymbolQueryDialog(Shell parent, SymbolQuery query)
 	{
-		m_display = display;
 		createShell(parent);
 		
 		TableItem item;
 		
-		m_queryNameText.setText(query.getName());
+		m_queryNameText.setText(query.getFullName());
 		m_snapshotNameText.setText(query.getDestination());
 		
 		for (String namespace : query.getNamespaceFilter())
@@ -161,7 +157,7 @@ public class SymbolQueryDialog extends DialogBase
 			public void widgetSelected(SelectionEvent e) 
 			{
 				ProjectBrowserDialog dialog = new ProjectBrowserDialog(
-					PlatformUI.getWorkbench().getDisplay(), getShell(), false, m_snapshotNameText.getText());
+					getShell(), false, m_snapshotNameText.getText());
 				
 				dialog.open();
 				
@@ -183,7 +179,7 @@ public class SymbolQueryDialog extends DialogBase
 			public void widgetSelected(SelectionEvent e) 
 			{
 				ProjectBrowserDialog dialog = new ProjectBrowserDialog(
-						PlatformUI.getWorkbench().getDisplay(), getShell(), true, m_queryNameText.getText());
+					getShell(), true, m_queryNameText.getText());
 					
 				dialog.open();
 				
@@ -209,7 +205,16 @@ public class SymbolQueryDialog extends DialogBase
 			
 				String fullName = m_queryNameText.getText().trim();
 				
-				Object found = DbAdapter.findObject(ProjectView.getProject().getId(), fullName, true);
+				Object found;
+				
+				try
+				{
+					found = DbAdapter.findObject(ProjectView.getProject().getId(), fullName, true);
+				}
+				catch (Exception ex)
+				{
+					return;
+				}
 				
 				if (found != null)
 				{
@@ -226,8 +231,14 @@ public class SymbolQueryDialog extends DialogBase
 				{		
 					queryId = ((QueryNode)found).m_id;
 					
-					if (!DbAdapter.deleteQuery(queryId))
+					try
+					{
+						DbAdapter.deleteQuery(queryId);
+					}
+					catch (Exception ex)
+					{
 						return;
+					}
 					
 					ProjectView.getQueryGroup().deleteObject(fullName.split(Folder.DIVIDER_REGEX));
 				}
@@ -353,8 +364,9 @@ public class SymbolQueryDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
-						"Filter", "&Namespace Filter:", "", new NamespaceFilterValidator());
+				InputDialog dialog = new InputDialog(m_shell, 
+					"Filter", "&Namespace Filter:", "", new NamespaceFilterValidator());
+				
 				dialog.open();
 				String val = dialog.getValue();
 				
@@ -501,12 +513,12 @@ public class SymbolQueryDialog extends DialogBase
 		  		{
 		  			case JAVA14:
 		  			case JAVA15:
-		  				dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+		  				dialog = new JavaMemberDialog(m_shell);
 		  				break;
 		  				
 		  			case CSHARP11:
 		  			case CSHARP20:
-		  				dialog = new CSharpMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell); 
+		  				dialog = new CSharpMemberDialog(m_shell); 
 		  		}
 				
 				dialog.open();
@@ -651,7 +663,7 @@ public class SymbolQueryDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				TypeFilterDialog dialog = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+				TypeFilterDialog dialog = new TypeFilterDialog(m_shell);
 				dialog.open();	
 				
 				if (!dialog.isCancelled())
@@ -822,8 +834,9 @@ public class SymbolQueryDialog extends DialogBase
 		}
 		else
 		{
-			InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
-				"Filter", "&Namespace Filter:", m_namespaceFilterTable.getItem(sel).getText(), new NamespaceFilterValidator());
+			InputDialog dialog = new InputDialog(m_shell, "Filter", "&Namespace Filter:", 
+				m_namespaceFilterTable.getItem(sel).getText(), new NamespaceFilterValidator());
+			
 			dialog.open();
 			String val = dialog.getValue();
 			
@@ -847,7 +860,7 @@ public class SymbolQueryDialog extends DialogBase
 			TypeFilter filter = m_typeFilter.get(sel);
 			TableItem item = m_typeFilterTable.getItem(sel);
 			
-			TypeFilterDialog dialog = new TypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
+			TypeFilterDialog dialog = new TypeFilterDialog(m_shell,
 				filter.getName(), filter.getCategories(), filter.getModifiers(), filter.getInnerTypes(), filter.getSupertypes(),
 				filter.getSubtypes(), filter.getAllBaseTypes(), filter.getBaseTypes(), filter.getDelegate());
 			
@@ -891,13 +904,13 @@ public class SymbolQueryDialog extends DialogBase
 	  		{
 	  			case JAVA14:
 	  			case JAVA15:
-	  				dialog = new JavaMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, filter.getName(), filter.getCategories(), 
+	  				dialog = new JavaMemberDialog(m_shell, filter.getName(), filter.getCategories(), 
 	  					filter.getModifiers(), filter.getType(), filter.getAnyParams(), filter.getParamList(), filter.getAnyThrows(), filter.getThrowList());
 	  				break;
 	  				
 	  			case CSHARP11:
 	  			case CSHARP20:
-	  				dialog = new CSharpMemberDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, filter.getName(), 
+	  				dialog = new CSharpMemberDialog(m_shell, filter.getName(), 
 	  					filter.getCategories(), filter.getModifiers(), filter.getType(), filter.getAnyParams(), filter.getOperators(), filter.getParamList());
 	  		}
 			
@@ -944,7 +957,7 @@ public class SymbolQueryDialog extends DialogBase
 			LocalDeclFilter filter = m_localDeclFilter.get(sel);
 			TableItem item = m_localDeclFilterTable.getItem(sel);
 
-			LocalDeclDialog  dialog = new LocalDeclDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
+			LocalDeclDialog  dialog = new LocalDeclDialog(m_shell,
 				filter.getType(), filter.getName(), filter.getFinal());
 
 			dialog.open();
@@ -1007,8 +1020,10 @@ public class SymbolQueryDialog extends DialogBase
 	protected SymbolQuery createSymbolQuery()
 	{
 		SymbolQuery query = new SymbolQuery();
+		String fullName = m_queryNameText.getText();		
+		String[] segments = fullName.split(Folder.DIVIDER_REGEX);
 		
-		String[] segments = m_queryNameText.getText().split(Folder.DIVIDER_REGEX);
+		query.setFullName(fullName);
 		
 		if (segments.length > 0)
 			query.setName(segments[segments.length-1]);
@@ -1188,7 +1203,7 @@ public class SymbolQueryDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				LocalDeclDialog dialog = new LocalDeclDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+				LocalDeclDialog dialog = new LocalDeclDialog(m_shell);
 				dialog.open();	
 				
 				if (!dialog.isCancelled())

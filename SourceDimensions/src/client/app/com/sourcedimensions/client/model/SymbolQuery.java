@@ -18,6 +18,7 @@ public class SymbolQuery
 	protected List<LocalDeclFilter> m_localDeclFilter;
 	
 	protected String m_name;
+	protected String m_fullName;
 	protected String m_destination;
 	
 	public boolean getAllNamespaces()
@@ -108,6 +109,16 @@ public class SymbolQuery
 	public void setName(String name)
 	{
 		m_name = name;
+	}
+
+	public String getFullName()
+	{
+		return m_fullName;
+	}
+	
+	public void setFullName(String fullName)
+	{
+		m_fullName = fullName;
 	}
 	
 	public String getDestination()

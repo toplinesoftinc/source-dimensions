@@ -17,7 +17,6 @@ import com.sourcedimensions.client.Util;
 
 public abstract class DialogBase 
 {
-	protected Display m_display;
 	protected boolean m_cancel;
 	protected static final String[] m_triStateText = { "Exclude", "Only", "Include"};
 	
@@ -30,8 +29,10 @@ public abstract class DialogBase
 
 		while (!shell.isDisposed()) 
 		{
-			if (!m_display.readAndDispatch()) 
-				m_display.sleep();
+			Display display = Display.getCurrent();
+			
+			if (!display.readAndDispatch()) 
+				display.sleep();
 		}		
 	}
 		

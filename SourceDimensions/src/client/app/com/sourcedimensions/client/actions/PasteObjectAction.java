@@ -65,7 +65,18 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 					}
 					else if (source instanceof QueryObject)
 					{
-						DbAdapter.moveQuery(source.getID(), dest.getID(), name);
+						String fullName = "";
+						TreeObject parent = dest;
+						
+						while (parent instanceof FolderObject)
+						{
+							fullName = parent.getName() + "/" + fullName;
+							parent = parent.getParent();
+						}
+						
+						fullName = fullName + name;
+						
+						DbAdapter.moveQuery(source.getID(), dest.getID(), name, fullName);
 					}
 					else if (source instanceof SnapshotObject)
 					{
@@ -79,6 +90,10 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 				{
 					name = "Copy " + ((i == 0) ? "" : "(" + Integer.toString(i)+ ") ") + "of " + source.getName();
 					i++;
+				}
+				catch (Exception e)
+				{
+					return;
 				}
 			}
 			
@@ -111,17 +126,29 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 					else if (source instanceof QueryObject)
 					{
 						SymbolQuery query = DbAdapter.getSymbolQuery(source.getID());
+						query.setName(name);
+						
+						String fullName = "";
+						TreeObject parent = dest;
+						
+						while (parent instanceof FolderObject)
+						{
+							fullName = parent.getName() + "/" + fullName;
+							parent = parent.getParent();
+						}
+						
+						fullName = fullName + name;
+						
+						query.setFullName(fullName);
 						id = DbAdapter.addSymbolQuery(projectId, parentId, query);
 					}
 					else if (source instanceof SnapshotObject)
 					{
-						id = DbAdapter.addSnapshot(projectId, parentId, DbAdapter.getSnapshot(source.getID()));
+						SnapshotNode snapshot = DbAdapter.getSnapshot(source.getID());
+						snapshot.setName(name);
+						id = DbAdapter.addSnapshot(projectId, parentId, snapshot);
 					}
 					
-					source.setID(id);
-					source.setName(name);
-				
-					dest.addDbChild(source);
 					
 					break;
 				}
@@ -130,6 +157,17 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 					name = "Copy " + ((i == 0) ? "" : "(" + Integer.toString(i)+ ") ") + "of " + source.getName();
 					i++;
 				}
+				catch (Exception e)
+				{
+					return;
+				}
+
+				
+				
+				source.setID(id);
+				source.setName(name);
+			
+				dest.addDbChild(source);				
 				
 				if (source instanceof TreeGroup)
 				{
@@ -206,7 +244,7 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 				newObj = new SnapshotObject(name, id, parentId);
 			}
 		}
-		catch (DuplicateNameException e)
+		catch (Exception e)
 		{			
 		}
 		

@@ -10,38 +10,26 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Button;
 import com.sourcedimensions.client.Util;
+import com.sourcedimensions.client.forms.DialogBase;
 
-public class WaitDialog 
+public class WaitDialog extends DialogBase 
 {
 
-	private Shell m_shell = null;  //  @jve:decl-index=0:visual-constraint="10,10"
-	private ProgressBar m_progressBar = null;
-	private Label m_waitLabel = null;
-	private Button m_cancelButton = null;
+	private Shell m_shell;  //  @jve:decl-index=0:visual-constraint="10,10"
+	private ProgressBar m_progressBar;
+	private Label m_waitLabel;
+	private Button m_cancelButton;	
+	private WSConsumer m_consumer;
 	
-	private Display m_display = null;  //  @jve:decl-index=0:
-	private WSConsumer m_consumer = null;
-	
-	public WaitDialog(Display display, WSConsumer consumer, Shell parent)
+	public WaitDialog(WSConsumer consumer, Shell parent)
 	{
-		createShell(display, parent);
+		createShell(parent);
 		m_consumer = consumer;
 	}
 
-	public void open()
-	{
-		m_shell.open();
-
-		while (!m_shell.isDisposed()) 
-		{
-			if (!m_display.readAndDispatch()) 
-				m_display.sleep();
-		}		
-	}
-	
 	public void close()
 	{
-		m_display.syncExec(new Runnable()
+		Display.getDefault().syncExec(new Runnable()
 		{
 			public void run()
 			{
@@ -51,10 +39,7 @@ public class WaitDialog
 		});
 	}
 	
-	/**
-	 * This method initializes m_shell
-	 */
-	private void createShell(Display display, Shell parent) 
+	protected void createShell(Shell parent) 
 	{
 		m_shell = new Shell(SWT.TITLE | SWT.BORDER | SWT.APPLICATION_MODAL);
 		if (parent != null)
@@ -81,8 +66,12 @@ public class WaitDialog
 				m_consumer.cancelRequest();
 			}
 		});
-		m_display = display;
+
 		Util.centerWindow(m_shell, parent);
 	}
-
+	
+	protected Shell getShell()
+	{
+		return m_shell;
+	}
 }

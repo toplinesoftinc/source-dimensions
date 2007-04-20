@@ -79,9 +79,8 @@ public class ParamDialog extends DialogBase
 		Type.Property.TYPE_PARAM,
     };
 	
-	public ParamDialog(Display display, Shell parent, Parameter param)
+	public ParamDialog(Shell parent, Parameter param)
 	{
-		m_display = display;
 		createShell(parent);
 
 		m_anyRadioButton.setSelection(false);
@@ -144,9 +143,8 @@ public class ParamDialog extends DialogBase
 		m_paramNameFilterText.setText(param.getName());
 	}
 	
-	public ParamDialog(Display display, Shell parent)
+	public ParamDialog(Shell parent)
 	{
-		m_display = display;
 		createShell(parent);
 	}	
 	

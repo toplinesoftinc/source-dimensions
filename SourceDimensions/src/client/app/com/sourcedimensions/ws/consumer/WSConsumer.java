@@ -12,7 +12,6 @@ import java.lang.reflect.Proxy;
 import java.util.Properties;
 import org.codehaus.xfire.fault.*;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import com.sourcedimensions.ws.provider.IWebService;
 import com.sourcedimensions.client.forms.LoginDialog;
@@ -61,16 +60,16 @@ public class WSConsumer
 		}
 	}
 	
-	public Object loginToServer(Display display, Shell parent, String methodName, Object[] params) throws Exception
+	public Object loginToServer(Shell parent, String methodName, Object[] params) throws Exception
 	{
-		return invoke(display, parent, methodName, params);
+		return invoke(parent, methodName, params);
 	}
 	
-	public Object invokeWebService(Display display, Shell parent, String methodName, Object[] params) throws Exception
+	public Object invokeWebService(Shell parent, String methodName, Object[] params) throws Exception
 	{
 		if (LoginDialog.getSessionID() == null)
 		{
-			new LoginDialog(display, parent).open();
+			new LoginDialog(parent).open();
 			
 			if (LoginDialog.getSessionID() == null)
 				return null;
@@ -91,7 +90,7 @@ public class WSConsumer
 				                        
 				par[0] = LoginDialog.getSessionID();
 				
-				return invoke(display, parent, methodName, par);
+				return invoke(parent, methodName, par);
 			}
 			catch (XFireFault fault)
 			{
@@ -101,7 +100,7 @@ public class WSConsumer
 				{
 					MessageDialog.openWarning(null, "Session expired", "You session is expired. Please re-login");
 			
-					new LoginDialog(display, parent).open();
+					new LoginDialog(parent).open();
 					
 					if (LoginDialog.getSessionID() == null)
 						return null;
@@ -118,7 +117,7 @@ public class WSConsumer
 		}
 	}
 	
-	protected Object invoke(Display display, Shell parent, String methodName, Object[] params) throws Exception
+	protected Object invoke(Shell parent, String methodName, Object[] params) throws Exception
 	{
 		Service serviceModel = new ObjectServiceFactory().create(IWebService.class);
 
@@ -132,7 +131,7 @@ public class WSConsumer
 
 		m_cancelled = false;
 		
-		WaitDialog waitDialog = new WaitDialog(display, this, parent);
+		WaitDialog waitDialog = new WaitDialog(this, parent);
 
 		WorkingThread thread = new WorkingThread(m_client, methodName, params, waitDialog);
 

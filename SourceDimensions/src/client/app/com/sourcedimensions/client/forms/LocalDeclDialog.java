@@ -54,9 +54,8 @@ public class LocalDeclDialog extends DialogBase
 		Type.Property.NULLABLE
 	};
 
-	public LocalDeclDialog(Display display, Shell parent, Type type, String name, TriStateBoolean finalFlag)
+	public LocalDeclDialog(Shell parent, Type type, String name, TriStateBoolean finalFlag)
 	{
-		m_display = display;
 		createShell(parent);
 		m_typeNameText.setText(type.getName());
 		m_localDeclNameText.setText(name);
@@ -73,9 +72,8 @@ public class LocalDeclDialog extends DialogBase
 		}
 	}	
 	
-	public LocalDeclDialog(Display display, Shell parent)
+	public LocalDeclDialog(Shell parent)
 	{
-		m_display = display;
 		createShell(parent);		
 	}
 	

@@ -24,10 +24,9 @@ public class InputDialog extends DialogBase
 	private static String m_value;  //  @jve:decl-index=0:
 
 
-	public InputDialog(Display display, Shell parent, String title, 
+	public InputDialog(Shell parent, String title, 
 		String label, String text, Validator validator)
 	{
-		m_display = display;
 		m_value = text;
 		m_validator = validator;
 		createShell(parent, title, label);

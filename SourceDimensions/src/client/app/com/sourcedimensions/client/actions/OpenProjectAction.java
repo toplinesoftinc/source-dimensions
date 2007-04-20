@@ -8,13 +8,10 @@ import java.util.Set;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-
 import com.sourcedimensions.client.Clipboard;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.forms.ProjectListDialog;
@@ -52,11 +49,10 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 		Collection<Project> prjColl;
 		boolean offline = false;
 		Shell shell = window.getShell();
-		Display display = PlatformUI.getWorkbench().getDisplay();
 		
 		try
 		{
-			prjSet = (Set<Project>)consumer.invokeWebService(display, shell, "getProjectList", new Object[] { });			
+			prjSet = (Set<Project>)consumer.invokeWebService(shell, "getProjectList", new Object[] { });			
 		}
 		catch (Exception ex)
 		{
@@ -78,7 +74,16 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 				prjHash.put(prj.getId(), prj);
 			}
 			
-			List<Project> prjList = DbAdapter.getProjectList();
+			List<Project> prjList;
+			
+			try
+			{
+				prjList = DbAdapter.getProjectList();
+			}
+			catch (Exception e)
+			{
+				return;
+			}
 			
 			for (Project prj : prjList)
 			{
@@ -93,17 +98,32 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 			{
 				if (!prj.getDeleted())
 				{
-					if (!DbAdapter.saveProject(prj))
+					try
+					{
+						DbAdapter.saveProject(prj);
+					}
+					catch (Exception e)
+					{
 						return;
+					}
 				}
 			}
 			
 			prjColl = prjHash.values();
 		}
 		else
-			prjColl = DbAdapter.getProjectList();
+		{
+			try
+			{
+				prjColl = DbAdapter.getProjectList();
+			}
+			catch (Exception e)
+			{
+				return;
+			}
+		}
 		
-		ProjectListDialog prjWindow = new ProjectListDialog(display, shell);
+		ProjectListDialog prjWindow = new ProjectListDialog(shell);
 		prjWindow.loadProjects(prjColl);
 		prjWindow.open();
 		Project prj = prjWindow.getSelected();

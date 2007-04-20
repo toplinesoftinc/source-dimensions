@@ -121,19 +121,17 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	private Label m_typePropsLabel;
 	private Table m_typePropsList;
 	
-	public CSharpMemberDialog(Display display, Shell parent)
+	public CSharpMemberDialog(Shell parent)
 	{
-		m_display = display;
 		createShell(parent);
 		checkAllItems(m_memberCategoryList);
 		setAllItems(m_modifierList, TriStateBoolean.TRUE);
 		checkAllItems(m_operatorList);
 	}
 	
-	public CSharpMemberDialog(Display display, Shell parent, String name, int categories, TriStateMask modifiers, 
+	public CSharpMemberDialog(Shell parent, String name, int categories, TriStateMask modifiers, 
 			Type type, boolean anyParams, int operators, List<Parameter> paramList)
 	{
-		m_display = display;
 		createShell(parent);
 		m_memberNameText.setText(name);
 		m_typeNameText.setText(type.getName());

@@ -21,7 +21,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.model.*;
 
 
@@ -45,15 +44,13 @@ public class DelegateDialog extends DialogBase
 	protected List<Parameter> m_paramList = new ArrayList<Parameter>();  //  @jve:decl-index=0:
 	protected boolean m_anyParams;
 	
-	public DelegateDialog(Display display, Shell parent)
+	public DelegateDialog(Shell parent)
 	{
-		m_display = display;
 		createShell(parent);
 	}
 	
-	public DelegateDialog(Display display, Shell parent, Type type, boolean anyParams, List<Parameter> paramList)
+	public DelegateDialog(Shell parent, Type type, boolean anyParams, List<Parameter> paramList)
 	{
-		m_display = display;
 		createShell(parent);
 
 		m_typeNameText.setText(type.getName());
@@ -129,7 +126,7 @@ public class DelegateDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				ParamDialog dialog = new ParamDialog(PlatformUI.getWorkbench().getDisplay(), getShell());
+				ParamDialog dialog = new ParamDialog(m_shell);
 				
 				dialog.open();
 				
@@ -357,7 +354,7 @@ public class DelegateDialog extends DialogBase
 		}
 		else
 		{		
-			ParamDialog dialog = new ParamDialog(PlatformUI.getWorkbench().getDisplay(), getShell(), m_paramList.get(sel));
+			ParamDialog dialog = new ParamDialog(getShell(), m_paramList.get(sel));
 			
 			dialog.open();
 			

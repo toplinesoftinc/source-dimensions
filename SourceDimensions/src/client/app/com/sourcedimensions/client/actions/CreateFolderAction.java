@@ -10,7 +10,6 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DuplicateNameException;
 import com.sourcedimensions.client.forms.InputDialog;
@@ -39,8 +38,9 @@ public class CreateFolderAction implements IWorkbenchWindowActionDelegate, IObje
 		
 		while (true)
 		{
-			InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), shell, 
-				"Folder", "&Folder name:", name, new InputDialog.MandatoryFieldValidator("Please enter folder name"));
+			InputDialog dialog = new InputDialog(shell,	"Folder", "&Folder name:", 
+				name, new InputDialog.MandatoryFieldValidator("Please enter folder name"));
+			
 			dialog.open();
 			
 			name = dialog.getValue();
@@ -79,6 +79,10 @@ public class CreateFolderAction implements IWorkbenchWindowActionDelegate, IObje
 				{
 					MessageDialog.openError(shell, "Error", "Duplicate folder name");
 					continue;
+				}
+				catch (Exception e)
+				{
+					return;
 				}
 				
 				TreeGroup selected = (TreeGroup)m_selection.getFirstElement();

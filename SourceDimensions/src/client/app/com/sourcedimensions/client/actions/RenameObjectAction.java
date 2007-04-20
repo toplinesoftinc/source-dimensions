@@ -9,8 +9,6 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.eclipse.ui.PlatformUI;
-
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DuplicateNameException;
 import com.sourcedimensions.client.forms.InputDialog;
@@ -19,6 +17,7 @@ import com.sourcedimensions.client.views.ProjectView.FolderObject;
 import com.sourcedimensions.client.views.ProjectView.QueryObject;
 import com.sourcedimensions.client.views.ProjectView.SnapshotObject;
 import com.sourcedimensions.client.views.ProjectView.TreeObject;
+
 
 public class RenameObjectAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate 
 {	
@@ -53,8 +52,8 @@ public class RenameObjectAction implements IWorkbenchWindowActionDelegate, IObje
 
 		while (true)
 		{
-			InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), shell,
-				object, "&" + object + " name:", name, new InputDialog.MandatoryFieldValidator("Please enter " + object + " name"));
+			InputDialog dialog = new InputDialog(shell,	object, "&" + object + " name:", 
+				name, new InputDialog.MandatoryFieldValidator("Please enter " + object + " name"));
 			
 			dialog.open();
 			
@@ -68,28 +67,27 @@ public class RenameObjectAction implements IWorkbenchWindowActionDelegate, IObje
 								
 				try
 				{
-					boolean success = true;
-					
 					if (selected instanceof QueryObject)
 					{
-						success = DbAdapter.updateQuery(id, name);
+						DbAdapter.updateQuery(id, name);
 					}
 					else if (selected instanceof SnapshotObject)
 					{
-						success = DbAdapter.updateSnapshot(id, name);
+						DbAdapter.updateSnapshot(id, name);
 					}
 					else if (selected instanceof FolderObject)
 					{
-						success = DbAdapter.updateFolder(id, name);
+						DbAdapter.updateFolder(id, name);
 					}					
-					
-					if (!success)
-						return;
 				}
 				catch (DuplicateNameException e)
 				{
 					MessageDialog.openError(shell, "Error", "Duplicate name");
 					continue;
+				}
+				catch (Exception e)
+				{
+					return;
 				}
 				
 				selected.setName(name);

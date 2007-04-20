@@ -8,7 +8,6 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.forms.SymbolQueryDialog;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
 import com.sourcedimensions.client.views.ProjectView.TreeObject;
@@ -27,7 +26,7 @@ public class CreateSymbolQueryAction implements IWorkbenchWindowActionDelegate, 
  	{
  		Shell shell = m_window.getShell();
  
- 		SymbolQueryDialog dialog = new SymbolQueryDialog(PlatformUI.getWorkbench().getDisplay(), shell);
+ 		SymbolQueryDialog dialog = new SymbolQueryDialog(shell);
  		
  		Object sel = m_selection.getFirstElement();
  		

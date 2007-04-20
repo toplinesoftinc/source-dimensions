@@ -157,6 +157,14 @@ public class ProjectView extends ViewPart
 			m_children.remove(object);
 		}
 		
+		public void deleteAllChildren()
+		{
+			if (m_children == null)
+				return;
+
+			m_children.clear();
+		}
+		
 		public TreeObject[] getChildren() 
 		{
 			if (m_children == null)
@@ -270,7 +278,7 @@ public class ProjectView extends ViewPart
 							
 							folder = DbAdapter.addFolder(names[j], parentId, getProject().getId(), isQuery);
 						}
-						catch (DuplicateNameException e)
+						catch (Exception e)
 						{
 						}
 						
@@ -330,31 +338,37 @@ public class ProjectView extends ViewPart
 		
 		protected void load()
 		{
-			List<Folder> folderList = DbAdapter.getFolderList(m_id, m_project.getId(), m_isQuery);
-			
-			for (Folder f : folderList)
+			try
 			{
-				FolderObject o = new FolderObject(f.m_name, f.m_id, m_isQuery);
-				addChild(o);
-			}
-			
-			if (m_isQuery)
-			{
-				List<QueryNode> queryList = DbAdapter.getQueryList(m_project.getId(), m_id);
+				List<Folder> folderList = DbAdapter.getFolderList(m_id, m_project.getId(), m_isQuery);
 				
-				for (QueryNode q : queryList)
+				for (Folder f : folderList)
 				{
-					addChild(new QueryObject(q.m_name, q.m_id, m_id));
-				}				
-			}
-			else
-			{
-				List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(m_project.getId(), m_id);
-				
-				for (SnapshotNode s : snapshotList)
-				{
-					addChild(new SnapshotObject(s.getName(), s.m_id, m_id));
+					FolderObject o = new FolderObject(f.m_name, f.m_id, m_isQuery);
+					addChild(o);
 				}
+				
+				if (m_isQuery)
+				{
+					List<QueryNode> queryList = DbAdapter.getQueryList(m_project.getId(), m_id);
+					
+					for (QueryNode q : queryList)
+					{
+						addChild(new QueryObject(q.m_name, q.m_id, m_id));
+					}				
+				}
+				else
+				{
+					List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(m_project.getId(), m_id);
+					
+					for (SnapshotNode s : snapshotList)
+					{
+						addChild(new SnapshotObject(s.getName(), s.m_id, m_id));
+					}
+				}
+			}
+			catch (Exception e)
+			{				
 			}
 		}
 
@@ -436,25 +450,31 @@ public class ProjectView extends ViewPart
 
 		protected void load()
 		{
-			List<Folder> list = DbAdapter.getFolderList(null, m_project.getId(), true);
-			
-			for (Folder f : list)
+			try
 			{
-				FolderObject o = new FolderObject(f.m_name, f.m_id, true);
-				addChild(o);
-			}			
-			
-			List<QueryNode> queryList = DbAdapter.getQueryList(m_project.getId(), null);
-			
-			for (QueryNode q : queryList)
-			{
-				addChild(new QueryObject(q.m_name, q.m_id, null));
-			}			
+				List<Folder> list = DbAdapter.getFolderList(null, m_project.getId(), true);
+				
+				for (Folder f : list)
+				{
+					FolderObject o = new FolderObject(f.m_name, f.m_id, true);
+					addChild(o);
+				}			
+				
+				List<QueryNode> queryList = DbAdapter.getQueryList(m_project.getId(), null);
+				
+				for (QueryNode q : queryList)
+				{
+					addChild(new QueryObject(q.m_name, q.m_id, null));
+				}
+			}
+			catch (Exception e)
+			{				
+			}
 		}
 		
-		public void addQueryNode(SymbolQuery query, Integer queryId, String name)
+		public void addQueryNode(SymbolQuery query, Integer queryId, String fullName)
 		{		
-			List<FolderObject> segments = makeFolderPath(name, true);
+			List<FolderObject> segments = makeFolderPath(fullName, true);
 			Integer folderId = (segments.size() == 0) ? null : segments.get(segments.size() - 1).getID();						
 			Integer id = null;
 			
@@ -464,6 +484,10 @@ public class ProjectView extends ViewPart
 			}
 			catch (DuplicateNameException e)
 			{				
+			}
+			catch (Exception e)
+			{
+				return;
 			}
 			
 			if (id != null)
@@ -520,19 +544,25 @@ public class ProjectView extends ViewPart
 		
 		protected void load()
 		{
-			List<Folder> list = DbAdapter.getFolderList(null, m_project.getId(), false);
-			
-			for (Folder f : list)
+			try
 			{
-				addChild(new FolderObject(f.m_name, f.m_id, false));
+				List<Folder> list = DbAdapter.getFolderList(null, m_project.getId(), false);
+				
+				for (Folder f : list)
+				{
+					addChild(new FolderObject(f.m_name, f.m_id, false));
+				}
+				
+				List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(m_project.getId(), null);
+				
+				for (SnapshotNode s : snapshotList)
+				{
+					addChild(new SnapshotObject(s.getName(), s.m_id, null));
+				}
 			}
-			
-			List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(m_project.getId(), null);
-			
-			for (SnapshotNode s : snapshotList)
-			{
-				addChild(new SnapshotObject(s.getName(), s.m_id, null));
-			}			
+			catch (Exception e)
+			{				
+			}
 		}
 		
 		public void addSnapshotNode(SnapshotNode node, String name)
@@ -547,6 +577,10 @@ public class ProjectView extends ViewPart
 			}
 			catch (DuplicateNameException e)
 			{				
+			}
+			catch (Exception e)
+			{
+				return;
 			}
 			
 			if (id != null)

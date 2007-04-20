@@ -11,7 +11,6 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.SnapshotNode;
@@ -37,12 +36,17 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
  		TreeObject selected = (TreeObject)m_selection.getFirstElement();
 		int id = selected.getID();
 		
-		SymbolQuery query = DbAdapter.getSymbolQuery(id);
+		SymbolQuery query;
 		
-		if (query != null)
+		try
 		{
-			executeQuery(shell, query);
+			query = DbAdapter.getSymbolQuery(id);
 		}
+		catch (Exception e)
+		{
+			return;
+		}
+		executeQuery(shell, query);
  	}
 
  	public static void executeQuery(Shell shell, SymbolQuery query)
@@ -62,7 +66,16 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 			return;
 		}
 		
-		Object found = DbAdapter.findObject(ProjectView.getProject().getId(), dest, false);
+		Object found;
+		
+		try
+		{
+			found = DbAdapter.findObject(ProjectView.getProject().getId(), dest, false);
+		}
+		catch (Exception e)
+		{
+			return;
+		}
 		
 		if (found != null)
 		{
@@ -75,8 +88,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		
 		try
 		{
-			node = (SnapshotNode)consumer.invokeWebService(PlatformUI.getWorkbench().getDisplay(), 
-				shell, "runSymbolQuery", new Object[] { query });			
+			node = (SnapshotNode)consumer.invokeWebService(shell, "runSymbolQuery", new Object[] { query });			
 		}
 		catch (Exception ex)
 		{
@@ -103,8 +115,14 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 
 			if (found != null)
 			{
-				if (!DbAdapter.deleteSnapshot(((SnapshotNode)found).m_id))
+				try
+				{
+					DbAdapter.deleteSnapshot(((SnapshotNode)found).m_id);
+				}
+				catch (Exception e)
+				{
 					return;
+				}
 				
 				ProjectView.getSnapshotGroup().deleteObject(sections);
 			}

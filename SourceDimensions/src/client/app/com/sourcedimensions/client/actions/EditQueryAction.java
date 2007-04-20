@@ -8,7 +8,6 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.forms.SymbolQueryDialog;
 import com.sourcedimensions.client.model.SymbolQuery;
@@ -32,12 +31,23 @@ public class EditQueryAction implements IWorkbenchWindowActionDelegate, IObjectA
 	
 	public static void runQueryEdit(Shell shell, QueryObject object)
 	{
-		runQueryEdit(shell, DbAdapter.getSymbolQuery(object.getID()));
+		SymbolQuery query;
+		
+		try
+		{
+			query = DbAdapter.getSymbolQuery(object.getID());
+		}
+		catch (Exception e)
+		{
+			return;
+		}
+		
+		runQueryEdit(shell, query);
 	}
 	
 	public static void runQueryEdit(Shell shell, SymbolQuery query)
 	{
-		SymbolQueryDialog dialog = new SymbolQueryDialog(PlatformUI.getWorkbench().getDisplay(), shell, query);		
+		SymbolQueryDialog dialog = new SymbolQueryDialog(shell, query);		
 		dialog.open();
 	}	
 

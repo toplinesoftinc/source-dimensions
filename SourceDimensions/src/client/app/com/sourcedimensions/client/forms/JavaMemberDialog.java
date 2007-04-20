@@ -23,7 +23,6 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Group;
 import com.sourcedimensions.client.model.TriStateBoolean;
-import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.model.*;
 
 
@@ -85,18 +84,16 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	private boolean m_anyThrow;
 	private List<String> m_throwList = new ArrayList<String>();  //  @jve:decl-index=0:
 	
-	public JavaMemberDialog(Display display, Shell parent)
+	public JavaMemberDialog(Shell parent)
 	{
-		m_display = display;
 		createShell(parent);
 		checkAllItems(m_memberCategoryList);
 		setAllItems(m_modifierList, TriStateBoolean.EITHER);
 	}
 	
-	public JavaMemberDialog(Display display, Shell parent, String name, int categories, TriStateMask modifiers, 
+	public JavaMemberDialog(Shell parent, String name, int categories, TriStateMask modifiers, 
 		Type type, boolean anyParams, List<Parameter> paramList, boolean anyThrow, List<String> throwList)
 	{
-		m_display = display;
 		m_throwList = throwList;
 		createShell(parent);
 		m_memberNameText.setText(name);
@@ -512,8 +509,8 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		}
 		else
 		{
-			InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
-				"Filter", "Throw Filter:", m_throwFilterList.getItem(sel), new ThrowFilterValidator());
+			InputDialog dialog = new InputDialog(m_shell, "Filter", "Throw Filter:", 
+				m_throwFilterList.getItem(sel), new ThrowFilterValidator());
 			
 			dialog.open();
 			String val = dialog.getValue();
@@ -556,8 +553,8 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				InputDialog dialog = new InputDialog(PlatformUI.getWorkbench().getDisplay(), m_shell, 
-					"Filter", "Throw Filter:", "", new ThrowFilterValidator());
+				InputDialog dialog = new InputDialog(m_shell, "Filter",
+					"Throw Filter:", "", new ThrowFilterValidator());
 
 				dialog.open();
 				String val = dialog.getValue();

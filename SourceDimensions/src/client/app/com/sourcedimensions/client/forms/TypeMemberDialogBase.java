@@ -6,7 +6,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.model.*;
 
 
@@ -58,7 +57,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	
 	protected void addParam(Table table)
 	{
-		ParamDialog dialog = new ParamDialog(PlatformUI.getWorkbench().getDisplay(), getShell());
+		ParamDialog dialog = new ParamDialog(getShell());
 		
 		dialog.open();
 		
@@ -86,7 +85,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 		}
 		else
 		{		
-			ParamDialog dialog = new ParamDialog(PlatformUI.getWorkbench().getDisplay(), getShell(), m_paramList.get(sel));
+			ParamDialog dialog = new ParamDialog(getShell(), m_paramList.get(sel));
 			
 			dialog.open();
 			

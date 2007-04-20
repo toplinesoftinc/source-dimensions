@@ -41,17 +41,15 @@ public class BaseTypeFilterDialog extends DialogBase
 		"INTEGRAL TYPE"
 	};
 
-	public BaseTypeFilterDialog(Display display, Shell parent)
+	public BaseTypeFilterDialog(Shell parent)
 	{
-		m_display = display;
 		m_value = null;
 		m_categoryValue = BaseTypeCategory.CLASS;
 		createShell(parent);
 	}		
 	
-	public BaseTypeFilterDialog(Display display, Shell parent, String value, int category)
+	public BaseTypeFilterDialog(Shell parent, String value, int category)
 	{
-		m_display = display;
 		m_value = value;
 		m_categoryValue = BaseTypeCategory.values()[category];
 		createShell(parent);

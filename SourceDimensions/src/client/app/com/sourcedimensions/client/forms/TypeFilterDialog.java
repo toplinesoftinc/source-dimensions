@@ -24,7 +24,6 @@ import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.ui.PlatformUI;
 import com.sourcedimensions.client.model.*;
 
 
@@ -106,11 +105,10 @@ public class TypeFilterDialog extends DialogBase
 	};
 	private Button m_delegateButton;	
 
-	public TypeFilterDialog(Display display, Shell parent, String typeName,	int categories,	
+	public TypeFilterDialog(Shell parent, String typeName,	int categories,	
 		TriStateMask modifiers, TriStateBoolean innerTypes, TriStateBoolean supertypes, 
 		TriStateBoolean subtypes, boolean allBaseTypes, List<BaseType> baseTypes, Delegate delegate)
 	{
-		m_display = display;
 		m_baseTypes = baseTypes;
 		createShell(parent);
 		m_delegate = delegate;
@@ -149,9 +147,8 @@ public class TypeFilterDialog extends DialogBase
 		categorySelectionChanged();
 	}
 		
-	public TypeFilterDialog(Display display, Shell parent)
+	public TypeFilterDialog(Shell parent)
 	{
-		m_display = display;
 		createShell(parent);
 		checkAllItems(m_typeCategoryList);
 		setAllItems(m_modifierList, TriStateBoolean.EITHER);
@@ -265,7 +262,7 @@ public class TypeFilterDialog extends DialogBase
 		{   
 			public void widgetSelected(SelectionEvent e) 
 			{    
-				BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+				BaseTypeFilterDialog input = new BaseTypeFilterDialog(m_shell);
 				input.open();
 				String val = input.getValue();
 				
@@ -419,10 +416,10 @@ public class TypeFilterDialog extends DialogBase
 					DelegateDialog dialog;
 					
 					if (m_delegate == null)
-						dialog = new DelegateDialog(PlatformUI.getWorkbench().getDisplay(), m_shell);
+						dialog = new DelegateDialog(m_shell);
 					else
-						dialog = new DelegateDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
-							m_delegate.getType(), m_delegate.getAnyParams(), m_delegate.getParamList());
+						dialog = new DelegateDialog(m_shell, m_delegate.getType(), 
+							m_delegate.getAnyParams(), m_delegate.getParamList());
 					
 					dialog.open();
 					
@@ -569,7 +566,7 @@ public class TypeFilterDialog extends DialogBase
 		}
 		else
 		{
-			BaseTypeFilterDialog input = new BaseTypeFilterDialog(PlatformUI.getWorkbench().getDisplay(), m_shell,
+			BaseTypeFilterDialog input = new BaseTypeFilterDialog(m_shell,
 				m_baseTypesTable.getItem(sel).getText(1), m_baseTypes.get(sel).getCategory());
 			
 			input.open();

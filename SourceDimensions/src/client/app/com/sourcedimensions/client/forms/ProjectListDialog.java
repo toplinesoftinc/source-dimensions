@@ -28,9 +28,8 @@ public class ProjectListDialog extends DialogBase
 	private Table m_prjList;
 
 	
-	public ProjectListDialog(Display display, Shell parent)
+	public ProjectListDialog(Shell parent)
 	{
-		m_display = display;
 		createShell(parent);
 	}
 	

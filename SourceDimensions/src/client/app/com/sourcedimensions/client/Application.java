@@ -10,9 +10,6 @@ import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.forms.LoginDialog;
 
 
-/**
- * This class controls all aspects of the application's execution
- */
 public class Application implements IPlatformRunnable 
 {
 	public static final String PLUGIN_ID = "com.sourcedimensions.client";	
@@ -40,7 +37,7 @@ public class Application implements IPlatformRunnable
 		
 			Platform.endSplash();
 			
-			new LoginDialog(display, null).open();
+			new LoginDialog(null).open();
 			
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 			

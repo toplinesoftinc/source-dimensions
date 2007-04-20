@@ -4,6 +4,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
@@ -13,7 +14,9 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
+import com.sourcedimensions.client.views.ProjectView.QueryGroup;
 import com.sourcedimensions.client.views.ProjectView.QueryObject;
+import com.sourcedimensions.client.views.ProjectView.SnapshotGroup;
 import com.sourcedimensions.client.views.ProjectView.SnapshotObject;
 import com.sourcedimensions.client.views.ProjectView.TreeGroup;
 import com.sourcedimensions.client.views.ProjectView.TreeObject;
@@ -36,33 +39,51 @@ public class DeleteObjectAction implements IWorkbenchWindowActionDelegate, IObje
 			"Are you sure you want to delete selected object?"))
 		{
 			TreeObject selected = (TreeObject)m_selection.getFirstElement();
-			int id = selected.getID();			
+			Integer id = selected.getID();			
 			TreeGroup parent = selected.getParent();
-			boolean success = true;
 			
-			if (selected instanceof QueryObject)
+			try
 			{
-				success = DbAdapter.deleteQuery(id);
+				if (selected instanceof QueryObject)
+				{
+					DbAdapter.deleteQuery(id);
+				}
+				else if (selected instanceof SnapshotObject)
+				{
+					DbAdapter.deleteSnapshot(id);			
+				}
+				else if (selected instanceof FolderObject)
+				{
+					DbAdapter.deleteFolder(id);				
+				}
+				else if (selected instanceof QueryGroup)
+				{
+					DbAdapter.deleteAll(ProjectView.getProject().getId(), true);
+				}
+				else if (selected instanceof SnapshotGroup)
+				{
+					DbAdapter.deleteAll(ProjectView.getProject().getId(), false);
+				}
 			}
-			else if (selected instanceof SnapshotObject)
+			catch (Exception e)
 			{
-				success = DbAdapter.deleteSnapshot(id);
-			}
-			else if (selected instanceof FolderObject)
-			{
-				success = DbAdapter.deleteFolder(id);
-			}
-			
-			if (!success)
 				return;
+			}
 			
-			parent.deleteChild(selected);
+			if (id != null)
+				parent.deleteChild(selected);
+			else
+				((TreeGroup)selected).deleteAllChildren();
 			
 			ProjectView view = (ProjectView)m_window.getActivePage().findView(ProjectView.ID);
 			
 			if (view != null)
 			{
-				view.getViewer().refresh(parent);
+				TreeViewer viewer = view.getViewer();
+				viewer.refresh(parent);
+				
+				if (id == null)
+					viewer.refresh(selected);
 			}
 		}
 	}

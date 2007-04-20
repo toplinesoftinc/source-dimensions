@@ -108,10 +108,7 @@
                    id="com.sourcedimensions.client.createSymbolQuery2"
                    label="&amp;New Symbol Query..."
                    menubarPath="query/additions_query"
-                   toolbarPath="additions_query"
-                   enablesFor="1">
-                 <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
-                 <selection class="com.sourcedimensions.client.views.ProjectView$QueryGroup"/>
+                   toolbarPath="additions_query">
                </action>               
                <action
                    class="com.sourcedimensions.client.actions.DeleteObjectAction"
@@ -124,6 +121,8 @@
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/>
+                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotGroup"/>
+                 <selection class="com.sourcedimensions.client.views.ProjectView$QueryGroup"/>                 
                </action>
                <action
                    class="com.sourcedimensions.client.actions.PasteObjectAction"
@@ -225,6 +224,12 @@
               adaptable="false"
               id="com.sourcedimensions.client.snapshotGroupContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$SnapshotGroup">
+              <action
+                   class="com.sourcedimensions.client.actions.DeleteObjectAction"
+                   icon="icons/delete.png"
+                   id="com.sourcedimensions.client.deleteSnapshotGroup"
+                   menubarPath="additions_object"
+                   label="Delete"/>              
                <action
                    class="com.sourcedimensions.client.actions.PasteObjectAction"
                    icon="icons/paste_edit.gif"
@@ -248,6 +253,12 @@
               adaptable="false"
               id="com.sourcedimensions.client.queryGroupContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$QueryGroup">
+              <action
+                   class="com.sourcedimensions.client.actions.DeleteObjectAction"
+                   icon="icons/delete.png"
+                   id="com.sourcedimensions.client.deleteQueryGroup"
+                   menubarPath="additions_object"
+                   label="Delete"/>
                <action
                    class="com.sourcedimensions.client.actions.PasteObjectAction"
                    icon="icons/paste_edit.gif"
