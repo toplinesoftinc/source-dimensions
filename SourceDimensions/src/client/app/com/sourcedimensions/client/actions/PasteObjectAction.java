@@ -42,6 +42,7 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 		
 		TreeObject source = (TreeObject)Clipboard.getSource();
 		TreeGroup dest = (TreeGroup)m_selection.getFirstElement();
+		TreeObject parent = source.getParent();
 		
 		if (source.isQueryGroup() != dest.isQueryGroup())
 		{
@@ -66,113 +67,71 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 					else if (source instanceof QueryObject)
 					{
 						String fullName = "";
-						TreeObject parent = dest;
 						
-						while (parent instanceof FolderObject)
-						{
-							fullName = parent.getName() + "/" + fullName;
-							parent = parent.getParent();
-						}
-						
-						fullName = fullName + name;
+						if (dest instanceof FolderObject)
+							fullName = DbAdapter.getFolderPath(dest.getID()) + name;
+						else
+							fullName = name;
 						
 						DbAdapter.moveQuery(source.getID(), dest.getID(), name, fullName);
 					}
 					else if (source instanceof SnapshotObject)
 					{
 						DbAdapter.moveSnapshot(source.getID(), dest.getID(), name);
-					}
-					
-					source.setName(name);
-					break;
+					}					
 				}
 				catch (DuplicateNameException e)
 				{
 					name = "Copy " + ((i == 0) ? "" : "(" + Integer.toString(i)+ ") ") + "of " + source.getName();
 					i++;
+					
+					continue;
 				}
 				catch (Exception e)
 				{
 					return;
 				}
+				
+				break;
 			}
 			
+			source.setName(name);
 			source.getParent().deleteChild(source);			
 			dest.addDbChild(source);
-			
 			source.setFading(false);
 			
 			Clipboard.resetSource();
 		}
 		else
 		{
-			int id = 0;
 			String projectId = ProjectView.getProject().getId();
-			Integer parentId;
-			
-			if (dest instanceof FolderObject)
-				parentId = dest.getID();
-			else
-				parentId = null;
 			
 			while (true)
 			{
+				TreeObject newObj;
+				
 				try
 				{
-					if (source instanceof FolderObject)
-					{
-						id = DbAdapter.addFolder(name, parentId, projectId, source.isQueryGroup()).m_id;
-					}
-					else if (source instanceof QueryObject)
-					{
-						SymbolQuery query = DbAdapter.getSymbolQuery(source.getID());
-						query.setName(name);
-						
-						String fullName = "";
-						TreeObject parent = dest;
-						
-						while (parent instanceof FolderObject)
-						{
-							fullName = parent.getName() + "/" + fullName;
-							parent = parent.getParent();
-						}
-						
-						fullName = fullName + name;
-						
-						query.setFullName(fullName);
-						id = DbAdapter.addSymbolQuery(projectId, parentId, query);
-					}
-					else if (source instanceof SnapshotObject)
-					{
-						SnapshotNode snapshot = DbAdapter.getSnapshot(source.getID());
-						snapshot.setName(name);
-						id = DbAdapter.addSnapshot(projectId, parentId, snapshot);
-					}
-					
-					
-					break;
+					newObj = addNewObject(projectId, name, source, dest);
 				}
 				catch (DuplicateNameException e)
 				{
 					name = "Copy " + ((i == 0) ? "" : "(" + Integer.toString(i)+ ") ") + "of " + source.getName();
 					i++;
+					
+					continue;
 				}
 				catch (Exception e)
 				{
 					return;
 				}
-
-				
-				
-				source.setID(id);
-				source.setName(name);
-			
-				dest.addDbChild(source);				
-				
+	
 				if (source instanceof TreeGroup)
 				{
-					copyTreeGroup(projectId, (TreeGroup)source, dest);
+					copyTreeGroup(projectId, (TreeGroup)source, (TreeGroup)newObj);
 				}
+				
+				break;
 			}			
 		}
 		
@@ -181,9 +140,13 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 		if (view != null)
 		{
 			TreeViewer viewer = view.getViewer();
-			
+					
 			viewer.setExpandedState(dest, true);
-			viewer.refresh();
+			
+			if (Clipboard.isCut())
+				viewer.refresh(parent);
+			
+			viewer.refresh(dest);
 		}
 	}	
 
@@ -210,7 +173,16 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 	{
 		for (TreeObject o : source.getChildren())
 		{
-			TreeObject newObj = addNewObject(projectId, source.getID(), o.getName(), source, dest);
+			TreeObject newObj;
+			
+			try
+			{
+				newObj = addNewObject(projectId, o.getName(), o, dest);
+			}
+			catch (Exception e)
+			{
+				return;
+			}
 			
 			if (o instanceof TreeGroup)
 			{
@@ -219,33 +191,38 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 		}
 	}
 	
-	protected TreeObject addNewObject(String projectId, Integer parentId, String name, TreeObject source, TreeGroup dest)
+	protected TreeObject addNewObject(String projectId, String name, TreeObject source, TreeGroup dest) throws DuplicateNameException, Exception
 	{
 		int id = 0;
 		TreeObject newObj = null;
+		Integer parentId = dest.getID();
 		
-		try
+		if (source instanceof FolderObject)
 		{
-			if (source instanceof FolderObject)
-			{
-				id = DbAdapter.addFolder(name, parentId, projectId, source.isQueryGroup()).m_id;
-				newObj = new FolderObject(name, id, source.isQueryGroup());
-			}
-			else if (source instanceof QueryObject)
-			{
-				SymbolQuery query = DbAdapter.getSymbolQuery(source.getID());
-				id = DbAdapter.addSymbolQuery(projectId, parentId, query);
-				newObj = new QueryObject(name, id, parentId);
-			}
-			else if (source instanceof SnapshotObject)
-			{
-				SnapshotNode node = DbAdapter.getSnapshot(source.getID());
-				id = DbAdapter.addSnapshot(projectId, parentId, node);
-				newObj = new SnapshotObject(name, id, parentId);
-			}
+			id = DbAdapter.addFolder(name, parentId, projectId, source.isQueryGroup()).m_id;
+			newObj = new FolderObject(name, id, source.isQueryGroup());
 		}
-		catch (Exception e)
-		{			
+		else if (source instanceof QueryObject)
+		{
+			SymbolQuery query = DbAdapter.getSymbolQuery(source.getID());
+			
+			query.setName(name);
+			
+			if (dest instanceof FolderObject)
+				query.setFullName(DbAdapter.getFolderPath(dest.getID()) + name);
+			else
+				query.setFullName(name);
+			
+			id = DbAdapter.addSymbolQuery(projectId, parentId, query);
+			newObj = new QueryObject(name, id, parentId);
+		}
+		else if (source instanceof SnapshotObject)
+		{
+			SnapshotNode node = DbAdapter.getSnapshot(source.getID());
+			
+			node.setName(name);
+			id = DbAdapter.addSnapshot(projectId, parentId, node);
+			newObj = new SnapshotObject(name, id, parentId);
 		}
 		
 		dest.addDbChild(newObj);

@@ -1922,7 +1922,53 @@ public class DbAdapter
 			closeConn(c);			
 		}
 	}
+
 	
+	public static String getFolderPath(int folderId) throws Exception
+	{
+		Connection c = null;
+		String path = "";
+		
+		try
+		{
+			c = getConnection();
+			
+			Integer curId = folderId;
+			
+			while (true)
+			{
+				PreparedStatement ps = c.prepareStatement("SELECT parent_id, name FROM folder WHERE id = ?");
+			
+				ps.setInt(1, curId);
+				
+				ResultSet rs = ps.executeQuery();
+			
+				rs.next();
+			
+				path = rs.getString("name") + "/" + path;
+
+				curId = rs.getInt("parent_id");				
+				
+				if (rs.wasNull())
+					break;
+			}
+								
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+		
+		return path;
+	}
 	
 	protected static void closeConn(Connection c)
 	{
