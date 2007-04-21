@@ -12,7 +12,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import com.sourcedimensions.client.Clipboard;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DuplicateNameException;
-import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
@@ -234,10 +234,12 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 		}
 		else if (source instanceof SnapshotObject)
 		{
-			SnapshotNode node = DbAdapter.getSnapshot(source.getID());
+			Snapshot node = DbAdapter.getSnapshot(source.getID());
 			
 			node.setName(name);
+			
 			id = DbAdapter.addSnapshot(projectId, parentId, node);
+			DbAdapter.copySnapshot(source.getID(), id);
 			newObj = new SnapshotObject(name, id, parentId);
 		}
 		

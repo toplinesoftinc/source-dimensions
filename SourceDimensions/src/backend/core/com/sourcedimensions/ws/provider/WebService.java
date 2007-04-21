@@ -5,7 +5,7 @@ import org.codehaus.xfire.fault.XFireFault;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.server.sys.profile.*;
 import com.sourcedimensions.server.sys.Project;
@@ -109,12 +109,11 @@ public class WebService implements IWebService
 		return prjSet;
 	}
 	
-	public SnapshotNode runSymbolQuery(String sessionID, SymbolQuery query) throws XFireFault
+	public Snapshot runSymbolQuery(String sessionID, SymbolQuery query) throws XFireFault
 	{
 		verifySession(sessionID);
 		
-		SnapshotNode root = new SnapshotNode();
-		root.setOriginID("12345");
+		Snapshot root = new Snapshot();
 				
 		return root;
 	}

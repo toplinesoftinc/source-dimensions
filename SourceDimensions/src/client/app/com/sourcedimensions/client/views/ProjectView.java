@@ -21,7 +21,7 @@ import com.sourcedimensions.client.db.DuplicateNameException;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.client.model.QueryNode;
-import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SymbolQuery;
 
 
@@ -359,9 +359,9 @@ public class ProjectView extends ViewPart
 				}
 				else
 				{
-					List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(m_project.getId(), m_id);
+					List<Snapshot> snapshotList = DbAdapter.getSnapshotList(m_project.getId(), m_id);
 					
-					for (SnapshotNode s : snapshotList)
+					for (Snapshot s : snapshotList)
 					{
 						addChild(new SnapshotObject(s.getName(), s.m_id, m_id));
 					}
@@ -553,9 +553,9 @@ public class ProjectView extends ViewPart
 					addChild(new FolderObject(f.m_name, f.m_id, false));
 				}
 				
-				List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(m_project.getId(), null);
+				List<Snapshot> snapshotList = DbAdapter.getSnapshotList(m_project.getId(), null);
 				
-				for (SnapshotNode s : snapshotList)
+				for (Snapshot s : snapshotList)
 				{
 					addChild(new SnapshotObject(s.getName(), s.m_id, null));
 				}
@@ -565,7 +565,7 @@ public class ProjectView extends ViewPart
 			}
 		}
 		
-		public void addSnapshotNode(SnapshotNode node, String name)
+		public void addSnapshotNode(Snapshot node, String name)
 		{		
 			List<FolderObject> segments = makeFolderPath(name, false);
 			Integer folderId = (segments.size() == 0) ? null : segments.get(segments.size() - 1).getID();			

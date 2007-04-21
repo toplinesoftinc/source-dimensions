@@ -1,22 +1,10 @@
 package com.sourcedimensions.client.model;
 
-public class SnapshotNode 
+public class Snapshot 
 {
 	public int m_id;
 	
 	protected String m_name;
-	protected Type m_type;
-	protected String m_originId;
-	
-	public SnapshotNode()
-	{		
-		setType(Type.ROOT);		
-	}
-	
-	public SnapshotNode(Type type)
-	{
-		m_type = type;
-	}
 	
 	public String getName()
 	{
@@ -26,26 +14,6 @@ public class SnapshotNode
 	public void setName(String name)
 	{
 		m_name = name;
-	}
-	
-	public Type getType()
-	{
-		return m_type;
-	}
-	
-	public void setType(Type type)
-	{
-		m_type = type;
-	}
-	
-	public String getOriginID()
-	{
-		return m_originId;
-	}
-	
-	public void setOriginID(String originId)
-	{
-		m_originId = originId;
 	}
 	
 	public enum Type

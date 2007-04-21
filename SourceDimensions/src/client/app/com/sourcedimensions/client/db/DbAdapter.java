@@ -519,7 +519,7 @@ public class DbAdapter
 	}
 	
 	
-	public static Integer addSnapshot(String projectId, Integer folderId, SnapshotNode node) throws Exception, DuplicateNameException
+	public static Integer addSnapshot(String projectId, Integer folderId, Snapshot node) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
 
@@ -558,8 +558,8 @@ public class DbAdapter
 			if (rs.next())
 				throw new DuplicateNameException();
 			
-			ps = c.prepareStatement("INSERT INTO snapshot(folder_id, project_id, type, origin_id, name) "+ 
-					"VALUES(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+			ps = c.prepareStatement("INSERT INTO snapshot(folder_id, project_id, name) "+ 
+					"VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS);
 			
 			if (folderId == null)
 				ps.setNull(1, Types.INTEGER);
@@ -567,9 +567,7 @@ public class DbAdapter
 				ps.setInt(1, folderId);
 			
 			ps.setInt(2, prjId);
-			ps.setInt(3, node.getType().value());
-			ps.setString(4, node.getOriginID());
-			ps.setString(5, node.getName());
+			ps.setString(3, node.getName());
 
 			ps.executeUpdate();
 			
@@ -599,6 +597,32 @@ public class DbAdapter
 			closeConn(c);
 		}
 	}
+
+	public static void copySnapshot(int sourceId, int destId) throws Exception
+	{
+		Connection c = null;
+
+		try
+		{
+			c = getConnection();			
+	
+			//TODO
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+	}
+	
 	
 	
 	public static void updateSnapshot(int id, String name) throws Exception, DuplicateNameException
@@ -670,10 +694,10 @@ public class DbAdapter
 	}
 
 
-	public static SnapshotNode getSnapshot(int id) throws Exception
+	public static Snapshot getSnapshot(int id) throws Exception
 	{
 		Connection c = null;
-		SnapshotNode node = null;
+		Snapshot node = null;
 		
 		try
 		{
@@ -687,11 +711,8 @@ public class DbAdapter
 			
 			rs.next();
 			
-			node = new SnapshotNode();
-			
+			node = new Snapshot();			
 			node.setName(rs.getString("name"));
-			node.setType(SnapshotNode.Type.values()[rs.getInt("type")]);
-			node.setOriginID(rs.getString("origin_id"));
 			
 			c.commit();
 		}
@@ -773,10 +794,10 @@ public class DbAdapter
 		}
 	}	
 	
-	public static List<SnapshotNode> getSnapshotList(String projectId, Integer folderId) throws Exception
+	public static List<Snapshot> getSnapshotList(String projectId, Integer folderId) throws Exception
 	{
 		Connection c = null;
-		List<SnapshotNode> list = new ArrayList<SnapshotNode>();
+		List<Snapshot> list = new ArrayList<Snapshot>();
 		
 		try
 		{
@@ -812,11 +833,9 @@ public class DbAdapter
 			
 			while (rs.next())
 			{
-				SnapshotNode node = new SnapshotNode();
+				Snapshot node = new Snapshot();
 				
 				node.m_id = rs.getInt("id");
-				node.setType(SnapshotNode.Type.values()[rs.getInt("type")]);
-				node.setOriginID(rs.getString("origin_id"));
 				node.setName(rs.getString("name"));
 				
 				list.add(node);
@@ -1010,7 +1029,7 @@ public class DbAdapter
 							}
 							else
 							{
-								SnapshotNode node = new SnapshotNode();
+								Snapshot node = new Snapshot();
 								node.m_id = rs.getInt("id");
 								node.setName(segments[i]);
 								
@@ -2041,8 +2060,6 @@ public class DbAdapter
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"folder_id INT",
 				"project_id INT NOT NULL",
-				"type INT NOT NULL",
-				"origin_id VARCHAR(36) NOT NULL",				
 				"name VARCHAR(256) NOT NULL",				
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (folder_id) REFERENCES FOLDER ON DELETE CASCADE",

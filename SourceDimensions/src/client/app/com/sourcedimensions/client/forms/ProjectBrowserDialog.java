@@ -24,7 +24,7 @@ import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.QueryNode;
-import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.views.ProjectView;
 
 
@@ -92,9 +92,9 @@ public class ProjectBrowserDialog extends DialogBase
 					}
 					else
 					{
-						List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(projectId, m_itemMap.get(curItem).m_id);
+						List<Snapshot> snapshotList = DbAdapter.getSnapshotList(projectId, m_itemMap.get(curItem).m_id);
 						
-						for (SnapshotNode s : snapshotList)
+						for (Snapshot s : snapshotList)
 						{
 							TreeItem item = addItem(curItem, s.m_id, s.getName(), ItemType.LEAF, Util.getSharedImage(IImageKeys.IMG_SNAPSHOT));
 							
@@ -235,9 +235,9 @@ public class ProjectBrowserDialog extends DialogBase
 						}
 						else
 						{
-							List<SnapshotNode> snapshotList = DbAdapter.getSnapshotList(projectId, props.m_id);
+							List<Snapshot> snapshotList = DbAdapter.getSnapshotList(projectId, props.m_id);
 							
-							for (SnapshotNode s : snapshotList)
+							for (Snapshot s : snapshotList)
 							{
 								addItem(source, s.m_id, s.getName(), ItemType.LEAF, Util.getSharedImage(IImageKeys.IMG_SNAPSHOT));
 							}

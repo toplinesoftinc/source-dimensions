@@ -13,7 +13,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.model.Folder;
-import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.views.ProjectView.TreeObject;
@@ -52,7 +52,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
  	public static void executeQuery(Shell shell, SymbolQuery query)
  	{
 		WSConsumer consumer = new WSConsumer();
-		SnapshotNode node;
+		Snapshot node;
 		String dest = query.getDestination();
 		
 		if (dest.trim().length() == 0 || Pattern.matches(".*" + Folder.DIVIDER_REGEX, dest))
@@ -88,7 +88,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		
 		try
 		{
-			node = (SnapshotNode)consumer.invokeWebService(shell, "runSymbolQuery", new Object[] { query });			
+			node = (Snapshot)consumer.invokeWebService(shell, "runSymbolQuery", new Object[] { query });			
 		}
 		catch (Exception ex)
 		{
@@ -117,7 +117,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 			{
 				try
 				{
-					DbAdapter.deleteSnapshot(((SnapshotNode)found).m_id);
+					DbAdapter.deleteSnapshot(((Snapshot)found).m_id);
 				}
 				catch (Exception e)
 				{
