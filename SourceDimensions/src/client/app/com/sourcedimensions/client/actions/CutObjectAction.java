@@ -1,5 +1,7 @@
 package com.sourcedimensions.client.actions;
 
+import java.util.List;
+
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -23,15 +25,17 @@ public class CutObjectAction implements IWorkbenchWindowActionDelegate, IObjectA
 
 	public void run(IAction action)
 	{
-		TreeObject object = (TreeObject)Clipboard.getSource();
+		List list = Clipboard.getSource();
 
-		if (object != null)
-			object.setFading(false);
-
-		object = (TreeObject)m_selection.getFirstElement();
-		object.setFading(true);
+		for (Object o : list)
+			((TreeObject)o).setFading(false);
 		
-		Clipboard.setSource(object, true);		
+		list = m_selection.toList();
+
+		for (Object o : list)
+			((TreeObject)o).setFading(true);
+		
+		Clipboard.setSource(m_selection.toList(), true);		
 	}
 
 	public void setActivePart(IAction action, IWorkbenchPart targetPart)

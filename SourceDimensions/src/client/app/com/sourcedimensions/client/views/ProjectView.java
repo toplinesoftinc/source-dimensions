@@ -799,7 +799,7 @@ public class ProjectView extends ViewPart
 		
 	public void createPartControl(Composite parent) 
 	{
-		m_viewer = new TreeViewer(parent, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+		m_viewer = new TreeViewer(parent, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		m_viewer.addOpenListener(new IOpenListener() 
 		{
 			public void open(OpenEvent event) 

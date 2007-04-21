@@ -23,7 +23,7 @@ public class CopyObjectAction implements IWorkbenchWindowActionDelegate, IObject
 
 	public void run(IAction action)
 	{
-		Clipboard.setSource(m_selection.getFirstElement(), false);		
+		Clipboard.setSource(m_selection.toList(), false);		
 	}
 
 	public void setActivePart(IAction action, IWorkbenchPart targetPart)

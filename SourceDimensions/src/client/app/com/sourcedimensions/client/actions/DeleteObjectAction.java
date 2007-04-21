@@ -5,7 +5,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -21,6 +20,7 @@ import com.sourcedimensions.client.views.ProjectView.SnapshotObject;
 import com.sourcedimensions.client.views.ProjectView.TreeGroup;
 import com.sourcedimensions.client.views.ProjectView.TreeObject;
 
+
 public class DeleteObjectAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate 
 {
 	protected IStructuredSelection m_selection;	
@@ -33,59 +33,67 @@ public class DeleteObjectAction implements IWorkbenchWindowActionDelegate, IObje
 
 	public void run(IAction action) 
 	{
-		Shell shell = m_window.getShell();
-		
-		if (MessageDialog.openQuestion(shell, "Deletion confirmation", 
-			"Are you sure you want to delete selected object?"))
+		if (MessageDialog.openQuestion(m_window.getShell(), "Deletion confirmation", 
+			"Are you sure you want to delete selected object(s)?"))
 		{
-			TreeObject selected = (TreeObject)m_selection.getFirstElement();
-			Integer id = selected.getID();			
-			TreeGroup parent = selected.getParent();
-			
-			try
+			for (Object o : m_selection.toList())
 			{
-				if (selected instanceof QueryObject)
-				{
-					DbAdapter.deleteQuery(id);
-				}
-				else if (selected instanceof SnapshotObject)
-				{
-					DbAdapter.deleteSnapshot(id);			
-				}
-				else if (selected instanceof FolderObject)
-				{
-					DbAdapter.deleteFolder(id);				
-				}
-				else if (selected instanceof QueryGroup)
-				{
-					DbAdapter.deleteAll(ProjectView.getProject().getId(), true);
-				}
-				else if (selected instanceof SnapshotGroup)
-				{
-					DbAdapter.deleteAll(ProjectView.getProject().getId(), false);
-				}
-			}
-			catch (Exception e)
-			{
-				return;
-			}
-			
-			if (id != null)
-				parent.deleteChild(selected);
-			else
-				((TreeGroup)selected).deleteAllChildren();
-			
-			ProjectView view = (ProjectView)m_window.getActivePage().findView(ProjectView.ID);
-			
-			if (view != null)
-			{
-				TreeViewer viewer = view.getViewer();
-				viewer.refresh(parent);
-				
-				if (id == null)
-					viewer.refresh(selected);
+				if (!deleteObject(m_window, (TreeObject)o))
+					break;
 			}
 		}
+	}
+	
+	public static boolean deleteObject(IWorkbenchWindow window, TreeObject selected)
+	{
+		Integer id = selected.getID();			
+		TreeGroup parent = selected.getParent();
+		
+		try
+		{
+			if (selected instanceof QueryObject)
+			{
+				DbAdapter.deleteQuery(id);
+			}
+			else if (selected instanceof SnapshotObject)
+			{
+				DbAdapter.deleteSnapshot(id);			
+			}
+			else if (selected instanceof FolderObject)
+			{
+				DbAdapter.deleteFolder(id);				
+			}
+			else if (selected instanceof QueryGroup)
+			{
+				DbAdapter.deleteAll(ProjectView.getProject().getId(), true);
+			}
+			else if (selected instanceof SnapshotGroup)
+			{
+				DbAdapter.deleteAll(ProjectView.getProject().getId(), false);
+			}
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
+		
+		if (id != null)
+			parent.deleteChild(selected);
+		else
+			((TreeGroup)selected).deleteAllChildren();
+		
+		ProjectView view = (ProjectView)window.getActivePage().findView(ProjectView.ID);
+		
+		if (view != null)
+		{
+			TreeViewer viewer = view.getViewer();
+			viewer.refresh(parent);
+			
+			if (id == null)
+				viewer.refresh(selected);
+		}
+		
+		return true;
 	}
 
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) 

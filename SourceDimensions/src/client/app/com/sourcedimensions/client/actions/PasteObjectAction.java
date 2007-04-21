@@ -34,21 +34,37 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 
 	public void run(IAction action)
 	{
-		if (Clipboard.getSource() == null)
+		if (Clipboard.getSource().size() == 0)
 		{
 			action.setEnabled(false);
 			return;
 		}
 		
-		TreeObject source = (TreeObject)Clipboard.getSource();
-		TreeGroup dest = (TreeGroup)m_selection.getFirstElement();
+		boolean success = true;
+		
+		for (Object o : Clipboard.getSource())
+		{
+			success = pasteObject(m_window, (TreeObject)o, (TreeGroup)m_selection.getFirstElement());
+			
+			if (!success)
+				break;
+		}
+		
+		
+		if (Clipboard.isCut() && success)
+			Clipboard.resetSource();
+	}	
+
+	public static boolean pasteObject(IWorkbenchWindow window, TreeObject source, TreeGroup dest)
+	{
 		TreeObject parent = source.getParent();
 		
 		if (source.isQueryGroup() != dest.isQueryGroup())
 		{
-			MessageDialog.openError(m_window.getShell(), "Paste error", 
+			MessageDialog.openError(window.getShell(), "Paste error", 
 				"Copy/cut and paste cannot be performed between query and snapshot groups");
-			return;
+			
+			return false;
 		}
 		
 		String name = source.getName();
@@ -89,7 +105,7 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 				}
 				catch (Exception e)
 				{
-					return;
+					return false;
 				}
 				
 				break;
@@ -99,8 +115,6 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 			source.getParent().deleteChild(source);			
 			dest.addDbChild(source);
 			source.setFading(false);
-			
-			Clipboard.resetSource();
 		}
 		else
 		{
@@ -123,7 +137,7 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 				}
 				catch (Exception e)
 				{
-					return;
+					return false;
 				}
 	
 				if (source instanceof TreeGroup)
@@ -135,7 +149,7 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 			}			
 		}
 		
-		ProjectView view = (ProjectView)m_window.getActivePage().findView(ProjectView.ID);
+		ProjectView view = (ProjectView)window.getActivePage().findView(ProjectView.ID);
 		
 		if (view != null)
 		{
@@ -148,11 +162,13 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 			
 			viewer.refresh(dest);
 		}
-	}	
-
+		
+		return true;
+	}
+	
 	public void setActivePart(IAction action, IWorkbenchPart targetPart)
 	{	
-		action.setEnabled(Clipboard.getSource() != null);		
+		action.setEnabled(Clipboard.getSource().size() != 0);		
 		m_window = targetPart.getSite().getWorkbenchWindow();
 	}		
 	
@@ -169,7 +185,7 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 	{
 	}
 	
-	protected void copyTreeGroup(String projectId, TreeGroup source, TreeGroup dest)
+	protected static void copyTreeGroup(String projectId, TreeGroup source, TreeGroup dest)
 	{
 		for (TreeObject o : source.getChildren())
 		{
@@ -191,7 +207,7 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 		}
 	}
 	
-	protected TreeObject addNewObject(String projectId, String name, TreeObject source, TreeGroup dest) throws DuplicateNameException, Exception
+	protected static TreeObject addNewObject(String projectId, String name, TreeObject source, TreeGroup dest) throws DuplicateNameException, Exception
 	{
 		int id = 0;
 		TreeObject newObj = null;
