@@ -637,23 +637,46 @@ public class DbAdapter
 	}
 	
 	
-	public static void copySnapshotContents(int sourceId, int destId) throws Exception
+	public static int copySnapshot(int snapshotId, Integer folderId, int destId, String name) throws Exception
 	{
 		Connection c = null;
-
+		int id;
+		
 		try
 		{
 			c = getConnection();			
 	
-			PreparedStatement ps = c.prepareStatement("SELECT id FROM snapshot_node WHERE snapshot_id = ? AND parent_id IS NULL");
+			PreparedStatement ps = c.prepareStatement("SELECT project_id FROM snapshot WHERE id = ?");
 			
-			ps.setInt(1, sourceId);
-			
+			ps.setInt(1, snapshotId);
 			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			
+			int prjId = rs.getInt("project_id");
+			
+			ps = c.prepareStatement("INSERT INTO snapshot(project_id, folder_id, name) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS);
+			
+			ps.setInt(1, prjId);
+			ps.setInt(2, folderId);
+			ps.setString(3, name);
+			
+			ps.executeUpdate();
+			
+			rs = ps.getGeneratedKeys();
+			rs.next();
+			
+			id = rs.getInt(1);			
+			
+			ps = c.prepareStatement("SELECT id FROM snapshot_node WHERE snapshot_id = ? AND parent_id IS NULL");
+			
+			ps.setInt(1, snapshotId);
+			
+			rs = ps.executeQuery();
 			
 			if (rs.next())
 			{
-				copySnapshotContents(c, rs.getInt("id"), null);
+				copySnapshotContents(c, id, rs.getInt("id"), null);
 			}
 			
 			c.commit();
@@ -669,10 +692,12 @@ public class DbAdapter
 		{
 			closeConn(c);
 		}
+
+		return id;	
 	}
 	
 	
-	protected static void copySnapshotContents(Connection c, int sourceId, Integer parentDestId) throws Exception
+	protected static void copySnapshotContents(Connection c, int snapshotId, int sourceId, Integer destId) throws Exception
 	{
 		PreparedStatement ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE id = ?");
 		
@@ -683,7 +708,6 @@ public class DbAdapter
 		rs.next();
 		
 		int projectId = rs.getInt("project_id");
-		int snapshotId = rs.getInt("snapshot_id");
 		String name = rs.getString("name");
 		int type = rs.getInt("type");
 		
@@ -692,10 +716,10 @@ public class DbAdapter
 		ps.setInt(1, projectId);
 		ps.setInt(2, snapshotId);
 		
-		if (parentDestId == null)
+		if (destId == null)
 			ps.setNull(3, Types.INTEGER);
 		else
-			ps.setInt(3, parentDestId);
+			ps.setInt(3, destId);
 		
 		ps.setString(4, name);
 		ps.setInt(5, type);
@@ -715,7 +739,7 @@ public class DbAdapter
 		
 		while (rs.next())
 		{
-			copySnapshotContents(c, rs.getInt("id"), id);
+			copySnapshotContents(c, snapshotId, rs.getInt("id"), id);
 		}
 	}
 	

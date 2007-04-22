@@ -29,7 +29,7 @@ public class CloseProjectAction extends Action implements IWorkbenchAction, IObj
 		m_window = window;
 		m_instance = this;
 		setId(ID);
-		setText("&Close Project");
+		setText("&Close");
 		enableAction(false);
 	}
 

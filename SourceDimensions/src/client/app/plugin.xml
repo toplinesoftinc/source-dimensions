@@ -68,7 +68,7 @@
                    class="com.sourcedimensions.client.actions.OpenProjectAction"
                    icon="icons/project.png"
                    id="com.sourcedimensions.client.openProject"
-                   label="&amp;Open Project..."
+                   label="&amp;Open..."
                    menubarPath="project/additions_project"
                    toolbarPath="additions_project"/>
                <action
@@ -353,7 +353,7 @@
                  <action
                      class="com.sourcedimensions.client.actions.CloseProjectAction"
                      id="com.sourcedimensions.client.closeProject"
-                     label="Close Project"/>
+                     label="Close"/>
          </objectContribution>
          
    </extension>

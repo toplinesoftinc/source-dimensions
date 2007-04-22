@@ -1,5 +1,7 @@
 package com.sourcedimensions.client.actions;
 
+import java.util.regex.Pattern;
+
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
@@ -12,6 +14,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DuplicateNameException;
 import com.sourcedimensions.client.forms.InputDialog;
+import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
 import com.sourcedimensions.client.views.ProjectView.QueryObject;
@@ -53,7 +56,7 @@ public class RenameObjectAction implements IWorkbenchWindowActionDelegate, IObje
 		while (true)
 		{
 			InputDialog dialog = new InputDialog(shell,	object, "&" + object + " name:", 
-				name, new InputDialog.MandatoryFieldValidator("Please enter " + object + " name"));
+				name, new NewNameValidator("Please enter " + object + " name"));
 			
 			dialog.open();
 			
@@ -114,5 +117,37 @@ public class RenameObjectAction implements IWorkbenchWindowActionDelegate, IObje
 
 	public void dispose() 
 	{
-	}		
+	}
+	
+	
+	protected class NewNameValidator extends InputDialog.MandatoryFieldValidator
+	{
+		public NewNameValidator()
+		{
+			super();
+		}
+		
+		public NewNameValidator(String message)
+		{
+			super(message);
+		}
+		
+		public boolean validate(Shell shell, String value)
+		{
+			if (super.validate(shell, value))
+			{
+				if (Pattern.matches(".*" + Folder.DIVIDER_REGEX + ".*", value))
+				{					
+					MessageDialog.openError(shell, "Incorrect input", "Name cannot have " +
+						"path dividing characters.");
+					
+					return false;
+				}
+				else
+					return true;
+			}
+			else
+				return false;
+		}
+	}
 }

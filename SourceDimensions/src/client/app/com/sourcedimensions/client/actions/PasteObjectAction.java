@@ -174,7 +174,7 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 	
 	public void selectionChanged(IAction action, ISelection selection)
 	{
-		if (Clipboard.getSource() == null)
+		if (Clipboard.getSource().size() == 0)
 			action.setEnabled(false);
 
 		if (selection instanceof IStructuredSelection)
@@ -234,12 +234,7 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 		}
 		else if (source instanceof SnapshotObject)
 		{
-			Snapshot snapshot = DbAdapter.getSnapshot(source.getID());
-			
-			snapshot.setName(name);
-			
-			id = DbAdapter.addSnapshot(projectId, parentId, snapshot);
-			DbAdapter.copySnapshotContents(source.getID(), id);
+			id = DbAdapter.copySnapshot(source.getID(), parentId, id, name);
 			newObj = new SnapshotObject(name, id, parentId);
 		}
 		
