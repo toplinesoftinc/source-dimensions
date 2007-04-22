@@ -565,7 +565,7 @@ public class ProjectView extends ViewPart
 			}
 		}
 		
-		public void addSnapshotNode(Snapshot node, String name)
+		public void addSnapshotNode(Snapshot snapshot, String name)
 		{		
 			List<FolderObject> segments = makeFolderPath(name, false);
 			Integer folderId = (segments.size() == 0) ? null : segments.get(segments.size() - 1).getID();			
@@ -573,7 +573,7 @@ public class ProjectView extends ViewPart
 			
 			try
 			{
-				id = DbAdapter.addSnapshot(m_project.getId(), folderId, node);
+				id = DbAdapter.addSnapshot(m_project.getId(), folderId, snapshot);
 			}
 			catch (DuplicateNameException e)
 			{				
@@ -585,7 +585,7 @@ public class ProjectView extends ViewPart
 			
 			if (id != null)
 			{
-				SnapshotObject item = new SnapshotObject(node.getName(), id, folderId);
+				SnapshotObject item = new SnapshotObject(snapshot.getName(), id, folderId);
 
 				TreeGroup target;
 				

@@ -52,7 +52,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
  	public static void executeQuery(Shell shell, SymbolQuery query)
  	{
 		WSConsumer consumer = new WSConsumer();
-		Snapshot node;
+		Snapshot snapshot;
 		String dest = query.getDestination();
 		
 		if (dest.trim().length() == 0 || Pattern.matches(".*" + Folder.DIVIDER_REGEX, dest))
@@ -88,7 +88,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		
 		try
 		{
-			node = (Snapshot)consumer.invokeWebService(shell, "runSymbolQuery", new Object[] { query });			
+			snapshot = (Snapshot)consumer.invokeWebService(shell, "runSymbolQuery", new Object[] { query });			
 		}
 		catch (Exception ex)
 		{
@@ -101,7 +101,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 			return;
 		}
 		
-		if (node == null)
+		if (snapshot == null)
 		{
 			MessageDialog.openInformation(shell, "Query Results", "No item found for the specified query");
 			return;
@@ -111,7 +111,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 			String[] sections = dest.split(Folder.DIVIDER_REGEX);
 			String name = sections[sections.length - 1];
 			
-			node.setName(name);
+			snapshot.setName(name);
 
 			if (found != null)
 			{
@@ -127,7 +127,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 				ProjectView.getSnapshotGroup().deleteObject(sections);
 			}
 			
-			ProjectView.getSnapshotGroup().addSnapshotNode(node, dest);
+			ProjectView.getSnapshotGroup().addSnapshotNode(snapshot, dest);
 		} 		
  	}
  	

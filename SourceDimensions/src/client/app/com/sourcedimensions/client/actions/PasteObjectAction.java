@@ -234,12 +234,12 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 		}
 		else if (source instanceof SnapshotObject)
 		{
-			Snapshot node = DbAdapter.getSnapshot(source.getID());
+			Snapshot snapshot = DbAdapter.getSnapshot(source.getID());
 			
-			node.setName(name);
+			snapshot.setName(name);
 			
-			id = DbAdapter.addSnapshot(projectId, parentId, node);
-			DbAdapter.copySnapshot(source.getID(), id);
+			id = DbAdapter.addSnapshot(projectId, parentId, snapshot);
+			DbAdapter.copySnapshotContents(source.getID(), id);
 			newObj = new SnapshotObject(name, id, parentId);
 		}
 		

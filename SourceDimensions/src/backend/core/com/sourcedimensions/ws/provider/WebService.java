@@ -6,6 +6,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import com.sourcedimensions.client.model.Snapshot;
+import com.sourcedimensions.client.model.SnapshotNode;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.server.sys.profile.*;
 import com.sourcedimensions.server.sys.Project;
@@ -113,8 +114,9 @@ public class WebService implements IWebService
 	{
 		verifySession(sessionID);
 		
-		Snapshot root = new Snapshot();
+		Snapshot snapshot = new Snapshot();
+		snapshot.setRoot(new SnapshotNode());
 				
-		return root;
+		return snapshot;
 	}
 }

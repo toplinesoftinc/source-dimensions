@@ -519,7 +519,7 @@ public class DbAdapter
 	}
 	
 	
-	public static Integer addSnapshot(String projectId, Integer folderId, Snapshot node) throws Exception, DuplicateNameException
+	public static Integer addSnapshot(String projectId, Integer folderId, Snapshot snapshot) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
 
@@ -551,7 +551,7 @@ public class DbAdapter
 				ps.setInt(3, folderId);
 			}
 			
-			ps.setString(4, node.getName());
+			ps.setString(4, snapshot.getName());
 			
 			rs = ps.executeQuery();
 			
@@ -567,7 +567,7 @@ public class DbAdapter
 				ps.setInt(1, folderId);
 			
 			ps.setInt(2, prjId);
-			ps.setString(3, node.getName());
+			ps.setString(3, snapshot.getName());
 
 			ps.executeUpdate();
 			
@@ -575,6 +575,11 @@ public class DbAdapter
 			rs.next();
 			
 			int id = rs.getInt(1);
+			
+			if (snapshot.getRoot() != null)
+			{
+				saveSnapshotNode(c, prjId, id, null, snapshot.getRoot());
+			}
 			
 			c.commit();
 			
@@ -598,7 +603,41 @@ public class DbAdapter
 		}
 	}
 
-	public static void copySnapshot(int sourceId, int destId) throws Exception
+	
+	protected static void saveSnapshotNode(Connection c, int projectId, int snapshotId, Integer parentId, SnapshotNode node) throws Exception
+	{
+		PreparedStatement ps = c.prepareStatement("INSERT INTO snapshot_node(project_id, snapshot_id, parent_id, name, type)" +
+			" VALUES(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+		
+		ps.setInt(1, projectId);
+		ps.setInt(2, snapshotId);
+		
+		if (parentId == null)
+			ps.setNull(3, Types.INTEGER);
+		else
+			ps.setInt(3, parentId);
+		
+		ps.setString(4, node.getName());
+		ps.setInt(5, node.getType().value());
+		
+		ps.executeUpdate();
+
+		ResultSet rs = ps.getGeneratedKeys();
+		rs.next();
+		
+		int id = rs.getInt(1);
+
+		if (node.getChildren() != null)
+		{
+			for (SnapshotNode s : node.getChildren())
+			{
+				saveSnapshotNode(c, projectId, snapshotId, id, s);
+			}
+		}
+	}
+	
+	
+	public static void copySnapshotContents(int sourceId, int destId) throws Exception
 	{
 		Connection c = null;
 
@@ -606,7 +645,16 @@ public class DbAdapter
 		{
 			c = getConnection();			
 	
-			//TODO
+			PreparedStatement ps = c.prepareStatement("SELECT id FROM snapshot_node WHERE snapshot_id = ? AND parent_id IS NULL");
+			
+			ps.setInt(1, sourceId);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			if (rs.next())
+			{
+				copySnapshotContents(c, rs.getInt("id"), null);
+			}
 			
 			c.commit();
 		}
@@ -624,7 +672,54 @@ public class DbAdapter
 	}
 	
 	
+	protected static void copySnapshotContents(Connection c, int sourceId, Integer parentDestId) throws Exception
+	{
+		PreparedStatement ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE id = ?");
+		
+		ps.setInt(1, sourceId);
+		
+		ResultSet rs = ps.executeQuery();
+		
+		rs.next();
+		
+		int projectId = rs.getInt("project_id");
+		int snapshotId = rs.getInt("snapshot_id");
+		String name = rs.getString("name");
+		int type = rs.getInt("type");
+		
+		ps = c.prepareStatement("INSERT INTO snapshot_node(project_id, snapshot_id, parent_id, name, type) VALUES (?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+		
+		ps.setInt(1, projectId);
+		ps.setInt(2, snapshotId);
+		
+		if (parentDestId == null)
+			ps.setNull(3, Types.INTEGER);
+		else
+			ps.setInt(3, parentDestId);
+		
+		ps.setString(4, name);
+		ps.setInt(5, type);
+		
+		ps.executeUpdate();
+		
+		rs = ps.getGeneratedKeys();
+		rs.next();
+		
+		int id = rs.getInt(1);
+
+		ps = c.prepareStatement("SELECT id FROM snapshot_node WHERE parent_id = ?");
+		
+		ps.setInt(1, sourceId);
+		
+		rs = ps.executeQuery();
+		
+		while (rs.next())
+		{
+			copySnapshotContents(c, rs.getInt("id"), id);
+		}
+	}
 	
+		
 	public static void updateSnapshot(int id, String name) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
@@ -697,7 +792,7 @@ public class DbAdapter
 	public static Snapshot getSnapshot(int id) throws Exception
 	{
 		Connection c = null;
-		Snapshot node = null;
+		Snapshot snapshot = null;
 		
 		try
 		{
@@ -711,8 +806,8 @@ public class DbAdapter
 			
 			rs.next();
 			
-			node = new Snapshot();			
-			node.setName(rs.getString("name"));
+			snapshot = new Snapshot();			
+			snapshot.setName(rs.getString("name"));
 			
 			c.commit();
 		}
@@ -728,7 +823,7 @@ public class DbAdapter
 			closeConn(c);
 		}
 		
-		return node;
+		return snapshot;
 	}
 	
 		
@@ -794,6 +889,7 @@ public class DbAdapter
 		}
 	}	
 	
+	
 	public static List<Snapshot> getSnapshotList(String projectId, Integer folderId) throws Exception
 	{
 		Connection c = null;
@@ -833,12 +929,12 @@ public class DbAdapter
 			
 			while (rs.next())
 			{
-				Snapshot node = new Snapshot();
+				Snapshot snapshot = new Snapshot();
 				
-				node.m_id = rs.getInt("id");
-				node.setName(rs.getString("name"));
+				snapshot.m_id = rs.getInt("id");
+				snapshot.setName(rs.getString("name"));
 				
-				list.add(node);
+				list.add(snapshot);
 			}
 			
 			c.commit();
@@ -922,7 +1018,6 @@ public class DbAdapter
 		return list;
 	}
 
-	
 	
 	public static Object findObject(String projectId, String path, boolean isQuery) throws Exception
 	{
@@ -1029,12 +1124,12 @@ public class DbAdapter
 							}
 							else
 							{
-								Snapshot node = new Snapshot();
-								node.m_id = rs.getInt("id");
-								node.setName(segments[i]);
+								Snapshot snapshot = new Snapshot();
+								snapshot.m_id = rs.getInt("id");
+								snapshot.setName(segments[i]);
 								
 								c.commit();
-								return node;
+								return snapshot;
 							}
 						}
 						else
@@ -1072,6 +1167,7 @@ public class DbAdapter
 		
 		return null;
 	}
+	
 	
 	public static void deleteSnapshot(int id) throws Exception
 	{
@@ -1131,6 +1227,7 @@ public class DbAdapter
 		return c;
 	}
 
+	
 	public static SymbolQuery getSymbolQuery(int queryId) throws Exception
 	{
 		Connection c = null;
@@ -1424,6 +1521,7 @@ public class DbAdapter
 		
 		return query;
 	}
+	
 	
 	public static Integer addSymbolQuery(String projectId, Integer folderId, SymbolQuery query) throws Exception, DuplicateNameException
 	{
@@ -1989,6 +2087,7 @@ public class DbAdapter
 		return path;
 	}
 	
+	
 	protected static void closeConn(Connection c)
 	{
 		if (c == null)
@@ -2021,6 +2120,7 @@ public class DbAdapter
 		}
 	}
 	
+	
 	protected static void createDb(Connection c) throws SQLException
 	{
 		String[][] spec = 
@@ -2029,7 +2129,7 @@ public class DbAdapter
 				"PROJECT",
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"ext_id VARCHAR(36)",
-				"name VARCHAR(256) NOT NULL",
+				"name VARCHAR(1024) NOT NULL",
 				"language INT NOT NULL",
 				"readonly SMALLINT NOT NULL",
 				"PRIMARY KEY (id)"
@@ -2039,7 +2139,7 @@ public class DbAdapter
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"parent_id INT",
 				"ext_id VARCHAR(36)",
-				"name VARCHAR(256) NOT NULL",
+				"name VARCHAR(1024) NOT NULL",
 				"language INTEGER NOT NULL",				
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (parent_id) REFERENCES PROJECT"
@@ -2060,9 +2160,22 @@ public class DbAdapter
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"folder_id INT",
 				"project_id INT NOT NULL",
-				"name VARCHAR(256) NOT NULL",				
+				"name VARCHAR(1024) NOT NULL",				
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (folder_id) REFERENCES FOLDER ON DELETE CASCADE",
+				"FOREIGN KEY (project_id) REFERENCES PROJECT"
+			},
+			{
+				"SNAPSHOT_NODE",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"project_id INT NOT NULL",
+				"snapshot_id INT NOT NULL",
+				"parent_id INT",
+				"name VARCHAR(1024)",
+				"type INT NOT NULL",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (parent_id) REFERENCES SNAPSHOT_NODE ON DELETE CASCADE",				
+				"FOREIGN KEY (snapshot_id) REFERENCES SNAPSHOT ON DELETE CASCADE",
 				"FOREIGN KEY (project_id) REFERENCES PROJECT"
 			},
 			{
@@ -2070,9 +2183,9 @@ public class DbAdapter
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"folder_id INT",
 				"project_id INT NOT NULL",
-				"name VARCHAR(10000) NOT NULL",
-				"full_name VARCHAR(10000) NOT NULL",
-				"destination VARCHAR(10000)",
+				"name VARCHAR(1024) NOT NULL",
+				"full_name VARCHAR(1024) NOT NULL",
+				"destination VARCHAR(1024)",
 				"all_namespaces SMALLINT",
 				"all_types SMALLINT",
 				"all_members SMALLINT",
@@ -2085,7 +2198,7 @@ public class DbAdapter
 				"NAMESPACE_FILTER",
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"query_id INT NOT NULL",
-				"name VARCHAR(10000) NOT NULL",
+				"name VARCHAR(1024) NOT NULL",
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"
 			},
@@ -2099,7 +2212,7 @@ public class DbAdapter
 				"inner_types SMALLINT",
 				"supertypes SMALLINT",
 				"subtypes SMALLINT",
-				"name VARCHAR(10000) NOT NULL",
+				"name VARCHAR(1024) NOT NULL",
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"
 			},
@@ -2108,7 +2221,7 @@ public class DbAdapter
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"filter_id INT NOT NULL",
 				"category INT",
-				"name VARCHAR(10000) NOT NULL",
+				"name VARCHAR(1024) NOT NULL",
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (filter_id) REFERENCES TYPE_FILTER ON DELETE CASCADE"
 			},
@@ -2117,7 +2230,7 @@ public class DbAdapter
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"filter_id INT NOT NULL",
 				"type_props BIGINT",
-				"type_name VARCHAR(10000) NOT NULL",
+				"type_name VARCHAR(1024) NOT NULL",
 				"any_params SMALLINT",
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (filter_id) REFERENCES TYPE_FILTER ON DELETE CASCADE"
@@ -2128,8 +2241,8 @@ public class DbAdapter
 				"delegate_id INT NOT NULL",
 				"modifiers BIGINT",
 				"type_props BIGINT",
-				"type_name VARCHAR(10000) NOT NULL",
-				"name VARCHAR(10000) NOT NULL",
+				"type_name VARCHAR(1024) NOT NULL",
+				"name VARCHAR(1024) NOT NULL",
 				"pos_type INT",
 				"pos_value INT",
 				"pos_min INT",
@@ -2154,9 +2267,9 @@ public class DbAdapter
 				"operators INT",
 				"any_params SMALLINT",
 				"type_props BIGINT",
-				"type_name VARCHAR(10000) NOT NULL",
+				"type_name VARCHAR(1024) NOT NULL",
 				"any_throws SMALLINT",
-				"name VARCHAR(10000) NOT NULL",
+				"name VARCHAR(1024) NOT NULL",
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"
 			},
@@ -2164,7 +2277,7 @@ public class DbAdapter
 				"THROW",
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"member_id INT NOT NULL",
-				"name VARCHAR(10000) NOT NULL",
+				"name VARCHAR(1024) NOT NULL",
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (member_id) REFERENCES MEMBER_FILTER ON DELETE CASCADE"
 			},
@@ -2174,8 +2287,8 @@ public class DbAdapter
 				"member_id INT NOT NULL",
 				"modifiers BIGINT",
 				"type_props BIGINT",
-				"type_name VARCHAR(10000) NOT NULL",
-				"name VARCHAR(10000) NOT NULL",
+				"type_name VARCHAR(1024) NOT NULL",
+				"name VARCHAR(1024) NOT NULL",
 				"pos_type INT",
 				"pos_value INT",
 				"pos_min INT",
@@ -2197,8 +2310,8 @@ public class DbAdapter
 				"query_id INT NOT NULL",
 				"final SMALLINT",
 				"type_props BIGINT",
-				"type_name VARCHAR(10000) NOT NULL",
-				"name VARCHAR(10000) NOT NULL",
+				"type_name VARCHAR(1024) NOT NULL",
+				"name VARCHAR(1024) NOT NULL",
 				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"
 			}
 		};
