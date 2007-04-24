@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.actions.EditQueryAction;
+import com.sourcedimensions.client.actions.OpenSnapshotAction;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DuplicateNameException;
 import com.sourcedimensions.client.model.Folder;
@@ -809,6 +810,10 @@ public class ProjectView extends ViewPart
 				if (selection instanceof QueryObject)
 				{
 					EditQueryAction.runQueryEdit(getSite().getShell(), (QueryObject)selection);
+				}
+				else if (selection instanceof SnapshotObject)
+				{
+					OpenSnapshotAction.openSnapshot(getSite().getWorkbenchWindow());
 				}
 			} 
 		});

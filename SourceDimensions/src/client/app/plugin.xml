@@ -55,6 +55,13 @@
             icon="icons/project.png"
             id="com.sourcedimensions.client.views.ProjectView"
             name="Project View"/>
+         <view
+            category="com.sourcedimensions.client"
+            class="com.sourcedimensions.client.views.SnapshotView"
+           icon="icons/snapshot.png"
+            id="com.sourcedimensions.client.views.SnapshotView"
+            name="Snapshot View"
+            allowMultiple="true"/>
    </extension>
    <extension
          id="com.sourcedimensions.client.projectActionSet"
