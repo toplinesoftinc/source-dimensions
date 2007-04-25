@@ -9,6 +9,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import com.sourcedimensions.client.forms.SymbolQueryDialog;
+import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
 import com.sourcedimensions.client.views.ProjectView.TreeObject;
 
@@ -37,7 +38,7 @@ public class CreateSymbolQueryAction implements IWorkbenchWindowActionDelegate, 
  			
  			for (TreeObject cur = folder; cur instanceof FolderObject; cur = cur.getParent())
  			{
- 				name = cur.getName() + "/" + name;
+ 				name = cur.getName() + Folder.DIVIDER + name;
  			}
  			
  			dialog.setQueryName(name);

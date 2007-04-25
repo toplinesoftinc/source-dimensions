@@ -55,14 +55,15 @@
             icon="icons/project.png"
             id="com.sourcedimensions.client.views.ProjectView"
             name="Project View"/>
-         <view
-            category="com.sourcedimensions.client"
-            class="com.sourcedimensions.client.views.SnapshotView"
-           icon="icons/snapshot.png"
-            id="com.sourcedimensions.client.views.SnapshotView"
-            name="Snapshot View"
-            allowMultiple="true"/>
    </extension>
+   <extension point="org.eclipse.ui.editors"> 
+         <editor 
+            id="com.sourcedimensions.client.views.SnapshotView" 
+            name="Snapshot" 
+            icon="icons/snapshot.png" 
+            class="com.sourcedimensions.client.views.SnapshotView"> 
+         </editor> 
+   </extension>    
    <extension
          id="com.sourcedimensions.client.projectActionSet"
          name="Project menu"
@@ -88,6 +89,16 @@
                    enablesFor="1">
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotGroup"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>                 
+               </action>
+               <action
+                   class="com.sourcedimensions.client.actions.OpenSnapshotAction"
+                   icon="icons/open.png"
+                   id="com.sourcedimensions.client.openSnapshot"
+                   label="&amp;Open"
+                   menubarPath="snapshot/additions_snapshot"
+                   toolbarPath="additions_snapshot"
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
                </action>
                <action
                    class="com.sourcedimensions.client.actions.ExecuteQueryAction"
@@ -289,6 +300,12 @@
               adaptable="false"
               id="com.sourcedimensions.client.snapshotContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$SnapshotObject">
+              <action
+                   class="com.sourcedimensions.client.actions.OpenSnapshotAction"
+                   icon="icons/open.png"                   
+                   id="com.sourcedimensions.client.openSnapshot2"
+                   menubarPath="additions_snapshot"
+                   label="Open"/>
               <action
                    class="com.sourcedimensions.client.actions.DeleteObjectAction"
                    icon="icons/delete.png"

@@ -324,7 +324,7 @@ public class TypeFilterDialog extends DialogBase
 						return;
 					}
 	
-					String[] names = val.split("/");
+					String[] names = val.split(Folder.DIVIDER);
 					
 					for (String name : names)
 					{

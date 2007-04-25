@@ -606,7 +606,7 @@ public class DbAdapter
 	
 	protected static void saveSnapshotNode(Connection c, int projectId, int snapshotId, Integer parentId, SnapshotNode node) throws Exception
 	{
-		PreparedStatement ps = c.prepareStatement("INSERT INTO snapshot_node(project_id, snapshot_id, parent_id, name, type)" +
+		PreparedStatement ps = c.prepareStatement("INSERT INTO snapshot_node(project_id, snapshot_id, parent_id, label, type)" +
 			" VALUES(?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 		
 		ps.setInt(1, projectId);
@@ -617,7 +617,7 @@ public class DbAdapter
 		else
 			ps.setInt(3, parentId);
 		
-		ps.setString(4, node.getName());
+		ps.setString(4, node.getLabel());
 		ps.setInt(5, node.getType().value());
 		
 		ps.executeUpdate();
@@ -708,10 +708,10 @@ public class DbAdapter
 		rs.next();
 		
 		int projectId = rs.getInt("project_id");
-		String name = rs.getString("name");
+		String label = rs.getString("label");
 		int type = rs.getInt("type");
 		
-		ps = c.prepareStatement("INSERT INTO snapshot_node(project_id, snapshot_id, parent_id, name, type) VALUES (?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+		ps = c.prepareStatement("INSERT INTO snapshot_node(project_id, snapshot_id, parent_id, label, type) VALUES (?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 		
 		ps.setInt(1, projectId);
 		ps.setInt(2, snapshotId);
@@ -721,7 +721,7 @@ public class DbAdapter
 		else
 			ps.setInt(3, destId);
 		
-		ps.setString(4, name);
+		ps.setString(4, label);
 		ps.setInt(5, type);
 		
 		ps.executeUpdate();
@@ -1228,7 +1228,7 @@ public class DbAdapter
 		String path = Platform.getInstallLocation().getURL().getPath();
 		Connection c = null;
 		
-		if (path.startsWith("/"))
+		if (path.startsWith(Folder.DIVIDER))
 			path = path.substring(1);
 		
 		path += "db";
@@ -1273,7 +1273,6 @@ public class DbAdapter
 			}
 			
 			query.setName(rs.getString("name"));
-			query.setFullName(rs.getString("full_name"));
 			query.setDestination(rs.getString("destination"));
 			query.setAllNamespaces(rs.getShort("all_namespaces") != 0);
 			query.setAllTypes(rs.getShort("all_types") != 0);
@@ -1281,6 +1280,11 @@ public class DbAdapter
 			query.setAllLocalDecls(rs.getShort("all_local_decls") != 0);
 			
 			Integer parentId = rs.getInt("folder_id");
+			
+			if (rs.wasNull())
+				query.setFullName(query.getName());
+			else
+				query.setFullName(getFolderPath(parentId) + query.getName());
 			
 			while (!rs.wasNull())
 			{
@@ -1290,7 +1294,7 @@ public class DbAdapter
 				rs = ps.executeQuery();
 				rs.next();
 				
-				query.setName(rs.getString("name") + "/" + query.getName());
+				query.setName(rs.getString("name") + Folder.DIVIDER + query.getName());
 				
 				parentId = rs.getInt("parent_id");
 			}
@@ -1587,8 +1591,8 @@ public class DbAdapter
 			if (rs.next())
 				throw new DuplicateNameException();		
 			
-			ps = c.prepareStatement("INSERT INTO query(project_id, folder_id, name, full_name, destination, all_namespaces, " +
-				"all_types, all_members, all_local_decls) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+			ps = c.prepareStatement("INSERT INTO query(project_id, folder_id, name, destination, all_namespaces, " +
+				"all_types, all_members, all_local_decls) VALUES(?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 
 			ps.setInt(1, prjId);
 			
@@ -1598,12 +1602,11 @@ public class DbAdapter
 				ps.setInt(2, folderId);
 			
 			ps.setString(3, query.getName());
-			ps.setString(4, query.getFullName());
-			ps.setString(5, query.getDestination());
-			ps.setShort(6, (short)(query.getAllNamespaces() ? 1 : 0));
-			ps.setShort(7, (short)(query.getAllTypes() ? 1 : 0));
-			ps.setShort(8, (short)(query.getAllMembers()? 1 : 0));
-			ps.setShort(9, (short)(query.getAllLocalDecls() ? 1 : 0));
+			ps.setString(4, query.getDestination());
+			ps.setShort(5, (short)(query.getAllNamespaces() ? 1 : 0));
+			ps.setShort(6, (short)(query.getAllTypes() ? 1 : 0));
+			ps.setShort(7, (short)(query.getAllMembers()? 1 : 0));
+			ps.setShort(8, (short)(query.getAllLocalDecls() ? 1 : 0));
 			
 			ps.executeUpdate();
 			
@@ -1918,7 +1921,7 @@ public class DbAdapter
 	}
 
 	
-	public static void moveQuery(int id, Integer parentId, String name, String fullName) throws Exception, DuplicateNameException
+	public static void moveQuery(int id, Integer parentId, String name) throws Exception, DuplicateNameException
 	{
 		Connection c = null;
 		
@@ -1947,7 +1950,7 @@ public class DbAdapter
 			if (rs.next())
 				throw new DuplicateNameException();
 			
-			ps = c.prepareStatement("UPDATE query SET folder_id = ?, name = ?, full_name = ? WHERE id = ?");
+			ps = c.prepareStatement("UPDATE query SET folder_id = ?, name = ? WHERE id = ?");
 			
 			if (parentId == null)
 				ps.setNull(1, Types.INTEGER);
@@ -1955,8 +1958,7 @@ public class DbAdapter
 				ps.setInt(1, parentId);
 
 			ps.setString(2, name);
-			ps.setString(3, fullName);
-			ps.setInt(4, id);
+			ps.setInt(3, id);
 			
 			ps.executeUpdate();
 					
@@ -2086,7 +2088,7 @@ public class DbAdapter
 			
 				rs.next();
 			
-				path = rs.getString("name") + "/" + path;
+				path = rs.getString("name") + Folder.DIVIDER + path;
 
 				curId = rs.getInt("parent_id");				
 				
@@ -2195,7 +2197,7 @@ public class DbAdapter
 				"project_id INT NOT NULL",
 				"snapshot_id INT NOT NULL",
 				"parent_id INT",
-				"name VARCHAR(1024)",
+				"label VARCHAR(1024)",
 				"type INT NOT NULL",
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (parent_id) REFERENCES SNAPSHOT_NODE ON DELETE CASCADE",				
@@ -2208,7 +2210,6 @@ public class DbAdapter
 				"folder_id INT",
 				"project_id INT NOT NULL",
 				"name VARCHAR(1024) NOT NULL",
-				"full_name VARCHAR(1024) NOT NULL",
 				"destination VARCHAR(1024)",
 				"all_namespaces SMALLINT",
 				"all_types SMALLINT",

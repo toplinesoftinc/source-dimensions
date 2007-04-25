@@ -5,7 +5,7 @@ import java.util.List;
 public class SnapshotNode 
 {
 	protected Type m_type;
-	protected String m_name;
+	protected String m_label;
 	protected List<SnapshotNode> m_children;
 
 	public SnapshotNode()
@@ -28,14 +28,14 @@ public class SnapshotNode
 		m_type = type;
 	}
 	
-	public String getName()
+	public String getLabel()
 	{
-		return m_name;
+		return m_label;
 	}
 	
-	public void setName(String name)
+	public void setLabel(String label)
 	{
-		m_name = name;
+		m_label = label;
 	}
 	
 	public List<SnapshotNode> getChildren()

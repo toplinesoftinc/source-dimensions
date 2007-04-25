@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Combo;
 
 import com.sourcedimensions.client.model.BaseTypeCategory;
+import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
 
@@ -97,7 +98,7 @@ public class BaseTypeFilterDialog extends DialogBase
 					return;
 				}
 
-				String[] names = val.split("/");
+				String[] names = val.split(Folder.DIVIDER);
 				
 				for (String name : names)
 				{

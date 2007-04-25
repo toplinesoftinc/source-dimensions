@@ -82,14 +82,7 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 					}
 					else if (source instanceof QueryObject)
 					{
-						String fullName = "";
-						
-						if (dest instanceof FolderObject)
-							fullName = DbAdapter.getFolderPath(dest.getID()) + name;
-						else
-							fullName = name;
-						
-						DbAdapter.moveQuery(source.getID(), dest.getID(), name, fullName);
+						DbAdapter.moveQuery(source.getID(), dest.getID(), name);
 					}
 					else if (source instanceof SnapshotObject)
 					{

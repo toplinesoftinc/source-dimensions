@@ -813,7 +813,7 @@ public class ProjectView extends ViewPart
 				}
 				else if (selection instanceof SnapshotObject)
 				{
-					OpenSnapshotAction.openSnapshot(getSite().getWorkbenchWindow());
+					OpenSnapshotAction.openSnapshot(getSite().getWorkbenchWindow(), (SnapshotObject)selection);
 				}
 			} 
 		});

@@ -91,7 +91,7 @@ public class Type
 	public static void validateTypeName(String typeName) 
 		throws PatternSyntaxException, EmptyNameSectionException
 	{
-		String[] names = typeName.split("/");
+		String[] names = typeName.split(Folder.DIVIDER);
 		
 		for (String name : names)
 		{

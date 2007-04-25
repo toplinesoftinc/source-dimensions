@@ -287,7 +287,7 @@ public class ProjectBrowserDialog extends DialogBase
 		{					
 			if (props.getType() == ItemType.FOLDER)
 			{
-				m_resultPath = "/" + m_resultPath;
+				m_resultPath = Folder.DIVIDER + m_resultPath;
 			}
 		
 			m_resultPath = selected.getText() + m_resultPath;

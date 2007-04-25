@@ -16,7 +16,7 @@ public class Snapshot
 	{
 		m_name = name;
 	}	
-	
+		
 	public void setRoot(SnapshotNode root)
 	{
 		m_root = root;
