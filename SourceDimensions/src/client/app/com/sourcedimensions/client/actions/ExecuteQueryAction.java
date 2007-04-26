@@ -16,6 +16,7 @@ import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.client.views.ProjectView;
+import com.sourcedimensions.client.views.SnapshotView;
 import com.sourcedimensions.client.views.ProjectView.TreeObject;
 import com.sourcedimensions.ws.consumer.WSConsumer;
 
@@ -66,18 +67,18 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 			return;
 		}
 		
-		Object found;
+		Snapshot existing;
 		
 		try
 		{
-			found = DbAdapter.findObject(ProjectView.getProject().getId(), dest, false);
+			existing = (Snapshot)DbAdapter.findObject(ProjectView.getProject().getId(), dest, false);
 		}
 		catch (Exception e)
 		{
 			return;
 		}
 		
-		if (found != null)
+		if (existing != null)
 		{
 			if (!MessageDialog.openQuestion(shell, "Overwrite confirmation", "There is a snapshot"  + 
 				" with the same name which will be deleted and re-created with new contents. Do you want to continue?")) 
@@ -113,11 +114,11 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 			
 			snapshot.setName(name);
 
-			if (found != null)
+			if (existing != null)
 			{
 				try
 				{
-					DbAdapter.deleteSnapshot(((Snapshot)found).m_id);
+					DbAdapter.deleteSnapshot(existing.m_id);
 				}
 				catch (Exception e)
 				{
@@ -125,6 +126,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 				}
 				
 				ProjectView.getSnapshotGroup().deleteObject(sections);
+				SnapshotView.closeSnapshot(existing.m_id);
 			}
 			
 			ProjectView.getSnapshotGroup().addSnapshotNode(snapshot, dest);

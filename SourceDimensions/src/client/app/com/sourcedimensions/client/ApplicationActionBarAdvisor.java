@@ -55,12 +55,16 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     	MenuManager snapshotMenu = new MenuManager("&Snapshot", "snapshot");
     	snapshotMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_snapshot"));
     	
+    	MenuManager winMenu = new MenuManager("&Window", "window");
+    	winMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_window"));
+    	
     	MenuManager helpMenu = new MenuManager("&Help", "help");
     	helpMenu.add(aboutAction);
     	
     	menuBar.add(prjMenu);
     	menuBar.add(queryMenu);
     	menuBar.add(snapshotMenu);
+    	menuBar.add(winMenu);
     	menuBar.add(helpMenu);
     }
     

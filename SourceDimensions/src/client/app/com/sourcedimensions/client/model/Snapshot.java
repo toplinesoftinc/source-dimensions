@@ -5,6 +5,7 @@ public class Snapshot
 	public int m_id;
 	
 	protected String m_name;
+	protected String m_fullName;
 	protected SnapshotNode m_root;
 	
 	public String getName()
@@ -16,7 +17,17 @@ public class Snapshot
 	{
 		m_name = name;
 	}	
-		
+	
+	public String getFullName()
+	{
+		return m_fullName;
+	}
+	
+	public void setFullName(String fullName	)
+	{
+		m_fullName = fullName;
+	}
+	
 	public void setRoot(SnapshotNode root)
 	{
 		m_root = root;

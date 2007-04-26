@@ -833,6 +833,13 @@ public class DbAdapter
 			snapshot = new Snapshot();			
 			snapshot.setName(rs.getString("name"));
 			
+			Integer folderId = rs.getInt("folder_id");
+			
+			if (rs.wasNull())
+				snapshot.setFullName(snapshot.getName());
+			else
+				snapshot.setFullName(getFolderPath(folderId) + snapshot.getName());
+			
 			c.commit();
 		}
 		catch (Exception e)

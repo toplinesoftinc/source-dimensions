@@ -223,12 +223,12 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 				query.setFullName(name);
 			
 			id = DbAdapter.addSymbolQuery(projectId, parentId, query);
-			newObj = new QueryObject(name, id, parentId);
+			newObj = new QueryObject(name, id);
 		}
 		else if (source instanceof SnapshotObject)
 		{
 			id = DbAdapter.copySnapshot(source.getID(), parentId, id, name);
-			newObj = new SnapshotObject(name, id, parentId);
+			newObj = new SnapshotObject(name, id);
 		}
 		
 		dest.addDbChild(newObj);

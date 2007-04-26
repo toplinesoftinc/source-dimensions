@@ -16,6 +16,7 @@ import com.sourcedimensions.client.db.DuplicateNameException;
 import com.sourcedimensions.client.forms.InputDialog;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.views.ProjectView;
+import com.sourcedimensions.client.views.SnapshotView;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
 import com.sourcedimensions.client.views.ProjectView.QueryObject;
 import com.sourcedimensions.client.views.ProjectView.SnapshotObject;
@@ -98,6 +99,8 @@ public class RenameObjectAction implements IWorkbenchWindowActionDelegate, IObje
 					
 				if (view != null)
 					view.getViewer().refresh();
+				
+				SnapshotView.renameSnapshot(id, name);
 
 				return;
 			}

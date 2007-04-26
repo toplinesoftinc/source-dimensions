@@ -187,7 +187,17 @@
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/>
-               </action>               
+               </action>
+               <action
+                   class="com.sourcedimensions.client.actions.SwitchToSnapshotAction"
+                   id="com.sourcedimensions.client.switchToSnapshotProject"
+                   label="S&amp;witch To Snapshot..."
+                   menubarPath="window/additions_window"/>
+               <action
+                   class="com.sourcedimensions.client.actions.ShowProjectViewAction"
+                   id="com.sourcedimensions.client.showProjectView"
+                   label="&amp;Show Project View"
+                   menubarPath="window/additions_window"/>       
           </actionSet>
    </extension>
    <extension 

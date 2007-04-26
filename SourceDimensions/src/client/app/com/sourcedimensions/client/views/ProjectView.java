@@ -31,7 +31,6 @@ public class ProjectView extends ViewPart
 	public final static String ID = "com.sourcedimensions.client.views.ProjectView";
 	
 	private static TreeViewer m_viewer;
-	//private DrillDownAdapter m_drillDownAdapter;
 	private static Project m_project;
 	private static TreeGroup m_root;
 	private static SnapshotGroup m_snapshotGroup;
@@ -355,7 +354,7 @@ public class ProjectView extends ViewPart
 					
 					for (QueryNode q : queryList)
 					{
-						addChild(new QueryObject(q.m_name, q.m_id, m_id));
+						addChild(new QueryObject(q.m_name, q.m_id));
 					}				
 				}
 				else
@@ -364,7 +363,7 @@ public class ProjectView extends ViewPart
 					
 					for (Snapshot s : snapshotList)
 					{
-						addChild(new SnapshotObject(s.getName(), s.m_id, m_id));
+						addChild(new SnapshotObject(s.getName(), s.m_id));
 					}
 				}
 			}
@@ -465,7 +464,7 @@ public class ProjectView extends ViewPart
 				
 				for (QueryNode q : queryList)
 				{
-					addChild(new QueryObject(q.m_name, q.m_id, null));
+					addChild(new QueryObject(q.m_name, q.m_id));
 				}
 			}
 			catch (Exception e)
@@ -493,7 +492,7 @@ public class ProjectView extends ViewPart
 			
 			if (id != null)
 			{
-				QueryObject item = new QueryObject(query.getName(), id, folderId);
+				QueryObject item = new QueryObject(query.getName(), id);
 				
 				TreeGroup target;
 				
@@ -558,7 +557,7 @@ public class ProjectView extends ViewPart
 				
 				for (Snapshot s : snapshotList)
 				{
-					addChild(new SnapshotObject(s.getName(), s.m_id, null));
+					addChild(new SnapshotObject(s.getName(), s.m_id));
 				}
 			}
 			catch (Exception e)
@@ -586,7 +585,7 @@ public class ProjectView extends ViewPart
 			
 			if (id != null)
 			{
-				SnapshotObject item = new SnapshotObject(snapshot.getName(), id, folderId);
+				SnapshotObject item = new SnapshotObject(snapshot.getName(), id);
 
 				TreeGroup target;
 				
@@ -627,13 +626,11 @@ public class ProjectView extends ViewPart
 	public static class SnapshotObject extends TreeObject
 	{
 		protected int m_id;
-		protected Integer m_folderId;
 		
-		public SnapshotObject(String name, int id, Integer folderId)
+		public SnapshotObject(String name, int id)
 		{
 			super(name);
 			m_id = id;
-			m_folderId = folderId;
 		}
 		
 		public Image getImage()
@@ -660,13 +657,11 @@ public class ProjectView extends ViewPart
 	public static class QueryObject extends TreeObject
 	{
 		protected int m_id;
-		protected Integer m_folderId;
 		
-		public QueryObject(String name, int id, Integer folderId)
+		public QueryObject(String name, int id)
 		{
 			super(name);
 			m_id = id;
-			m_folderId = folderId;
 		}
 		
 		public Image getImage()
@@ -818,7 +813,6 @@ public class ProjectView extends ViewPart
 			} 
 		});
 		
-		//m_drillDownAdapter = new DrillDownAdapter(m_viewer);
 		m_viewer.setContentProvider(new ProjectContentProvider());
 		getSite().setSelectionProvider(m_viewer);
 		m_viewer.setLabelProvider(new ProjectLabelProvider());
