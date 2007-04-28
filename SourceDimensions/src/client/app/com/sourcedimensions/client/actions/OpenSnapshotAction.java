@@ -10,6 +10,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.PartInitException;
 
+import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.views.SnapshotView;
 import com.sourcedimensions.client.views.ProjectView.SnapshotObject;
 
@@ -34,12 +35,19 @@ public class OpenSnapshotAction implements IWorkbenchWindowActionDelegate, IObje
  	{
  		try
  		{
- 			window.getActivePage().openEditor(new SnapshotView.Input(node), SnapshotView.ID);
+ 			SnapshotView view = (SnapshotView)window.getActivePage().openEditor(
+ 				new SnapshotView.Input(node), SnapshotView.ID);
+ 			
+ 			view.setSnapshot(DbAdapter.getSnapshot(node.getID()));
  		}
  		catch (PartInitException e)
  		{
  			MessageDialog.openError(window.getShell(), "UI error", e.getMessage());
  		}
+ 		catch (Exception e)
+ 		{
+ 			return;
+ 		} 		
  	}
  		
  	public void setActivePart(IAction action, IWorkbenchPart targetPart) 

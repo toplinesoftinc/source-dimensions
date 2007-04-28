@@ -115,7 +115,23 @@ public class WebService implements IWebService
 		verifySession(sessionID);
 		
 		Snapshot snapshot = new Snapshot();
-		snapshot.setRoot(new SnapshotNode());
+		SnapshotNode root = new SnapshotNode();
+		snapshot.setRoot(root);
+		
+		root.setChildren(new ArrayList<SnapshotNode>());
+		
+		root.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class A"));
+		root.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class B"));
+		root.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class C"));
+		
+		SnapshotNode node = new SnapshotNode(SnapshotNode.Type.NAMESPACE, "Namespace A");
+		
+		root.getChildren().add(node);
+		node.setChildren(new ArrayList<SnapshotNode>());
+		
+		node.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class Y"));
+		node.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class Z"));
+		
 				
 		return snapshot;
 	}

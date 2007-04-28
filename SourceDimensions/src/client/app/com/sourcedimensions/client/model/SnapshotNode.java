@@ -7,15 +7,18 @@ public class SnapshotNode
 	protected Type m_type;
 	protected String m_label;
 	protected List<SnapshotNode> m_children;
+	
+	public Integer m_id;
 
 	public SnapshotNode()
 	{
 		m_type = Type.ROOT;
 	}
 	
-	public SnapshotNode(Type type)
+	public SnapshotNode(Type type, String label)
 	{
 		m_type = type;
+		m_label = label;
 	}
 	
 	public Type getType()

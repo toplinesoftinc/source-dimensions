@@ -635,6 +635,62 @@ public class DbAdapter
 			}
 		}
 	}
+
+	
+	public static List<SnapshotNode> getSnapshotNodeList(int snapshotId, Integer parentId) throws Exception
+	{
+		Connection c = null;
+		List<SnapshotNode> list = new ArrayList<SnapshotNode>();
+		
+		try
+		{
+			c = getConnection();
+			
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM snapshot_node " +
+				"WHERE snapshot_id = ? AND (parent_id = ? OR (parent_id IS NULL AND ? IS NULL))");
+			
+			ps.setInt(1, snapshotId);
+			
+			if (parentId == null)
+			{
+				ps.setNull(2, Types.INTEGER);
+				ps.setNull(3, Types.INTEGER);
+			}
+			else
+			{
+				ps.setInt(2, parentId);
+				ps.setInt(3, parentId);
+			}
+			
+			ResultSet rs = ps.executeQuery();
+			
+			while (rs.next())
+			{
+				SnapshotNode node = new SnapshotNode();
+				
+				node.m_id = rs.getInt("id");
+				node.setLabel(rs.getString("label"));
+				node.setType(SnapshotNode.Type.values()[rs.getInt("type")]);
+				
+				list.add(node);
+			}
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+		
+		return list;
+	}
 	
 	
 	public static int copySnapshot(int snapshotId, Integer folderId, int destId, String name) throws Exception
@@ -830,7 +886,8 @@ public class DbAdapter
 			
 			rs.next();
 			
-			snapshot = new Snapshot();			
+			snapshot = new Snapshot();
+			snapshot.m_id = id;
 			snapshot.setName(rs.getString("name"));
 			
 			Integer folderId = rs.getInt("folder_id");
