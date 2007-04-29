@@ -7,6 +7,8 @@ public class SnapshotNode
 	protected Type m_type;
 	protected String m_label;
 	protected List<SnapshotNode> m_children;
+	protected String m_fileId;
+	protected long m_startPos = -1L, m_endPos = -1L;
 	
 	public Integer m_id;
 
@@ -39,6 +41,36 @@ public class SnapshotNode
 	public void setLabel(String label)
 	{
 		m_label = label;
+	}
+	
+	public String getFileId()
+	{
+		return m_fileId;
+	}
+	
+	public void setFileId(String fileId)
+	{
+		m_fileId = fileId;
+	}
+	
+	public long getStartPos()
+	{
+		return m_startPos;
+	}
+
+	public void setStartPos(long startPos)
+	{
+		m_startPos = startPos;
+	}
+	
+	public long getEndPos()
+	{
+		return m_endPos;
+	}
+	
+	public void setEndPos(long endPos)
+	{
+		m_endPos = endPos;
 	}
 	
 	public List<SnapshotNode> getChildren()
