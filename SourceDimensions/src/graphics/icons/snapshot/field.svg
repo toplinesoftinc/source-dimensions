@@ -15,13 +15,13 @@
    sodipodi:version="0.32"
    inkscape:version="0.45"
    version="1.0"
-   sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons\nodes"
+   sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons\snapshot"
    sodipodi:docname="field.svg"
    inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\field.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   sodipodi:modified="TRUE">
+   sodipodi:modified="true">
   <defs
      id="defs4">
     <linearGradient
@@ -151,7 +151,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="49.875"
      inkscape:cx="12.440861"
-     inkscape:cy="7.0027045"
+     inkscape:cy="8.0321708"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      width="16px"
@@ -164,7 +164,7 @@
      showguides="true"
      inkscape:guide-bbox="false"
      inkscape:object-paths="false"
-     inkscape:grid-bbox="false" />
+     inkscape:grid-bbox="true" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -180,17 +180,12 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <text
-       xml:space="preserve"
-       style="font-size:12px;font-style:normal;font-weight:normal;fill:url(#linearGradient13621);fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Times New Roman"
-       x="0.28904545"
-       y="13.180608"
-       id="text8239"
-       transform="scale(0.9915274,1.008545)"><tspan
-         sodipodi:role="line"
-         id="tspan8241"
-         x="0.28904545"
-         y="13.180608"
-         style="font-size:11px;font-style:italic;fill:url(#linearGradient13621);fill-opacity:1;stroke:none;stroke-opacity:1;font-family:Times New Roman">Fld</tspan></text>
+    <rect
+       style="fill:#dd2a03;fill-opacity:1;stroke:none;stroke-width:1.01100004;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3165"
+       width="6"
+       height="6"
+       x="5"
+       y="5" />
   </g>
 </svg>

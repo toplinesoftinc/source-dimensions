@@ -15,15 +15,26 @@
    sodipodi:version="0.32"
    inkscape:version="0.45"
    version="1.0"
-   sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons\nodes"
+   sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons\snapshot"
    sodipodi:docname="anonimous_method.svg"
    inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\anonymous_method.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   sodipodi:modified="TRUE">
+   sodipodi:modified="true">
   <defs
      id="defs4">
+    <linearGradient
+       id="linearGradient5096">
+      <stop
+         style="stop-color:#00ce24;stop-opacity:1;"
+         offset="0"
+         id="stop5098" />
+      <stop
+         style="stop-color:#006111;stop-opacity:1;"
+         offset="1"
+         id="stop5100" />
+    </linearGradient>
     <linearGradient
        id="linearGradient6361">
       <stop
@@ -107,6 +118,15 @@
        y2="13.521617"
        gradientUnits="userSpaceOnUse"
        gradientTransform="matrix(1.0097808,0,0,1.0097808,3.4734692e-2,-0.179288)" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5096"
+       id="linearGradient5102"
+       x1="8.7619047"
+       y1="2.4055128"
+       x2="8.7619047"
+       y2="13.494237"
+       gradientUnits="userSpaceOnUse" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -120,7 +140,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="49.875"
      inkscape:cx="10.777067"
-     inkscape:cy="7.7104626"
+     inkscape:cy="8.0321708"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      width="16px"
@@ -133,7 +153,9 @@
      showguides="true"
      inkscape:guide-bbox="false"
      inkscape:object-paths="false"
-     inkscape:grid-bbox="false" />
+     inkscape:grid-bbox="true"
+     inkscape:grid-points="false"
+     inkscape:guide-points="false" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -149,17 +171,15 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <text
-       xml:space="preserve"
-       style="font-size:14px;font-style:italic;font-weight:bold;fill:url(#linearGradient6367);fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Times New Roman"
-       x="0.44881123"
-       y="10.928847"
-       id="text19682"
-       transform="scale(0.9935551,1.0064867)"><tspan
-         sodipodi:role="line"
-         id="tspan19684"
-         x="0.44881123"
-         y="10.928847"
-         style="font-size:14px;font-style:italic;font-weight:normal;fill:url(#linearGradient6367);fill-opacity:1;stroke:none;font-family:Times New Roman">_()</tspan></text>
+    <path
+       sodipodi:type="arc"
+       style="fill:none;fill-opacity:1;stroke:url(#linearGradient5102);stroke-width:1.33575626;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path2177"
+       sodipodi:cx="8.7619047"
+       sodipodi:cy="7.9498749"
+       sodipodi:rx="5.6741853"
+       sodipodi:ry="4.9223056"
+       d="M 14.43609 7.9498749 A 5.6741853 4.9223056 0 1 1  3.0877194,7.9498749 A 5.6741853 4.9223056 0 1 1  14.43609 7.9498749 z"
+       transform="matrix(0.704947,0,0,0.8126273,1.8233213,1.5397145)" />
   </g>
 </svg>

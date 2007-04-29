@@ -15,7 +15,7 @@
    sodipodi:version="0.32"
    inkscape:version="0.45"
    version="1.0"
-   sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons\nodes"
+   sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons\snapshot"
    sodipodi:docname="indexer_set.svg"
    inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\indexer_set.png"
    inkscape:export-xdpi="90"
@@ -24,17 +24,6 @@
    sodipodi:modified="TRUE">
   <defs
      id="defs4">
-    <linearGradient
-       id="linearGradient14592">
-      <stop
-         style="stop-color:#8504f9;stop-opacity:1;"
-         offset="0"
-         id="stop14594" />
-      <stop
-         style="stop-color:#360067;stop-opacity:1;"
-         offset="1"
-         id="stop14596" />
-    </linearGradient>
     <linearGradient
        id="linearGradient13615">
       <stop
@@ -141,14 +130,14 @@
        gradientUnits="userSpaceOnUse" />
     <linearGradient
        inkscape:collect="always"
-       xlink:href="#linearGradient14592"
-       id="linearGradient14598"
-       x1="8.0565548"
-       y1="5.7304401"
-       x2="8.0117178"
-       y2="13.801821"
+       xlink:href="#linearGradient13615"
+       id="linearGradient13621"
+       x1="8.7202873"
+       y1="3.8887413"
+       x2="8.5305939"
+       y2="13.559001"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.0145431,0,0,1.014543,0.539739,8.0677622e-2)" />
+       gradientTransform="matrix(1.0100882,0,0,1.0100882,0.2935083,-0.3578444)" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -162,7 +151,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="49.875"
      inkscape:cx="12.440861"
-     inkscape:cy="15.560143"
+     inkscape:cy="8.0321708"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      width="16px"
@@ -191,28 +180,21 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <text
-       xml:space="preserve"
-       style="font-size:13.62108135px;font-style:normal;font-weight:normal;fill:url(#linearGradient14598);fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Arial Narrow"
-       x="0.54577059"
-       y="14.03788"
-       id="text8239"
-       transform="scale(1.0059472,0.9940879)"><tspan
-         sodipodi:role="line"
-         id="tspan8241"
-         x="0.54577059"
-         y="14.03788"
-         style="font-size:12px;font-style:italic;fill:url(#linearGradient14598);fill-opacity:1;stroke:none;stroke-opacity:1;font-family:Times New Roman">Idx</tspan></text>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#2900d8;stroke-width:1.11099994;stroke-miterlimit:4;stroke-opacity:1"
+       d="M 4.018011,10.987469 L 8.0100253,5.000467 L 12.00204,10.987468 L 4.018011,10.987469 z "
+       id="rect3165"
+       sodipodi:nodetypes="cccc" />
     <text
        xml:space="preserve"
        style="font-size:8.17166042px;font-weight:bold;fill:#bf0314;fill-opacity:1"
-       x="10.490067"
-       y="6.0483718"
-       id="text2189"
+       x="10.45624"
+       y="6.0250168"
+       id="text14044"
        transform="scale(1.0246808,0.9759137)"><tspan
          sodipodi:role="line"
-         id="tspan2191"
-         x="10.490067"
-         y="6.0483718">S</tspan></text>
+         id="tspan14046"
+         x="10.45624"
+         y="6.0250168">S</tspan></text>
   </g>
 </svg>
