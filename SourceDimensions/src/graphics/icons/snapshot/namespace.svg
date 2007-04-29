@@ -106,13 +106,13 @@
        transform="matrix(1.1243961,0,0,1.1370114,-1.3220608,-0.1373548)" />
     <text
        xml:space="preserve"
-       style="font-size:12px;font-style:normal;font-weight:normal;fill:#fffcfc;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Arial"
-       x="3.9249589"
-       y="12.025514"
+       style="font-size:12px;font-style:normal;font-weight:bold;fill:#fffcfc;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Arial"
+       x="3.6442573"
+       y="12.065614"
        id="text24813"><tspan
          sodipodi:role="line"
          id="tspan24815"
-         x="3.9249589"
-         y="12.025514">N</tspan></text>
+         x="3.6442573"
+         y="12.065614">N</tspan></text>
   </g>
 </svg>
