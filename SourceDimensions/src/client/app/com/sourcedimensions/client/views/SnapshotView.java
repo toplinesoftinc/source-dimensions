@@ -164,6 +164,14 @@ public class SnapshotView extends EditorPart
 				case PROPERTY:			return Util.getSharedImage(IImageKeys.IMG_PROPERTY_DECL);
 				case PROPERTY_GET:		return Util.getSharedImage(IImageKeys.IMG_PROPERTY_GET_DECL);
 				case PROPERTY_SET:		return Util.getSharedImage(IImageKeys.IMG_PROPERTY_SET_DECL);
+				case BASE_CLASS:		return Util.getSharedImage(IImageKeys.IMG_BASE_CLASS);
+				case BASE_INTERFACE:	return Util.getSharedImage(IImageKeys.IMG_BASE_INTERFACE);
+				case LOCAL_DECL:		return Util.getSharedImage(IImageKeys.IMG_LOCAL_DECL);
+				case CLASS_REF:			return Util.getSharedImage(IImageKeys.IMG_CLASS_REF);
+				case INTERFACE_REF:		return Util.getSharedImage(IImageKeys.IMG_INTERFACE_REF);
+				case STRUCT_REF:		return Util.getSharedImage(IImageKeys.IMG_STRUCT_REF);
+				case ENUM_REF:			return Util.getSharedImage(IImageKeys.IMG_ENUM_REF);
+				case DELEGATE_REF:		return Util.getSharedImage(IImageKeys.IMG_DELEGATE_REF);
 			
 				default:
 					return null;
