@@ -139,31 +139,31 @@ public class SnapshotView extends EditorPart
 		{
 			switch (SnapshotNode.Type.values()[m_type])
 			{
-				case NAMESPACE:			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_NAMESPACE);
-				case CLASS:				return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_CLASS);
-				case ANONYMOUS_CLASS:	return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_ANONYMOUS_CLASS);
-				case INTERFACE:			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_INTERFACE);
-				case DELEGATE:			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_DELEGATE);
-				case ENUM:				return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_ENUM);
-				case STRUCT:			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_STRUCT);
-				case ANNOTATION:		return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_ANNOTATION);
-				case ANONYMOUS_METHOD:	return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_ANONYMOUS_METHOD);
-				case CONSTANT:			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_CONSTANT);
-				case CONSTRUCTOR:		return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_CONSTRUCTOR);
-				case DESTRUCTOR:		return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_DESTRUCTOR);
-				case ENUM_CONST:		return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_ENUM_CONST);
-				case EVENT:				return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_EVENT);
-				case EVENT_ADD:			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_EVENT_ADD); 
-				case EVENT_REMOVE:		return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_EVENT_REMOVE);
-				case FIELD:				return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_FIELD);
-				case INDEXER:			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_INDEXER);
-				case INDEXER_GET:		return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_INDEXER_GET);
-				case INDEXER_SET:		return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_INDEXER_SET);
-				case METHOD:			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_METHOD);
-				case OPERATOR:			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_OPERATOR);
-				case PROPERTY:			return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_PROPERTY);
-				case PROPERTY_GET:		return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_PROPERTY_GET);
-				case PROPERTY_SET:		return Util.getSharedImage(IImageKeys.IMG_SNAPSHOT_PROPERTY_SET);
+				case NAMESPACE:			return Util.getSharedImage(IImageKeys.IMG_NAMESPACE_DECL);
+				case CLASS:				return Util.getSharedImage(IImageKeys.IMG_CLASS_DECL);
+				case ANONYMOUS_CLASS:	return Util.getSharedImage(IImageKeys.IMG_ANONYM_CLASS_DECL);
+				case INTERFACE:			return Util.getSharedImage(IImageKeys.IMG_INTERFACE_DECL);
+				case DELEGATE:			return Util.getSharedImage(IImageKeys.IMG_DELEGATE_DECL);
+				case ENUM:				return Util.getSharedImage(IImageKeys.IMG_ENUM_DECL);
+				case STRUCT:			return Util.getSharedImage(IImageKeys.IMG_STRUCT_DECL);
+				case ANNOTATION:		return Util.getSharedImage(IImageKeys.IMG_ANNOT_DECL);
+				case ANONYMOUS_METHOD:	return Util.getSharedImage(IImageKeys.IMG_ANONYM_METHOD_DECL);
+				case CONSTANT:			return Util.getSharedImage(IImageKeys.IMG_CONST_DECL);
+				case CONSTRUCTOR:		return Util.getSharedImage(IImageKeys.IMG_CONSTRUCTOR_DECL);
+				case DESTRUCTOR:		return Util.getSharedImage(IImageKeys.IMG_DESTRUCTOR_DECL);
+				case ENUM_CONST:		return Util.getSharedImage(IImageKeys.IMG_ENUM_CONST_DECL);
+				case EVENT:				return Util.getSharedImage(IImageKeys.IMG_EVENT_DECL);
+				case EVENT_ADD:			return Util.getSharedImage(IImageKeys.IMG_EVENT_ADD_DECL); 
+				case EVENT_REMOVE:		return Util.getSharedImage(IImageKeys.IMG_EVENT_REMOVE_DECL);
+				case FIELD:				return Util.getSharedImage(IImageKeys.IMG_FIELD_DECL);
+				case INDEXER:			return Util.getSharedImage(IImageKeys.IMG_INDEXER_DECL);
+				case INDEXER_GET:		return Util.getSharedImage(IImageKeys.IMG_INDEXER_GET_DECL);
+				case INDEXER_SET:		return Util.getSharedImage(IImageKeys.IMG_INDEXER_SET_DECL);
+				case METHOD:			return Util.getSharedImage(IImageKeys.IMG_METHOD_DECL);
+				case OPERATOR:			return Util.getSharedImage(IImageKeys.IMG_OPERATOR_DECL);
+				case PROPERTY:			return Util.getSharedImage(IImageKeys.IMG_PROPERTY_DECL);
+				case PROPERTY_GET:		return Util.getSharedImage(IImageKeys.IMG_PROPERTY_GET_DECL);
+				case PROPERTY_SET:		return Util.getSharedImage(IImageKeys.IMG_PROPERTY_SET_DECL);
 			
 				default:
 					return null;

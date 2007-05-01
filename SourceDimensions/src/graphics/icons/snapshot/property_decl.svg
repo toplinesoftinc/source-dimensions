@@ -16,8 +16,8 @@
    inkscape:version="0.45"
    version="1.0"
    sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons\snapshot"
-   sodipodi:docname="property.svg"
-   inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\property.png"
+   sodipodi:docname="property_decl.svg"
+   inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\property_decl.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
@@ -182,7 +182,7 @@
      id="layer1">
     <path
        style="fill:#00cedb;fill-opacity:1;stroke:none;stroke-width:1.11099994;stroke-miterlimit:4;stroke-opacity:1"
-       d="M 4.018011,5.000467 L 8.0100253,10.987469 L 12.00204,5.000468 L 4.018011,5.000467 z "
+       d="M 2.4942015,2.4942013 L 8.0100252,12.471178 L 13.52585,2.4942031 L 2.4942015,2.4942013 z "
        id="rect3165"
        sodipodi:nodetypes="cccc" />
   </g>

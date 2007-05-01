@@ -16,8 +16,8 @@
    inkscape:version="0.45"
    version="1.0"
    sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons\snapshot"
-   sodipodi:docname="const.svg"
-   inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\const.png"
+   sodipodi:docname="const_decl.svg"
+   inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\const_decl.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
@@ -181,11 +181,11 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:none;fill-opacity:1;stroke:#dd2a03;stroke-width:1.111;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:none;fill-opacity:1;stroke:#dd2a03;stroke-width:1.56236792;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3165"
-       width="6"
-       height="6"
-       x="5"
-       y="5" />
+       width="8.4376316"
+       height="8.4376326"
+       x="3.781184"
+       y="3.7811837" />
   </g>
 </svg>

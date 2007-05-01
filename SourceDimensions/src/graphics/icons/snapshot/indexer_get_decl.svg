@@ -16,8 +16,8 @@
    inkscape:version="0.45"
    version="1.0"
    sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons\snapshot"
-   sodipodi:docname="indexer_get.svg"
-   inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\indexer_get.png"
+   sodipodi:docname="indexer_get_decl.svg"
+   inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\indexer_get_decl.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
@@ -181,8 +181,8 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:none;fill-opacity:1;stroke:#2900d8;stroke-width:1.11099994;stroke-miterlimit:4;stroke-opacity:1"
-       d="M 4.018011,10.987469 L 8.0100253,5.000467 L 12.00204,10.987468 L 4.018011,10.987469 z "
+       style="fill:none;fill-opacity:1;stroke:#2900d8;stroke-width:1.33493888;stroke-miterlimit:4;stroke-opacity:1"
+       d="M 3.6688275,11.837906 L 8.0100252,3.8893788 L 12.351223,11.837905 L 3.6688275,11.837906 z "
        id="rect3165"
        sodipodi:nodetypes="cccc" />
     <text

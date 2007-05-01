@@ -16,12 +16,12 @@
    inkscape:version="0.45"
    version="1.0"
    sodipodi:docbase="C:\Projects\SourceDimensions\src\graphics\icons\snapshot"
-   sodipodi:docname="field.svg"
-   inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\field.png"
+   sodipodi:docname="field_decl.svg"
+   inkscape:export-filename="C:\Projects\SourceDimensions\src\graphics\icons\field_decl.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   sodipodi:modified="true">
+   sodipodi:modified="TRUE">
   <defs
      id="defs4">
     <linearGradient
@@ -183,9 +183,9 @@
     <rect
        style="fill:#dd2a03;fill-opacity:1;stroke:none;stroke-width:1.01100004;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3165"
-       width="6"
-       height="6"
-       x="5"
-       y="5" />
+       width="10"
+       height="10"
+       x="3"
+       y="3" />
   </g>
 </svg>
