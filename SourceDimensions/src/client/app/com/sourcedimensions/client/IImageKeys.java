@@ -36,9 +36,10 @@ public interface IImageKeys
 	public final static String IMG_PROPERTY_DECL = "icons/snapshot/property_decl.png";
 	public final static String IMG_PROPERTY_GET_DECL = "icons/snapshot/property_get_decl.png";
 	public final static String IMG_PROPERTY_SET_DECL = "icons/snapshot/property_set_decl.png";
+	public final static String IMG_LOCAL_DECL = "icons/snapshot/local_decl.png";
+	public final static String IMG_PARAM_DECL = "icons/snapshot/param_decl.png";
 	public final static String IMG_BASE_CLASS = "icons/snapshot/base_class.png";
 	public final static String IMG_BASE_INTERFACE = "icons/snapshot/base_interface.png";
-	public final static String IMG_LOCAL_DECL = "icons/snapshot/local_decl.png";
 	public final static String IMG_CLASS_REF = "icons/snapshot/class_ref.png";
 	public final static String IMG_INTERFACE_REF = "icons/snapshot/interface_ref.png";
 	public final static String IMG_STRUCT_REF = "icons/snapshot/struct_ref.png";
