@@ -13,6 +13,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
@@ -38,6 +39,45 @@ public class SnapshotView extends EditorPart
 	protected TreeViewer m_viewer;
 	protected SnapshotNodeObject[] m_root = new SnapshotNodeObject[0];
 	protected Snapshot m_snapshot;
+	
+	protected static final String[] m_toolTipTable =
+	{
+		"",
+		"Namespace Declaration",
+		"Class Declaration",
+		"Anonymous Class Declaration",
+		"Interface Declaration",
+		"Delegate Declaration",
+		"Enum Declaration",
+		"Struct Declaration",
+		"Annotation Declaration",
+		"Anonymous Method Declaration",
+		"Constant Declaration",
+		"Constructor Declaration",
+		"Destructor Declaration",
+		"Enum Constant Declaration",
+		"Event Declaration",
+		"Event Add Declaration",
+		"Event Remove Declaration",
+		"Field Declaration",
+		"Indexer Declaration",
+		"Indexer Get Declaration",
+		"Indexer Set Declaration",
+		"Method Declaration",
+		"Operator Declaration",
+		"Property Declaration",
+		"Property Get Declaration",
+		"Property Set Declaration",
+		"Local Declaration",
+		"Parameter Declaration",
+		"Base Class",
+		"Base Interface",
+		"Class Reference",
+		"Interface Reference",
+		"Struct Reference",
+		"Enum Reference",
+		"Delegate Reference"
+	};
 
 	public void doSave(IProgressMonitor monitor) 
 	{
@@ -371,6 +411,7 @@ public class SnapshotView extends EditorPart
 		getSite().setSelectionProvider(m_viewer);
 		m_viewer.setLabelProvider(new SnapshotLabelProvider());
 		m_viewer.setInput(getEditorSite());
+		
 	}
 
 	public void setFocus() 
