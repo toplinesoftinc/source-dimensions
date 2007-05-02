@@ -2,21 +2,35 @@ package com.sourcedimensions.client.views;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
+
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSourceAdapter;
+import org.eclipse.swt.dnd.DragSourceEvent;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.SWT;
 import org.eclipse.core.runtime.IAdaptable;
+
+import com.sourcedimensions.client.Clipboard;
 import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.actions.EditQueryAction;
 import com.sourcedimensions.client.actions.OpenSnapshotAction;
+import com.sourcedimensions.client.actions.PasteObjectAction;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DuplicateNameException;
 import com.sourcedimensions.client.model.Folder;
@@ -30,11 +44,12 @@ public class ProjectView extends ViewPart
 {
 	public final static String ID = "com.sourcedimensions.client.views.ProjectView";
 	
-	private static TreeViewer m_viewer;
-	private static Project m_project;
-	private static TreeGroup m_root;
-	private static SnapshotGroup m_snapshotGroup;
-	private static QueryGroup m_queryGroup;
+	protected static TreeViewer m_viewer;
+	protected static Project m_project;
+	protected static TreeGroup m_root;
+	protected static SnapshotGroup m_snapshotGroup;
+	protected static QueryGroup m_queryGroup;
+	protected List<TreeObject> m_selection = new Vector<TreeObject>();
 	
 	public abstract static class TreeObject implements IAdaptable 
 	{
@@ -817,6 +832,80 @@ public class ProjectView extends ViewPart
 		getSite().setSelectionProvider(m_viewer);
 		m_viewer.setLabelProvider(new ProjectLabelProvider());
 		m_viewer.setInput(getViewSite());
+		
+		m_viewer.addDragSupport(DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer()}, new DragSourceAdapter()
+		{
+			public void dragStart(DragSourceEvent event)
+			{
+				TreeSelection selection = (TreeSelection)m_viewer.getSelection();
+				
+				m_selection.clear();
+				
+				List list = selection.toList();
+				
+				for (Object o : list)
+				{
+					if (o instanceof FolderObject ||
+						o instanceof SnapshotObject ||
+						o instanceof QueryObject)
+					{
+						m_selection.add((TreeObject)o);
+					}
+				}
+				
+				event.doit = (m_selection.size() > 0);
+			}
+		});
+		
+		m_viewer.addDropSupport(DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer()}, new DropTargetAdapter()
+		{
+			public void dragOver(DropTargetEvent event)
+			{
+				if (event.item instanceof TreeItem)
+				{
+					TreeItem item = (TreeItem)event.item;
+					
+					if (item.getData() instanceof TreeGroup)
+					{
+						event.detail = DND.DROP_MOVE;
+					}
+					else
+					{
+						event.detail = DND.DROP_NONE;
+					}
+				}
+			}
+			
+			public void drop(DropTargetEvent event)
+			{
+				boolean success = true;
+				
+				TreeGroup dest = (TreeGroup)((TreeItem)event.item).getData();
+				
+				for (TreeObject src : m_selection)
+				{
+					if (src.isQueryGroup() != dest.isQueryGroup())
+					{
+						MessageDialog.openError(getSite().getShell(), "Paste error", 
+							"Copy/cut and paste cannot be performed between query and snapshot groups");
+						
+						success = false;
+						break;
+					}			
+				}
+				
+				if (success)
+				{
+					for (TreeObject src : m_selection)
+					{
+						success = PasteObjectAction.pasteObject(getSite().getWorkbenchWindow(), src, dest, true);
+						
+						if (!success)
+							break;
+					}					
+				}
+			}
+		});
 		
 		m_viewer.setComparator(new ViewerComparator()
 		{

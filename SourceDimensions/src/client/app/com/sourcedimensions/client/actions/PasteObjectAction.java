@@ -12,7 +12,6 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import com.sourcedimensions.client.Clipboard;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.db.DuplicateNameException;
-import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
@@ -44,33 +43,39 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 		
 		for (Object o : Clipboard.getSource())
 		{
-			success = pasteObject(m_window, (TreeObject)o, (TreeGroup)m_selection.getFirstElement());
-			
-			if (!success)
+			if (((TreeObject)o).isQueryGroup() != ((TreeGroup)m_selection.getFirstElement()).isQueryGroup())
+			{
+				MessageDialog.openError(m_window.getShell(), "Paste error", 
+					"Copy/cut and paste cannot be performed between query and snapshot groups");
+				
+				success = false;
 				break;
+			}			
 		}
 		
-		
-		if (Clipboard.isCut() && success)
-			Clipboard.resetSource();
+		if (success)
+		{
+			for (Object o : Clipboard.getSource())
+			{
+				success = pasteObject(m_window, (TreeObject)o, (TreeGroup)m_selection.getFirstElement(), Clipboard.isCut());
+				
+				if (!success)
+					break;
+			}
+
+			if (Clipboard.isCut() && success)
+				Clipboard.resetSource();		
+		}
 	}	
 
-	public static boolean pasteObject(IWorkbenchWindow window, TreeObject source, TreeGroup dest)
+	public static boolean pasteObject(IWorkbenchWindow window, TreeObject source, TreeGroup dest, boolean isCut)
 	{
 		TreeObject parent = source.getParent();
-		
-		if (source.isQueryGroup() != dest.isQueryGroup())
-		{
-			MessageDialog.openError(window.getShell(), "Paste error", 
-				"Copy/cut and paste cannot be performed between query and snapshot groups");
-			
-			return false;
-		}
 		
 		String name = source.getName();
 		int i = 0;
 		
-		if (Clipboard.isCut())
+		if (isCut)
 		{
 			while (true)
 			{
@@ -150,7 +155,7 @@ public class PasteObjectAction implements IWorkbenchWindowActionDelegate, IObjec
 					
 			viewer.setExpandedState(dest, true);
 			
-			if (Clipboard.isCut())
+			if (isCut)
 				viewer.refresh(parent);
 			
 			viewer.refresh(dest);

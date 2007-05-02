@@ -40,45 +40,6 @@ public class SnapshotView extends EditorPart
 	protected SnapshotNodeObject[] m_root = new SnapshotNodeObject[0];
 	protected Snapshot m_snapshot;
 	
-	protected static final String[] m_toolTipTable =
-	{
-		"",
-		"Namespace Declaration",
-		"Class Declaration",
-		"Anonymous Class Declaration",
-		"Interface Declaration",
-		"Delegate Declaration",
-		"Enum Declaration",
-		"Struct Declaration",
-		"Annotation Declaration",
-		"Anonymous Method Declaration",
-		"Constant Declaration",
-		"Constructor Declaration",
-		"Destructor Declaration",
-		"Enum Constant Declaration",
-		"Event Declaration",
-		"Event Add Declaration",
-		"Event Remove Declaration",
-		"Field Declaration",
-		"Indexer Declaration",
-		"Indexer Get Declaration",
-		"Indexer Set Declaration",
-		"Method Declaration",
-		"Operator Declaration",
-		"Property Declaration",
-		"Property Get Declaration",
-		"Property Set Declaration",
-		"Local Declaration",
-		"Parameter Declaration",
-		"Base Class",
-		"Base Interface",
-		"Class Reference",
-		"Interface Reference",
-		"Struct Reference",
-		"Enum Reference",
-		"Delegate Reference"
-	};
-
 	public void doSave(IProgressMonitor monitor) 
 	{
 	}
@@ -179,23 +140,23 @@ public class SnapshotView extends EditorPart
 		{
 			switch (SnapshotNode.Type.values()[m_type])
 			{
-				case NAMESPACE_DECL:			return Util.getSharedImage(IImageKeys.IMG_NAMESPACE_DECL);
-				case CLASS_DECL:				return Util.getSharedImage(IImageKeys.IMG_CLASS_DECL);
+				case NAMESPACE_DECL:		return Util.getSharedImage(IImageKeys.IMG_NAMESPACE_DECL);
+				case CLASS_DECL:			return Util.getSharedImage(IImageKeys.IMG_CLASS_DECL);
 				case ANONYMOUS_CLASS_DECL:	return Util.getSharedImage(IImageKeys.IMG_ANONYM_CLASS_DECL);
-				case INTERFACE_DECL:			return Util.getSharedImage(IImageKeys.IMG_INTERFACE_DECL);
+				case INTERFACE_DECL:		return Util.getSharedImage(IImageKeys.IMG_INTERFACE_DECL);
 				case DELEGATE_DECL:			return Util.getSharedImage(IImageKeys.IMG_DELEGATE_DECL);
 				case ENUM_DECL:				return Util.getSharedImage(IImageKeys.IMG_ENUM_DECL);
 				case STRUCT_DECL:			return Util.getSharedImage(IImageKeys.IMG_STRUCT_DECL);
-				case ANNOT_DECL:		return Util.getSharedImage(IImageKeys.IMG_ANNOT_DECL);
+				case ANNOT_DECL:			return Util.getSharedImage(IImageKeys.IMG_ANNOT_DECL);
 				case ANONYM_METHOD_DECL:	return Util.getSharedImage(IImageKeys.IMG_ANONYM_METHOD_DECL);
 				case CONST_DECL:			return Util.getSharedImage(IImageKeys.IMG_CONST_DECL);
 				case CONSTRUCTOR_DECL:		return Util.getSharedImage(IImageKeys.IMG_CONSTRUCTOR_DECL);
 				case DESTRUCTOR_DECL:		return Util.getSharedImage(IImageKeys.IMG_DESTRUCTOR_DECL);
 				case ENUM_CONST_DECL:		return Util.getSharedImage(IImageKeys.IMG_ENUM_CONST_DECL);
-				case EVENT_DECL:				return Util.getSharedImage(IImageKeys.IMG_EVENT_DECL);
-				case EVENT_ADD_DECL:			return Util.getSharedImage(IImageKeys.IMG_EVENT_ADD_DECL); 
+				case EVENT_DECL:			return Util.getSharedImage(IImageKeys.IMG_EVENT_DECL);
+				case EVENT_ADD_DECL:		return Util.getSharedImage(IImageKeys.IMG_EVENT_ADD_DECL); 
 				case EVENT_REMOVE_DECL:		return Util.getSharedImage(IImageKeys.IMG_EVENT_REMOVE_DECL);
-				case FIELD_DECL:				return Util.getSharedImage(IImageKeys.IMG_FIELD_DECL);
+				case FIELD_DECL:			return Util.getSharedImage(IImageKeys.IMG_FIELD_DECL);
 				case INDEXER_DECL:			return Util.getSharedImage(IImageKeys.IMG_INDEXER_DECL);
 				case INDEXER_GET_DECL:		return Util.getSharedImage(IImageKeys.IMG_INDEXER_GET_DECL);
 				case INDEXER_SET_DECL:		return Util.getSharedImage(IImageKeys.IMG_INDEXER_SET_DECL);
@@ -204,14 +165,14 @@ public class SnapshotView extends EditorPart
 				case PROPERTY_DECL:			return Util.getSharedImage(IImageKeys.IMG_PROPERTY_DECL);
 				case PROPERTY_GET_DECL:		return Util.getSharedImage(IImageKeys.IMG_PROPERTY_GET_DECL);
 				case PROPERTY_SET_DECL:		return Util.getSharedImage(IImageKeys.IMG_PROPERTY_SET_DECL);
-				case BASE_CLASS:		return Util.getSharedImage(IImageKeys.IMG_BASE_CLASS);
-				case BASE_INTERFACE:	return Util.getSharedImage(IImageKeys.IMG_BASE_INTERFACE);
-				case LOCAL_DECL:		return Util.getSharedImage(IImageKeys.IMG_LOCAL_DECL);
-				case CLASS_REF:			return Util.getSharedImage(IImageKeys.IMG_CLASS_REF);
-				case INTERFACE_REF:		return Util.getSharedImage(IImageKeys.IMG_INTERFACE_REF);
-				case STRUCT_REF:		return Util.getSharedImage(IImageKeys.IMG_STRUCT_REF);
-				case ENUM_REF:			return Util.getSharedImage(IImageKeys.IMG_ENUM_REF);
-				case DELEGATE_REF:		return Util.getSharedImage(IImageKeys.IMG_DELEGATE_REF);
+				case BASE_CLASS:			return Util.getSharedImage(IImageKeys.IMG_BASE_CLASS);
+				case BASE_INTERFACE:		return Util.getSharedImage(IImageKeys.IMG_BASE_INTERFACE);
+				case LOCAL_DECL:			return Util.getSharedImage(IImageKeys.IMG_LOCAL_DECL);
+				case CLASS_REF:				return Util.getSharedImage(IImageKeys.IMG_CLASS_REF);
+				case INTERFACE_REF:			return Util.getSharedImage(IImageKeys.IMG_INTERFACE_REF);
+				case STRUCT_REF:			return Util.getSharedImage(IImageKeys.IMG_STRUCT_REF);
+				case ENUM_REF:				return Util.getSharedImage(IImageKeys.IMG_ENUM_REF);
+				case DELEGATE_REF:			return Util.getSharedImage(IImageKeys.IMG_DELEGATE_REF);
 			
 				default:
 					return null;
@@ -410,8 +371,7 @@ public class SnapshotView extends EditorPart
 		m_viewer.setContentProvider(new SnapshotContentProvider());
 		getSite().setSelectionProvider(m_viewer);
 		m_viewer.setLabelProvider(new SnapshotLabelProvider());
-		m_viewer.setInput(getEditorSite());
-		
+		m_viewer.setInput(getEditorSite());		
 	}
 
 	public void setFocus() 
