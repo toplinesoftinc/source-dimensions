@@ -110,7 +110,7 @@ public class WebService implements IWebService
 		return prjSet;
 	}
 	
-	public Snapshot runSymbolQuery(String sessionID, SymbolQuery query) throws XFireFault
+	public Snapshot runSymbolQuery(String sessionID, String projectId, SymbolQuery query) throws XFireFault
 	{
 		verifySession(sessionID);
 		
@@ -120,17 +120,17 @@ public class WebService implements IWebService
 		
 		root.setChildren(new ArrayList<SnapshotNode>());
 		
-		root.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS_DECL, "Class A"));
-		root.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS_DECL, "Class B"));
-		root.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS_DECL, "Class C"));
+		root.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class A"));
+		root.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class B"));
+		root.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class C"));
 		
-		SnapshotNode node = new SnapshotNode(SnapshotNode.Type.NAMESPACE_DECL, "Namespace A");
+		SnapshotNode node = new SnapshotNode(SnapshotNode.Type.NAMESPACE, "Namespace A");
 		
 		root.getChildren().add(node);
 		node.setChildren(new ArrayList<SnapshotNode>());
 		
-		node.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS_DECL, "Class Y"));
-		node.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS_DECL, "Class Z"));
+		node.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class Y"));
+		node.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class Z"));
 		
 				
 		return snapshot;

@@ -55,6 +55,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		WSConsumer consumer = new WSConsumer();
 		Snapshot snapshot;
 		String dest = query.getDestination();
+		String projectId = ProjectView.getProject().getId();
 		
 		if (dest.trim().length() == 0 || Pattern.matches(".*" + Folder.DIVIDER_REGEX, dest))
 		{
@@ -89,7 +90,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		
 		try
 		{
-			snapshot = (Snapshot)consumer.invokeWebService(shell, "runSymbolQuery", new Object[] { query });			
+			snapshot = (Snapshot)consumer.invokeWebService(shell, "runSymbolQuery", new Object[] { projectId, query });			
 		}
 		catch (Exception ex)
 		{

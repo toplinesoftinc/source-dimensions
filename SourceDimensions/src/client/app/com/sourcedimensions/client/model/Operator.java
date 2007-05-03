@@ -2,8 +2,8 @@ package com.sourcedimensions.client.model;
 
 public enum Operator
 {
-	UNARY_PLUS(1<<0),
-	UNARY_MINUS(1<<1),
+	UNARYPLUS(1<<0),
+	UNARYMINUS(1<<1),
 	NOT(1<<2),
 	COMPLEMENT(1<<3),
 	INCREMENT(1<<4),
@@ -15,19 +15,19 @@ public enum Operator
 	MULT(1<<10),
 	DIVISION(1<<11),
 	REMINDER(1<<12),
-	BITWISE_AND(1<<13),
-	BITWISE_OR(1<<14),
-	BITWISE_XOR(1<<15),
+	BITWISEAND(1<<13),
+	BITWISEOR(1<<14),
+	BITWISEXOR(1<<15),
 	LSHIFT(1<<16),
 	RSHIFT(1<<17),
 	EQ(1<<18),
-	NOT_EQ(1<<19),
+	NOTEQ(1<<19),
 	GT(1<<20),
 	LESS(1<<21),
-	GT_EQ(1<<22),
-	LESS_EQ(1<<23),
-	IMPL_CONV(1<<24),
-	EXPL_CONV(1<<25),
+	GTEQ(1<<22),
+	LESSEQ(1<<23),
+	IMPLCONV(1<<24),
+	EXPLCONV(1<<25),
 	ALL(1<<26);
 	
 	Operator(int val)

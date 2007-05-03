@@ -63,11 +63,6 @@
 	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/spring-1.2.6.jar" kind="lib"/>
 	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/stax-api-1.0.1.jar" kind="lib"/>
 	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/stax-utils-snapshot-20040917.jar" kind="lib"/>
-	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/wsdl4j-1.5.2.jar" kind="lib"/>
-	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/wss4j-1.5.0.jar" kind="lib"/>
-	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/wstx-asl-3.0.1.jar" kind="lib"/>
-	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xbean-2.1.0.jar" kind="lib"/>
-	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xbean-spring-2.5.jar" kind="lib"/>
 	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xercesImpl-2.6.2.jar" kind="lib"/>
 	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xfire-aegis-1.2.2.jar" kind="lib"/>
 	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xfire-annotations-1.2.2.jar" kind="lib"/>

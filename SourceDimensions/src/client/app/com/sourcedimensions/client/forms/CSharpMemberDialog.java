@@ -44,13 +44,13 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		MemberCategory.CONSTRUCTOR,
 		MemberCategory.DESTRUCTOR,
 		MemberCategory.METHOD,
-		MemberCategory.ANONYM_METHOD,
-		MemberCategory.PROPERTY_GET,
-		MemberCategory.PROPERTY_SET,
-		MemberCategory.EVENT_ADD,
-		MemberCategory.EVENT_REMOVE,
-		MemberCategory.INDEXER_GET,
-		MemberCategory.INDEXER_SET,
+		MemberCategory.ANONYMMETHOD,
+		MemberCategory.PROPERTYGET,
+		MemberCategory.PROPERTYSET,
+		MemberCategory.EVENTADD,
+		MemberCategory.EVENTREMOVE,
+		MemberCategory.INDEXERGET,
+		MemberCategory.INDEXERSET,
 		MemberCategory.OPERATOR,
 		MemberCategory.ALL
 	};
@@ -366,7 +366,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 					val = m_memberNameText.getText().trim();
 					
 					if (val.length() == 0 && ((m_memberCategories & ~(MemberCategory.CONSTRUCTOR.value() | 
-								MemberCategory.DESTRUCTOR.value() | MemberCategory.ANONYM_METHOD.value())) != 0))
+								MemberCategory.DESTRUCTOR.value() | MemberCategory.ANONYMMETHOD.value())) != 0))
 					{
 						MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Member Name Filter");					
 						return;
@@ -480,12 +480,12 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		boolean oper = (cat & MemberCategory.OPERATOR.value()) != 0;
 		
 		boolean param = (cat & (MemberCategory.CONSTRUCTOR.value() 
-				| MemberCategory.METHOD.value() | MemberCategory.ANONYM_METHOD.value() 
-				| MemberCategory.INDEXER_GET.value() | MemberCategory.INDEXER_SET.value() 
+				| MemberCategory.METHOD.value() | MemberCategory.ANONYMMETHOD.value() 
+				| MemberCategory.INDEXERGET.value() | MemberCategory.INDEXERSET.value() 
 				| MemberCategory.OPERATOR.value())) != 0; 
 
 		boolean noname = (cat != 0) && ((cat & ~(MemberCategory.CONSTRUCTOR.value() 
-				| MemberCategory.DESTRUCTOR.value() | MemberCategory.ANONYM_METHOD.value())) == 0);
+				| MemberCategory.DESTRUCTOR.value() | MemberCategory.ANONYMMETHOD.value())) == 0);
 		
 		m_memberNameText.setEnabled(!oper_only && !noname);
 		m_operatorList.setEnabled(oper);

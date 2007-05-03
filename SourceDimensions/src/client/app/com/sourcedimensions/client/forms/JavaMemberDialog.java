@@ -40,7 +40,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		MemberCategory.FIELD,
 		MemberCategory.CONSTRUCTOR,
 		MemberCategory.METHOD,
-		MemberCategory.ENUM_CONST,
+		MemberCategory.ENUMCONST,
 		MemberCategory.ALL
 	};
 	private final static Modifier[] m_modifierArray =
@@ -98,7 +98,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		createShell(parent);
 		m_memberNameText.setText(name);
 		setTriStateBoolValue(m_typePropsList.getItem(m_arrayItem), type.getTypeProps().getMask(Type.Property.ARRAY.value()));
-		setTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem), type.getTypeProps().getMask(Type.Property.TYPE_PARAM.value()));
+		setTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem), type.getTypeProps().getMask(Type.Property.TYPEPARAM.value()));
 		m_typeNameText.setText(type.getName());
 		m_anyParamsCheckBox.setSelection(anyParams);
 		enableParamControls(!anyParams);
@@ -359,7 +359,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				m_type.setName(m_typeNameText.getText());				
 				m_type.getTypeProps().reset();
 				m_type.getTypeProps().setMask(Type.Property.ARRAY.value(), getTriStateBoolValue(m_typePropsList.getItem(m_arrayItem)));
-				m_type.getTypeProps().setMask(Type.Property.TYPE_PARAM.value(), getTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem)));
+				m_type.getTypeProps().setMask(Type.Property.TYPEPARAM.value(), getTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem)));
 				
 				if (!m_paramsTable.getEnabled())
 				{

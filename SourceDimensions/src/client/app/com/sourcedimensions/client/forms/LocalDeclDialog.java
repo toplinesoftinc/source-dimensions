@@ -43,13 +43,13 @@ public class LocalDeclDialog extends DialogBase
 	private Type.Property[] m_javaTypeProps =
 	{
 		Type.Property.ARRAY,
-		Type.Property.TYPE_PARAM
+		Type.Property.TYPEPARAM
 	};
 	
 	private Type.Property[] m_csharpTypeProps =
 	{
 		Type.Property.ARRAY,
-		Type.Property.TYPE_PARAM,
+		Type.Property.TYPEPARAM,
 		Type.Property.POINTER,
 		Type.Property.NULLABLE
 	};

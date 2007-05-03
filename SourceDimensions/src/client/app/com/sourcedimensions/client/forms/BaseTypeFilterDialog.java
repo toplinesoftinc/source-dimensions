@@ -87,7 +87,7 @@ public class BaseTypeFilterDialog extends DialogBase
 			{
 				String val;
 				
-				if (m_typeCategoryCombo.getSelectionIndex() == BaseTypeCategory.INTEGRAL_TYPE.value())
+				if (m_typeCategoryCombo.getSelectionIndex() == BaseTypeCategory.INTEGRALTYPE.value())
 					val = m_integralTypeCombo.getText().trim();
 				else
 					val = m_baseTypeFilterText.getText().trim();
@@ -147,7 +147,7 @@ public class BaseTypeFilterDialog extends DialogBase
 		{
 			m_typeCategoryCombo.select(m_categoryValue.value());
 			
-			if (m_categoryValue == BaseTypeCategory.INTEGRAL_TYPE)
+			if (m_categoryValue == BaseTypeCategory.INTEGRALTYPE)
 			{
 				m_integralTypeCombo.setVisible(true);
 				m_baseTypeFilterText.setVisible(false);				
@@ -213,7 +213,7 @@ public class BaseTypeFilterDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				boolean integral_type = (m_typeCategoryCombo.getSelectionIndex() == BaseTypeCategory.INTEGRAL_TYPE.value()); 
+				boolean integral_type = (m_typeCategoryCombo.getSelectionIndex() == BaseTypeCategory.INTEGRALTYPE.value()); 
 				m_integralTypeCombo.setVisible(integral_type);
 				m_baseTypeFilterText.setVisible(!integral_type);
 			}

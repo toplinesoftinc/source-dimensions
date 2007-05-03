@@ -89,7 +89,7 @@ public class TypeFilterDialog extends DialogBase
 		TypeCategory.CLASS,
 		TypeCategory.INTERFACE,
 		TypeCategory.ENUM,
-		TypeCategory.ANONYM_CLASS,
+		TypeCategory.ANONYMCLASS,
 		TypeCategory.ANNOTATION,
 		TypeCategory.ALL
 	};
@@ -595,7 +595,7 @@ public class TypeFilterDialog extends DialogBase
 			}
 		}
 		
-		boolean named = (cat == 0) || (cat & ~TypeCategory.ANONYM_CLASS.value()) != 0;
+		boolean named = (cat == 0) || (cat & ~TypeCategory.ANONYMCLASS.value()) != 0;
 		
 		m_typeNameText.setEnabled(named);
 		m_attrCheckBox.setEnabled(named);

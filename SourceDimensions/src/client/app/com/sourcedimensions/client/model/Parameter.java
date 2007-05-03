@@ -10,8 +10,8 @@ public class Parameter
 	{
 		ANY(0),
 		EXACT(1),
-		LESS_EQ(2),
-		GREATER_EQ(3),
+		LESSEQ(2),
+		GREATEREQ(3),
 		BETWEEN(4),
 		LIST(5);
 		
@@ -72,10 +72,10 @@ public class Parameter
 			case BETWEEN:
 				return m_posMin + " - " + m_posMax;
 				
-			case LESS_EQ:
+			case LESSEQ:
 				return "<= " + m_posMax;
 				
-			case GREATER_EQ:
+			case GREATEREQ:
 				return ">= " + m_posMin;
 				
 			case EXACT:

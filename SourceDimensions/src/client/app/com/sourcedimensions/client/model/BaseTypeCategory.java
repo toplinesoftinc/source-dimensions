@@ -4,8 +4,8 @@ public enum BaseTypeCategory
 {
 	CLASS(0),
 	INTERFACE(1),
-	CLASS_INTERFACE(2),
-	INTEGRAL_TYPE(3);
+	CLASSINTF(2),
+	INTEGRALTYPE(3);
 	
 	BaseTypeCategory(int val)
 	{

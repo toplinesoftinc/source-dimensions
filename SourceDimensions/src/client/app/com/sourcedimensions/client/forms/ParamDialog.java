@@ -76,7 +76,7 @@ public class ParamDialog extends DialogBase
 	private static Type.Property[] m_javaTypeProps = new Type.Property[]
 	{
 		Type.Property.ARRAY,
-		Type.Property.TYPE_PARAM,
+		Type.Property.TYPEPARAM,
     };
 	
 	public ParamDialog(Shell parent, Parameter param)
@@ -99,12 +99,12 @@ public class ParamDialog extends DialogBase
 				positionListChanged();
 				break;
 
-			case GREATER_EQ:
+			case GREATEREQ:
 				m_notLessRadioButton.setSelection(true);
 				m_notLessPosSpinner.setSelection(param.getPosMin());				
 				break;
 								
-			case LESS_EQ:
+			case LESSEQ:
 				m_noMoreRadioButton.setSelection(true);
 				m_noMorePosSpinner.setSelection(param.getPosMax());
 				break;
@@ -241,12 +241,12 @@ public class ParamDialog extends DialogBase
 				}
 				else if (m_notLessRadioButton.getSelection())
 				{
-					m_param.setPosType(Parameter.Position.GREATER_EQ);
+					m_param.setPosType(Parameter.Position.GREATEREQ);
 					m_param.setPosMin(m_notLessPosSpinner.getSelection());
 				}
 				else if (m_noMoreRadioButton.getSelection())
 				{
-					m_param.setPosType(Parameter.Position.LESS_EQ);
+					m_param.setPosType(Parameter.Position.LESSEQ);
 					m_param.setPosMax(m_noMorePosSpinner.getSelection());
 				}
 				else if (m_exactRadioButton.getSelection())

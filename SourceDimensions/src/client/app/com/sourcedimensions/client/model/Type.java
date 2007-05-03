@@ -9,7 +9,7 @@ public class Type
 	public enum Property
 	{
 		ARRAY(1<<0),
-		TYPE_PARAM(1<<1, "TYPE PARAM"),		
+		TYPEPARAM(1<<1, "TYPE PARAM"),		
 		POINTER(1<<2),
 		NULLABLE(1<<3);
 
