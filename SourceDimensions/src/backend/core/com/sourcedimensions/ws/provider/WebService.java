@@ -8,6 +8,7 @@ import org.hibernate.SessionFactory;
 import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SnapshotNode;
 import com.sourcedimensions.client.model.SymbolQuery;
+import com.sourcedimensions.server.query.SymbolQueryEngine;
 import com.sourcedimensions.server.sys.profile.*;
 import com.sourcedimensions.server.sys.Project;
 
@@ -114,25 +115,11 @@ public class WebService implements IWebService
 	{
 		verifySession(sessionID);
 		
+		SymbolQueryEngine engine = new SymbolQueryEngine(sessionID);
+
 		Snapshot snapshot = new Snapshot();
-		SnapshotNode root = new SnapshotNode();
-		snapshot.setRoot(root);
+		snapshot.setRoot(engine.execute(projectId, query));
 		
-		root.setChildren(new ArrayList<SnapshotNode>());
-		
-		root.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class A"));
-		root.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class B"));
-		root.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class C"));
-		
-		SnapshotNode node = new SnapshotNode(SnapshotNode.Type.NAMESPACE, "Namespace A");
-		
-		root.getChildren().add(node);
-		node.setChildren(new ArrayList<SnapshotNode>());
-		
-		node.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class Y"));
-		node.getChildren().add(new SnapshotNode(SnapshotNode.Type.CLASS, "Class Z"));
-		
-				
 		return snapshot;
 	}
 }

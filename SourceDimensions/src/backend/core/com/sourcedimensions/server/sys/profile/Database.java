@@ -4,7 +4,7 @@ package com.sourcedimensions.server.sys.profile;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.*;
 
@@ -143,4 +143,17 @@ public class Database
 		return m_accounts.iterator();
 	}
 	
+	public static Database getDbBySessionID(String sessionID)
+	{
+		Session session = getProfileSessionFactory().getCurrentSession();
+		
+		session.beginTransaction();
+		
+		Database db = (Database)session.createQuery("SELECT db FROM UserSession s " +
+			" INNER JOIN s.m_user.m_account.m_database db WHERE s.m_id = :id").setString("id", sessionID).uniqueResult();
+				
+		session.getTransaction().commit();
+		
+		return db;
+	}
 }
