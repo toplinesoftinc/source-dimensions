@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.hibernate.Query;
 import org.hibernate.Session;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.SnapshotNode;
@@ -51,7 +53,7 @@ public class SymbolQueryEngine
 	{
 		SnapshotNode rootNode = new SnapshotNode();
 		rootNode.setChildren(new ArrayList<SnapshotNode>());
-		Set<TypeDeclaration> leafNodes = new HashSet<TypeDeclaration>();
+		HashSet<TypeDeclaration> leafNodes = new HashSet<TypeDeclaration>();
 		
 		Session session = m_db.getDbSessionFactory().getCurrentSession();
 		
@@ -59,7 +61,7 @@ public class SymbolQueryEngine
 		
 		if (root == null || root.getKind() == TypeDeclKind.NAMESPACE)
 		{
-			Set<TypeDeclaration> leaves = new HashSet<TypeDeclaration>();
+			HashSet<TypeDeclaration> leaves = new HashSet<TypeDeclaration>();
 			
 			for (String filter : query.getNamespaceFilter())
 			{
@@ -87,32 +89,43 @@ public class SymbolQueryEngine
 						if (lookahead != null)
 							pattern = Pattern.compile(lookahead);
 						
-						Set<TypeDeclaration> buf = new HashSet<TypeDeclaration>();
+						HashSet<TypeDeclaration> buf = new HashSet<TypeDeclaration>();
 						buf.addAll(leaves);
 						
 						while (buf.size() > 0)
 						{
-							TypeDeclaration[] copyArray = (TypeDeclaration[])buf.toArray();
+							Set<TypeDeclaration> copySet = (Set)buf.clone();
 							
-							for (int j = 0; j < copyArray.length; j++)
+							for (TypeDeclaration decl : copySet)
 							{
-								List list = session.createQuery("FROM TypeDeclaration  WHERE m_parent = :parent AND m_kind = :kind")
-									.setEntity("parent", copyArray[j]).setInteger("kind", TypeDeclKind.NAMESPACE.value()).list();
+								Query q;
 
+								if (decl == null)
+								{
+									q = session.createQuery("FROM TypeDeclaration WHERE m_parent IS NULL AND m_kind = :kind");
+								}
+								else
+								{
+									q = session.createQuery("FROM TypeDeclaration WHERE m_parent = :parent AND m_kind = :kind");
+									q.setEntity("parent", decl);
+								}
+								
+								List list = q.setInteger("kind", TypeDeclKind.NAMESPACE.value()).list();
+								
 								for (Object o : list)
 								{
-									TypeDeclaration decl = (TypeDeclaration)o;
+									TypeDeclaration d = (TypeDeclaration)o;
 									
 									if (pattern != null && pattern.matcher(decl.m_name).matches())
-										leaves.add(decl);
+										leaves.add(d);
 									else
-										buf.add(decl);
+										buf.add(d);
 								}
 								
 								if (list.size() == 0 && pattern == null)
-									leaves.add(copyArray[j]);
+									leaves.add(decl);
 								
-								buf.remove(copyArray[i]);
+								buf.remove(decl);
 							}							
 						}
 					}
@@ -120,22 +133,33 @@ public class SymbolQueryEngine
 					{
 						Pattern pattern = Pattern.compile(names[i]);
 						
-						TypeDeclaration[] copyArray = (TypeDeclaration[])leaves.toArray();
+						Set<TypeDeclaration> copySet = (Set)leaves.clone();
 						
-						for (int j = 0; j < copyArray.length; j++)
+						for (TypeDeclaration decl : copySet)
 						{
-							List list = session.createQuery("FROM TypeDeclaration WHERE m_parent = :parent AND m_kind = :kind")
-								.setEntity("parent", copyArray[j]).setInteger("kind", TypeDeclKind.NAMESPACE.value()).list();
+							Query q;
+							
+							if (decl == null)
+							{
+								q = session.createQuery("FROM TypeDeclaration WHERE m_parent IS NULL AND m_kind = :kind");
+							}
+							else
+							{
+								q = session.createQuery("FROM TypeDeclaration WHERE m_parent = :parent AND m_kind = :kind");
+								q.setEntity("parent", decl);
+							}
+							
+							List list = q.setInteger("kind", TypeDeclKind.NAMESPACE.value()).list();
 							
 							for (Object o : list)
 							{
-								TypeDeclaration decl = (TypeDeclaration)o;
+								TypeDeclaration d = (TypeDeclaration)o;
 								
-								if (pattern.matcher(decl.m_name).matches())
-									leaves.add(decl);
+								if (pattern.matcher(d.m_name).matches())
+									leaves.add(d);
 							}
 							
-							leaves.remove(copyArray[j]);
+							leaves.remove(decl);
 						}
 					}
 				}
