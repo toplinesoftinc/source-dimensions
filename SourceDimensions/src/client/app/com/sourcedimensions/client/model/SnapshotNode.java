@@ -8,6 +8,7 @@ public class SnapshotNode
 	protected String m_label;
 	protected List<SnapshotNode> m_children;
 	protected String m_fileId;
+	protected String m_originId;
 	protected long m_startPos = -1L, m_endPos = -1L;
 	
 	public Integer m_id;
@@ -17,8 +18,10 @@ public class SnapshotNode
 		m_type = Type.ROOT;
 	}
 	
-	public SnapshotNode(Type type, String label)
+	public SnapshotNode(String fileId, String originId, Type type, String label)
 	{
+		m_fileId = fileId;
+		m_originId = originId;
 		m_type = type;
 		m_label = label;
 	}
@@ -81,6 +84,16 @@ public class SnapshotNode
 	public void setChildren(List<SnapshotNode> children)
 	{
 		m_children = children;
+	}
+	
+	public String getOriginId()
+	{
+		return m_originId;
+	}
+	
+	public void setOriginId(String originId)
+	{
+		m_originId = originId;
 	}
 	
 	public enum Type

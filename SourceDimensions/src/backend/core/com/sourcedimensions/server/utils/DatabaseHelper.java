@@ -27,17 +27,13 @@ public class DatabaseHelper
 		return db;
 	}
 	
-	public static Set<Project> getProjectSpace(Database db, String projectID)
+	public static Set<Project> getProjectSpace(Session session, String projectID)
 	{
 		Set<Project> set = new HashSet<Project>();
 		int size = 0;
 		List<Project> list = new ArrayList<Project>();
 		List<Project> cur = new ArrayList<Project>();
 		
-		Session session = db.getDbSessionFactory().getCurrentSession();
-		
-		session.beginTransaction();
-
 		cur.add((Project)session.get(Project.class, projectID));
 		set.addAll(cur);
 		
@@ -53,8 +49,6 @@ public class DatabaseHelper
 			set.addAll(list);
 			list.clear();
 		}
-		
-		session.getTransaction().commit();
 		
 		return set;
 	}

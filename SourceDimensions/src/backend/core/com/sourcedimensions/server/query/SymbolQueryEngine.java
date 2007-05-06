@@ -56,12 +56,12 @@ public class SymbolQueryEngine
 		SnapshotNode rootNode = new SnapshotNode();
 		rootNode.setChildren(new ArrayList<SnapshotNode>());
 		HashSet<TypeDeclaration> leafNodes = new HashSet<TypeDeclaration>();
-
-		Set<Project> prjSpace = DatabaseHelper.getProjectSpace(m_db, projectId);
 		
 		Session session = m_db.getDbSessionFactory().getCurrentSession();
 		
 		session.beginTransaction();
+
+		Set<Project> prjSpace = DatabaseHelper.getProjectSpace(session, projectId);
 		
 		if (root == null || root.getKind() == TypeDeclKind.NAMESPACE)
 		{
@@ -112,13 +112,13 @@ public class SymbolQueryEngine
 
 								if (decl == null)
 								{
-									q = session.createQuery("FROM TypeDeclaration WHERE m_parent IS NULL " +
-										" AND m_kind = :kind AND m_project IN (:projects)");
+									q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent IS NULL " +
+										" AND d.m_kind = :kind AND d.m_project IN (:projects) ORDER BY d.m_name");
 								}
 								else
 								{
 									q = session.createQuery("FROM TypeDeclaration WHERE m_parent = :parent " +
-										" AND m_kind = :kind AND m_project IN (:projects)");
+										" AND m_kind = :kind AND m_project IN (:projects) ORDER BY m_name");
 									
 									q.setEntity("parent", decl);
 								}
@@ -157,13 +157,13 @@ public class SymbolQueryEngine
 							
 							if (decl == null)
 							{
-								q = session.createQuery("FROM TypeDeclaration WHERE m_parent IS NULL " +
-									" AND m_kind = :kind AND m_project IN (:projects)");
+								q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent IS NULL " +
+									" AND d.m_kind = :kind AND d.m_project IN (:projects) ORDER BY d.m_name");
 							}
 							else
 							{
 								q = session.createQuery("FROM TypeDeclaration WHERE m_parent = :parent " +
-									" AND m_kind = :kind AND m_project IN (:projects)");
+									" AND m_kind = :kind AND m_project IN (:projects) ORDER BY m_name");
 								
 								q.setEntity("parent", decl);
 							}
@@ -191,49 +191,56 @@ public class SymbolQueryEngine
 			}
 		}
 		
-		Map<TypeDeclaration, SnapshotNode> snapshotMap = new HashMap<TypeDeclaration, SnapshotNode>();
+		Map<String, SnapshotNode> snapshotMap = new HashMap<String, SnapshotNode>();
 		
 		for (TypeDeclaration decl : leafNodes)
 		{
 			if (decl != null)
 			{
-				snapshotMap.put(decl, new SnapshotNode(SnapshotNode.Type.NAMESPACE, decl.m_name));
+				snapshotMap.put(decl.m_id, new SnapshotNode(decl.getSourceFile().getID(), 
+					decl.getID(), SnapshotNode.Type.NAMESPACE, decl.m_name));
 				
 			}
 		}
 		
 		while (snapshotMap.size() > 0)
 		{
-			TypeDeclaration[] copyArray = (TypeDeclaration[])snapshotMap.keySet().toArray();
+			Set<String> idSet = new HashSet<String>();
+			idSet.addAll(snapshotMap.keySet());
 			
-			for (TypeDeclaration decl : copyArray)
+			for (String id : idSet)
 			{
-				TypeDeclaration parent = (TypeDeclaration)decl.getParent();
 				
-				if (parent == root)
+				Object obj = session.createQuery("SELECT p FROM TypeDeclaration d " + 
+					" INNER JOIN d.m_parent p WHERE d.m_id = :id").setString("id", id).uniqueResult();
+				
+				if (obj instanceof TypeDeclaration)
 				{
-					rootNode.getChildren().add(snapshotMap.get(decl));
-				}
-				else
-				{
-					SnapshotNode parentNode = snapshotMap.get(parent);
+					TypeDeclaration parent = (TypeDeclaration)obj;
+					SnapshotNode parentNode = snapshotMap.get(parent.getID());
 					
 					if (parentNode == null)
 					{
-						SnapshotNode node = new SnapshotNode(SnapshotNode.Type.NAMESPACE, parent.m_name);
-						snapshotMap.put(decl, node);
+						SnapshotNode node = new SnapshotNode(parent.getSourceFile().getID(), 
+							parent.getID(), SnapshotNode.Type.NAMESPACE, parent.m_name);
+						
+						snapshotMap.put(parent.getID(), node);
 						
 						List<SnapshotNode> children = new ArrayList<SnapshotNode>();
-						children.add(snapshotMap.get(decl));
+						children.add(snapshotMap.get(id));
 						node.setChildren(children);
 					}
 					else
 					{
-						parentNode.getChildren().add(snapshotMap.get(decl));
+						parentNode.getChildren().add(snapshotMap.get(id));
 					}
 				}
+				else
+				{
+					rootNode.getChildren().add(snapshotMap.get(id));					
+				}
 				
-				snapshotMap.remove(decl);
+				snapshotMap.remove(id);
 			}
 		}
 

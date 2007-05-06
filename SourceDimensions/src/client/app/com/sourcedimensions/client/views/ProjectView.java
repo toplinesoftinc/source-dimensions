@@ -25,7 +25,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.SWT;
 import org.eclipse.core.runtime.IAdaptable;
 
-import com.sourcedimensions.client.Clipboard;
 import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.actions.EditQueryAction;
