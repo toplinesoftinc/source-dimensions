@@ -65,9 +65,15 @@ public class SymbolQueryEngine
 		
 		if (root == null || root.getKind() == TypeDeclKind.NAMESPACE)
 		{
-			HashSet<TypeDeclaration> leaves = new HashSet<TypeDeclaration>();
+			HashSet<TypeDeclaration> leaves = new HashSet<TypeDeclaration>();	
+			List<String> namespaceFilter = new ArrayList<String>();
 			
-			for (String filter : query.getNamespaceFilter())
+			if (query.getAllNamespaces())
+				namespaceFilter.add("**");
+			else
+				namespaceFilter.addAll(query.getNamespaceFilter());			
+			
+			for (String filter : namespaceFilter)
 			{
 				String[] names = filter.split(Folder.DIVIDER);
 				
