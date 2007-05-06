@@ -15,7 +15,9 @@ import com.sourcedimensions.client.model.SnapshotNode;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.server.ast.TypeDeclaration;
 import com.sourcedimensions.server.ast.TypeDeclaration.TypeDeclKind;
+import com.sourcedimensions.server.sys.Project;
 import com.sourcedimensions.server.sys.profile.Database;
+import com.sourcedimensions.server.utils.DatabaseHelper;
 
 
 public class SymbolQueryEngine 
@@ -24,7 +26,7 @@ public class SymbolQueryEngine
 	
 	public SymbolQueryEngine(String sessionId)
 	{
-		m_db = Database.getDbBySessionID(sessionId);
+		m_db = DatabaseHelper.getDbBySessionID(sessionId);
 	}
 	
 	public SnapshotNode execute(String projectId, SymbolQuery query)
@@ -54,6 +56,8 @@ public class SymbolQueryEngine
 		SnapshotNode rootNode = new SnapshotNode();
 		rootNode.setChildren(new ArrayList<SnapshotNode>());
 		HashSet<TypeDeclaration> leafNodes = new HashSet<TypeDeclaration>();
+
+		Set<Project> prjSpace = DatabaseHelper.getProjectSpace(m_db, projectId);
 		
 		Session session = m_db.getDbSessionFactory().getCurrentSession();
 		
@@ -102,15 +106,21 @@ public class SymbolQueryEngine
 
 								if (decl == null)
 								{
-									q = session.createQuery("FROM TypeDeclaration WHERE m_parent IS NULL AND m_kind = :kind");
+									q = session.createQuery("FROM TypeDeclaration WHERE m_parent IS NULL " +
+										" AND m_kind = :kind AND m_project IN (:projects)");
 								}
 								else
 								{
-									q = session.createQuery("FROM TypeDeclaration WHERE m_parent = :parent AND m_kind = :kind");
+									q = session.createQuery("FROM TypeDeclaration WHERE m_parent = :parent " +
+										" AND m_kind = :kind AND m_project IN (:projects)");
+									
 									q.setEntity("parent", decl);
 								}
 								
-								List list = q.setInteger("kind", TypeDeclKind.NAMESPACE.value()).list();
+								q.setInteger("kind", TypeDeclKind.NAMESPACE.value());
+								q.setParameterList("projects", prjSpace);
+								
+								List list = q.list();
 								
 								for (Object o : list)
 								{
@@ -141,15 +151,21 @@ public class SymbolQueryEngine
 							
 							if (decl == null)
 							{
-								q = session.createQuery("FROM TypeDeclaration WHERE m_parent IS NULL AND m_kind = :kind");
+								q = session.createQuery("FROM TypeDeclaration WHERE m_parent IS NULL " +
+									" AND m_kind = :kind AND m_project IN (:projects)");
 							}
 							else
 							{
-								q = session.createQuery("FROM TypeDeclaration WHERE m_parent = :parent AND m_kind = :kind");
+								q = session.createQuery("FROM TypeDeclaration WHERE m_parent = :parent " +
+									" AND m_kind = :kind AND m_project IN (:projects)");
+								
 								q.setEntity("parent", decl);
 							}
 							
-							List list = q.setInteger("kind", TypeDeclKind.NAMESPACE.value()).list();
+							q.setInteger("kind", TypeDeclKind.NAMESPACE.value());
+							q.setParameterList("projects", prjSpace);
+							
+							List list = q.list();
 							
 							for (Object o : list)
 							{
@@ -173,7 +189,11 @@ public class SymbolQueryEngine
 		
 		for (TypeDeclaration decl : leafNodes)
 		{
-			snapshotMap.put(decl, new SnapshotNode(SnapshotNode.Type.NAMESPACE, decl.m_name));
+			if (decl != null)
+			{
+				snapshotMap.put(decl, new SnapshotNode(SnapshotNode.Type.NAMESPACE, decl.m_name));
+				
+			}
 		}
 		
 		while (snapshotMap.size() > 0)

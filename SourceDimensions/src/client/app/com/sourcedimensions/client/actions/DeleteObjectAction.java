@@ -12,6 +12,7 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.views.ProjectView;
+import com.sourcedimensions.client.views.SnapshotView;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
 import com.sourcedimensions.client.views.ProjectView.QueryGroup;
 import com.sourcedimensions.client.views.ProjectView.QueryObject;
@@ -57,7 +58,8 @@ public class DeleteObjectAction implements IWorkbenchWindowActionDelegate, IObje
 			}
 			else if (selected instanceof SnapshotObject)
 			{
-				DbAdapter.deleteSnapshot(id);			
+				DbAdapter.deleteSnapshot(id);
+				SnapshotView.closeSnapshot(id);
 			}
 			else if (selected instanceof FolderObject)
 			{
