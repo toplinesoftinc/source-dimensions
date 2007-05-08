@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.MessageDialog;
 import com.sourcedimensions.client.model.*;
+import com.sourcedimensions.client.model.SnapshotNode.Reference;
 
 
 public class DbAdapter 
@@ -634,8 +635,64 @@ public class DbAdapter
 				saveSnapshotNode(c, projectId, snapshotId, id, s);
 			}
 		}
+		
+		if (node.getRefs() != null)
+		{
+			for (Reference ref : node.getRefs())
+			{
+				ps = c.prepareStatement("INSERT INTO REFERENCE(snapshot_node_id, ext_id, file_id, " +
+					"start_pos, end_pos) VALUES (?,?,?,?,?)");
+				
+				ps.setInt(1, snapshotId);
+				ps.setString(2, ref.getId());
+				ps.setString(3,	ref.getFileId());
+				ps.setInt(4, ref.getStartPos());
+				ps.setInt(5, ref.getEndPos());
+				
+				ps.executeUpdate();
+			}
+		}
 	}
 
+
+	public static List<Reference> getSnapshotNodeRefs(int snapshotNodeId) throws Exception
+	{
+		Connection c = null;
+		List<Reference> list = new ArrayList<Reference>();
+		
+		try
+		{
+			c = getConnection();
+			
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM reference WHERE snapshot_node_id = ?");
+			
+			ps.setInt(1, snapshotNodeId);
+						
+			ResultSet rs = ps.executeQuery();
+			
+			while (rs.next())
+			{				
+				list.add(new Reference(rs.getString("ext_id"), rs.getString("file_id"), 
+					rs.getInt("start_pos"), rs.getInt("end_pos")));
+			}
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+		
+		return list;
+	}
+	
 	
 	public static List<SnapshotNode> getSnapshotNodeList(int snapshotId, Integer parentId) throws Exception
 	{
@@ -2267,6 +2324,15 @@ public class DbAdapter
 				"FOREIGN KEY (parent_id) REFERENCES SNAPSHOT_NODE ON DELETE CASCADE",				
 				"FOREIGN KEY (snapshot_id) REFERENCES SNAPSHOT ON DELETE CASCADE",
 				"FOREIGN KEY (project_id) REFERENCES PROJECT"
+			},
+			{
+				"REFERENCE",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"snapshot_node_id INT NOT NULL",
+				"ext_id VARCHAR(36) NOT NULL",
+				"file_id VARCHAR(36) NOT NULL",
+				"start_pos INT NOT NULL",
+				"end_pos INT NOT NULL"
 			},
 			{
 				"QUERY",

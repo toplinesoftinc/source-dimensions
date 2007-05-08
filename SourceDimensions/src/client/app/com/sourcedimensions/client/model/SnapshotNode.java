@@ -7,9 +7,7 @@ public class SnapshotNode
 	protected Type m_type;
 	protected String m_label;
 	protected List<SnapshotNode> m_children;
-	protected String m_fileId;
-	protected String m_originId;
-	protected long m_startPos = -1L, m_endPos = -1L;
+	protected List<Reference> m_refs;
 	
 	public Integer m_id;
 
@@ -18,10 +16,8 @@ public class SnapshotNode
 		m_type = Type.ROOT;
 	}
 	
-	public SnapshotNode(String fileId, String originId, Type type, String label)
+	public SnapshotNode(Type type, String label)
 	{
-		m_fileId = fileId;
-		m_originId = originId;
 		m_type = type;
 		m_label = label;
 	}
@@ -45,37 +41,7 @@ public class SnapshotNode
 	{
 		m_label = label;
 	}
-	
-	public String getFileId()
-	{
-		return m_fileId;
-	}
-	
-	public void setFileId(String fileId)
-	{
-		m_fileId = fileId;
-	}
-	
-	public long getStartPos()
-	{
-		return m_startPos;
-	}
-
-	public void setStartPos(long startPos)
-	{
-		m_startPos = startPos;
-	}
-	
-	public long getEndPos()
-	{
-		return m_endPos;
-	}
-	
-	public void setEndPos(long endPos)
-	{
-		m_endPos = endPos;
-	}
-	
+		
 	public List<SnapshotNode> getChildren()
 	{
 		return m_children;
@@ -86,14 +52,75 @@ public class SnapshotNode
 		m_children = children;
 	}
 	
-	public String getOriginId()
+	public List<Reference> getRefs()
 	{
-		return m_originId;
+		return m_refs;
 	}
 	
-	public void setOriginId(String originId)
+	public void setRefs(List<Reference> refs)
 	{
-		m_originId = originId;
+		m_refs = refs;
+	}
+	
+	public static class Reference
+	{
+		protected String m_id;
+		protected String m_fileId;
+		protected int m_startPos;
+		protected int m_endPos;
+
+		public Reference()
+		{
+			
+		}
+		
+		public Reference(String id, String fileId, int startPos, int endPos)
+		{
+			m_id = id;
+			m_fileId = fileId;
+			m_startPos = startPos;
+			m_endPos = endPos;
+		}
+		
+		public void setId(String id)
+		{
+			m_id = id;
+		}
+		
+		public String getId()
+		{
+			return m_id;
+		}
+		
+		public void setFileId(String fileId)
+		{
+			m_fileId = fileId;
+		}
+		
+		public String getFileId()
+		{
+			return m_fileId;
+		}
+		
+		public void setStartPos(int startPos)
+		{
+			m_startPos = startPos;
+		}
+		
+		public int getStartPos()
+		{
+			return m_startPos;
+		}
+		
+		public void setEndPos(int endPos)
+		{
+			m_endPos = endPos;
+		}
+		
+		public int getEndPos()
+		{
+			return m_endPos;
+		}
 	}
 	
 	public enum Type
