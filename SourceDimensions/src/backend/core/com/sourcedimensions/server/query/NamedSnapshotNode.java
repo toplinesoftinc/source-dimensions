@@ -12,6 +12,7 @@ public class NamedSnapshotNode extends SnapshotNode
 {
 	protected Map<String, NamedSnapshotNode> m_namedContainer = new HashMap<String, NamedSnapshotNode>();
 	protected NamedSnapshotNode m_parent;
+	protected String m_name;
 	
 	public NamedSnapshotNode()
 	{
@@ -23,6 +24,11 @@ public class NamedSnapshotNode extends SnapshotNode
 		super(type, label);
 	}
 
+	public void addChild(NamedSnapshotNode child)
+	{
+		addChild(child.getName(), child);
+	}
+	
 	public void addChild(String name, NamedSnapshotNode child)
 	{
 		NamedSnapshotNode node = m_namedContainer.get(name);
@@ -36,7 +42,7 @@ public class NamedSnapshotNode extends SnapshotNode
 				m_children = new ArrayList<SnapshotNode>();
 			}
 			
-			getChildren().add(child);
+			m_children.add(child);
 			child.m_parent = this;
 		}
 		else
@@ -51,6 +57,23 @@ public class NamedSnapshotNode extends SnapshotNode
 				m_refs.addAll(refs);
 			}
 		}
+		
+		child.setName(name);
+	}
+
+	public NamedSnapshotNode clone()
+	{
+		NamedSnapshotNode clone = new NamedSnapshotNode(m_type, m_label);
+		
+		clone.setName(m_name);
+		
+		if (m_refs != null)
+		{
+			clone.m_refs = new ArrayList<Reference>();
+			clone.m_refs.addAll(m_refs);
+		}
+		
+		return clone;
 	}
 	
 	public NamedSnapshotNode getChild(String name)
@@ -61,5 +84,15 @@ public class NamedSnapshotNode extends SnapshotNode
 	public NamedSnapshotNode getParent()
 	{
 		return m_parent;
+	}
+	
+	public String getName()
+	{
+		return m_name;
+	}
+	
+	public void setName(String name)
+	{
+		m_name = name;
 	}
 }

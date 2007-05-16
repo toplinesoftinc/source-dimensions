@@ -96,7 +96,7 @@ public class WSConsumer
 			{
 				m_fault = fault;
 				
-				if (fault.getDetail().equals(IWebService.FaultValues.SESSION_EXPIRED.name()))
+				if (fault.getRole().equals(IWebService.FaultValues.SESSION_EXPIRED.name()))
 				{
 					MessageDialog.openWarning(null, "Session expired", "You session is expired. Please re-login");
 			

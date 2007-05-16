@@ -46,7 +46,7 @@ public class UserSession
 		
 		session.beginTransaction();
 		
-		UserSession userSession = (UserSession)session.get(UserSession.class, sessionID);
+		UserSession userSession = (UserSession)session.createQuery("FROM UserSession WHERE m_id = :id").setString("id", sessionID).uniqueResult();	
 		
 		if (userSession == null)
 			valid = false;

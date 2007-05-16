@@ -1,13 +1,9 @@
 package com.sourcedimensions.server.query;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
 import com.sourcedimensions.client.model.Folder;
@@ -108,7 +104,7 @@ public class SymbolQueryEngine
 				}
 			}
 			
-			//TODO: apply filter with wildcards
+			applyWildcardNamespaceFilter(session, prjSpace, node, null, decl, lookahead);
 		}
 		else
 		{
@@ -136,11 +132,7 @@ public class SymbolQueryEngine
 			
 			if (list.size() == 0)
 			{
-				if (node.getRefs() == null)
-					node.setRefs(new ArrayList<Reference>());
-				
-				node.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(),
-						decl.m_left, decl.m_right));
+				addReference(node, decl);
 			}
 			
 			for (TypeDeclaration d : list)
@@ -150,7 +142,7 @@ public class SymbolQueryEngine
 					NamedSnapshotNode n = new NamedSnapshotNode(Type.NAMESPACE, d.m_name);
 					node.addChild(d.m_name, n);
 					
-					if (filter.length > (pos + 1))
+					if (pos < (filter.length - 1))
 					{
 						applyNamespaceFilter(session, prjSpace, n, d, filter, pos + 1);
 					}
@@ -158,4 +150,97 @@ public class SymbolQueryEngine
 			}			
 		}
 	}
+	
+	protected void applyWildcardNamespaceFilter(Session session, Set<Project> prjSpace, 
+		NamedSnapshotNode root,	NamedSnapshotNode tempRoot, TypeDeclaration decl, String lookahead)
+	{
+		if (tempRoot == null)
+			tempRoot = new NamedSnapshotNode();
+
+		Query q;
+		Pattern pattern = null;
+		
+		if (lookahead != null)
+			pattern = Pattern.compile(lookahead);
+		
+		if (decl == null)
+		{
+			q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent IS NULL " +
+				" AND d.m_kind = :kind AND d.m_project IN (:projects) ORDER BY d.m_name");
+		}
+		else
+		{
+			q = session.createQuery("FROM TypeDeclaration WHERE m_parent = :parent " +
+				" AND m_kind = :kind AND m_project IN (:projects) ORDER BY m_name");
+			
+			q.setEntity("parent", decl);
+		}
+		
+		q.setInteger("kind", TypeDeclKind.NAMESPACE.value());
+		q.setParameterList("projects", prjSpace);
+		
+		List<TypeDeclaration> list = q.list();
+		
+		if (lookahead == null)
+		{
+			if (list.size() == 0)
+			{
+				copyTreeBranch(root, tempRoot);
+			}
+			else
+			{
+				for (TypeDeclaration d : list)
+				{
+					NamedSnapshotNode temp = new NamedSnapshotNode(Type.NAMESPACE, d.m_name);
+					
+					addReference(temp, d);
+					tempRoot.addChild(temp);
+					
+					applyWildcardNamespaceFilter(session, prjSpace, root, temp, d, lookahead);
+				}
+			}
+		}
+		else
+		{
+			for (TypeDeclaration d : list)
+			{
+				NamedSnapshotNode temp = new NamedSnapshotNode(Type.NAMESPACE, d.m_name);
+				
+				addReference(temp, d);
+				tempRoot.addChild(temp);
+				
+				if (pattern.matcher(d.m_name).matches())
+					copyTreeBranch(root, temp);
+				else
+					applyWildcardNamespaceFilter(session, prjSpace, root, temp, d, lookahead);
+			}
+		}
+	}
+	
+	protected void copyTreeBranch(NamedSnapshotNode dest, NamedSnapshotNode source)
+	{
+		if (source.getParent() != null)
+		{
+			NamedSnapshotNode src = source;
+			NamedSnapshotNode dst = source.clone();
+			
+			for (; src.getParent().getParent() != null; src = src.getParent())
+			{
+				 NamedSnapshotNode tmp = dst;
+				 dst = src.clone();
+				 dst.addChild(tmp);
+			}
+			
+			dest.addChild(dst);
+		}		
+	}
+	
+	protected void addReference(NamedSnapshotNode node, TypeDeclaration decl)
+	{
+		if (node.getRefs() == null)
+			node.setRefs(new ArrayList<Reference>());
+		
+		node.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(),
+			decl.m_left, decl.m_right));
+	}	
 }
