@@ -119,8 +119,8 @@ public class SymbolQueryEngine
 			}
 			else
 			{
-				q = session.createQuery("FROM TypeDeclaration WHERE m_parent = :parent " +
-					" AND m_kind = :kind AND m_project IN (:projects) ORDER BY m_name");
+				q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent = :parent " +
+				" AND d.m_kind = :kind AND d.m_project IN (:projects) ORDER BY d.m_name");
 				
 				q.setEntity("parent", decl);
 			}
@@ -170,8 +170,8 @@ public class SymbolQueryEngine
 		}
 		else
 		{
-			q = session.createQuery("FROM TypeDeclaration WHERE m_parent = :parent " +
-				" AND m_kind = :kind AND m_project IN (:projects) ORDER BY m_name");
+			q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent = :parent " +
+				" AND d.m_kind = :kind AND d.m_project IN (:projects) ORDER BY d.m_name");
 			
 			q.setEntity("parent", decl);
 		}
@@ -219,20 +219,20 @@ public class SymbolQueryEngine
 	
 	protected void copyTreeBranch(NamedSnapshotNode dest, NamedSnapshotNode source)
 	{
-		if (source.getParent() != null)
+		NamedSnapshotNode src = source;
+		NamedSnapshotNode dst = null;
+		
+		for (; src.getParent() != null; src = src.getParent())
 		{
-			NamedSnapshotNode src = source;
-			NamedSnapshotNode dst = source.clone();
+			NamedSnapshotNode c = src.clone();
 			
-			for (; src.getParent().getParent() != null; src = src.getParent())
-			{
-				 NamedSnapshotNode tmp = dst;
-				 dst = src.clone();
-				 dst.addChild(tmp);
-			}
+			if (dst != null)
+				c.addChild(dst);
 			
-			dest.addChild(dst);
-		}		
+			dst = c;
+		}
+		
+		dest.addChild(dst);
 	}
 	
 	protected void addReference(NamedSnapshotNode node, TypeDeclaration decl)

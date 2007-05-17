@@ -85,3 +85,5 @@
 
      - Edit file ""./src/client/app/com/sourcedimensions/ws/consumer/ws-consumer.properties", setting parameter "URL" to proper URL string and probably value of "SSLPORT" to correct value of SSL Port on server side. If parameter "SSLPORT" is NOT specified, HTTP is used instead of HTTPS protocol irrelevant of URL protocol part setting.
 
+
+6. Note regarding creation of Abstract Syntax Tree database in PostgreSQL : DATABASE ENCODING MUST BE 'UTF8'
