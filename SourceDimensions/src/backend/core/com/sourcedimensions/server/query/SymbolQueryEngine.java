@@ -81,7 +81,7 @@ public class SymbolQueryEngine
 			{
 				String[] names = filter.split(Folder.DIVIDER);
 				
-				applyNamespaceFilter(session, prjSpace, rootNode, null, names, 0);
+				applyNamespaceFilter(session, prjSpace, rootNode, null, null, names, 0);
 			}			
 		}
 		
@@ -89,8 +89,11 @@ public class SymbolQueryEngine
 	}
 	
 	protected void applyNamespaceFilter(Session session, Set<Project> prjSpace, 
-			NamedSnapshotNode node, TypeDeclaration decl, String[] filter, int pos)
+			NamedSnapshotNode root, NamedSnapshotNode tempRoot, TypeDeclaration decl, String[] filter, int pos)
 	{
+		if (tempRoot == null)
+			tempRoot = new NamedSnapshotNode();
+				
 		if (filter[pos].equals("**"))
 		{
 			String lookahead = null;
@@ -104,7 +107,7 @@ public class SymbolQueryEngine
 				}
 			}
 			
-			applyWildcardNamespaceFilter(session, prjSpace, node, null, decl, lookahead);
+			applyWildcardFilter(session, prjSpace, root, tempRoot, decl, lookahead);
 		}
 		else
 		{
@@ -132,31 +135,28 @@ public class SymbolQueryEngine
 			
 			if (list.size() == 0)
 			{
-				addReference(node, decl);
+				addReference(tempRoot, decl);
 			}
 			
 			for (TypeDeclaration d : list)
 			{	
 				if (pattern.matcher(d.m_name).matches())
 				{
-					NamedSnapshotNode n = new NamedSnapshotNode(Type.NAMESPACE, d.m_name);
-					node.addChild(d.m_name, n);
+					NamedSnapshotNode temp = new NamedSnapshotNode(Type.NAMESPACE, d.m_name);
+					tempRoot.addChild(d.m_name, temp);
 					
 					if (pos < (filter.length - 1))
-					{
-						applyNamespaceFilter(session, prjSpace, n, d, filter, pos + 1);
-					}
+						applyNamespaceFilter(session, prjSpace, root, temp, d, filter, pos + 1);
+					else
+						copyTreeBranch(root, temp);
 				}
 			}			
 		}
 	}
 	
-	protected void applyWildcardNamespaceFilter(Session session, Set<Project> prjSpace, 
+	protected void applyWildcardFilter(Session session, Set<Project> prjSpace, 
 		NamedSnapshotNode root,	NamedSnapshotNode tempRoot, TypeDeclaration decl, String lookahead)
 	{
-		if (tempRoot == null)
-			tempRoot = new NamedSnapshotNode();
-
 		Query q;
 		Pattern pattern = null;
 		
@@ -196,7 +196,7 @@ public class SymbolQueryEngine
 					addReference(temp, d);
 					tempRoot.addChild(temp);
 					
-					applyWildcardNamespaceFilter(session, prjSpace, root, temp, d, lookahead);
+					applyWildcardFilter(session, prjSpace, root, temp, d, lookahead);
 				}
 			}
 		}
@@ -212,7 +212,7 @@ public class SymbolQueryEngine
 				if (pattern.matcher(d.m_name).matches())
 					copyTreeBranch(root, temp);
 				else
-					applyWildcardNamespaceFilter(session, prjSpace, root, temp, d, lookahead);
+					applyWildcardFilter(session, prjSpace, root, temp, d, lookahead);
 			}
 		}
 	}

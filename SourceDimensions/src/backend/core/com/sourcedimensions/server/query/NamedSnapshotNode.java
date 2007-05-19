@@ -22,6 +22,7 @@ public class NamedSnapshotNode extends SnapshotNode
 	public NamedSnapshotNode(Type type, String label)
 	{
 		super(type, label);
+		m_name = label;
 	}
 
 	public void addChild(NamedSnapshotNode child)
@@ -43,10 +44,17 @@ public class NamedSnapshotNode extends SnapshotNode
 			}
 			
 			m_children.add(child);
-			child.m_parent = this;
 		}
 		else
 		{
+			if (child.m_children != null)
+			{
+				for (SnapshotNode n : child.m_children)
+				{
+					node.addChild((NamedSnapshotNode)n);
+				}
+			}
+			
 			List<Reference> refs = child.getRefs();
 			
 			if (refs != null)
@@ -58,6 +66,7 @@ public class NamedSnapshotNode extends SnapshotNode
 			}
 		}
 		
+		child.m_parent = this;
 		child.setName(name);
 	}
 
