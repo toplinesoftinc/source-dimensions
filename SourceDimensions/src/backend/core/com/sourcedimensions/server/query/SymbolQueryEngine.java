@@ -119,17 +119,18 @@ public class SymbolQueryEngine
 			{
 				q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent IS NULL " +
 					" AND d.m_kind = :kind AND d.m_project IN (:projects) ORDER BY d.m_name");
+				
+				q.setParameterList("projects", prjSpace);				
 			}
 			else
 			{
 				q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent = :parent " +
-				" AND d.m_kind = :kind AND d.m_project IN (:projects) ORDER BY d.m_name");
+				" AND d.m_kind = :kind ORDER BY d.m_name");
 				
 				q.setEntity("parent", decl);
 			}
 			
 			q.setInteger("kind", TypeDeclKind.NAMESPACE.value());
-			q.setParameterList("projects", prjSpace);
 			
 			List<TypeDeclaration> list = q.list();
 			
@@ -167,17 +168,18 @@ public class SymbolQueryEngine
 		{
 			q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent IS NULL " +
 				" AND d.m_kind = :kind AND d.m_project IN (:projects) ORDER BY d.m_name");
+			
+			q.setParameterList("projects", prjSpace);
 		}
 		else
 		{
 			q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent = :parent " +
-				" AND d.m_kind = :kind AND d.m_project IN (:projects) ORDER BY d.m_name");
+				" AND d.m_kind = :kind ORDER BY d.m_name");
 			
 			q.setEntity("parent", decl);
 		}
 		
 		q.setInteger("kind", TypeDeclKind.NAMESPACE.value());
-		q.setParameterList("projects", prjSpace);
 		
 		List<TypeDeclaration> list = q.list();
 		

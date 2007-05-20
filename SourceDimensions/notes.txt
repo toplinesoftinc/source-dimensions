@@ -22,7 +22,7 @@
 
      - Edit file ""./src/client/app/com/sourcedimensions/ws/consumer/ws-consumer.properties", setting parameter "CERT" to proper name of <client_certificate_filename>.
 
-     - Edit Tomcat configuratio file "server.xml" located in Tomcat installation folder. Example of configuration file is provided below (keystore file is located at "C:\" and has name ".keystore"):
+     - Edit Tomcat configuration file "server.xml" located in Tomcat installation folder. Example of configuration file is provided below (keystore file is located at "C:\" and has name ".keystore"):
 
          <Connector protocol="org.apache.coyote.http11.Http11Protocol"
                port="8443" SSLEnabled="true" 
