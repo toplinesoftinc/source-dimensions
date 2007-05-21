@@ -316,30 +316,23 @@ public class JavaImport extends AstImport
 
 		if (nd != null)
 		{
-			TypeDeclaration decl = null;
-			TypeDeclaration parent = null;
 			List<XmlNode> list = nd.getNode("QName").getNodeList("ID");
+			String name = "";
 			
 			for (XmlNode n : list)
 			{
-				decl = createAstNode(TypeDeclaration.class, TypeDeclKind.NAMESPACE.value());
+				if (name.length() > 0)
+					name += ".";
 				
-				parseModifiers(n, decl.m_modifiers, decl.m_attributes);
-				decl.m_name = getTermValue(n);
-				parseTextPos(n, decl);
-				
-				TypeDeclarationMember member = createAstNode(TypeDeclarationMember.class);
-				member.setDeclaration(decl);
-				member.m_left = decl.m_left;
-				member.m_right = decl.m_right;
-				
-				if (n == list.get(0))
-					unit.m_declarations.add(decl);
-				else
-					parent.m_members.add(member);
-				
-				parent = decl;
+				name += getTermValue(n);
 			}
+
+			TypeDeclaration decl = createAstNode(TypeDeclaration.class, TypeDeclKind.NAMESPACE.value());
+			parseTextPos(nd, decl);
+			
+			decl.m_name = name;
+
+			unit.m_declarations.add(decl);
 						
 			return decl;
 		}

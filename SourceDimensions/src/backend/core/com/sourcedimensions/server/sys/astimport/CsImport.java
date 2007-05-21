@@ -722,37 +722,28 @@ public class CsImport extends AstImport
 		
 		for (XmlNode nd : list)
 		{
-			TypeDeclaration decl = null, top = null;
 			List<XmlNode> lst = nd.getNode("QName").getNodeList("Id");
+			String name = "";
 			
 			for (XmlNode n : lst)
 			{
-				TypeDeclaration t = createAstNode(TypeDeclaration.class, TypeDeclKind.NAMESPACE.value());
-				parseTextPos(n, t);
+				if (name.length() > 0)
+					name += ".";
 				
-				t.m_name = parseId(n);
-				
-				if (decl == null)
-				{
-					top = t;					
-				}
-				else
-				{
-					TypeDeclarationMember m = createAstNode(TypeDeclarationMember.class);
-					parseTextPos(n, m);
-					m.setDeclaration(t);
-					decl.m_members.add(m);					
-				}
-				
-				decl = t;
-			}			
+				name += parseId(n);
+			}
 			
+			TypeDeclaration decl = createAstNode(TypeDeclaration.class, TypeDeclKind.NAMESPACE.value());
+			parseTextPos(nd, decl);
+			
+			decl.m_name = name;
+						
 			parseNamespaceBody(nd.getNode("NspBody"), decl.m_attributes, decl.m_directives, decl.m_members, new MemberTypeDeclWrapperFactory());
 			
 			if (factory == null)
-				decls.add(top);
+				decls.add(decl);
 			else
-				decls.add(factory.wrapTypeDecl(top));
+				decls.add(factory.wrapTypeDecl(decl));
 		}
 	}
 
