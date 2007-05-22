@@ -86,19 +86,19 @@ public class SymbolQueryEngine
 			query.setInteger("kind", TypeDeclKind.NAMESPACE.value());
 			query.setParameterList("projects", prjSpace);
 			
-			Iterator iter = query.iterate();
+			List list = query.list();
 					
-			while (iter.hasNext())
+			for (Object o : list)
 			{
 				for (String filter : namespaceFilter)
 				{
 					String[] fltr = filter.split(Folder.DIVIDER);
-					TypeDeclaration decl = (TypeDeclaration)iter.next();
+					TypeDeclaration decl = (TypeDeclaration)o;
 					
 					String name = decl.m_name;
 					
 					Query q = session.createQuery("SELECT p FROM TypeDeclaration d, TypeDeclarationMember m, TypeDeclaration p "+
-						"WHERE d.m_parent.class = 'TypeDeclarationMember' AND d.m_parent.id = m.id AND m.m_parent.class = 'TypeDeclaration' " +
+						"WHERE d.m_parent.class = TypeDeclarationMember AND d.m_parent.id = m.id AND m.m_parent.class = TypeDeclaration " +
 						"AND m.m_parent.id = p.id AND p.m_kind = :kind AND d.m_id = :id").setInteger("kind", TypeDeclKind.NAMESPACE.value());
 
 					String id = decl.getID();
@@ -113,12 +113,12 @@ public class SymbolQueryEngine
 						q.setString("id", id);
 					}
 					
-					String[] parts = name.split(".");
+					String[] parts = name.split("\\.");
 					
 					int i = 0, j = 0;
 					boolean wildcard = false;
 					String lookahead = null;
-					int step = 1;
+					int step = 2;
 					
 					while (i < fltr.length && j < parts.length)
 					{
@@ -144,7 +144,7 @@ public class SymbolQueryEngine
 							else
 							{
 								wildcard = true;
-								step = 1;
+								step = 2;
 								
 								for (int k = i + 1; k < fltr.length; k++,step++)
 								{
@@ -190,7 +190,7 @@ public class SymbolQueryEngine
 	
 	protected void addNamespace(TypeDeclaration decl, String name, SortedMap<String, SnapshotNode> nameMap)
 	{
-		SnapshotNode node = nameMap.get(name);
+		SnapshotNode node = nameMap.get(name);		
 		Reference ref = new Reference(decl.m_id, decl.getSourceFile().getID(), decl.m_left, decl.m_right);
 		
 		if (node == null)
@@ -199,6 +199,7 @@ public class SymbolQueryEngine
 			nameMap.put(name, node);
 		}
 
+		node.setRefs(new ArrayList<Reference>());		
 		node.getRefs().add(ref);
 	}	
 }

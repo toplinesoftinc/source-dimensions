@@ -42,7 +42,7 @@
 	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xercesImpl-2.6.2.jar" kind="lib"/>
 	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xfire-aegis-1.2.2.jar" kind="lib"/>
 	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xfire-annotations-1.2.2.jar" kind="lib"/>
-	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xfire-core-1.2.2.jar" kind="lib"/>
+	<classpathentry sourcepath="C:/hibernate-3.2.4/hibernate-3.2" path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xfire-core-1.2.2.jar" kind="lib"/>
 	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xfire-generator-1.2.2.jar" kind="lib"/>
 	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xfire-java5-1.2.2.jar" kind="lib"/>
 	<classpathentry path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xfire-jaxb2-1.2.2.jar" kind="lib"/>
