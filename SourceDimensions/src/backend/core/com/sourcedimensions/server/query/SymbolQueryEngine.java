@@ -1,8 +1,11 @@
 package com.sourcedimensions.server.query;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -62,9 +65,9 @@ public class SymbolQueryEngine
 		return root;
 	}
 	
-	protected SnapshotNode executeFromRoot(Session session, String projectId, TypeDeclaration root, SymbolQuery query)
+	protected SnapshotNode executeFromRoot(Session session, String projectId, TypeDeclaration root, SymbolQuery symQuery)
 	{
-		NamedSnapshotNode rootNode = new NamedSnapshotNode();
+		SortedMap<String, SnapshotNode> nameMap = new TreeMap<String, SnapshotNode>();
 		
 		Set<Project> prjSpace = DatabaseHelper.getProjectSpace(session, projectId);
 
@@ -72,177 +75,130 @@ public class SymbolQueryEngine
 		{
 			List<String> namespaceFilter = new ArrayList<String>();
 			
-			if (query.getAllNamespaces())
+			if (symQuery.getAllNamespaces())
 				namespaceFilter.add("**");
 			else
-				namespaceFilter.addAll(query.getNamespaceFilter());			
+				namespaceFilter.addAll(symQuery.getNamespaceFilter());			
 			
-			for (String filter : namespaceFilter)
-			{
-				String[] names = filter.split(Folder.DIVIDER);
-				
-				applyNamespaceFilter(session, prjSpace, rootNode, null, null, names, 0);
-			}			
-		}
-		
-		return rootNode;
-	}
-	
-	protected void applyNamespaceFilter(Session session, Set<Project> prjSpace, 
-			NamedSnapshotNode root, NamedSnapshotNode tempRoot, TypeDeclaration decl, String[] filter, int pos)
-	{
-		if (tempRoot == null)
-			tempRoot = new NamedSnapshotNode();
-				
-		if (filter[pos].equals("**"))
-		{
-			String lookahead = null;
+			Query query = session.createQuery("FROM TypeDeclaration WHERE m_kind = :kind AND " +
+					"m_project IN (:projects)");
 			
-			for (int j = pos + 1; j < filter.length; j++)
+			query.setInteger("kind", TypeDeclKind.NAMESPACE.value());
+			query.setParameterList("projects", prjSpace);
+			
+			Iterator iter = query.iterate();
+					
+			while (iter.hasNext())
 			{
-				if (!filter[j].equals("**"))
+				for (String filter : namespaceFilter)
 				{
-					lookahead = filter[j];
-					break;
-				}
-			}
-			
-			applyWildcardFilter(session, prjSpace, root, tempRoot, decl, lookahead);
-		}
-		else
-		{
-			Pattern pattern = Pattern.compile(filter[pos]);
+					String[] fltr = filter.split(Folder.DIVIDER);
+					TypeDeclaration decl = (TypeDeclaration)iter.next();
+					
+					String name = decl.m_name;
+					
+					Query q = session.createQuery("SELECT p FROM TypeDeclaration d, TypeDeclarationMember m, TypeDeclaration p "+
+						"WHERE d.m_parent.class = 'TypeDeclarationMember' AND d.m_parent.id = m.id AND m.m_parent.class = 'TypeDeclaration' " +
+						"AND m.m_parent.id = p.id AND p.m_kind = :kind AND d.m_id = :id").setInteger("kind", TypeDeclKind.NAMESPACE.value());
 
-			Query q;
-			
-			if (decl == null)
-			{
-				q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent IS NULL " +
-					" AND d.m_kind = :kind AND d.m_project IN (:projects) ORDER BY d.m_name");
-				
-				q.setParameterList("projects", prjSpace);				
-			}
-			else
-			{
-				q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent = :parent " +
-				" AND d.m_kind = :kind ORDER BY d.m_name");
-				
-				q.setEntity("parent", decl);
-			}
-			
-			q.setInteger("kind", TypeDeclKind.NAMESPACE.value());
-			
-			List<TypeDeclaration> list = q.list();
-			
-			if (list.size() == 0)
-			{
-				addReference(tempRoot, decl);
-			}
-			
-			for (TypeDeclaration d : list)
-			{	
-				if (pattern.matcher(d.m_name).matches())
-				{
-					NamedSnapshotNode temp = new NamedSnapshotNode(Type.NAMESPACE, d.m_name);
-					tempRoot.addChild(d.m_name, temp);
+					String id = decl.getID();
+					q.setString("id", id);
 					
-					if (pos < (filter.length - 1))
-						applyNamespaceFilter(session, prjSpace, root, temp, d, filter, pos + 1);
-					else
-						copyTreeBranch(root, temp);
-				}
-			}			
-		}
-	}
-	
-	protected void applyWildcardFilter(Session session, Set<Project> prjSpace, 
-		NamedSnapshotNode root,	NamedSnapshotNode tempRoot, TypeDeclaration decl, String lookahead)
-	{
-		Query q;
-		Pattern pattern = null;
-		
-		if (lookahead != null)
-			pattern = Pattern.compile(lookahead);
-		
-		if (decl == null)
-		{
-			q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent IS NULL " +
-				" AND d.m_kind = :kind AND d.m_project IN (:projects) ORDER BY d.m_name");
-			
-			q.setParameterList("projects", prjSpace);
-		}
-		else
-		{
-			q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent p WHERE p.m_parent = :parent " +
-				" AND d.m_kind = :kind ORDER BY d.m_name");
-			
-			q.setEntity("parent", decl);
-		}
-		
-		q.setInteger("kind", TypeDeclKind.NAMESPACE.value());
-		
-		List<TypeDeclaration> list = q.list();
-		
-		if (lookahead == null)
-		{
-			if (list.size() == 0)
-			{
-				copyTreeBranch(root, tempRoot);
-			}
-			else
-			{
-				for (TypeDeclaration d : list)
-				{
-					NamedSnapshotNode temp = new NamedSnapshotNode(Type.NAMESPACE, d.m_name);
+					for (List l = q.list(); l.size() > 0; l = q.list())
+					{						
+						TypeDeclaration d  = (TypeDeclaration)l.get(0);
+						
+						id = d.getID();
+						name = d.m_name + "." + name;
+						q.setString("id", id);
+					}
 					
-					addReference(temp, d);
-					tempRoot.addChild(temp);
+					String[] parts = name.split(".");
 					
-					applyWildcardFilter(session, prjSpace, root, temp, d, lookahead);
+					int i = 0, j = 0;
+					boolean wildcard = false;
+					String lookahead = null;
+					int step = 1;
+					
+					while (i < fltr.length && j < parts.length)
+					{
+						if (fltr[i].equals("**"))
+						{
+							if (wildcard)
+							{
+								if (lookahead == null)
+								{
+									if (j == (parts.length - 1))
+										addNamespace(decl, name, nameMap);
+								}
+								else
+								{
+									if (parts[j].equals(lookahead))
+									{
+										wildcard = false;
+										i += step;
+									}
+								}								
+								j++;								
+							}
+							else
+							{
+								wildcard = true;
+								step = 1;
+								
+								for (int k = i + 1; k < fltr.length; k++,step++)
+								{
+									if (!fltr[k].equals("**"))
+									{
+										lookahead = fltr[k];
+										break;
+									}
+								}
+							}
+						}
+						else
+						{
+							if (Pattern.matches(fltr[i], parts[j]))
+							{
+								if (i == (fltr.length - 1) && j == (parts.length - 1))
+								{
+									addNamespace(decl, name, nameMap);
+								}
+							}
+							else
+								break;
+							
+							i++;
+							j++;
+						}
+					}
 				}
 			}
 		}
-		else
+		
+		Iterator<String> iter = nameMap.keySet().iterator();
+		SnapshotNode node = new SnapshotNode();
+		node.setChildren(new ArrayList<SnapshotNode>());
+		
+		while (iter.hasNext())
 		{
-			for (TypeDeclaration d : list)
-			{
-				NamedSnapshotNode temp = new NamedSnapshotNode(Type.NAMESPACE, d.m_name);
-				
-				addReference(temp, d);
-				tempRoot.addChild(temp);
-				
-				if (pattern.matcher(d.m_name).matches())
-					copyTreeBranch(root, temp);
-				else
-					applyWildcardFilter(session, prjSpace, root, temp, d, lookahead);
-			}
+			node.getChildren().add(new SnapshotNode(Type.NAMESPACE, iter.next()));
 		}
+			
+		return node;
 	}
 	
-	protected void copyTreeBranch(NamedSnapshotNode dest, NamedSnapshotNode source)
+	protected void addNamespace(TypeDeclaration decl, String name, SortedMap<String, SnapshotNode> nameMap)
 	{
-		NamedSnapshotNode src = source;
-		NamedSnapshotNode dst = null;
+		SnapshotNode node = nameMap.get(name);
+		Reference ref = new Reference(decl.m_id, decl.getSourceFile().getID(), decl.m_left, decl.m_right);
 		
-		for (; src.getParent() != null; src = src.getParent())
+		if (node == null)
 		{
-			NamedSnapshotNode c = src.clone();
-			
-			if (dst != null)
-				c.addChild(dst);
-			
-			dst = c;
+			node = new SnapshotNode(Type.NAMESPACE, name);
+			nameMap.put(name, node);
 		}
-		
-		dest.addChild(dst);
-	}
-	
-	protected void addReference(NamedSnapshotNode node, TypeDeclaration decl)
-	{
-		if (node.getRefs() == null)
-			node.setRefs(new ArrayList<Reference>());
-		
-		node.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(),
-			decl.m_left, decl.m_right));
+
+		node.getRefs().add(ref);
 	}	
 }
