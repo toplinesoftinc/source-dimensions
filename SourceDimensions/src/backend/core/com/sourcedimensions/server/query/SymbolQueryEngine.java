@@ -144,6 +144,7 @@ public class SymbolQueryEngine
 							else
 							{
 								wildcard = true;
+								lookahead = null;
 								step = 2;
 								
 								for (int k = i + 1; k < fltr.length; k++,step++)
