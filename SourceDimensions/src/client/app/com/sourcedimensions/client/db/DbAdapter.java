@@ -1399,6 +1399,7 @@ public class DbAdapter
 			query.setAllTypes(rs.getShort("all_types") != 0);
 			query.setAllMembers(rs.getShort("all_members") != 0);
 			query.setAllLocalDecls(rs.getShort("all_local_decls") != 0);
+			query.setGlobalNamespace(rs.getShort("global_namespace") != 0) ;
 			
 			Integer parentId = rs.getInt("folder_id");
 			
@@ -1713,7 +1714,7 @@ public class DbAdapter
 				throw new DuplicateNameException();		
 			
 			ps = c.prepareStatement("INSERT INTO query(project_id, folder_id, name, destination, all_namespaces, " +
-				"all_types, all_members, all_local_decls) VALUES(?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+				"all_types, all_members, all_local_decls, global_namespace) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 
 			ps.setInt(1, prjId);
 			
@@ -1728,6 +1729,7 @@ public class DbAdapter
 			ps.setShort(6, (short)(query.getAllTypes() ? 1 : 0));
 			ps.setShort(7, (short)(query.getAllMembers()? 1 : 0));
 			ps.setShort(8, (short)(query.getAllLocalDecls() ? 1 : 0));
+			ps.setShort(9, (short)(query.getGlobalNamespace() ? 1 : 0));
 			
 			ps.executeUpdate();
 			
@@ -2341,6 +2343,7 @@ public class DbAdapter
 				"project_id INT NOT NULL",
 				"name VARCHAR(1024) NOT NULL",
 				"destination VARCHAR(1024)",
+				"global_namespace SMALLINT",
 				"all_namespaces SMALLINT",
 				"all_types SMALLINT",
 				"all_members SMALLINT",

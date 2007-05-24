@@ -6,6 +6,7 @@ import java.util.List;
 public class SymbolQuery 
 {
 	protected boolean m_allNamespaces;
+	protected boolean m_globalNamespace;	
 	protected List<String> m_namespacesFilter;
 	
 	protected boolean m_allTypes;
@@ -129,5 +130,15 @@ public class SymbolQuery
 	public void setDestination(String target)
 	{
 		m_destination = target;
+	}
+	
+	public boolean getGlobalNamespace()
+	{
+		return m_globalNamespace;
+	}
+	
+	public void setGlobalNamespace(boolean globalNamespace)
+	{
+		m_globalNamespace = globalNamespace;
 	}
 }

@@ -79,6 +79,7 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_snapshotBrowseButton;
 	private Button m_queryBrowseButton;
 	private boolean m_forceClose;
+	private Button m_globalNamespaceCheckBox;
 
 	public SymbolQueryDialog(Shell parent)
 	{
@@ -93,6 +94,8 @@ public class SymbolQueryDialog extends DialogBase
 		
 		m_queryNameText.setText(query.getFullName());
 		m_snapshotNameText.setText(query.getDestination());
+
+		m_globalNamespaceCheckBox.setSelection(query.getGlobalNamespace());
 		
 		for (String namespace : query.getNamespaceFilter())
 		{
@@ -332,6 +335,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_namespacesTab = new Composite(m_queryParamsTabFolder, SWT.NONE);
 		m_namespacesTab.setLayout(null);
 		m_allNamespacesCheckBox = new Button(m_namespacesTab, SWT.CHECK | SWT.LEFT);
+		m_globalNamespaceCheckBox = new Button(m_namespacesTab, SWT.CHECK);
 		m_namespaceFilterLabel = new Label(m_namespacesTab, SWT.NONE);
 		m_namespaceFilterTable = new Table(m_namespacesTab, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
 		m_namespaceFilterTable.setHeaderVisible(false);
@@ -384,6 +388,8 @@ public class SymbolQueryDialog extends DialogBase
 		m_removeNamespaceFilterButton.setLocation(new Point(535, 152));
 		m_removeNamespaceFilterButton.setSize(new Point(88, 25));
 		m_removeNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
+		m_globalNamespaceCheckBox.setBounds(new Rectangle(154, 12, 156, 16));
+		m_globalNamespaceCheckBox.setText("Include &Global Namespace");
 		m_removeNamespaceFilterButton.addSelectionListener(new RemoveFilterAdapter(m_shell, m_namespaceFilterTable));
 		m_editNamespaceFilterButton.setToolTipText("Login");
 		m_editNamespaceFilterButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
@@ -415,6 +421,7 @@ public class SymbolQueryDialog extends DialogBase
 				m_addNamespaceFilterButton.setEnabled(!sel);
 				m_editNamespaceFilterButton.setEnabled(!sel);
 				m_removeNamespaceFilterButton.setEnabled(!sel);
+				m_globalNamespaceCheckBox.setEnabled(!sel);
 			}
 		});
 	}
@@ -1031,6 +1038,7 @@ public class SymbolQueryDialog extends DialogBase
 		query.setDestination(m_snapshotNameText.getText());
 		
 		query.setAllNamespaces(m_allNamespacesCheckBox.getSelection());
+		query.setGlobalNamespace(m_globalNamespaceCheckBox.getSelection());
 		
 		if (!query.getAllNamespaces())
 		{
