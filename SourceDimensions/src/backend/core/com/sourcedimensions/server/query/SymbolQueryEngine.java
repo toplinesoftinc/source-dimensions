@@ -96,7 +96,7 @@ public class SymbolQueryEngine
 					TypeDeclaration decl = (TypeDeclaration)o;
 					
 					String name = decl.m_name;
-					
+/*					
 					Query q = session.createQuery("SELECT p FROM TypeDeclaration d, TypeDeclarationMember m, TypeDeclaration p "+
 						"WHERE d.m_parent.class = TypeDeclarationMember AND d.m_parent.id = m.id AND m.m_parent.class = TypeDeclaration " +
 						"AND m.m_parent.id = p.id AND p.m_kind = :kind AND d.m_id = :id").setInteger("kind", TypeDeclKind.NAMESPACE.value());
@@ -112,7 +112,7 @@ public class SymbolQueryEngine
 						name = d.m_name + "." + name;
 						q.setString("id", id);
 					}
-					
+*/					
 					String[] parts = name.split("\\.");
 					
 					int i = 0, j = 0;
@@ -192,7 +192,7 @@ public class SymbolQueryEngine
 	protected void addNamespace(TypeDeclaration decl, String name, SortedMap<String, SnapshotNode> nameMap)
 	{
 		SnapshotNode node = nameMap.get(name);		
-		Reference ref = new Reference(decl.m_id, decl.getSourceFile().getID(), decl.m_left, decl.m_right);
+		Reference ref = new Reference(decl.m_id, decl.getSourceFileID(), decl.m_left, decl.m_right);
 		
 		if (node == null)
 		{
