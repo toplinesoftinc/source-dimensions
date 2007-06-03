@@ -459,6 +459,7 @@
 		<if>
 			<equals arg1="${tomcat.webapp.present}" arg2="true"/>
 			<then>
+				<delete dir="${tomcat.webapp.dir}/source-dimensions"/>
 				<copy file="${webservice.bin.dir}/source-dimensions.war" todir="${tomcat.webapp.dir}"/>
 			</then>
 			<else>

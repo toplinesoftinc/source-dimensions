@@ -14,7 +14,9 @@ import com.sourcedimensions.client.model.SnapshotNode;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.client.model.SnapshotNode.Reference;
 import com.sourcedimensions.client.model.SnapshotNode.Type;
+import com.sourcedimensions.server.ast.AstNode;
 import com.sourcedimensions.server.ast.TypeDeclaration;
+import com.sourcedimensions.server.ast.TypeDeclarationMember;
 import com.sourcedimensions.server.ast.TypeDeclaration.TypeDeclKind;
 import com.sourcedimensions.server.sys.Project;
 import com.sourcedimensions.server.sys.profile.Database;
@@ -80,8 +82,8 @@ public class SymbolQueryEngine
 			else
 				namespaceFilter.addAll(symQuery.getNamespaceFilter());			
 			
-			Query query = session.createQuery("FROM TypeDeclaration WHERE m_kind = :kind AND " +
-					"m_project IN (:projects)");
+			Query query = session.createQuery("SELECT td, f.m_id, td.m_parent FROM TypeDeclaration td INNER JOIN td.m_file f WHERE td.m_kind = :kind AND " +
+					"td.m_project IN (:projects)");
 			
 			query.setInteger("kind", TypeDeclKind.NAMESPACE.value());
 			query.setParameterList("projects", prjSpace);
@@ -93,26 +95,34 @@ public class SymbolQueryEngine
 				for (String filter : namespaceFilter)
 				{
 					String[] fltr = filter.split(Folder.DIVIDER);
-					TypeDeclaration decl = (TypeDeclaration)o;
-					
+					Object[] row = (Object[])o;
+					TypeDeclaration decl = (TypeDeclaration)row[0];
+					String fileId = (String)row[1];			
 					String name = decl.m_name;
-/*					
-					Query q = session.createQuery("SELECT p FROM TypeDeclaration d, TypeDeclarationMember m, TypeDeclaration p "+
-						"WHERE d.m_parent.class = TypeDeclarationMember AND d.m_parent.id = m.id AND m.m_parent.class = TypeDeclaration " +
-						"AND m.m_parent.id = p.id AND p.m_kind = :kind AND d.m_id = :id").setInteger("kind", TypeDeclKind.NAMESPACE.value());
-
-					String id = decl.getID();
-					q.setString("id", id);
+					AstNode parent = (AstNode)row[2];
 					
-					for (List l = q.list(); l.size() > 0; l = q.list())
-					{						
-						TypeDeclaration d  = (TypeDeclaration)l.get(0);
+					if (parent instanceof TypeDeclarationMember)
+					{
+						Query q = session.createQuery("SELECT d, d.m_parent FROM TypeDeclaration d, TypeDeclarationMember m "+
+							"WHERE m.m_parent.id = d.m_id AND m.m_id = :id");
+	
+						q.setString("id", parent.getID());
 						
-						id = d.getID();
-						name = d.m_name + "." + name;
-						q.setString("id", id);
+						for (List l = q.list(); l.size() > 0; l = q.list())
+						{						
+							Object[] r = (Object[])l.get(0);
+							TypeDeclaration d  = (TypeDeclaration)r[0];
+							AstNode p = (AstNode)r[1];
+							
+							name = d.m_name + "." + name;
+							
+							if (p instanceof TypeDeclarationMember)
+								q.setString("id", p.getID());
+							else
+								break;
+						}
 					}
-*/					
+
 					String[] parts = name.split("\\.");
 					
 					int i = 0, j = 0;
@@ -129,7 +139,7 @@ public class SymbolQueryEngine
 								if (lookahead == null)
 								{
 									if (j == (parts.length - 1))
-										addNamespace(decl, name, nameMap);
+										addNamespace(decl, name, fileId, nameMap);
 								}
 								else
 								{
@@ -137,6 +147,23 @@ public class SymbolQueryEngine
 									{
 										wildcard = false;
 										i += step;
+										
+										if (j == (parts.length - 1))
+										{
+											boolean w = true;
+											
+											for (int k = i; k < fltr.length; k++)
+											{
+												if (!fltr[k].equals("**"))
+												{
+													w = false;
+													break;
+												}
+											}
+											
+											if (w)
+												addNamespace(decl, name, fileId, nameMap);
+										}
 									}
 								}								
 								j++;								
@@ -162,9 +189,7 @@ public class SymbolQueryEngine
 							if (Pattern.matches(fltr[i], parts[j]))
 							{
 								if (i == (fltr.length - 1) && j == (parts.length - 1))
-								{
-									addNamespace(decl, name, nameMap);
-								}
+									addNamespace(decl, name, fileId, nameMap);
 							}
 							else
 								break;
@@ -189,10 +214,10 @@ public class SymbolQueryEngine
 		return node;
 	}
 	
-	protected void addNamespace(TypeDeclaration decl, String name, SortedMap<String, SnapshotNode> nameMap)
+	protected void addNamespace(TypeDeclaration decl, String name, String fileId, SortedMap<String, SnapshotNode> nameMap)
 	{
 		SnapshotNode node = nameMap.get(name);		
-		Reference ref = new Reference(decl.m_id, decl.getSourceFileID(), decl.m_left, decl.m_right);
+		Reference ref = new Reference(decl.m_id, fileId, decl.m_left, decl.m_right);
 		
 		if (node == null)
 		{
