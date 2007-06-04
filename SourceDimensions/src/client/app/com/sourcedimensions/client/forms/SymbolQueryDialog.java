@@ -97,31 +97,43 @@ public class SymbolQueryDialog extends DialogBase
 
 		m_globalNamespaceCheckBox.setSelection(query.getGlobalNamespace());
 		
-		for (String namespace : query.getNamespaceFilter())
+		if (query.getNamespaceFilter() != null)
 		{
-			new TableItem(m_namespaceFilterTable, SWT.NONE).setText(0, namespace);
+			for (String namespace : query.getNamespaceFilter())
+			{
+				new TableItem(m_namespaceFilterTable, SWT.NONE).setText(0, namespace);
+			}
 		}
 		
-		for (TypeFilter type : query.getTypeFilter())
+		if (query.getTypeFilter() != null)
 		{
-			item = new TableItem(m_typeFilterTable, SWT.NONE);
-			fillTypeFilterItem(item, type);
-			m_typeFilter.add(type);
+			for (TypeFilter type : query.getTypeFilter())
+			{
+				item = new TableItem(m_typeFilterTable, SWT.NONE);
+				fillTypeFilterItem(item, type);
+				m_typeFilter.add(type);
+			}
 		}
 		
-		for (MemberFilter member : query.getMemberFilter())
+		if (query.getMemberFilter() != null)
 		{
-			item = new TableItem(m_memberFilterTable, SWT.NONE);
-			fillMemberFilterItem(item, member);
-			m_memberFilter.add(member);
+			for (MemberFilter member : query.getMemberFilter())
+			{
+				item = new TableItem(m_memberFilterTable, SWT.NONE);
+				fillMemberFilterItem(item, member);
+				m_memberFilter.add(member);
+			}
 		}
 		
-		for (LocalDeclFilter local : query.getLocalDeclFilter())
+		if (query.getLocalDeclFilter() != null)
 		{
-			item = new TableItem(m_localDeclFilterTable, SWT.NONE);
-			fillLocalDeclFilterItem(item, local);
-			m_localDeclFilter.add(local);
-		}	
+			for (LocalDeclFilter local : query.getLocalDeclFilter())
+			{
+				item = new TableItem(m_localDeclFilterTable, SWT.NONE);
+				fillLocalDeclFilterItem(item, local);
+				m_localDeclFilter.add(local);
+			}
+		}
 	}
 	
 	public void setQueryName(String name)
@@ -222,7 +234,7 @@ public class SymbolQueryDialog extends DialogBase
 				if (found != null)
 				{
 					if (!MessageDialog.openQuestion(m_shell, "Overwrite confirmation", "There is a query"  + 
-						" with the same name which will be deleted and re-created with new contents. Do you want to continue" )) 
+						" with the same name which will be deleted and re-created with new contents. Do you want to continue?" )) 
 					{
 						return;
 					}
@@ -279,10 +291,11 @@ public class SymbolQueryDialog extends DialogBase
 				if (!validatePath(false))
 					return;
 			
-				ExecuteQueryAction.executeQuery(getShell(), createSymbolQuery());
-				
-				m_forceClose = true;
-				m_shell.close();
+				if (ExecuteQueryAction.executeQuery(getShell(), createSymbolQuery()))
+				{
+					m_forceClose = true;
+					m_shell.close();
+				}
 			}			
 		});
 		

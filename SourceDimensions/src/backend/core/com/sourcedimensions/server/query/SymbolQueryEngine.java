@@ -81,9 +81,12 @@ public class SymbolQueryEngine
 				namespaceFilter.add("**");
 			else
 				namespaceFilter.addAll(symQuery.getNamespaceFilter());			
+		
+			if (namespaceFilter.size() == 0)
+				return null;
 			
-			Query query = session.createQuery("SELECT td, f.m_id, td.m_parent FROM TypeDeclaration td INNER JOIN td.m_file f WHERE td.m_kind = :kind AND " +
-					"td.m_project IN (:projects)");
+			Query query = session.createQuery("SELECT td, f.m_id, td.m_parent FROM TypeDeclaration td " +
+				"INNER JOIN td.m_file f WHERE td.m_kind = :kind AND td.m_project IN (:projects)");
 			
 			query.setInteger("kind", TypeDeclKind.NAMESPACE.value());
 			query.setParameterList("projects", prjSpace);

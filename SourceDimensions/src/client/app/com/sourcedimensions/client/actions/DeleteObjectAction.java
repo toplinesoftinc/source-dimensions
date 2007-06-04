@@ -1,5 +1,7 @@
 package com.sourcedimensions.client.actions;
 
+import java.util.List;
+
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
@@ -11,6 +13,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
 import com.sourcedimensions.client.db.DbAdapter;
+import com.sourcedimensions.client.model.Folder;
+import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.views.SnapshotView;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
@@ -63,6 +67,9 @@ public class DeleteObjectAction implements IWorkbenchWindowActionDelegate, IObje
 			}
 			else if (selected instanceof FolderObject)
 			{
+				if (!((FolderObject)selected).isQueryGroup())					
+					closeSnapshots(id);
+				
 				DbAdapter.deleteFolder(id);				
 			}
 			else if (selected instanceof QueryGroup)
@@ -71,6 +78,7 @@ public class DeleteObjectAction implements IWorkbenchWindowActionDelegate, IObje
 			}
 			else if (selected instanceof SnapshotGroup)
 			{
+				closeSnapshots(null);
 				DbAdapter.deleteAll(ProjectView.getProject().getId(), false);
 			}
 		}
@@ -96,6 +104,27 @@ public class DeleteObjectAction implements IWorkbenchWindowActionDelegate, IObje
 		}
 		
 		return true;
+	}
+	
+	protected static void closeSnapshots(Integer folderId)
+	{
+		String projectId = ProjectView.getProject().getId();
+		
+		try
+		{
+			List<Snapshot> snapshotList = DbAdapter.getSnapshotList(projectId, folderId);
+			
+			for (Snapshot s : snapshotList)
+				SnapshotView.closeSnapshot(s.m_id);
+			
+			List<Folder> folderList = DbAdapter.getFolderList(folderId, projectId, false);
+			
+			for (Folder f : folderList)
+				closeSnapshots(f.m_id);
+		}
+		catch(Exception e)
+		{			
+		}	
 	}
 
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) 

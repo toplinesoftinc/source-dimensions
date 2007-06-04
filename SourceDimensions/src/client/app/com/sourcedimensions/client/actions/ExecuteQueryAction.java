@@ -50,7 +50,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		executeQuery(shell, query);
  	}
 
- 	public static void executeQuery(Shell shell, SymbolQuery query)
+ 	public static boolean executeQuery(Shell shell, SymbolQuery query)
  	{
 		WSConsumer consumer = new WSConsumer();
 		Snapshot snapshot;
@@ -65,7 +65,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 			
 			EditQueryAction.runQueryEdit(shell, query);
 			
-			return;
+			return false;
 		}
 		
 		Snapshot existing;
@@ -76,7 +76,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		}
 		catch (Exception e)
 		{
-			return;
+			return false;
 		}
 		
 		if (existing != null)
@@ -84,7 +84,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 			if (!MessageDialog.openQuestion(shell, "Overwrite confirmation", "There is a snapshot"  + 
 				" with the same name which will be deleted and re-created with new contents. Do you want to continue?")) 
 			{
-				return;
+				return false;
 			}
 		}
 		
@@ -95,18 +95,18 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		catch (Exception ex)
 		{
 			MessageDialog.openError(shell, "Web Service Error", ex.getMessage());
-			return;
+			return false;
 		}
 		
 		if (consumer.wasCancelled())
 		{
-			return;
+			return true;
 		}
 		
 		if (snapshot == null)
 		{
 			MessageDialog.openInformation(shell, "Query Results", "No item found for the specified query");
-			return;
+			return true;
 		}
 		else
 		{
@@ -123,7 +123,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 				}
 				catch (Exception e)
 				{
-					return;
+					return false;
 				}
 				
 				ProjectView.getSnapshotGroup().deleteObject(sections);
@@ -131,7 +131,9 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 			}
 			
 			ProjectView.getSnapshotGroup().addSnapshotNode(snapshot, dest);
-		} 		
+		}
+		
+		return true;
  	}
  	
  	public void setActivePart(IAction action, IWorkbenchPart targetPart) 

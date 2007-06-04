@@ -109,8 +109,7 @@ public class WSConsumer
 				}
 				else
 				{
-					MessageDialog.openError(null, "Error", fault.getMessage());
-					return null;
+					throw fault;
 				}
 			}
 		}
