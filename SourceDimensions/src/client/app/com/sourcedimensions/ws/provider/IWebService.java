@@ -13,6 +13,7 @@ public interface IWebService
 	enum FaultValues
 	{
 		LOGIN_FAILED,
+		LANG_ACCESS_DENIED,
 		SESSION_EXPIRED;
 	}
 		

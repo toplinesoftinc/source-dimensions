@@ -856,7 +856,6 @@ public class AdminUtil extends JFrame
 					m_accExpCheckBox.setSelected(true);
 					m_accWriteCheckBox.setSelected(false);
 					m_accLangAccessComboBox.setSelectedIndex(0);
-					m_accLangAccessComboBox.setEnabled(true);
 					m_accUserNameField.setText("");
 					m_accPasswordField.setText("");
 					
@@ -928,7 +927,6 @@ public class AdminUtil extends JFrame
 						m_accExpCheckBox.setSelected(acc.m_expDate == null);
 						m_accWriteCheckBox.setSelected(acc.m_writeAccess);
 						m_accLangAccessComboBox.setSelectedIndex(acc.getLangAccessValue());
-						m_accLangAccessComboBox.setEnabled(false);
 						m_accUserNameField.setText(usr.m_name);
 						m_accPasswordField.setText(usr.m_password);
 						

@@ -8,8 +8,10 @@ import org.hibernate.SessionFactory;
 import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.server.query.SymbolQueryEngine;
+import com.sourcedimensions.server.sys.Project.Language;
 import com.sourcedimensions.server.sys.profile.*;
 import com.sourcedimensions.server.sys.Project;
+import com.sourcedimensions.server.utils.DatabaseHelper;
 
 
 public class WebService implements IWebService
@@ -39,7 +41,7 @@ public class WebService implements IWebService
 		}
 	}
 	
-	private boolean verifySession(String sessionID) throws XFireFault
+	private void verifySession(String sessionID) throws XFireFault
 	{
 		if (!UserSession.validateSession(sessionID))
 		{
@@ -48,8 +50,58 @@ public class WebService implements IWebService
 			fault.setRole(FaultValues.SESSION_EXPIRED.name());
 			throw fault;
 		}
-		else
-			return true;
+	}
+	
+	private void verifyLanguage(String sessionID, String projectId) throws XFireFault
+	{
+		boolean valid = true;
+		
+		Database db = DatabaseHelper.getDbBySessionID(sessionID);
+		
+		Session session = db.getDbSessionFactory().getCurrentSession();
+		
+		session.beginTransaction();
+		Project prj = (Project)session.get(Project.class, projectId);	
+		session.getTransaction().commit();
+		
+		session = Database.getProfileSessionFactory().getCurrentSession();
+		session.beginTransaction();
+	
+		Account account = (Account)session.createQuery("SELECT a FROM UserSession s " +
+			"INNER JOIN s.m_user.m_account a WHERE s.m_id = :id").setString("id", sessionID).uniqueResult();	
+		
+		if (account != null)
+		{
+			switch (account.getLangAccess())
+			{
+				case ALL:
+					break;
+					
+				case JAVA:
+					if (prj.getLanguage() == Language.CSHARP_11 || 
+						prj.getLanguage() == Language.CSHARP_20)
+					{
+						valid = false;
+					}
+					break;
+					
+				case CSHARP:
+					if (prj.getLanguage() == Language.JAVA_14 || 
+						prj.getLanguage() == Language.JAVA_15)
+					{
+						valid = false;
+					}
+			}
+		}
+		
+		session.getTransaction().commit();
+		
+		if (!valid)
+		{
+			XFireFault fault = new XFireFault(new Exception());			
+			fault.setRole(FaultValues.LANG_ACCESS_DENIED.name());
+			throw fault;			
+		}
 	}
 	
 	public Set<com.sourcedimensions.client.model.Project> getProjectList(String sessionID) throws XFireFault
@@ -113,6 +165,7 @@ public class WebService implements IWebService
 	public Snapshot runSymbolQuery(String sessionID, String projectId, SymbolQuery query) throws XFireFault
 	{
 		verifySession(sessionID);
+		verifyLanguage(sessionID, projectId);
 		
 		SymbolQueryEngine engine = new SymbolQueryEngine(sessionID);
 

@@ -107,6 +107,11 @@ public class WSConsumer
 					
 					m_fault = null;
 				}
+				else if (fault.getRole() != null && fault.getRole().equals(IWebService.FaultValues.LANG_ACCESS_DENIED.name()))
+				{
+					MessageDialog.openWarning(null, "Access denied", "Language limits set for this account does not allow to use currently loaded project");
+					return null;
+				}
 				else
 				{
 					throw fault;
