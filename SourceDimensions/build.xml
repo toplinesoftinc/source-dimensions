@@ -24,15 +24,17 @@
 	</taskdef>
 
 	<target name="help">
-		<echo message="all                - Build all projects"/>
-		<echo message="parser.util        - Standalone executable parsing utility"/>
-		<echo message="parse.lib          - Shared library of parsing component"/>
-		<echo message="parser.tools       - Set of standalone utilities for lexer/parser generation"/>
-		<echo message="parser.test.java   - Java parser tests"/>
-		<echo message="parser.test.csharp - CSharp parser tests"/>
-		<echo message="server.utils       - Profile administration utility and AST Viewer"/>
-		<echo message="webservice         - Web Service application"/>
-		<echo message="clean              - Cleaning all projects"/>
+		<echo message="all                   - Build all projects"/>
+		<echo message="parser.util           - Standalone executable parsing utility"/>
+		<echo message="parse.lib             - Shared library of parsing component"/>
+		<echo message="parser.tools          - Set of standalone utilities for lexer/parser generation"/>
+		<echo message="parser.test.java14    - Java 1.4 parser tests"/>
+		<echo message="parser.test.java15    - Java 1.5 parser tests"/>
+		<echo message="parser.test.csharp11  - CSharp 1.1 parser tests"/>
+		<echo message="parser.test.csharp20  - CSharp 2.0 parser tests"/>
+		<echo message="server.utils          - Profile administration utility and AST Viewer"/>
+		<echo message="webservice            - Web Service application"/>
+		<echo message="clean                 - Cleaning all projects"/>
 	</target>
 
 	<target name="init">
@@ -274,11 +276,11 @@
 	</target>
 
 
-	<target name="parser.test.java" depends="init, parser.util">
+	<target name="parser.test.java14" depends="init, parser.util">
 		<mkdir dir="${parser.testoutput.dir}"/>
 		
 		<delete>
-			<fileset dir="${parser.testoutput.dir}" includes="*.log"/>
+			<fileset dir="${parser.testoutput.dir}" includes="java14test.log"/>
 		</delete>	
 
 		<echo message="Running parser test for Java 1.4 ..."/>
@@ -286,25 +288,34 @@
 			<arg value="-j"/>
 			<srcfile/>
 			<fileset dir="${parser.test.dir.java}">
-				<include name="java14/**/*.java"/>						
-			</fileset>
-		</apply>
-
-		<echo message="Running parser test for Java 1.5 ..."/>
-		<apply executable="${parser.bin.dir}/parserutil" output="${parser.testoutput.dir}/java15test.log" append="true" failonerror="false" skipemptyfilesets="true">
-			<arg value="-j5"/>
-			<srcfile/>
-			<fileset dir="${parser.test.dir.java15}">
-				<include name="java15/**/*.java"/>						
+				<include name="**/*.java"/>						
 			</fileset>
 		</apply>
 	</target>
 
 
-	<target name="parser.test.csharp" depends="init, parser.util">
+	<target name="parser.test.java15" depends="init, parser.util">
+		<mkdir dir="${parser.testoutput.dir}"/>
+		
+		<delete>
+			<fileset dir="${parser.testoutput.dir}" includes="java15test.log"/>
+		</delete>	
+
+		<echo message="Running parser test for Java 1.5 ..."/>
+		<apply executable="${parser.bin.dir}/parserutil" output="${parser.testoutput.dir}/java15test.log" append="true" failonerror="false" skipemptyfilesets="true">
+			<arg value="-j5"/>
+			<srcfile/>
+			<fileset dir="${parser.test.dir.java5}">
+				<include name="**/*.java"/>						
+			</fileset>
+		</apply>
+	</target>
+
+
+	<target name="parser.test.csharp11" depends="init, parser.util">
 		<mkdir dir="${parser.testoutput.dir}"/>		
 		<delete>
-			<fileset dir="${parser.testoutput.dir}" includes="*.log"/>
+			<fileset dir="${parser.testoutput.dir}" includes="csharptest.log"/>
 		</delete>	
 
 		<echo message="Running parser test for CSharp 1.1 ..."/>
@@ -312,16 +323,24 @@
 			<arg value="-cs"/>
 			<srcfile/>
 			<fileset dir="${parser.test.dir.cs}">
-				<include name="csharp/**/*.cs"/>						
+				<include name="**/*.cs"/>						
 			</fileset>
 		</apply>
+	</target>
+
+
+	<target name="parser.test.csharp20" depends="init, parser.util">
+		<mkdir dir="${parser.testoutput.dir}"/>		
+		<delete>
+			<fileset dir="${parser.testoutput.dir}" includes="csharp2test.log"/>
+		</delete>	
 
 		<echo message="Running parser test for CSharp 2.0 ..."/>
 		<apply executable="${parser.bin.dir}/parserutil" output="${parser.testoutput.dir}/csharp2test.log" append="true" failonerror="false" skipemptyfilesets="true">
 			<arg value="-cs2"/>
 			<srcfile/>
 			<fileset dir="${parser.test.dir.cs2}">
-				<include name="csharp2/**/*.cs"/>						
+				<include name="**/*.cs"/>						
 			</fileset>
 		</apply>
 	</target>

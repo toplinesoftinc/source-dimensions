@@ -57,6 +57,12 @@ public class TriStateMask
 		m_excluded = 0;
 	}
 	
+	public void setAny()
+	{
+		m_included = ~0;
+		m_excluded = ~0;
+	}
+	
 	public long getValue()
 	{
 		return (long)(m_included | ((long)m_excluded << Integer.SIZE));

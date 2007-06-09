@@ -1,17 +1,26 @@
 package com.sourcedimensions.server.query;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.Vector;
 import java.util.regex.Pattern;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.SnapshotNode;
 import com.sourcedimensions.client.model.SymbolQuery;
+import com.sourcedimensions.client.model.TriStateBoolean;
+import com.sourcedimensions.client.model.TriStateMask;
+import com.sourcedimensions.client.model.TypeCategory;
+import com.sourcedimensions.client.model.TypeFilter;
 import com.sourcedimensions.client.model.SnapshotNode.Reference;
 import com.sourcedimensions.client.model.SnapshotNode.Type;
 import com.sourcedimensions.server.ast.AstNode;
@@ -38,7 +47,15 @@ public class SymbolQueryEngine
 		
 		session.beginTransaction();
 		
-		SnapshotNode root = executeFromRoot(session, projectId, null, query);
+		SnapshotNode root = new SnapshotNode();
+		
+		Collection<SnapshotNode> result = executeFromRoot(session, projectId, null, query);
+
+		if (result != null)
+		{
+			root.setChildren(new ArrayList<SnapshotNode>());
+			root.getChildren().addAll(result);
+		}		
 		
 		session.getTransaction().commit();
 		
@@ -60,21 +77,27 @@ public class SymbolQueryEngine
 			return null;
 		}
 
-		SnapshotNode root = executeFromRoot(session, projectId, typeDecl, query);		
+		SnapshotNode root = new SnapshotNode();
+		
+		Collection<SnapshotNode> result = executeFromRoot(session, projectId, typeDecl, query);
+		
+		if (result != null)
+		{
+			root.setChildren(new ArrayList<SnapshotNode>());
+			root.getChildren().addAll(result);
+		}
 		
 		session.getTransaction().commit();
 		
 		return root;
 	}
 	
-	protected SnapshotNode executeFromRoot(Session session, String projectId, TypeDeclaration root, SymbolQuery symQuery)
+	protected Collection<SnapshotNode> executeFromRoot(Session session, String projectId, TypeDeclaration root, SymbolQuery symQuery)
 	{
-		SortedMap<String, SnapshotNode> nameMap = new TreeMap<String, SnapshotNode>();
-		
-		Set<Project> prjSpace = DatabaseHelper.getProjectSpace(session, projectId);
-
-		if (root == null || root.getKind() == TypeDeclKind.NAMESPACE)
+		if (root == null)
 		{
+			Set<Project> prjSpace = DatabaseHelper.getProjectSpace(session, projectId);
+			SortedMap<String, namespaceNode> nodeMap = new TreeMap<String, namespaceNode>();
 			List<String> namespaceFilter = new ArrayList<String>();
 			
 			if (symQuery.getAllNamespaces())
@@ -142,7 +165,7 @@ public class SymbolQueryEngine
 								if (lookahead == null)
 								{
 									if (j == (parts.length - 1))
-										addNamespace(decl, name, fileId, nameMap);
+										addNamespace(decl, name, fileId, nodeMap);
 								}
 								else
 								{
@@ -165,7 +188,7 @@ public class SymbolQueryEngine
 											}
 											
 											if (w)
-												addNamespace(decl, name, fileId, nameMap);
+												addNamespace(decl, name, fileId, nodeMap);
 										}
 									}
 								}								
@@ -192,7 +215,7 @@ public class SymbolQueryEngine
 							if (Pattern.matches(fltr[i], parts[j]))
 							{
 								if (i == (fltr.length - 1) && j == (parts.length - 1))
-									addNamespace(decl, name, fileId, nameMap);
+									addNamespace(decl, name, fileId, nodeMap);
 							}
 							else
 								break;
@@ -203,32 +226,135 @@ public class SymbolQueryEngine
 					}
 				}
 			}
-		}
-		
-		Iterator<String> iter = nameMap.keySet().iterator();
-		SnapshotNode node = new SnapshotNode();
-		node.setChildren(new ArrayList<SnapshotNode>());
-		
-		while (iter.hasNext())
-		{
-			node.getChildren().add(new SnapshotNode(Type.NAMESPACE, iter.next()));
-		}
+				
+			List<SnapshotNode> output = new ArrayList<SnapshotNode>();
 			
-		return node;
+			for (namespaceNode n : nodeMap.values())
+			{
+				output.add(n.m_node);
+				
+				for (TypeDeclaration decl : n.m_declSet)
+				{
+					Collection<SnapshotNode> result = executeFromRoot(session, projectId, decl, symQuery);
+
+					if (result != null)
+					{
+						n.m_node.setChildren(new ArrayList<SnapshotNode>());
+						n.m_node.getChildren().addAll(result);
+					}
+				}
+			}
+				
+			return output;			
+		}
+		else if (root.getKind() == TypeDeclKind.NAMESPACE)
+		{
+			List<TypeFilter> typeFilter = new ArrayList<TypeFilter>();
+			
+			if (symQuery.getAllTypes())
+			{
+				TypeFilter filter = new TypeFilter();
+				TriStateMask mask = new TriStateMask();
+				mask.setAny();
+								
+				filter.setCategories(~0);
+				filter.setModifiers(mask);
+				filter.setSupertypes(TriStateBoolean.EITHER);
+				filter.setSubtypes(TriStateBoolean.EITHER);
+				filter.setInnerTypes(TriStateBoolean.EITHER);
+				filter.setAllBaseTypes(true);
+				filter.setName(".*");
+				
+				typeFilter.add(filter);
+			}
+			else
+			{
+				typeFilter.addAll(symQuery.getTypeFilter());
+			}
+			
+			Query query = session.createQuery("SELECT d FROM TypeDeclaration d, TypeDeclarationMember m " +
+					"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
+			
+			query.setString("id", root.getID());
+		
+			List list = query.list();
+			
+			for (TypeFilter filter : typeFilter)
+			{
+				for (Object o : list)
+				{
+					TypeDeclaration decl = (TypeDeclaration)o;
+					
+					if (!Pattern.matches(filter.getName(), decl.m_name))
+						continue;
+
+					boolean skip = true;
+					
+					//TODO: TypeCategory.ANONYMCLASS
+					switch (decl.getKind())
+					{
+						case CLASS:
+							if ((filter.getCategories() & (TypeCategory.CLASS.value() | TypeCategory.ALL.value())) != 0)
+								skip = false;
+							break;
+							
+						case INTERFACE:
+							if ((filter.getCategories() & (TypeCategory.INTERFACE.value() | TypeCategory.ALL.value())) != 0)
+								skip = false;
+							break;
+							
+						case STRUCT:
+							if ((filter.getCategories() & (TypeCategory.STRUCT.value() | TypeCategory.ALL.value())) != 0)
+								skip = false;			
+							break;
+							
+						case ENUM:
+							if ((filter.getCategories() & (TypeCategory.ENUM.value() | TypeCategory.ALL.value())) != 0)
+								skip = false;
+							break;
+														
+						case ANNOT_TYPE:
+							if ((filter.getCategories() & (TypeCategory.ANNOTATION.value() | TypeCategory.ALL.value())) != 0)
+								skip = false;
+							break;
+					}
+					
+					if (skip)
+						continue;
+					
+					if (!filter.getAllBaseTypes())
+					{
+						
+					}
+				}
+			}
+		}
+		
+		
+		return null;
 	}
 	
-	protected void addNamespace(TypeDeclaration decl, String name, String fileId, SortedMap<String, SnapshotNode> nameMap)
+	protected void addNamespace(TypeDeclaration decl, String name, String fileId, Map<String, namespaceNode> nodeMap)
 	{
-		SnapshotNode node = nameMap.get(name);		
-		Reference ref = new Reference(decl.m_id, fileId, decl.m_left, decl.m_right);
+		namespaceNode n = nodeMap.get(name);		
+		Reference ref = new Reference(decl.getID(), fileId, decl.m_left, decl.m_right);
 		
-		if (node == null)
+		if (n == null)
 		{
-			node = new SnapshotNode(Type.NAMESPACE, name);
-			nameMap.put(name, node);
+			n = new namespaceNode();
+			
+			n.m_node = new SnapshotNode(Type.NAMESPACE, name);
+			nodeMap.put(name, n);
 		}
 
-		node.setRefs(new ArrayList<Reference>());		
-		node.getRefs().add(ref);
+		n.m_declSet.add(decl);
+		n.m_node.setRefs(new ArrayList<Reference>());		
+		n.m_node.getRefs().add(ref);
 	}	
+	
+	protected class namespaceNode
+	{
+		public SnapshotNode m_node;
+		public Set<TypeDeclaration> m_declSet = new HashSet<TypeDeclaration>();
+	}
 }

@@ -12,7 +12,7 @@ import com.sourcedimensions.client.model.*;
 public abstract class TypeMemberDialogBase extends DialogBase
 {
 	protected boolean m_anyParams;
-	protected TriStateMask m_modifiers = new TriStateMask();
+	protected TriStateMask m_modifiers = new TriStateMask();  //  @jve:decl-index=0:
 	protected int m_memberCategories;
 	protected int m_operators;
 	protected Type m_type = new Type();  //  @jve:decl-index=0:

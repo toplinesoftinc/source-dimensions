@@ -334,11 +334,6 @@ public class TypeFilterDialog extends DialogBase
 							return;
 						}
 						
-						if (name.equals("**"))
-						{
-							continue;
-						}
-						
 						try
 						{
 							Pattern.compile(name);
