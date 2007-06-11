@@ -628,14 +628,34 @@ void CSharpLexer::NumericLiteral()
 					{
 						case 'L':
 						case 'l':
+							switch (ReadChar())
+							{
+								case 'U':
+								case 'u':
+									break;
+						
+								default:
+									PutBack();
+							}		                        
+							break;
+
 						case 'U':
 						case 'u':
-							return;
+							switch (ReadChar())
+							{
+								case 'L':
+								case 'l':
+									break;
+						
+								default:
+									PutBack();
+							}		                        
+							break;
 
 						default:
 							PutBack();
-							return;
 					}
+					return;
 				}
 				else
 					throw new CBadTokenException(this);
@@ -653,14 +673,26 @@ void CSharpLexer::NumericLiteral()
 	{
 		case 'U':
 		case 'u':
+			switch (ReadChar())
+			{
+				case 'L':
+				case 'l':
+					break;
+
+				default:
+					PutBack();
+			}
+			mContext.token = GetTokenCode(IDX_CS_INT_LITERAL);
+			mContext.token_value = mContext.value_buffer;
+			return;
+
+
 		case 'L':
 		case 'l':
 			switch (ReadChar())
 			{
 				case 'U':
 				case 'u':
-				case 'L':
-				case 'l':
 					break;
 
 				default:
