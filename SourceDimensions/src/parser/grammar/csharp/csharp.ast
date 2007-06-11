@@ -19,7 +19,7 @@
 **************************************************************/
 
 /*********************** DECLARATIONS *************************/
-
+    
 CompUnit -> 
 	ExternAliasDir* 
 	(
@@ -1071,7 +1071,7 @@ Literal ->
 
 ParenExpr -> Expr
 
-MemAccess -> (PredefType | @PRIMARY_EXPR) Id
+MemAccess -> (PredefType | @PRIMARY_EXPR) Id Type*
 
 PredefType ->
 	BOOL    |
@@ -1114,7 +1114,7 @@ CheckedExpr -> Expr
 
 UncheckedExpr -> Expr
 
-PtrMemAccess -> (@PRIMARY_EXPR | QName) Id
+PtrMemAccess -> (@PRIMARY_EXPR | QName) Id Type*
 
 SizeofExpr -> Type
 

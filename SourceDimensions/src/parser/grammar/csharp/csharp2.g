@@ -214,7 +214,7 @@
 
 -- *** Start symbol ***
 
-CompilationUnit ::=
+CompUnit ::=
   %empty                                |
                             GblAttrs    |  
   				  	  	    NspMemDecls |
@@ -472,8 +472,10 @@ Literal ::=
 ParenExpr ::= '(' Expr ')' 
 
 MemAccess ::= 
-  PrimaryExpr '.' Id |
-  PredefType '.' Id
+  PrimaryExpr '.' Id             |
+  PrimaryExpr '.' Id TypeArgList |
+  PredefType '.' Id              |
+  PredefType '.' Id TypeArgList
   
 PredefType ::=
   BOOL    |
@@ -595,7 +597,9 @@ CastExpr ::= '(' Type ')' UnaryExpr
 PtrIndirExpr ::= '*' UnaryExpr
 
 PtrMemAccess ::= 
-  PrimaryExpr '->' Id |
+  PrimaryExpr '->' Id TypeArgList |
+  PrimaryExpr '->' Id             |
+  QName '->' Id TypeArgList       |
   QName '->' Id
 
 AddrofExpr ::= '&' UnaryExpr

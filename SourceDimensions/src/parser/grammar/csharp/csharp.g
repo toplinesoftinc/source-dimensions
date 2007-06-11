@@ -208,7 +208,7 @@
 
 -- *** Start symbol ***
 
-CompilationUnit ::=
+CompUnit ::=
   %empty                         |
                      NspMemDecls |
             GblAttrs             |

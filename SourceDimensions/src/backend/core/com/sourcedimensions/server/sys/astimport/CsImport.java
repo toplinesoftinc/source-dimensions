@@ -1869,8 +1869,8 @@ public class CsImport extends AstImport
 			case PTR_MEM_ACCESS:	
 				{
 					IdentifierExpression ie = createAstNode(IdentifierExpression.class);
-					parseTextPos(node.getLastChild(), ie);
-					ie.m_name.add(parseName(node.getLastChild()));
+					parseTextPos(node.getNode("Id"), ie);
+					ie.m_name.add(parseName(node.getNode("Id")));
 				
 					XmlNode child = node.getFirstChild();
 					
@@ -1892,6 +1892,16 @@ public class CsImport extends AstImport
 						
 						e.setRightOperand(ie);
 						expr = e;
+					}
+					
+					List<XmlNode> args = node.getNodeList("Type");
+					
+					for (XmlNode n : args)
+					{
+						TypeArgument arg = createAstNode(TypeArgument.class, TypeArgKind.EXACT.value());
+						parseTextPos(n, arg);
+						arg.setRefType(parseType(n));
+						ie.m_name.get(ie.m_name.size() - 1).m_arguments.add(arg);						
 					}
 				}
 				break;

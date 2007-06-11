@@ -27,6 +27,8 @@ protected:
 	virtual bool PreProcess();
 	virtual void PostProcess();
 
+	inline void HexLiteral();
+
 	bool rangle;
 };
 

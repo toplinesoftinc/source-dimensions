@@ -117,7 +117,7 @@ bool CSharpParser2::FilterCallback(CSymbol *sym)
 			case Nt_Cs2_ClsIntfType:
 			case Nt_Cs2_ClsType:
 			case Nt_Cs2_Comma:
-			case Nt_Cs2_CompilationUnit:
+			case Nt_Cs2_CompUnit:
 			case Nt_Cs2_CondAndExpr:
 			case Nt_Cs2_CondExpr:
 			case Nt_Cs2_CondOrExpr:
@@ -495,9 +495,42 @@ bool CSharpParser2::GetAltAction(CLexer *lexer, int state, int &cur, int &alt)
 				case IDX_CS_QUESTION:
 				case IDX_CS_STAR:
 					cur = 14;
-					alt = 224;
+					alt = 226;
 					return true;
 			}
+			break;
+
+		case 1297:
+			if (lexer->GetCurToken() == lexer->GetTokenCode(IDX_CS_LANGLE))
+			{
+				alt = 167;
+				return true;
+			}			
+			break;
+
+		case 1326:
+			if (lexer->GetCurToken() == lexer->GetTokenCode(IDX_CS_LANGLE))
+			{
+				alt = 247;
+				return true;
+			}			
+			break;	
+
+		case 1338:
+			if (lexer->GetCurToken() == lexer->GetTokenCode(IDX_CS_LANGLE))
+			{
+				alt = 245;
+				return true;
+			}			
+			break;	
+
+		case 1341:
+			if (lexer->GetCurToken() == lexer->GetTokenCode(IDX_CS_LANGLE))
+			{
+				alt = 165;
+				return true;
+			}			
+			break;	
 	}
 
 	return false;

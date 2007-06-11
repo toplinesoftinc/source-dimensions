@@ -1306,7 +1306,7 @@ void CSharpLexer::ParsePP()
 
 	SkipWhiteSpacesPP();
 
-    	k = MatchPreprocKeyword();
+   	k = MatchPreprocKeyword();
 
 	if (k == NULL)
 		throw new CInvalidPPExprException(this);
@@ -1499,12 +1499,7 @@ int CSharpLexer::NextSectionPP()
 										nest -= (2 - (nest % 2));
 							}
 						}
-						else
-							throw new CInvalidPPExprException(this);
-
 					}
-					else
-						throw new CInvalidPPExprException(this);
 				}
 				break;
 

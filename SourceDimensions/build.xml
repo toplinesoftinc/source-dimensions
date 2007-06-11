@@ -358,7 +358,7 @@
 		 debug="${debug}"
 		 optimize="on"
 		 classpath="${xfire.lib.dir}/xfire-core-1.2.2.jar"
-		 includes="com/sourcedimensions/ws/provider/*.java,com/sourcedimension/client/model/*.java"
+		 includes="com/sourcedimensions/ws/provider/*.java,com/sourcedimensions/client/model/*.java"
 		/>
 			  
 

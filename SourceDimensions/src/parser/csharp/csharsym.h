@@ -153,7 +153,7 @@ enum
 enum
 {
       Nt_Cs_acc = 134,
-      Nt_Cs_CompilationUnit = 135,
+      Nt_Cs_CompUnit = 135,
       Nt_Cs_NspMemDecls = 37,
       Nt_Cs_GblAttrs = 85,
       Nt_Cs_UsingDirs = 86,

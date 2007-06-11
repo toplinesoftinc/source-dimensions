@@ -1,5 +1,7 @@
 #include "javalexer5.h"
 #include "java5sym.h"
+#include "../common/exceptions.h"
+
 
 
 static const int token_map[] =
@@ -168,6 +170,24 @@ bool CJavaLexer5::PreProcess()
 			mContext.token = GetTokenCode(IDX_J_RANGLE);
 			return true;
 
+		case '0':
+			{
+				char c = ReadChar();
+
+				if (c == 'x' || c == 'X')
+				{
+					HexLiteral();
+					return true;
+				}
+				else
+				{
+					PutBack();
+					PutBack();
+					return false;
+				}
+			}
+			break;
+
 		default:
 			PutBack();
 			return false;
@@ -200,4 +220,58 @@ void CJavaLexer5::PostProcess()
 			mContext.token_value = "";
 		}
 	}
+}
+
+
+void CJavaLexer5::HexLiteral()
+{
+	do
+		ReadChar();
+	while (HexDigit());
+
+	if (mContext.ch != '.')
+	{
+		if (mContext.ch != 'L' && mContext.ch != 'l')
+			PutBack();
+
+		mContext.token = GetTokenCode(IDX_J_INT_LITERAL);
+		mContext.token_value = mContext.value_buffer;
+
+		return;
+	}
+
+	do
+		ReadChar();
+	while (HexDigit());
+
+	if (mContext.ch != 'p' && mContext.ch != 'P')
+		throw new CBadTokenException(this);
+
+	ReadChar();
+
+	if (mContext.ch == '-' || mContext.ch == '+')
+		ReadChar();
+
+	if (!DecDigit())
+		throw new CBadTokenException(this);
+
+	do
+		ReadChar();
+	while (DecDigit());
+
+	switch (mContext.ch)
+	{
+		case 'f':
+		case 'F':
+		case 'd':
+		case 'D':
+			break;
+
+		default:
+			PutBack();
+	}
+
+	mContext.token = GetTokenCode(IDX_J_FLOAT_LITERAL);
+	mContext.token_value = mContext.value_buffer;
+	return;
 }

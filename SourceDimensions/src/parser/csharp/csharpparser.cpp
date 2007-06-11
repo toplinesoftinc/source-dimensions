@@ -102,7 +102,7 @@ bool CSharpParser::FilterCallback(CSymbol *sym)
 			case Nt_Cs_ClsDecl:
 			case Nt_Cs_ClsIntfType:
 			case Nt_Cs_ClsType:
-			case Nt_Cs_CompilationUnit:
+			case Nt_Cs_CompUnit:
 			case Nt_Cs_CondAndExpr:
 			case Nt_Cs_CondExpr:
 			case Nt_Cs_CondOrExpr:

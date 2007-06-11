@@ -12098,6 +12098,7 @@
 						</xs:sequence>
 					</xs:choice>
 					<xs:element name="Id" minOccurs="1" maxOccurs="1" type="Id" />
+					<xs:element name="Type" minOccurs="0" maxOccurs="unbounded" type="Type" />
 				</xs:sequence>
 			</xs:choice>
 		</xs:extension>
@@ -12786,6 +12787,7 @@
 						</xs:sequence>
 					</xs:choice>
 					<xs:element name="Id" minOccurs="1" maxOccurs="1" type="Id" />
+					<xs:element name="Type" minOccurs="0" maxOccurs="unbounded" type="Type" />
 				</xs:sequence>
 			</xs:choice>
 		</xs:extension>
