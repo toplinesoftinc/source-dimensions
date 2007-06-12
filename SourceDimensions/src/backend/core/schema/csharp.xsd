@@ -283,6 +283,9 @@
 							<xs:element name="SimpleType" minOccurs="1" maxOccurs="1" type="SimpleType" />
 						</xs:sequence>
 						<xs:sequence>
+							<xs:element name="PtrType" minOccurs="1" maxOccurs="1" type="PtrType" />
+						</xs:sequence>
+						<xs:sequence>
 							<xs:element name="OBJECT" minOccurs="1" maxOccurs="1" type="Terminal" />
 						</xs:sequence>
 						<xs:sequence>

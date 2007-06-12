@@ -343,6 +343,7 @@ ArrType ::= NonArrType RankSpecs
 NonArrType ::=
   TypeName   |
   SimpleType |
+  PtrType    |
   OBJECT     |
   STRING     |
   NullType

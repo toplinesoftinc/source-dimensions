@@ -380,7 +380,7 @@ bool CSharpParser::GetAltAction(CLexer *lexer, int state, int &cur, int &alt)
 			case IDX_CS_RPAREN:
 			case IDX_CS_STAR:
 				cur = 10;
-				alt = 181;
+				alt = 182;
 				return true;
 		}
 		return false;
