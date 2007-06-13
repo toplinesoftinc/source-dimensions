@@ -495,7 +495,7 @@ bool CSharpParser2::GetAltAction(CLexer *lexer, int state, int &cur, int &alt)
 				case IDX_CS_QUESTION:
 				case IDX_CS_STAR:
 					cur = 14;
-					alt = 227;
+					alt = 228;
 					return true;
 			}
 			break;
@@ -508,10 +508,19 @@ bool CSharpParser2::GetAltAction(CLexer *lexer, int state, int &cur, int &alt)
 			}			
 			break;
 
+		case 1303:
+			if (lexer->GetCurToken() == lexer->GetTokenCode(IDX_CS_LANGLE))
+			{
+				alt = 195;
+				return true;
+			}			
+			break;	
+
+
 		case 1327:
 			if (lexer->GetCurToken() == lexer->GetTokenCode(IDX_CS_LANGLE))
 			{
-				alt = 248;
+				alt = 249;
 				return true;
 			}			
 			break;	
@@ -519,7 +528,7 @@ bool CSharpParser2::GetAltAction(CLexer *lexer, int state, int &cur, int &alt)
 		case 1339:
 			if (lexer->GetCurToken() == lexer->GetTokenCode(IDX_CS_LANGLE))
 			{
-				alt = 246;
+				alt = 247;
 				return true;
 			}			
 			break;	

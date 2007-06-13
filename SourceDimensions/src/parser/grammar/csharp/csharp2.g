@@ -513,7 +513,8 @@ ExprList ::=
 ThisAccess ::= THIS
 
 BaseAccess ::=
-  BASE '.' Id |
+  BASE '.' Id             |
+  BASE '.' Id TypeArgList |
   BASE '[' ExprList ']'
   
 PostIncrExpr ::= 
@@ -1460,7 +1461,7 @@ BufElemType ::= Type
 
 FixedSizeBufDclrs ::=
   FixedSizeBufDclr |
-  FixedSizeBufDclr FixedSizeBufDclrs
+  FixedSizeBufDclr ',' FixedSizeBufDclrs
   
 FixedSizeBufDclr ::= Id '[' ConstExpr ']'	
 
