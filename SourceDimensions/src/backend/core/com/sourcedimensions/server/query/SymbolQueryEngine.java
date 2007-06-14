@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+
+import org.codehaus.xfire.fault.XFireFault;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import com.sourcedimensions.client.model.Folder;
@@ -27,6 +29,7 @@ import com.sourcedimensions.server.ast.TypeDeclaration.TypeDeclKind;
 import com.sourcedimensions.server.sys.Project;
 import com.sourcedimensions.server.sys.profile.Database;
 import com.sourcedimensions.server.utils.DatabaseHelper;
+import com.sourcedimensions.ws.provider.IWebService.FaultValues;
 
 
 public class SymbolQueryEngine 

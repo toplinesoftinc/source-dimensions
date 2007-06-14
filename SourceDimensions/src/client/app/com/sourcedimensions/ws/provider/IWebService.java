@@ -14,6 +14,7 @@ public interface IWebService
 	{
 		LOGIN_FAILED,
 		LANG_ACCESS_DENIED,
+		PROJECT_NOT_FOUND,
 		SESSION_EXPIRED;
 	}
 		

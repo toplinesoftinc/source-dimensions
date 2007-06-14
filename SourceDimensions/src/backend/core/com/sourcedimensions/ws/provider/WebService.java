@@ -12,6 +12,7 @@ import com.sourcedimensions.server.sys.Project.Language;
 import com.sourcedimensions.server.sys.profile.*;
 import com.sourcedimensions.server.sys.Project;
 import com.sourcedimensions.server.utils.DatabaseHelper;
+import com.sourcedimensions.ws.provider.IWebService.FaultValues;
 
 
 public class WebService implements IWebService
@@ -63,6 +64,14 @@ public class WebService implements IWebService
 		session.beginTransaction();
 		Project prj = (Project)session.get(Project.class, projectId);	
 		session.getTransaction().commit();
+		
+		if (prj == null)
+		{
+			XFireFault fault = new XFireFault(new Exception());
+			
+			fault.setRole(FaultValues.PROJECT_NOT_FOUND.name());
+			throw fault;
+		}
 		
 		session = Database.getProfileSessionFactory().getCurrentSession();
 		session.beginTransaction();

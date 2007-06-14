@@ -109,7 +109,12 @@ public class WSConsumer
 				}
 				else if (fault.getRole() != null && fault.getRole().equals(IWebService.FaultValues.LANG_ACCESS_DENIED.name()))
 				{
-					MessageDialog.openWarning(null, "Access denied", "Language limits set for this account does not allow to use currently loaded project");
+					MessageDialog.openWarning(null, "Access denied", "Languages set for this account does not allow to use currently loaded project.");
+					return null;
+				}
+				else if (fault.getRole() != null && fault.getRole().equals(IWebService.FaultValues.PROJECT_NOT_FOUND.name()))
+				{
+					MessageDialog.openWarning(null, "Project does not exist", "The project does not exist on the server.");
 					return null;
 				}
 				else
