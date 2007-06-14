@@ -1094,7 +1094,7 @@ InvocExpr -> (@PRIMARY_EXPR | QName) Arg* ArgLstExpr?
 
 ElemAccess -> (@PRIMARY_NO_ARR_CREAT_EXPR | QName | ArrCreInitExpr) Expr+
 
-BaseAccess -> Id | Expr+
+BaseAccess -> Id Type* | Expr+
 
 PostIncrExpr -> @PRIMARY_EXPR | QName
 

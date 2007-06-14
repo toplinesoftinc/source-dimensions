@@ -283,9 +283,6 @@
 							<xs:element name="SimpleType" minOccurs="1" maxOccurs="1" type="SimpleType" />
 						</xs:sequence>
 						<xs:sequence>
-							<xs:element name="PtrType" minOccurs="1" maxOccurs="1" type="PtrType" />
-						</xs:sequence>
-						<xs:sequence>
 							<xs:element name="OBJECT" minOccurs="1" maxOccurs="1" type="Terminal" />
 						</xs:sequence>
 						<xs:sequence>
@@ -12368,6 +12365,7 @@
 			<xs:choice >
 				<xs:sequence>
 					<xs:element name="Id" minOccurs="1" maxOccurs="1" type="Id" />
+					<xs:element name="Type" minOccurs="0" maxOccurs="unbounded" type="Type" />
 				</xs:sequence>
 				<xs:sequence>
 					<xs:element name="Expr" minOccurs="1" maxOccurs="unbounded" type="Expr" />

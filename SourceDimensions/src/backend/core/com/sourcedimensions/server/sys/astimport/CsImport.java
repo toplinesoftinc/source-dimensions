@@ -2004,8 +2004,19 @@ public class CsImport extends AstImport
 						b.setLeftOperand(s);
 						
 						IdentifierExpression id = createAstNode(IdentifierExpression.class);
+						parseTextPos(child, id);
 						id.m_name.add(parseName(node.getLastChild()));
 						b.setRightOperand(id);
+					
+						List<XmlNode> argList = node.getNodeList("Type");
+						
+						for (XmlNode n : argList)
+						{
+							TypeArgument arg = createAstNode(TypeArgument.class, TypeArgKind.EXACT.value());
+							parseTextPos(n, arg);
+							arg.setRefType(parseType(n));
+							id.m_name.get(id.m_name.size() - 1).m_arguments.add(arg);
+						}
 						
 						expr = b;
 					}
@@ -2034,8 +2045,8 @@ public class CsImport extends AstImport
 							}							
 						}
 						
-						expr = e;						
-					}
+						expr = e;			
+					}					
 				}
 				break;
 
