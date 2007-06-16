@@ -10,28 +10,32 @@
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="Type"/>
 	</set>
-	<list name="m_typeParams" where="T_ROLE=1">
+	<set name="m_baseInterfaces" where="T_ROLE=1">
+		<key column="F_PARENT" foreign-key="none"/>
+		<one-to-many class="Type"/>
+	</set>
+	<list name="m_typeParams" where="T_ROLE=2">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="TypeParameter"/>
 	</list>
-	<set name="m_constraints" where="T_ROLE=2">
+	<set name="m_constraints" where="T_ROLE=3">
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="Constraint"/>
 	</set>
-	<set name="m_members" where="T_ROLE=3">
+	<set name="m_members" where="T_ROLE=4">
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="AbstractMember"/>
 	</set>
-	<set name="m_modifiers" where="T_ROLE=4">
+	<set name="m_modifiers" where="T_ROLE=5">
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="Modifier"/>		
 	</set>
-	<set name="m_attributes" where="T_ROLE=5">
+	<set name="m_attributes" where="T_ROLE=6">
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="AttributeBlock"/>
 	</set>
-	<set name="m_directives" where="T_ROLE=6">
+	<set name="m_directives" where="T_ROLE=7">
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="Directive"/>
 	</set>

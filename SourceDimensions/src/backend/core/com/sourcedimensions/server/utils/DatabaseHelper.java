@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
-
 import org.hibernate.Session;
-
 import com.sourcedimensions.server.sys.Project;
 import com.sourcedimensions.server.sys.profile.Database;
 

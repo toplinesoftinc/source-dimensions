@@ -15,11 +15,10 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Combo;
-
 import com.sourcedimensions.client.model.BaseTypeCategory;
 import com.sourcedimensions.client.model.Folder;
-import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
+
 
 public class BaseTypeFilterDialog extends DialogBase 
 {
@@ -33,15 +32,34 @@ public class BaseTypeFilterDialog extends DialogBase
 	private Button m_cancelButton;
 	private Combo m_typeCategoryCombo;  //  @jve:decl-index=0:visual-constraint="369,103"
 	private BaseTypeCategory m_categoryValue;
+	private int m_selection;
 	
-	protected static String[] m_typeCategoryNames = 
+	protected static String[] m_csTypeCategoryNames = 
 	{
-		"CLASS",
-		"INTERFACE",
 		"CLASS/INTERFACE",
 		"INTEGRAL TYPE"
 	};
 
+	protected static BaseTypeCategory[] m_csTypeCategoryMapping =
+	{
+		BaseTypeCategory.CLASSINTF,
+		BaseTypeCategory.INTEGRALTYPE
+	};
+	
+	protected static String[] m_javaTypeCategoryNames = 
+	{
+		"CLASS",
+		"INTERFACE",
+		"CLASS/INTERFACE"
+	};
+
+	protected static BaseTypeCategory[] m_javaTypeCategoryMapping =
+	{
+		BaseTypeCategory.CLASS,
+		BaseTypeCategory.INTERFACE,
+		BaseTypeCategory.CLASSINTF
+	};
+	
 	public BaseTypeFilterDialog(Shell parent)
 	{
 		m_value = null;
@@ -87,7 +105,7 @@ public class BaseTypeFilterDialog extends DialogBase
 			{
 				String val;
 				
-				if (m_typeCategoryCombo.getSelectionIndex() == BaseTypeCategory.INTEGRALTYPE.value())
+				if (getTypeCategoryMapping()[m_typeCategoryCombo.getSelectionIndex()] == BaseTypeCategory.INTEGRALTYPE)
 					val = m_integralTypeCombo.getText().trim();
 				else
 					val = m_baseTypeFilterText.getText().trim();
@@ -108,11 +126,6 @@ public class BaseTypeFilterDialog extends DialogBase
 						return;
 					}
 					
-					if (name.equals("**"))
-					{
-						continue;
-					}
-					
 					try
 					{
 						Pattern.compile(name);
@@ -126,7 +139,8 @@ public class BaseTypeFilterDialog extends DialogBase
 				}
 				
 				m_value = val;
-				m_categoryValue = BaseTypeCategory.values()[m_typeCategoryCombo.getSelectionIndex()];
+				m_selection = m_typeCategoryCombo.getSelectionIndex();
+				m_categoryValue = getTypeCategoryMapping()[m_typeCategoryCombo.getSelectionIndex()];
 				m_shell.close();
 			}
 		});
@@ -145,7 +159,7 @@ public class BaseTypeFilterDialog extends DialogBase
 		
 		if (m_value != null)
 		{
-			m_typeCategoryCombo.select(m_categoryValue.value());
+			m_typeCategoryCombo.select(getIndexByCode(m_categoryValue.value()));
 			
 			if (m_categoryValue == BaseTypeCategory.INTEGRALTYPE)
 			{
@@ -173,12 +187,12 @@ public class BaseTypeFilterDialog extends DialogBase
 	
 	public String getTypeCategoryName()
 	{
-		return m_typeCategoryNames[m_categoryValue.value()];
+		return getCategoryNameArray()[m_selection];
 	}	
 	
 	public static String getTypeCategoryName(int code)
 	{
-		return m_typeCategoryNames[code];
+		return getCategoryNameArray()[getIndexByCode(code)];
 	}
 	
 	protected void cancelClose()
@@ -213,22 +227,16 @@ public class BaseTypeFilterDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				boolean integral_type = (m_typeCategoryCombo.getSelectionIndex() == BaseTypeCategory.INTEGRALTYPE.value()); 
+				boolean integral_type = (getTypeCategoryMapping()[m_typeCategoryCombo.getSelectionIndex()] == BaseTypeCategory.INTEGRALTYPE); 
 				m_integralTypeCombo.setVisible(integral_type);
 				m_baseTypeFilterText.setVisible(!integral_type);
 			}
 		});
 		
-		int namelen = m_typeCategoryNames.length;
-		Language lang = ProjectView.getProject().language();
-		
-		if (lang != Language.CSHARP11 && lang != Language.CSHARP20)
-			namelen--;
-				
-		for (int i = 0; i < namelen; i++)
-		{
-			m_typeCategoryCombo.add(m_typeCategoryNames[i]);
-		}
+		String[] names = getCategoryNameArray();
+
+		for (int i = 0; i < names.length; i++)
+			m_typeCategoryCombo.add(names[i]);
 		
 		m_typeCategoryCombo.select(m_categoryValue.value());		
 	}
@@ -237,4 +245,52 @@ public class BaseTypeFilterDialog extends DialogBase
 	{
 		return m_shell;
 	}
+	
+	protected static String[] getCategoryNameArray()
+	{
+		switch (ProjectView.getProject().language())
+		{
+			case JAVA14:
+			case JAVA15:
+				return m_javaTypeCategoryNames;
+				
+			case CSHARP11:
+			case CSHARP20:
+				return m_csTypeCategoryNames;
+				
+			default:
+				return null;
+		}
+	}
+	
+	protected static BaseTypeCategory[] getTypeCategoryMapping()
+	{
+		switch (ProjectView.getProject().language())
+		{
+			case JAVA14:
+			case JAVA15:
+				return m_javaTypeCategoryMapping;
+				
+			case CSHARP11:
+			case CSHARP20:
+				return m_csTypeCategoryMapping;
+				
+			default:
+				return null;
+		}
+	}
+	
+	protected static int getIndexByCode(int code)
+	{
+		BaseTypeCategory[] cats = getTypeCategoryMapping();
+		
+		for (int i = 0; i < cats.length; i++)
+		{
+			if (cats[i].value() == code)
+				return i;
+		}		
+		
+		return 0;
+	}
+	
 }

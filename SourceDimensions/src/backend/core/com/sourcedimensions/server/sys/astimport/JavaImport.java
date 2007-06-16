@@ -636,7 +636,7 @@ public class JavaImport extends AstImport
 				parseModifiers(n, decl.m_modifiers, decl.m_attributes);
 				decl.m_name = getTermValue(n.getNode("ID"));		
 				parseTypeParams(n, decl.m_typeParams);
-				parseBaseTypes(n, decl.m_baseTypes);
+				parseBaseTypes(n, decl.m_baseTypes, decl.m_baseInterfaces);
 				parseMembers(n.getNode(bodytag[k]), decl.m_members);
 				
 				if (factory == null)
@@ -702,7 +702,8 @@ public class JavaImport extends AstImport
 	}
 
 	
-	protected void parseBaseTypes(XmlNode node, Set<Type> baseTypes) throws Exception
+	protected void parseBaseTypes(XmlNode node, Set<Type> baseTypes, 
+		Set<UserDefinedType> baseInterfaces) throws Exception
 	{
 		String[] tag = {"ClsType", "IntfType"};
 		
@@ -717,7 +718,11 @@ public class JavaImport extends AstImport
 				parseTextPos(n, type);
 				parseQName(n, type.m_name);
 				parseTypeArgs(n, type.m_arguments);
-				baseTypes.add(type);
+				
+				if (t.equals("ClsType"))
+					baseTypes.add(type);
+				else
+					baseInterfaces.add(type);
 			}
 		}
 	}

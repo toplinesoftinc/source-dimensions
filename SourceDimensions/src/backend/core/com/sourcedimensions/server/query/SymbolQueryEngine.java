@@ -9,10 +9,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
-
-import org.codehaus.xfire.fault.XFireFault;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import com.sourcedimensions.client.model.BaseType;
+import com.sourcedimensions.client.model.BaseTypeCategory;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.SnapshotNode;
 import com.sourcedimensions.client.model.SymbolQuery;
@@ -23,13 +23,14 @@ import com.sourcedimensions.client.model.TypeFilter;
 import com.sourcedimensions.client.model.SnapshotNode.Reference;
 import com.sourcedimensions.client.model.SnapshotNode.Type;
 import com.sourcedimensions.server.ast.AstNode;
+import com.sourcedimensions.server.ast.SimpleType;
 import com.sourcedimensions.server.ast.TypeDeclaration;
 import com.sourcedimensions.server.ast.TypeDeclarationMember;
+import com.sourcedimensions.server.ast.UserDefinedType;
 import com.sourcedimensions.server.ast.TypeDeclaration.TypeDeclKind;
 import com.sourcedimensions.server.sys.Project;
 import com.sourcedimensions.server.sys.profile.Database;
 import com.sourcedimensions.server.utils.DatabaseHelper;
-import com.sourcedimensions.ws.provider.IWebService.FaultValues;
 
 
 public class SymbolQueryEngine 
@@ -322,10 +323,63 @@ public class SymbolQueryEngine
 					if (skip)
 						continue;
 					
+					skip = false;
+					
 					if (!filter.getAllBaseTypes())
 					{
-						
+						for (BaseType base : filter.getBaseTypes())
+						{			
+							Set<com.sourcedimensions.server.ast.Type> types = new HashSet<com.sourcedimensions.server.ast.Type>();
+							
+							for (com.sourcedimensions.server.ast.Type t : decl.m_baseTypes)
+							{
+								String name = "";
+								
+								if (t instanceof UserDefinedType)
+								{
+									UserDefinedType udt = (UserDefinedType)t;
+									name = udt.m_name.get(udt.m_name.size() - 1).m_name;
+								}
+								else if (t instanceof SimpleType)
+								{
+									name = ((SimpleType)t).getKind().toString().toLowerCase();
+								}
+								else
+									continue;
+								
+								if (Pattern.matches(base.getName(), name))
+								{
+									types.add(t);
+								}
+							}
+							
+							if (types.size() == 0)
+								continue;
+
+							// TODO
+							com.sourcedimensions.server.ast.Type[] copyArray = (com.sourcedimensions.server.ast.Type[])types.toArray();
+							
+							for (com.sourcedimensions.server.ast.Type t : copyArray)
+							{
+								switch (BaseTypeCategory.values()[base.getCategory()])
+								{
+									case CLASS:
+										break;
+										
+									case INTERFACE:
+										break;
+										
+									case CLASSINTF:
+										break;
+										
+									case INTEGRALTYPE:								
+								}
+							}
+						}
 					}
+					
+					if (skip)
+						continue;
 				}
 			}
 		}
