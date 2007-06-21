@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.Display;
 import com.sourcedimensions.client.actions.ExecuteQueryAction;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.model.Project.Language;
+import com.sourcedimensions.client.model.Type.EmptyNameSectionException;
 import com.sourcedimensions.client.views.ProjectView;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.graphics.Font;
@@ -658,16 +659,6 @@ public class SymbolQueryDialog extends DialogBase
 		column.setResizable(true);
 		column.setMoveable(true);
 		column.setText("Inner");
-		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 5);
-		column.setWidth((int)(0.12 * width));
-		column.setResizable(true);
-		column.setMoveable(true);
-		column.setText("Super");
-		column = new TableColumn(m_typeFilterTable, SWT.LEFT, 6);
-		column.setWidth((int)(0.13 * width));
-		column.setResizable(true);
-		column.setMoveable(true);
-		column.setText("Subtypes");		
 		m_typeFilterLabel = new Label(m_typesTab, SWT.NONE);
 		m_typeFilterLabel.setBounds(new Rectangle(15, 40, 101, 16));
 		m_typeFilterLabel.setText("&Type Filter List:");
@@ -695,8 +686,6 @@ public class SymbolQueryDialog extends DialogBase
 					filter.setBaseTypes(dialog.getBaseTypes());
 					filter.setAllBaseTypes(dialog.getAllBaseTypes());
 					filter.setInnerTypes(dialog.getInnerTypes());
-					filter.setSupertypes(dialog.getSupertypes());
-					filter.setSubtypes(dialog.getSubtypes());					
 					filter.setDelegate(dialog.getDelegate());
 					filter.setName(dialog.getTypeName());
 					m_typeFilter.add(filter);
@@ -880,9 +869,9 @@ public class SymbolQueryDialog extends DialogBase
 			TypeFilter filter = m_typeFilter.get(sel);
 			TableItem item = m_typeFilterTable.getItem(sel);
 			
-			TypeFilterDialog dialog = new TypeFilterDialog(m_shell,
-				filter.getName(), filter.getCategories(), filter.getModifiers(), filter.getInnerTypes(), filter.getSupertypes(),
-				filter.getSubtypes(), filter.getAllBaseTypes(), filter.getBaseTypes(), filter.getDelegate());
+			TypeFilterDialog dialog = new TypeFilterDialog(m_shell, filter.getName(), 
+				filter.getCategories(), filter.getModifiers(), filter.getInnerTypes(),
+				filter.getAllBaseTypes(), filter.getBaseTypes(), filter.getDelegate());
 			
 			dialog.open();
 			
@@ -893,8 +882,6 @@ public class SymbolQueryDialog extends DialogBase
 				filter.setBaseTypes(dialog.getBaseTypes());
 				filter.setAllBaseTypes(dialog.getAllBaseTypes());
 				filter.setInnerTypes(dialog.getInnerTypes());
-				filter.setSupertypes(dialog.getSupertypes());
-				filter.setSubtypes(dialog.getSubtypes());
 				filter.setDelegate(dialog.getDelegate());
 				filter.setName(dialog.getTypeName());
 
@@ -1109,8 +1096,6 @@ public class SymbolQueryDialog extends DialogBase
 		item.setText(2, filter.getName());					
 		item.setText(3, filter.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.getBaseTypes()));
 		item.setText(4, m_triStateText[filter.getInnerTypes().value()]);
-		item.setText(5, m_triStateText[filter.getSupertypes().value()]);
-		item.setText(6, m_triStateText[filter.getSubtypes().value()]);		
 	}
 	
 	protected void fillLocalDeclFilterItem(TableItem item, LocalDeclFilter filter)
@@ -1138,7 +1123,22 @@ public class SymbolQueryDialog extends DialogBase
 			{
 				try
 				{
-					Type.validateTypeName(value);
+					String[] names = value.split(Folder.DIVIDER);
+
+					if (value.trim().length() == 0)
+					{
+						throw new EmptyNameSectionException();
+					}					
+					
+					for (String name : names)
+					{
+						if (name.equals("**"))
+						{
+							continue;
+						}
+
+						Pattern.compile(name);
+					}		
 				}
 				catch (Type.EmptyNameSectionException e)
 				{

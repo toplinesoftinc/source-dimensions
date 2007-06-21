@@ -1454,8 +1454,6 @@ public class DbAdapter
 					filter.setModifiers(new TriStateMask(rs.getLong("modifiers")));
 					filter.setAllBaseTypes(rs.getShort("all_types") != 0);
 					filter.setInnerTypes(TriStateBoolean.values()[rs.getShort("inner_types")]);
-					filter.setSupertypes(TriStateBoolean.values()[rs.getShort("supertypes")]);
-					filter.setSubtypes(TriStateBoolean.values()[rs.getShort("subtypes")]);
 					filter.setName(rs.getString("name"));
 					
 					int filterId = rs.getInt("id");
@@ -1756,16 +1754,14 @@ public class DbAdapter
 				for (TypeFilter tf : query.getTypeFilter())
 				{
 					ps = c.prepareStatement("INSERT INTO type_filter(query_id, categories, modifiers, " +
-						"all_types, inner_types, supertypes, subtypes, name) VALUES(?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+						"all_types, inner_types, name) VALUES(?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 					
 					ps.setInt(1, queryId);
 					ps.setInt(2, tf.getCategories());
 					ps.setLong(3, tf.getModifiers().getValue());
 					ps.setShort(4, (short)(tf.getAllBaseTypes() ? 1 : 0));
 					ps.setShort(5, (short)tf.getInnerTypes().value());
-					ps.setShort(6, (short)tf.getSupertypes().value());
-					ps.setShort(7, (short)tf.getSubtypes().value());
-					ps.setString(8, tf.getName());
+					ps.setString(6, tf.getName());
 					
 					ps.executeUpdate();
 					
@@ -2368,8 +2364,6 @@ public class DbAdapter
 				"modifiers BIGINT",
 				"all_types SMALLINT",
 				"inner_types SMALLINT",
-				"supertypes SMALLINT",
-				"subtypes SMALLINT",
 				"name VARCHAR(1024) NOT NULL",
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"

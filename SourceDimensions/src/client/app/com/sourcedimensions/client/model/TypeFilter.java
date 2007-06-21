@@ -9,8 +9,6 @@ public class TypeFilter
 	protected TriStateMask m_modifiers;
 	protected boolean m_allBaseTypes;
 	protected TriStateBoolean m_innerTypes;
-	protected TriStateBoolean m_supertypes;
-	protected TriStateBoolean m_subtypes;
 	protected List<BaseType> m_baseTypes;
 	protected Delegate m_delegate;
 	protected String m_name;
@@ -53,26 +51,6 @@ public class TypeFilter
 	public TriStateBoolean getInnerTypes() 
 	{
 		return m_innerTypes;
-	}
-
-	public void setSupertypes(TriStateBoolean supertypes) 
-	{
-		m_supertypes = supertypes;
-	}
-
-	public TriStateBoolean getSupertypes() 
-	{
-		return m_supertypes;
-	}
-
-	public void setSubtypes(TriStateBoolean subtypes) 
-	{
-		m_subtypes = subtypes;
-	}
-
-	public TriStateBoolean getSubtypes() 
-	{
-		return m_subtypes;
 	}
 
 	public void setBaseTypes(List<BaseType> baseTypes) 

@@ -7,7 +7,7 @@ public class UsingDirective extends Directive
 	public List<Name> m_name = new AstArrayList<Name>(this, 0);
 	public boolean m_isStatic;
 	public boolean m_isOnDemand;
-	
+
 	public UsingDirective()
 	{
 		m_isStatic = false;

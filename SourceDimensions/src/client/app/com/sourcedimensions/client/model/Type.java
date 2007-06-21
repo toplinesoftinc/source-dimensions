@@ -91,22 +91,12 @@ public class Type
 	public static void validateTypeName(String typeName) 
 		throws PatternSyntaxException, EmptyNameSectionException
 	{
-		String[] names = typeName.split(Folder.DIVIDER);
-		
-		for (String name : names)
+		if (typeName.trim().length() == 0)
 		{
-			if (name.trim().length() == 0)
-			{
-				throw new EmptyNameSectionException();
-			}
-			
-			if (name.equals("**"))
-			{
-				continue;
-			}
-
-			Pattern.compile(name);
-		}		
+			throw new EmptyNameSectionException();
+		}
+		
+		Pattern.compile(typeName);
 	}
 	
 	public static class EmptyNameSectionException extends Exception 

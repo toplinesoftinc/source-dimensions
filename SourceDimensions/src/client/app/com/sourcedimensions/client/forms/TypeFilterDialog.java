@@ -51,14 +51,8 @@ public class TypeFilterDialog extends DialogBase
 	private boolean m_allBaseTypes;
 	private String m_typeName = "";  //  @jve:decl-index=0:
 	private TriStateBoolean m_innerTypes;
-	private TriStateBoolean m_supertypes;
-	private TriStateBoolean m_subtypes;
 	private Table m_attrCheckBox;
-	
-	private final int m_innerTypeItem = 0;
-	private final int m_supertypeItem = 1;
-	private final int m_subtypeItem = 2;
-	
+		
 	private final static Modifier[] javaModifiers = 
 	{
 		Modifier.PUBLIC,
@@ -106,21 +100,22 @@ public class TypeFilterDialog extends DialogBase
 	private Button m_delegateButton;	
 
 	public TypeFilterDialog(Shell parent, String typeName,	int categories,	
-		TriStateMask modifiers, TriStateBoolean innerTypes, TriStateBoolean supertypes, 
-		TriStateBoolean subtypes, boolean allBaseTypes, List<BaseType> baseTypes, Delegate delegate)
+		TriStateMask modifiers, TriStateBoolean innerTypes, boolean allBaseTypes, List<BaseType> baseTypes, Delegate delegate)
 	{
-		m_baseTypes = baseTypes;
+		m_baseTypes.clear();
+		
+		if (baseTypes != null)
+			m_baseTypes.addAll(baseTypes);
+		
 		createShell(parent);
 		m_delegate = delegate;
 		m_typeNameText.setText(typeName);
 		m_allBaseTypesCheckBox.setSelection(allBaseTypes);
 		setBaseTypeControls();
 	
-		setTriStateBoolValue(m_attrCheckBox.getItem(m_innerTypeItem), innerTypes);
-		setTriStateBoolValue(m_attrCheckBox.getItem(m_supertypeItem), supertypes);
-		setTriStateBoolValue(m_attrCheckBox.getItem(m_subtypeItem), subtypes);
+		setTriStateBoolValue(m_attrCheckBox.getItem(0), innerTypes);
 		
-		if (baseTypes != null & !allBaseTypes)
+		if (!allBaseTypes)
 		{		
 			for (BaseType t : m_baseTypes)
 			{
@@ -374,9 +369,7 @@ public class TypeFilterDialog extends DialogBase
 				}
 
 				m_allBaseTypes = m_allBaseTypesCheckBox.getSelection();
-				m_innerTypes = getTriStateBoolValue(m_attrCheckBox.getItem(m_innerTypeItem));
-				m_supertypes = getTriStateBoolValue(m_attrCheckBox.getItem(m_supertypeItem));
-				m_subtypes = getTriStateBoolValue(m_attrCheckBox.getItem(m_subtypeItem));
+				m_innerTypes = getTriStateBoolValue(m_attrCheckBox.getItem(0));
 				
 				if (m_allBaseTypes)
 				{
@@ -434,10 +427,8 @@ public class TypeFilterDialog extends DialogBase
 		m_attrCheckBox.setHeaderVisible(false);
 		m_attrCheckBox.setLocation(new Point(135, 21));
 		m_attrCheckBox.setLinesVisible(false);
-		m_attrCheckBox.setSize(new Point(106, 57));
-		new TableItem(m_attrCheckBox, m_innerTypeItem).setText("Inner Types");
-		new TableItem(m_attrCheckBox, m_supertypeItem).setText("Supertypes");
-		new TableItem(m_attrCheckBox, m_subtypeItem).setText("Subtypes");
+		m_attrCheckBox.setSize(new Point(106, 30));
+		new TableItem(m_attrCheckBox, 0).setText("Inner Types");
 		m_attrCheckBox.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_allBaseTypesCheckBox.setBounds(new Rectangle(17, 186, 89, 13));
 		m_allBaseTypesCheckBox.setText("&All Base Types");
@@ -534,16 +525,6 @@ public class TypeFilterDialog extends DialogBase
 	public TriStateBoolean getInnerTypes()
 	{
 		return m_innerTypes;
-	}
-	
-	public TriStateBoolean getSupertypes()
-	{
-		return m_supertypes;
-	}
-	
-	public TriStateBoolean getSubtypes()
-	{
-		return m_subtypes;
 	}
 	
 	public Delegate getDelegate()
