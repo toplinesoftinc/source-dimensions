@@ -23,13 +23,17 @@ import com.sourcedimensions.client.model.TypeFilter;
 import com.sourcedimensions.client.model.SnapshotNode.Reference;
 import com.sourcedimensions.client.model.SnapshotNode.Type;
 import com.sourcedimensions.server.ast.AstNode;
+import com.sourcedimensions.server.ast.InstanceCreationExpression;
 import com.sourcedimensions.server.ast.Modifier;
+import com.sourcedimensions.server.ast.Name;
 import com.sourcedimensions.server.ast.SimpleType;
 import com.sourcedimensions.server.ast.TypeDeclaration;
 import com.sourcedimensions.server.ast.TypeDeclarationMember;
 import com.sourcedimensions.server.ast.UserDefinedType;
 import com.sourcedimensions.server.ast.TypeDeclaration.TypeDeclKind;
 import com.sourcedimensions.server.sys.Project;
+import com.sourcedimensions.server.sys.SourceFile;
+import com.sourcedimensions.server.sys.Project.Language;
 import com.sourcedimensions.server.sys.profile.Database;
 import com.sourcedimensions.server.utils.DatabaseHelper;
 
@@ -251,6 +255,7 @@ public class SymbolQueryEngine
 		}
 		else if (root.getKind() == TypeDeclKind.NAMESPACE)
 		{
+			return executeTypeFilter(session, root, symQuery);
 		}
 		
 		return null;
@@ -280,7 +285,7 @@ public class SymbolQueryEngine
 			typeFilter.addAll(symQuery.getTypeFilter());
 		}
 		
-		Query query = session.createQuery("SELECT d FROM TypeDeclarationMember m, TypeDeclaration d " +
+		Query query = session.createQuery("SELECT d, d.m_project, d.m_file FROM TypeDeclarationMember m, TypeDeclaration d " +
 				"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
 		
 		query.setString("id", root.getID());
@@ -291,14 +296,34 @@ public class SymbolQueryEngine
 		{
 			for (Object o : list)
 			{
-				TypeDeclaration decl = (TypeDeclaration)o;
+				Object[] row = (Object[])o;
+				TypeDeclaration decl = (TypeDeclaration)row[0];
 				
 				if (!Pattern.matches(filter.getName(), decl.m_name))
 					continue;
 
+				Project prj = (Project)row[1];
+				
+				switch (prj.getLanguage())
+				{
+					case JAVA_14:
+					case JAVA_15:
+						if ((filter.getCategories() & TypeCategory.ANONYMCLASS.value()) != 0)
+						{
+							output.addAll(execAnonymClassFilter(session, root, filter));
+						}
+						break;
+						
+					case CSHARP_11:
+					case CSHARP_20:
+						if (filter.getDelegate() != null)
+						{
+						//TODO: Delegates
+						}
+				}
+				
 				boolean skip = true;
 				
-				//TODO: TypeCategory.ANONYMCLASS
 				switch (decl.getKind())
 				{
 					case CLASS:
@@ -393,41 +418,84 @@ public class SymbolQueryEngine
 				if (!checkModifiers(decl.m_modifiers, filter.getModifiers()))
 					continue;
 
-				SnapshotNode s = null;
+				SnapshotNode snapshot = null;
 				
 				switch (decl.getKind())
 				{
 					case CLASS:
-						s = new SnapshotNode(Type.CLASS, decl.m_name);
+						snapshot = new SnapshotNode(Type.CLASS, decl.m_name);
 						break;
 						
 					case INTERFACE:
-						s = new SnapshotNode(Type.INTERFACE, decl.m_name);
+						snapshot = new SnapshotNode(Type.INTERFACE, decl.m_name);
 						break;
 						
 					case STRUCT:
-						s = new SnapshotNode(Type.STRUCT, decl.m_name);
+						snapshot = new SnapshotNode(Type.STRUCT, decl.m_name);
 						break;
 						
 					case ENUM:
-						s = new SnapshotNode(Type.ENUM, decl.m_name);
+						snapshot = new SnapshotNode(Type.ENUM, decl.m_name);
 						break;
 						
 					case NAMESPACE:
-						s = new SnapshotNode(Type.NAMESPACE, decl.m_name);
+						snapshot = new SnapshotNode(Type.NAMESPACE, decl.m_name);
 						break;
 						
 					case ANNOT_TYPE:
-						s = new SnapshotNode(Type.ANNOT, decl.m_name);
+						snapshot = new SnapshotNode(Type.ANNOT, decl.m_name);
 				}
 
-				s.setRefs(new ArrayList<Reference>());
-				s.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));
+				snapshot.setRefs(new ArrayList<Reference>());
+				snapshot.getRefs().add(new Reference(decl.getID(), ((SourceFile)row[3]).getID(), decl.m_left, decl.m_right));
 				
-				output.add(s);
+				output.add(snapshot);
 				
 				if (filter.getInnerTypes())
-					s.setChildren(executeTypeFilter(session, decl, symQuery));
+					snapshot.setChildren(executeTypeFilter(session, decl, symQuery));
+			}
+		}
+		
+		return output;
+	}
+
+	protected List<SnapshotNode> execAnonymClassFilter(Session session, AstNode root, TypeFilter filter)
+	{
+		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
+		
+		Query query = session.createQuery("SELECT a.m_parent FROM AstNode WHERE m_id = :id").setEntity("id", root.getID());
+		
+		List list = query.list();
+		
+		for (Object o : list)
+		{
+			if (o instanceof InstanceCreationExpression)
+			{
+				InstanceCreationExpression expr = (InstanceCreationExpression)o;
+				List<Name> fullName = ((UserDefinedType)expr.getType()).m_name;
+				String name = fullName.get(fullName.size() - 1).m_name;
+				
+				if (!filter.getAllBaseTypes())
+				{
+					if (expr.m_members.size() > 0)
+					{
+						for (BaseType base : filter.getBaseTypes())
+						{
+							if (base.getCategory() != BaseTypeCategory.CLASS.value() || !Pattern.matches(base.getName(), name))
+								continue;
+						}
+					}
+				}
+					
+				SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, name);
+				snapshot.setRefs(new ArrayList<Reference>());
+				snapshot.getRefs().add(new Reference(expr.getID(), expr.getSourceFile().getID(), expr.m_left, expr.m_right));
+				
+				output.add(snapshot);
+			}
+			else
+			{
+				output.addAll(execAnonymClassFilter(session, (AstNode)o, filter));
 			}
 		}
 		
