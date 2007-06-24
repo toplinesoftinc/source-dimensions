@@ -8,7 +8,7 @@ public class TypeFilter
 	protected int m_categories;
 	protected TriStateMask m_modifiers;
 	protected boolean m_allBaseTypes;
-	protected TriStateBoolean m_innerTypes;
+	protected boolean m_innerTypes;
 	protected List<BaseType> m_baseTypes;
 	protected Delegate m_delegate;
 	protected String m_name;
@@ -43,12 +43,12 @@ public class TypeFilter
 		return m_allBaseTypes;
 	}
 
-	public void setInnerTypes(TriStateBoolean innerTypes) 
+	public void setInnerTypes(boolean innerTypes) 
 	{
 		m_innerTypes = innerTypes;
 	}
 
-	public TriStateBoolean getInnerTypes() 
+	public boolean getInnerTypes() 
 	{
 		return m_innerTypes;
 	}

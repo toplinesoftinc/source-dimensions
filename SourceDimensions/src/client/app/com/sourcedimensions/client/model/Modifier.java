@@ -21,7 +21,8 @@ public enum Modifier
 	EXTERN(1<<16),
 	READONLY(1<<17),
 	UNSAFE(1<<18),
-	ALL(1<<19);
+	PARTIAL(1<<19),
+	ALL(1<<20);
 	
 	Modifier(int val)
 	{

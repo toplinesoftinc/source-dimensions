@@ -50,9 +50,7 @@ public class TypeFilterDialog extends DialogBase
 	private TriStateMask m_modifiers = new TriStateMask();  //  @jve:decl-index=0:
 	private boolean m_allBaseTypes;
 	private String m_typeName = "";  //  @jve:decl-index=0:
-	private TriStateBoolean m_innerTypes;
-	private Table m_attrCheckBox;
-		
+	private boolean m_innerTypes;
 	private final static Modifier[] javaModifiers = 
 	{
 		Modifier.PUBLIC,
@@ -97,10 +95,11 @@ public class TypeFilterDialog extends DialogBase
 		TypeCategory.DELEGATE,
 		TypeCategory.ALL
 	};
-	private Button m_delegateButton;	
+	private Button m_delegateButton;
+	private Button m_innerTypeCheckBox = null;	
 
 	public TypeFilterDialog(Shell parent, String typeName,	int categories,	
-		TriStateMask modifiers, TriStateBoolean innerTypes, boolean allBaseTypes, List<BaseType> baseTypes, Delegate delegate)
+		TriStateMask modifiers, boolean innerTypes, boolean allBaseTypes, List<BaseType> baseTypes, Delegate delegate)
 	{
 		m_baseTypes.clear();
 		
@@ -113,7 +112,7 @@ public class TypeFilterDialog extends DialogBase
 		m_allBaseTypesCheckBox.setSelection(allBaseTypes);
 		setBaseTypeControls();
 	
-		setTriStateBoolValue(m_attrCheckBox.getItem(0), innerTypes);
+		m_innerTypeCheckBox.setSelection(innerTypes);
 		
 		if (!allBaseTypes)
 		{		
@@ -178,7 +177,6 @@ public class TypeFilterDialog extends DialogBase
 		});
 		m_typeCategoryLabel.setBounds(new Rectangle(18, 7, 89, 13));
 		m_typeCategoryLabel.setText("&Type Categories:");
-		m_attrCheckBox = new Table(getShell(), SWT.CHECK | SWT.BORDER | SWT.HIDE_SELECTION | SWT.FULL_SELECTION);
 		m_delegateButton = new Button(getShell(), SWT.NONE);
 		m_typeNameLabel = new Label(m_shell, SWT.NONE);
 		m_typeNameText = new Text(m_shell, SWT.BORDER);
@@ -319,26 +317,15 @@ public class TypeFilterDialog extends DialogBase
 						return;
 					}
 	
-					String[] names = val.split(Folder.DIVIDER);
-					
-					for (String name : names)
+					try
 					{
-						if (name.trim().length() == 0)
-						{
-							MessageDialog.openError(m_shell, "Incorrect input", "Namespace section cannot be empty (like \"com//abc\")");
-							return;
-						}
-						
-						try
-						{
-							Pattern.compile(name);
-						}
-						catch(PatternSyntaxException ex)
-						{
-							MessageDialog.openError(m_shell, "Incorrect input",
-								"Pattern \"" + name + "\" has the following error: " + ex.getMessage());
-							return;
-						}
+						Pattern.compile(val);
+					}
+					catch(PatternSyntaxException ex)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",
+							"Pattern \"" + val + "\" has the following error: " + ex.getMessage());
+						return;
 					}
 					
 					m_typeName = val;
@@ -369,7 +356,7 @@ public class TypeFilterDialog extends DialogBase
 				}
 
 				m_allBaseTypes = m_allBaseTypesCheckBox.getSelection();
-				m_innerTypes = getTriStateBoolValue(m_attrCheckBox.getItem(0));
+				m_innerTypes = m_innerTypeCheckBox.getSelection();
 				
 				if (m_allBaseTypes)
 				{
@@ -389,6 +376,9 @@ public class TypeFilterDialog extends DialogBase
 		m_cancelButton.setLocation(new Point(345, 56));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
+		m_innerTypeCheckBox = new Button(getShell(), SWT.CHECK);
+		m_innerTypeCheckBox.setBounds(new Rectangle(137, 21, 96, 16));
+		m_innerTypeCheckBox.setText("Inner Types");
 		
 		Language lang = ProjectView.getProject().language();
 		
@@ -424,12 +414,6 @@ public class TypeFilterDialog extends DialogBase
 			});
 		}
 		
-		m_attrCheckBox.setHeaderVisible(false);
-		m_attrCheckBox.setLocation(new Point(135, 21));
-		m_attrCheckBox.setLinesVisible(false);
-		m_attrCheckBox.setSize(new Point(106, 30));
-		new TableItem(m_attrCheckBox, 0).setText("Inner Types");
-		m_attrCheckBox.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_allBaseTypesCheckBox.setBounds(new Rectangle(17, 186, 89, 13));
 		m_allBaseTypesCheckBox.setText("&All Base Types");
 		m_allBaseTypesCheckBox.setSelection(true);
@@ -522,7 +506,7 @@ public class TypeFilterDialog extends DialogBase
 		return m_typeName;
 	}
 	
-	public TriStateBoolean getInnerTypes()
+	public boolean getInnerTypes()
 	{
 		return m_innerTypes;
 	}
@@ -574,7 +558,7 @@ public class TypeFilterDialog extends DialogBase
 		boolean named = (cat == 0) || (cat & ~TypeCategory.ANONYMCLASS.value()) != 0;
 		
 		m_typeNameText.setEnabled(named);
-		m_attrCheckBox.setEnabled(named);
+		m_innerTypeCheckBox.setEnabled(named);
 		
 		if (m_delegateButton != null)
 		{

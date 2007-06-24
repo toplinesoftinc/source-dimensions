@@ -1095,7 +1095,7 @@ public class SymbolQueryDialog extends DialogBase
 		item.setText(1, modifiersToString(filter.getModifiers()));
 		item.setText(2, filter.getName());					
 		item.setText(3, filter.getAllBaseTypes() ? "<Any>" : baseTypesToString(filter.getBaseTypes()));
-		item.setText(4, m_triStateText[filter.getInnerTypes().value()]);
+		item.setText(4, filter.getInnerTypes() ? "Yes" : "No");
 	}
 	
 	protected void fillLocalDeclFilterItem(TableItem item, LocalDeclFilter filter)

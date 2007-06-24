@@ -23,6 +23,7 @@ import com.sourcedimensions.client.model.TypeFilter;
 import com.sourcedimensions.client.model.SnapshotNode.Reference;
 import com.sourcedimensions.client.model.SnapshotNode.Type;
 import com.sourcedimensions.server.ast.AstNode;
+import com.sourcedimensions.server.ast.Modifier;
 import com.sourcedimensions.server.ast.SimpleType;
 import com.sourcedimensions.server.ast.TypeDeclaration;
 import com.sourcedimensions.server.ast.TypeDeclarationMember;
@@ -250,142 +251,292 @@ public class SymbolQueryEngine
 		}
 		else if (root.getKind() == TypeDeclKind.NAMESPACE)
 		{
-			List<TypeFilter> typeFilter = new ArrayList<TypeFilter>();
-			
-			if (symQuery.getAllTypes())
-			{
-				TypeFilter filter = new TypeFilter();
-				TriStateMask mask = new TriStateMask();
-				mask.setAny();
-								
-				filter.setCategories(~0);
-				filter.setModifiers(mask);
-				filter.setSupertypes(TriStateBoolean.EITHER);
-				filter.setSubtypes(TriStateBoolean.EITHER);
-				filter.setInnerTypes(TriStateBoolean.EITHER);
-				filter.setAllBaseTypes(true);
-				filter.setName(".*");
-				
-				typeFilter.add(filter);
-			}
-			else
-			{
-				typeFilter.addAll(symQuery.getTypeFilter());
-			}
-			
-			Query query = session.createQuery("SELECT d FROM TypeDeclaration d, TypeDeclarationMember m " +
-					"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
-			
-			query.setString("id", root.getID());
+		}
 		
-			List list = query.list();
-			
-			for (TypeFilter filter : typeFilter)
-			{
-				for (Object o : list)
-				{
-					TypeDeclaration decl = (TypeDeclaration)o;
-					
-					if (!Pattern.matches(filter.getName(), decl.m_name))
-						continue;
+		return null;
+	}
 
-					boolean skip = true;
-					
-					//TODO: TypeCategory.ANONYMCLASS
-					switch (decl.getKind())
-					{
-						case CLASS:
-							if ((filter.getCategories() & (TypeCategory.CLASS.value() | TypeCategory.ALL.value())) != 0)
-								skip = false;
-							break;
+	protected List<SnapshotNode> executeTypeFilter(Session session, TypeDeclaration root, SymbolQuery symQuery)
+	{
+		List<TypeFilter> typeFilter = new ArrayList<TypeFilter>();
+		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
+		
+		if (symQuery.getAllTypes())
+		{
+			TypeFilter filter = new TypeFilter();
+			TriStateMask mask = new TriStateMask();
+			mask.setAny();
 							
-						case INTERFACE:
-							if ((filter.getCategories() & (TypeCategory.INTERFACE.value() | TypeCategory.ALL.value())) != 0)
-								skip = false;
-							break;
+			filter.setCategories(~0);
+			filter.setModifiers(mask);
+			filter.setInnerTypes(true);
+			filter.setAllBaseTypes(true);
+			filter.setName(".*");
+			
+			typeFilter.add(filter);
+		}
+		else
+		{
+			typeFilter.addAll(symQuery.getTypeFilter());
+		}
+		
+		Query query = session.createQuery("SELECT d FROM TypeDeclarationMember m, TypeDeclaration d " +
+				"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
+		
+		query.setString("id", root.getID());
+	
+		List list = query.list();
+		
+		for (TypeFilter filter : typeFilter)
+		{
+			for (Object o : list)
+			{
+				TypeDeclaration decl = (TypeDeclaration)o;
+				
+				if (!Pattern.matches(filter.getName(), decl.m_name))
+					continue;
+
+				boolean skip = true;
+				
+				//TODO: TypeCategory.ANONYMCLASS
+				switch (decl.getKind())
+				{
+					case CLASS:
+						if ((filter.getCategories() & TypeCategory.CLASS.value()) != 0)
+							skip = false;
+						break;
+						
+					case INTERFACE:
+						if ((filter.getCategories() & TypeCategory.INTERFACE.value()) != 0)
+							skip = false;
+						break;
+						
+					case STRUCT:
+						if ((filter.getCategories() & TypeCategory.STRUCT.value()) != 0)
+							skip = false;			
+						break;
+						
+					case ENUM:
+						if ((filter.getCategories() & TypeCategory.ENUM.value()) != 0)
+							skip = false;
+						break;
+													
+					case ANNOT_TYPE:
+						if ((filter.getCategories() & TypeCategory.ANNOTATION.value()) != 0)
+							skip = false;
+						break;
+				}
+				
+				if (skip)
+					continue;
+				
+				skip = false;
+				
+				if (!filter.getAllBaseTypes())
+				{
+					for (BaseType base : filter.getBaseTypes())
+					{			
+						Set<com.sourcedimensions.server.ast.Type> types = new HashSet<com.sourcedimensions.server.ast.Type>();
+						BaseTypeCategory category = BaseTypeCategory.values()[base.getCategory()];
+						
+						for (com.sourcedimensions.server.ast.Type t : decl.m_baseTypes)
+						{
+							String name = "";
 							
-						case STRUCT:
-							if ((filter.getCategories() & (TypeCategory.STRUCT.value() | TypeCategory.ALL.value())) != 0)
-								skip = false;			
-							break;
-							
-						case ENUM:
-							if ((filter.getCategories() & (TypeCategory.ENUM.value() | TypeCategory.ALL.value())) != 0)
-								skip = false;
-							break;
-														
-						case ANNOT_TYPE:
-							if ((filter.getCategories() & (TypeCategory.ANNOTATION.value() | TypeCategory.ALL.value())) != 0)
-								skip = false;
-							break;
-					}
-					
-					if (skip)
-						continue;
-					
-					skip = false;
-					
-					if (!filter.getAllBaseTypes())
-					{
-						for (BaseType base : filter.getBaseTypes())
-						{			
-							Set<com.sourcedimensions.server.ast.Type> types = new HashSet<com.sourcedimensions.server.ast.Type>();
-							
-							for (com.sourcedimensions.server.ast.Type t : decl.m_baseTypes)
+							if (t instanceof UserDefinedType)
 							{
-								String name = "";
+								UserDefinedType udt = (UserDefinedType)t;
+								name = udt.m_name.get(udt.m_name.size() - 1).m_name;
 								
-								if (t instanceof UserDefinedType)
-								{
-									UserDefinedType udt = (UserDefinedType)t;
-									name = udt.m_name.get(udt.m_name.size() - 1).m_name;
-								}
-								else if (t instanceof SimpleType)
-								{
-									name = ((SimpleType)t).getKind().toString().toLowerCase();
-								}
-								else
-									continue;
-								
-								if (Pattern.matches(base.getName(), name))
+								if (Pattern.matches(base.getName(), name) && (category == BaseTypeCategory.CLASS || 
+									category == BaseTypeCategory.CLASSINTF))
 								{
 									types.add(t);
 								}
 							}
-							
-							if (types.size() == 0)
-								continue;
-
-							// TODO
-							com.sourcedimensions.server.ast.Type[] copyArray = (com.sourcedimensions.server.ast.Type[])types.toArray();
-							
-							for (com.sourcedimensions.server.ast.Type t : copyArray)
+							else if (t instanceof SimpleType)
 							{
-								switch (BaseTypeCategory.values()[base.getCategory()])
+								name = ((SimpleType)t).getKind().toString().toLowerCase();
+								
+								if (Pattern.matches(base.getName(), name) && category == BaseTypeCategory.INTEGRALTYPE)
 								{
-									case CLASS:
-										break;
-										
-									case INTERFACE:
-										break;
-										
-									case CLASSINTF:
-										break;
-										
-									case INTEGRALTYPE:								
-								}
+									types.add(t);
+								}									
 							}
 						}
+						
+						for (com.sourcedimensions.server.ast.Type t : decl.m_baseInterfaces)
+						{
+							if (t instanceof UserDefinedType)
+							{
+								UserDefinedType udt = (UserDefinedType)t;
+								String name = udt.m_name.get(udt.m_name.size() - 1).m_name;
+							
+								if (Pattern.matches(base.getName(), name) && category == BaseTypeCategory.INTERFACE)
+								{
+									types.add(t);
+								}
+							}	
+						}
+						
+						if (types.size() == 0)
+						{
+							skip = true;
+							break;
+						}
 					}
-					
-					if (skip)
-						continue;
 				}
+
+				if (skip)
+					continue;
+				
+				if (!checkModifiers(decl.m_modifiers, filter.getModifiers()))
+					continue;
+
+				SnapshotNode s = null;
+				
+				switch (decl.getKind())
+				{
+					case CLASS:
+						s = new SnapshotNode(Type.CLASS, decl.m_name);
+						break;
+						
+					case INTERFACE:
+						s = new SnapshotNode(Type.INTERFACE, decl.m_name);
+						break;
+						
+					case STRUCT:
+						s = new SnapshotNode(Type.STRUCT, decl.m_name);
+						break;
+						
+					case ENUM:
+						s = new SnapshotNode(Type.ENUM, decl.m_name);
+						break;
+						
+					case NAMESPACE:
+						s = new SnapshotNode(Type.NAMESPACE, decl.m_name);
+						break;
+						
+					case ANNOT_TYPE:
+						s = new SnapshotNode(Type.ANNOT, decl.m_name);
+				}
+
+				s.setRefs(new ArrayList<Reference>());
+				s.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));
+				
+				output.add(s);
+				
+				if (filter.getInnerTypes())
+					s.setChildren(executeTypeFilter(session, decl, symQuery));
 			}
 		}
 		
+		return output;
+	}
+	
+	protected boolean checkModifiers(Set<Modifier> value, TriStateMask filter)
+	{
+		for (Modifier m : value)
+		{
+			switch (m.getKind())
+			{
+				case PUBLIC:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.PUBLIC.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case PROTECTED:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.PROTECTED.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case PRIVATE:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.PRIVATE.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case STATIC:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.STATIC.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case ABSTRACT:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.ABSTRACT.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case FINAL:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.FINAL.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case NATIVE:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.NATIVE.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case SYNCHRONIZED:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.SYNCHRONIZED.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case TRANSIENT:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.TRANSIENT.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case VOLATILE:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.VOLATILE.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case STRICTFP:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.STRICTFP.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case UNSAFE:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.UNSAFE.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case EXTERN:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.EXTERN.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case INTERNAL:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.INTERNAL.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case READONLY:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.READONLY.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case VIRTUAL:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.VIRTUAL.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case OVERRIDE:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.OVERRIDE.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case NEW:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.NEW.value()) == TriStateBoolean.FALSE)
+						return false;
+					break;
+					
+				case PARTIAL:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.PARTIAL.value()) == TriStateBoolean.FALSE)
+						return false;
+			}
+		}
 		
-		return null;
+		return true;
 	}
 	
 	protected void addNamespace(TypeDeclaration decl, String name, String fileId, Map<String, namespaceNode> nodeMap)

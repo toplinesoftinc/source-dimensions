@@ -1453,7 +1453,7 @@ public class DbAdapter
 					filter.setCategories(rs.getInt("categories"));
 					filter.setModifiers(new TriStateMask(rs.getLong("modifiers")));
 					filter.setAllBaseTypes(rs.getShort("all_types") != 0);
-					filter.setInnerTypes(TriStateBoolean.values()[rs.getShort("inner_types")]);
+					filter.setInnerTypes(rs.getShort("inner_types") != 0);
 					filter.setName(rs.getString("name"));
 					
 					int filterId = rs.getInt("id");
@@ -1760,7 +1760,7 @@ public class DbAdapter
 					ps.setInt(2, tf.getCategories());
 					ps.setLong(3, tf.getModifiers().getValue());
 					ps.setShort(4, (short)(tf.getAllBaseTypes() ? 1 : 0));
-					ps.setShort(5, (short)tf.getInnerTypes().value());
+					ps.setShort(5, (short)(tf.getInnerTypes() ? 1 : 0));
 					ps.setString(6, tf.getName());
 					
 					ps.executeUpdate();
