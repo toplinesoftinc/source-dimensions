@@ -2,6 +2,7 @@ package com.sourcedimensions.client.forms;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.events.MouseAdapter;
@@ -40,19 +41,23 @@ public class DelegateDialog extends DialogBase
 	private Button m_editParamButton;
 	private Button m_removeParamButton;
 	private Button m_anyParamsCheckBox;
+	protected String m_name;
 	protected Type m_type = new Type();  //  @jve:decl-index=0:
 	protected List<Parameter> m_paramList = new ArrayList<Parameter>();  //  @jve:decl-index=0:
 	protected boolean m_anyParams;
+	private Label m_delegateNameFilterLabel = null;
+	private Text m_delegateNameFilterText = null;
 	
 	public DelegateDialog(Shell parent)
 	{
 		createShell(parent);
 	}
 	
-	public DelegateDialog(Shell parent, Type type, boolean anyParams, List<Parameter> paramList)
+	public DelegateDialog(Shell parent, String name, Type type, boolean anyParams, List<Parameter> paramList)
 	{
 		createShell(parent);
 
+		m_delegateNameFilterText.setText(name);
 		m_typeNameText.setText(type.getName());
 		m_anyParamsCheckBox.setSelection(anyParams);
 
@@ -95,16 +100,19 @@ public class DelegateDialog extends DialogBase
 		m_shell.setText("Delegate");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
 		createTypeGroup();
-		m_shell.setSize(new Point(502, 437));
+		m_shell.setSize(new Point(502, 484));
 		m_shell.setLayout(null);
+		m_delegateNameFilterText = new Text(getShell(), SWT.BORDER);
+		m_delegateNameFilterText.setBounds(new Rectangle(14, 154, 252, 19));
+		m_anyParamsCheckBox = new Button(getShell(), SWT.CHECK);
 		m_paramsLabel = new Label(getShell(), SWT.NONE);
 		m_paramsTable = new Table(getShell(), SWT.BORDER | SWT.FULL_SELECTION);
 		m_paramsTable.setEnabled(false);
 		m_paramsTable.setHeaderVisible(true);
-		m_paramsTable.setLocation(new Point(13, 189));
+		m_paramsTable.setLocation(new Point(11, 232));
 		m_paramsTable.setLinesVisible(true);
 		m_paramsTable.setSize(new Point(470, 206));
-		m_paramsLabel.setBounds(new Rectangle(13, 174, 100, 13));
+		m_paramsLabel.setBounds(new Rectangle(11, 215, 112, 13));
 		m_paramsLabel.setText("Parameter &Filter List:");
 		m_paramsTable.addMouseListener(new MouseAdapter()
 		{
@@ -118,7 +126,7 @@ public class DelegateDialog extends DialogBase
 		});
 		
 		m_addParamButton = new Button(getShell(), SWT.NONE);
-		m_addParamButton.setLocation(new Point(205, 160));
+		m_addParamButton.setLocation(new Point(203, 203));
 		m_addParamButton.setText("A&dd Filter...");
 		m_addParamButton.setEnabled(false);
 		m_addParamButton.setSize(new Point(88, 25));
@@ -145,7 +153,7 @@ public class DelegateDialog extends DialogBase
 			}
 		});
 		m_editParamButton = new Button(getShell(), SWT.NONE);
-		m_editParamButton.setLocation(new Point(300, 160));
+		m_editParamButton.setLocation(new Point(298, 203));
 		m_editParamButton.setText("&Edit Filter...");
 		m_editParamButton.setEnabled(false);
 		m_editParamButton.setSize(new Point(88, 25));
@@ -157,7 +165,7 @@ public class DelegateDialog extends DialogBase
 			}
 		});
 		m_removeParamButton = new Button(getShell(), SWT.NONE);
-		m_removeParamButton.setLocation(new Point(395, 160));
+		m_removeParamButton.setLocation(new Point(393, 203));
 		m_removeParamButton.setText("&Remove Filter");
 		m_removeParamButton.setEnabled(false);
 		m_removeParamButton.setSize(new Point(88, 25));
@@ -190,7 +198,28 @@ public class DelegateDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				String val = m_typeNameText.getText().trim();
+				String val = m_delegateNameFilterText.getText().trim();
+				
+				if (val.length() == 0)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Delegate Name Filter");
+					return;
+				}
+				
+				try
+				{
+					Pattern.compile(val);
+				}
+				catch(PatternSyntaxException ex)
+				{
+					MessageDialog.openError(m_shell, "Incorrect input",
+						"Pattern for filter name \"" + val + "\" has the following error: " + ex.getMessage());
+					return;
+				}
+				
+				m_name = m_delegateNameFilterText.getText();
+				
+				val = m_typeNameText.getText().trim();
 				
 				if (val.length() == 0)
 				{
@@ -237,10 +266,12 @@ public class DelegateDialog extends DialogBase
 		m_cancelButton.setLocation(new Point(395, 54));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
-		m_anyParamsCheckBox = new Button(getShell(), SWT.CHECK);
-		m_anyParamsCheckBox.setBounds(new Rectangle(15, 141, 98, 16));
-		m_anyParamsCheckBox.setText("An&y Parameters");
+		m_anyParamsCheckBox.setBounds(new Rectangle(14, 188, 98, 16));
 		m_anyParamsCheckBox.setSelection(true);
+		m_anyParamsCheckBox.setText("An&y Parameters");
+		m_delegateNameFilterLabel = new Label(getShell(), SWT.NONE);
+		m_delegateNameFilterLabel.setBounds(new Rectangle(14, 139, 108, 13));
+		m_delegateNameFilterLabel.setText("Delegate Name Filter:");
 		m_anyParamsCheckBox.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
@@ -312,6 +343,11 @@ public class DelegateDialog extends DialogBase
 		{
 			new TableItem(m_typePropsList, 0, i).setText(values[i].toString());
 		}							
+	}
+	
+	public String getName()
+	{
+		return m_name;
 	}
 	
 	public Type getType()

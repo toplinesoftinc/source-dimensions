@@ -62,7 +62,6 @@
 	<mapping resource="mapping/ast/Declaration.hbm.xml"/>
 	<mapping resource="mapping/ast/Declarator.hbm.xml"/>
 	<mapping resource="mapping/ast/DelegateDeclaration.hbm.xml"/>
-	<mapping resource="mapping/ast/DelegateMember.hbm.xml"/>
 	<mapping resource="mapping/ast/Directive.hbm.xml"/>
 	<mapping resource="mapping/ast/DoWhileStatement.hbm.xml"/>
 	<mapping resource="mapping/ast/ElementValue.hbm.xml"/>

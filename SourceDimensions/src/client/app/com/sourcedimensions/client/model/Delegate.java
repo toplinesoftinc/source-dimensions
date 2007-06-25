@@ -4,9 +4,20 @@ import java.util.List;
 
 public class Delegate 
 {
+	protected String m_name;
 	protected Type m_type;
 	protected boolean m_anyParams;
 	protected List<Parameter> m_paramList;
+	
+	public String getName()
+	{
+		return m_name;
+	}
+	
+	public void setName(String name)
+	{
+		m_name = name;
+	}
 	
 	public Type getType()
 	{

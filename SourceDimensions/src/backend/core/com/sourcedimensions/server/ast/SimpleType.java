@@ -52,6 +52,11 @@ public class SimpleType extends Type
 	{
 		m_kind = kind;
 	}
+
+	public String getName()
+	{
+		return getKind().toString().toLowerCase();
+	}
 	
 	public String toString()
 	{

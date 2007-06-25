@@ -13,7 +13,9 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import com.sourcedimensions.client.model.BaseType;
 import com.sourcedimensions.client.model.BaseTypeCategory;
+import com.sourcedimensions.client.model.Delegate;
 import com.sourcedimensions.client.model.Folder;
+import com.sourcedimensions.client.model.Parameter;
 import com.sourcedimensions.client.model.SnapshotNode;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.client.model.TriStateBoolean;
@@ -22,21 +24,22 @@ import com.sourcedimensions.client.model.TypeCategory;
 import com.sourcedimensions.client.model.TypeFilter;
 import com.sourcedimensions.client.model.SnapshotNode.Reference;
 import com.sourcedimensions.client.model.SnapshotNode.Type;
+import com.sourcedimensions.client.model.Type.Property;
 import com.sourcedimensions.server.ast.AstNode;
+import com.sourcedimensions.server.ast.DelegateDeclaration;
 import com.sourcedimensions.server.ast.InstanceCreationExpression;
 import com.sourcedimensions.server.ast.Modifier;
-import com.sourcedimensions.server.ast.Name;
 import com.sourcedimensions.server.ast.SimpleType;
 import com.sourcedimensions.server.ast.TypeDeclaration;
 import com.sourcedimensions.server.ast.TypeDeclarationMember;
 import com.sourcedimensions.server.ast.UserDefinedType;
+import com.sourcedimensions.server.ast.Modifier.ModifierKind;
 import com.sourcedimensions.server.ast.TypeDeclaration.TypeDeclKind;
 import com.sourcedimensions.server.sys.Project;
 import com.sourcedimensions.server.sys.SourceFile;
-import com.sourcedimensions.server.sys.Project.Language;
 import com.sourcedimensions.server.sys.profile.Database;
 import com.sourcedimensions.server.utils.DatabaseHelper;
-
+import com.sourcedimensions.server.ast.Parameter.ParamKind;
 
 public class SymbolQueryEngine 
 {
@@ -318,7 +321,39 @@ public class SymbolQueryEngine
 					case CSHARP_20:
 						if (filter.getDelegate() != null)
 						{
-						//TODO: Delegates
+							Delegate delegate = filter.getDelegate();
+							
+							query = session.createQuery("SELECT d, d.m_file FROM TypeDeclarationMember m, DelegateDeclaration d " +
+								"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
+					
+							query.setString("id", root.getID());
+				
+							List l = query.list();
+								
+							for (Object obj : l)
+							{
+								Object[] r = (Object[])obj;
+								DelegateDeclaration d = (DelegateDeclaration)r[0];
+								
+								if (!Pattern.matches(delegate.getName(), d.m_name))
+									continue;
+								
+								if (!matchType(session, delegate.getType(), d.getType(), true))
+									continue;
+								
+								if (!delegate.getAnyParams())
+								{
+									if (!matchParams(session, delegate.getParamList(), d.m_parameters, true))
+										continue;
+								}
+								
+								SnapshotNode snapshot = new SnapshotNode(Type.DELEGATE, decl.m_name);
+
+								snapshot.setRefs(new ArrayList<Reference>());
+								snapshot.getRefs().add(new Reference(decl.getID(), ((SourceFile)r[1]).getID(), decl.m_left, decl.m_right));
+								
+								output.add(snapshot);
+							}							
 						}
 				}
 				
@@ -365,25 +400,18 @@ public class SymbolQueryEngine
 						BaseTypeCategory category = BaseTypeCategory.values()[base.getCategory()];
 						
 						for (com.sourcedimensions.server.ast.Type t : decl.m_baseTypes)
-						{
-							String name = "";
-							
+						{							
 							if (t instanceof UserDefinedType)
 							{
-								UserDefinedType udt = (UserDefinedType)t;
-								name = udt.m_name.get(udt.m_name.size() - 1).m_name;
-								
-								if (Pattern.matches(base.getName(), name) && (category == BaseTypeCategory.CLASS || 
+								if (Pattern.matches(base.getName(), t.getName()) && (category == BaseTypeCategory.CLASS || 
 									category == BaseTypeCategory.CLASSINTF))
 								{
 									types.add(t);
 								}
 							}
 							else if (t instanceof SimpleType)
-							{
-								name = ((SimpleType)t).getKind().toString().toLowerCase();
-								
-								if (Pattern.matches(base.getName(), name) && category == BaseTypeCategory.INTEGRALTYPE)
+							{							
+								if (Pattern.matches(base.getName(), t.getName()) && category == BaseTypeCategory.INTEGRALTYPE)
 								{
 									types.add(t);
 								}									
@@ -394,10 +422,7 @@ public class SymbolQueryEngine
 						{
 							if (t instanceof UserDefinedType)
 							{
-								UserDefinedType udt = (UserDefinedType)t;
-								String name = udt.m_name.get(udt.m_name.size() - 1).m_name;
-							
-								if (Pattern.matches(base.getName(), name) && category == BaseTypeCategory.INTERFACE)
+								if (Pattern.matches(base.getName(), t.getName()) && category == BaseTypeCategory.INTERFACE)
 								{
 									types.add(t);
 								}
@@ -415,7 +440,7 @@ public class SymbolQueryEngine
 				if (skip)
 					continue;
 				
-				if (!checkModifiers(decl.m_modifiers, filter.getModifiers()))
+				if (!matchModifiers(decl.m_modifiers, filter.getModifiers()))
 					continue;
 
 				SnapshotNode snapshot = null;
@@ -463,7 +488,7 @@ public class SymbolQueryEngine
 	{
 		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
 		
-		Query query = session.createQuery("SELECT a.m_parent FROM AstNode WHERE m_id = :id").setEntity("id", root.getID());
+		Query query = session.createQuery("SELECT a.m_parent, a.m_file FROM AstNode WHERE m_id = :id").setEntity("id", root.getID());
 		
 		List list = query.list();
 		
@@ -471,9 +496,8 @@ public class SymbolQueryEngine
 		{
 			if (o instanceof InstanceCreationExpression)
 			{
-				InstanceCreationExpression expr = (InstanceCreationExpression)o;
-				List<Name> fullName = ((UserDefinedType)expr.getType()).m_name;
-				String name = fullName.get(fullName.size() - 1).m_name;
+				Object[] r = (Object[])o;
+				InstanceCreationExpression expr = (InstanceCreationExpression)r[0];
 				
 				if (!filter.getAllBaseTypes())
 				{
@@ -481,15 +505,16 @@ public class SymbolQueryEngine
 					{
 						for (BaseType base : filter.getBaseTypes())
 						{
-							if (base.getCategory() != BaseTypeCategory.CLASS.value() || !Pattern.matches(base.getName(), name))
+							if (base.getCategory() != BaseTypeCategory.CLASS.value() || !Pattern.matches(base.getName(), expr.getType().getName()))
 								continue;
 						}
 					}
 				}
 					
-				SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, name);
+				SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, expr.getType().getName());
+
 				snapshot.setRefs(new ArrayList<Reference>());
-				snapshot.getRefs().add(new Reference(expr.getID(), expr.getSourceFile().getID(), expr.m_left, expr.m_right));
+				snapshot.getRefs().add(new Reference(expr.getID(), ((SourceFile)r[1]).getID(), expr.m_left, expr.m_right));
 				
 				output.add(snapshot);
 			}
@@ -502,10 +527,38 @@ public class SymbolQueryEngine
 		return output;
 	}
 	
-	protected boolean checkModifiers(Set<Modifier> value, TriStateMask filter)
+	protected boolean matchType(Session session, com.sourcedimensions.client.model.Type filter, 
+		com.sourcedimensions.server.ast.Type type, boolean isCSharp)
 	{
+		if (!Pattern.matches(filter.getName(), type.getName()))
+			return false;
+		
+		if (filter.getTypeProps().getMask(Property.ARRAY.value()) == (type.m_rank == 0 ? TriStateBoolean.TRUE : TriStateBoolean.FALSE))
+			return false;
+
+		if (filter.getTypeProps().getMask(Property.TYPEPARAM.value()) == (type.m_arguments.size() == 0 ? TriStateBoolean.TRUE : TriStateBoolean.FALSE))
+			return false;
+
+		if (isCSharp)
+		{
+			if (filter.getTypeProps().getMask(Property.NULLABLE.value()) == (type.m_nullable ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
+				return false;
+			
+			if (filter.getTypeProps().getMask(Property.POINTER.value()) == (type.m_ptrIndirection == 0 ? TriStateBoolean.TRUE : TriStateBoolean.FALSE))
+				return false;						
+		}
+
+		return true;
+	}
+	
+	protected boolean matchModifiers(Set<Modifier> value, TriStateMask filter)
+	{
+		Set<ModifierKind> enumSet = new HashSet<ModifierKind>();
+		
 		for (Modifier m : value)
 		{
+			enumSet.add(m.getKind());
+			
 			switch (m.getKind())
 			{
 				case PUBLIC:
@@ -602,6 +655,201 @@ public class SymbolQueryEngine
 					if (filter.getMask(com.sourcedimensions.client.model.Modifier.PARTIAL.value()) == TriStateBoolean.FALSE)
 						return false;
 			}
+		}
+				
+		Set<Modifier> inv = new HashSet<Modifier>();
+		
+		for (ModifierKind k : ModifierKind.values())
+		{
+			if (!enumSet.contains(k))
+				inv.add(new Modifier(k));
+		}
+		
+		for (Modifier m : inv)
+		{
+			switch (m.getKind())
+			{
+				case PUBLIC:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.PUBLIC.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case PROTECTED:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.PROTECTED.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case PRIVATE:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.PRIVATE.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case STATIC:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.STATIC.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case ABSTRACT:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.ABSTRACT.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case FINAL:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.FINAL.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case NATIVE:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.NATIVE.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case SYNCHRONIZED:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.SYNCHRONIZED.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case TRANSIENT:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.TRANSIENT.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case VOLATILE:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.VOLATILE.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case STRICTFP:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.STRICTFP.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case UNSAFE:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.UNSAFE.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case EXTERN:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.EXTERN.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case INTERNAL:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.INTERNAL.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case READONLY:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.READONLY.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case VIRTUAL:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.VIRTUAL.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case OVERRIDE:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.OVERRIDE.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case NEW:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.NEW.value()) == TriStateBoolean.TRUE)
+						return false;
+					break;
+					
+				case PARTIAL:
+					if (filter.getMask(com.sourcedimensions.client.model.Modifier.PARTIAL.value()) == TriStateBoolean.TRUE)
+						return false;
+			}
+		}
+				
+		return true;
+	}
+
+	protected boolean matchParams(Session session, List<Parameter> filter, 
+		List<com.sourcedimensions.server.ast.Parameter> params, boolean isCSharp)
+	{
+		for (Parameter par : filter)
+		{
+			Set<Integer> pos = new HashSet<Integer>();
+			
+			switch (par.getPosType())
+			{
+				case ANY:
+					for (int i = 1; i <= params.size(); i++)
+						pos.add(i);
+					break;
+					
+				case EXACT:
+					pos.add(par.getPosValue());
+					break;
+					
+				case LESSEQ:
+					for (int i = 1; i <= par.getPosMax(); i++)
+						pos.add(i);
+					break;
+					
+				case GREATEREQ:
+					for (int i = par.getPosMin(); i <= params.size(); i++)
+						pos.add(i);
+					break;
+					
+				case BETWEEN:
+					for (int i = par.getPosMin(); i <= par.getPosMax(); i++)
+						pos.add(i);
+					break;
+					
+				case LIST:
+					pos.addAll(par.getPosList());
+					break;
+			}
+			
+			boolean match = false;
+			
+			for (int i = 1; i <= params.size(); i++)
+			{
+				if (pos.contains(i))
+				{
+					com.sourcedimensions.server.ast.Parameter param = params.get(i);
+					
+					if (!Pattern.matches(par.getName(), params.get(i).m_name))
+						continue;
+					
+					if (isCSharp)
+					{
+						if (par.getModifiers().getMask(Parameter.Modifier.OUT.value()) == 
+								(param.getKind() == ParamKind.OUT ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
+							continue;
+
+						if (par.getModifiers().getMask(Parameter.Modifier.REF.value()) == 
+								(param.getKind() == ParamKind.REF ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
+							continue;
+					}
+					else
+					{
+						if (par.getModifiers().getMask(Parameter.Modifier.FINAL.value()) == 
+								(param.m_finalParam ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
+							continue;
+					}
+					
+					if (par.getModifiers().getMask(Parameter.Modifier.PARAMS.value()) == 
+							(param.m_varParam ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
+						continue;
+					
+					if (!matchType(session, par.getType(), param.getType(), isCSharp))
+						continue;
+					
+					match = true;
+					break;
+				}
+			}
+			
+			if (match)
+				break;
+			else
+				return false;			
 		}
 		
 		return true;

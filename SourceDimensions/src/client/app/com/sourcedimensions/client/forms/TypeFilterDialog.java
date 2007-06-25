@@ -396,7 +396,7 @@ public class TypeFilterDialog extends DialogBase
 					if (m_delegate == null)
 						dialog = new DelegateDialog(m_shell);
 					else
-						dialog = new DelegateDialog(m_shell, m_delegate.getType(), 
+						dialog = new DelegateDialog(m_shell, m_delegate.getName(), m_delegate.getType(), 
 							m_delegate.getAnyParams(), m_delegate.getParamList());
 					
 					dialog.open();
@@ -406,6 +406,7 @@ public class TypeFilterDialog extends DialogBase
 						if (m_delegate == null)
 							m_delegate = new Delegate();
 						
+						m_delegate.setName(dialog.getName());
 						m_delegate.setType(dialog.getType());
 						m_delegate.setAnyParams(dialog.getAnyParams());
 						m_delegate.setParamList(dialog.getParamList());

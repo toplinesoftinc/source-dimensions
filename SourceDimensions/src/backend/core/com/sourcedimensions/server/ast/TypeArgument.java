@@ -53,6 +53,11 @@ public class TypeArgument extends Type
 		m_kind = kind;
 	}
 	
+	public String getName()
+	{
+		return m_refType.getName();
+	}
+	
 	public String toString()
 	{
 		return toString(getKind().toString());

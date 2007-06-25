@@ -1487,6 +1487,8 @@ public class DbAdapter
 						Delegate delegate = new Delegate();
 						Type type = new Type();
 						
+						delegate.setName(rs2.getString("name"));
+						
 						filter.setDelegate(delegate);
 						delegate.setType(type);
 						
@@ -1788,13 +1790,14 @@ public class DbAdapter
 					
 					if (delegate != null)
 					{
-						ps = c.prepareStatement("INSERT INTO delegate(filter_id, type_props, type_name, any_params) VALUES(?,?,?,?)",
+						ps = c.prepareStatement("INSERT INTO delegate(filter_id, name, type_props, type_name, any_params) VALUES(?,?,?,?,?)",
 								Statement.RETURN_GENERATED_KEYS);
 						
 						ps.setInt(1, filterId);
-						ps.setLong(2, delegate.getType().getTypeProps().getValue());
-						ps.setString(3, delegate.getType().getName());
-						ps.setShort(4, (short)(delegate.getAnyParams() ? 1 : 0));
+						ps.setString(2, delegate.getName());
+						ps.setLong(3, delegate.getType().getTypeProps().getValue());
+						ps.setString(4, delegate.getType().getName());
+						ps.setShort(5, (short)(delegate.getAnyParams() ? 1 : 0));
 						
 						ps.executeUpdate();
 	
@@ -2382,6 +2385,7 @@ public class DbAdapter
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"filter_id INT NOT NULL",
 				"type_props BIGINT",
+				"name VARCHAR(1024) NOT NULL",
 				"type_name VARCHAR(1024) NOT NULL",
 				"any_params SMALLINT",
 				"PRIMARY KEY (id)",
