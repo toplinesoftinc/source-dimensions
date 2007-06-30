@@ -288,8 +288,8 @@ public class SymbolQueryEngine
 			typeFilter.addAll(symQuery.getTypeFilter());
 		}
 		
-		Query query = session.createQuery("SELECT d, d.m_project, d.m_file FROM TypeDeclarationMember m, TypeDeclaration d " +
-				"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
+		Query query = session.createQuery("SELECT d, p, f, m FROM TypeDeclarationMember m, TypeDeclaration d " +
+				"INNER JOIN d.m_modifiers m INNER JOIN d.m_project p INNER JOIN d.m_file f WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
 		
 		query.setString("id", root.getID());
 	
@@ -323,7 +323,7 @@ public class SymbolQueryEngine
 						{
 							Delegate delegate = filter.getDelegate();
 							
-							query = session.createQuery("SELECT d, d.m_file FROM TypeDeclarationMember m, DelegateDeclaration d " +
+							query = session.createQuery("SELECT d, d.m_file, FROM TypeDeclarationMember m, DelegateDeclaration d " +
 								"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
 					
 							query.setString("id", root.getID());
@@ -440,7 +440,7 @@ public class SymbolQueryEngine
 				if (skip)
 					continue;
 				
-				if (!matchModifiers(decl.m_modifiers, filter.getModifiers()))
+				if (!matchModifiers((Set)row[3], filter.getModifiers()))
 					continue;
 
 				SnapshotNode snapshot = null;
@@ -488,15 +488,16 @@ public class SymbolQueryEngine
 	{
 		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
 		
-		Query query = session.createQuery("SELECT a.m_parent, a.m_file FROM AstNode WHERE m_id = :id").setEntity("id", root.getID());
+		Query query = session.createQuery("SELECT a.m_parent, a.m_file FROM AstNode a WHERE a.m_id = :id").setString("id", root.getID());
 		
 		List list = query.list();
 		
 		for (Object o : list)
 		{
+			Object[] r = (Object[])o;
+			
 			if (o instanceof InstanceCreationExpression)
 			{
-				Object[] r = (Object[])o;
 				InstanceCreationExpression expr = (InstanceCreationExpression)r[0];
 				
 				if (!filter.getAllBaseTypes())
@@ -520,7 +521,7 @@ public class SymbolQueryEngine
 			}
 			else
 			{
-				output.addAll(execAnonymClassFilter(session, (AstNode)o, filter));
+				output.addAll(execAnonymClassFilter(session, (AstNode)r[0], filter));
 			}
 		}
 		
