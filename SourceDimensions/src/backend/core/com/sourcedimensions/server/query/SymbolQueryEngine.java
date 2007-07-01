@@ -288,8 +288,8 @@ public class SymbolQueryEngine
 			typeFilter.addAll(symQuery.getTypeFilter());
 		}
 		
-		Query query = session.createQuery("SELECT d, p, f, m FROM TypeDeclarationMember m, TypeDeclaration d " +
-				"INNER JOIN d.m_modifiers m INNER JOIN d.m_project p INNER JOIN d.m_file f WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
+		Query query = session.createQuery("SELECT d, d.m_project, d.m_file FROM TypeDeclarationMember m INNER JOIN m.m_parent mp, " +
+				"TypeDeclaration d INNER JOIN d.m_parent dp WHERE dp.m_id = m.m_id AND mp.m_id = :id");
 		
 		query.setString("id", root.getID());
 	
@@ -439,8 +439,9 @@ public class SymbolQueryEngine
 
 				if (skip)
 					continue;
-				
-				if (!matchModifiers((Set)row[3], filter.getModifiers()))
+								
+				if (!matchModifiers(session.createQuery("FROM Modifier d WHERE m_parent = :parent")
+						.setEntity("parent", decl).list(), filter.getModifiers()))
 					continue;
 
 				SnapshotNode snapshot = null;
@@ -472,7 +473,7 @@ public class SymbolQueryEngine
 				}
 
 				snapshot.setRefs(new ArrayList<Reference>());
-				snapshot.getRefs().add(new Reference(decl.getID(), ((SourceFile)row[3]).getID(), decl.m_left, decl.m_right));
+				snapshot.getRefs().add(new Reference(decl.getID(), ((SourceFile)row[2]).getID(), decl.m_left, decl.m_right));
 				
 				output.add(snapshot);
 				
@@ -552,12 +553,13 @@ public class SymbolQueryEngine
 		return true;
 	}
 	
-	protected boolean matchModifiers(Set<Modifier> value, TriStateMask filter)
+	protected boolean matchModifiers(Collection value, TriStateMask filter)
 	{
 		Set<ModifierKind> enumSet = new HashSet<ModifierKind>();
 		
-		for (Modifier m : value)
+		for (Object o : value)
 		{
+			Modifier m = (Modifier)o;
 			enumSet.add(m.getKind());
 			
 			switch (m.getKind())
