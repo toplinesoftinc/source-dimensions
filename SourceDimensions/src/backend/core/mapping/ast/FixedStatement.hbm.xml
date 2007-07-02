@@ -6,7 +6,7 @@
 <hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
 
     <subclass name="FixedStatement" extends="EmbeddedStatement" discriminator-value="29"> 
-	<set name="m_declarators" where="T_ROLE=2">
+	<set name="m_declarators" where="F_ROLE=2">
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="Declarator"/>
 	</set>

@@ -6,17 +6,17 @@
 <hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
 
     <subclass name="MethodInvocationExpression" extends="Expression" discriminator-value="48">  
-	<list name="m_arguments" where="T_ROLE=0">
+	<list name="m_arguments" where="F_ROLE=0">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="Expression"/>
 	</list>
-	<list name="m_argList" where="T_ROLE=1">
+	<list name="m_argList" where="F_ROLE=1">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="Expression"/>
 	</list>
-	<list name="m_typeArguments" where="T_ROLE=2">
+	<list name="m_typeArguments" where="F_ROLE=2">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="TypeArgument"/>

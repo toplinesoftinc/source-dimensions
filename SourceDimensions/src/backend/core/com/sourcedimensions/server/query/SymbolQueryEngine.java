@@ -117,8 +117,8 @@ public class SymbolQueryEngine
 			if (namespaceFilter.size() == 0)
 				return null;
 			
-			Query query = session.createQuery("SELECT td, f.m_id, td.m_parent FROM TypeDeclaration td " +
-				"INNER JOIN td.m_file f WHERE td.m_kind = :kind AND td.m_project IN (:projects)");
+			Query query = session.createQuery("SELECT td FROM TypeDeclaration td " +
+				"INNER JOIN td.m_file INNER JOIN td.m_parent WHERE td.m_kind = :kind AND td.m_project IN (:projects)");
 			
 			query.setInteger("kind", TypeDeclKind.NAMESPACE.value());
 			query.setParameterList("projects", prjSpace);
@@ -130,29 +130,24 @@ public class SymbolQueryEngine
 				for (String filter : namespaceFilter)
 				{
 					String[] fltr = filter.split(Folder.DIVIDER);
-					Object[] row = (Object[])o;
-					TypeDeclaration decl = (TypeDeclaration)row[0];
-					String fileId = (String)row[1];			
+					TypeDeclaration decl = (TypeDeclaration)o;
 					String name = decl.m_name;
-					AstNode parent = (AstNode)row[2];
 					
-					if (parent instanceof TypeDeclarationMember)
+					if (decl.getParent() instanceof TypeDeclarationMember)
 					{
-						Query q = session.createQuery("SELECT d, d.m_parent FROM TypeDeclaration d, TypeDeclarationMember m "+
+						Query q = session.createQuery("SELECT d FROM TypeDeclaration d INNER JOIN d.m_parent, TypeDeclarationMember m "+
 							"WHERE m.m_parent.id = d.m_id AND m.m_id = :id");
 	
-						q.setString("id", parent.getID());
+						q.setString("id", decl.getParent().getID());
 						
 						for (List l = q.list(); l.size() > 0; l = q.list())
 						{						
-							Object[] r = (Object[])l.get(0);
-							TypeDeclaration d  = (TypeDeclaration)r[0];
-							AstNode p = (AstNode)r[1];
+							TypeDeclaration d  = (TypeDeclaration)l.get(0);
 							
 							name = d.m_name + "." + name;
 							
-							if (p instanceof TypeDeclarationMember)
-								q.setString("id", p.getID());
+							if (d.getParent() instanceof TypeDeclarationMember)
+								q.setString("id", d.getParent().getID());
 							else
 								break;
 						}
@@ -174,7 +169,7 @@ public class SymbolQueryEngine
 								if (lookahead == null)
 								{
 									if (j == (parts.length - 1))
-										addNamespace(decl, name, fileId, nodeMap);
+										addNamespace(decl, name, decl.getSourceFile().getID(), nodeMap);
 								}
 								else
 								{
@@ -197,7 +192,7 @@ public class SymbolQueryEngine
 											}
 											
 											if (w)
-												addNamespace(decl, name, fileId, nodeMap);
+												addNamespace(decl, name, decl.getSourceFile().getID(), nodeMap);
 										}
 									}
 								}								
@@ -224,7 +219,7 @@ public class SymbolQueryEngine
 							if (Pattern.matches(fltr[i], parts[j]))
 							{
 								if (i == (fltr.length - 1) && j == (parts.length - 1))
-									addNamespace(decl, name, fileId, nodeMap);
+									addNamespace(decl, name, decl.getSourceFile().getID(), nodeMap);
 							}
 							else
 								break;
@@ -288,24 +283,24 @@ public class SymbolQueryEngine
 			typeFilter.addAll(symQuery.getTypeFilter());
 		}
 		
-		Query query = session.createQuery("SELECT d, d.m_project, d.m_file FROM TypeDeclarationMember m INNER JOIN m.m_parent mp, " +
-				"TypeDeclaration d INNER JOIN d.m_parent dp WHERE dp.m_id = m.m_id AND mp.m_id = :id");
-		
+		Query query = session.createQuery("SELECT DISTINCT d FROM TypeDeclarationMember m INNER JOIN m.m_parent mp, " +
+			"TypeDeclaration d INNER JOIN d.m_parent dp INNER JOIN d.m_project INNER JOIN d.m_file LEFT JOIN d.m_modifiers " +
+			"LEFT JOIN d.m_baseTypes LEFT JOIN d.m_baseInterfaces WHERE dp.m_id = m.m_id AND mp.m_id = :id");
+
 		query.setString("id", root.getID());
-	
-		List list = query.list();
+		
+		List list = query.list();		
 		
 		for (TypeFilter filter : typeFilter)
 		{
 			for (Object o : list)
 			{
-				Object[] row = (Object[])o;
-				TypeDeclaration decl = (TypeDeclaration)row[0];
-				
+				TypeDeclaration decl = (TypeDeclaration)o;
+		
 				if (!Pattern.matches(filter.getName(), decl.m_name))
 					continue;
 
-				Project prj = (Project)row[1];
+				Project prj = decl.getProject();
 				
 				switch (prj.getLanguage())
 				{
@@ -323,7 +318,7 @@ public class SymbolQueryEngine
 						{
 							Delegate delegate = filter.getDelegate();
 							
-							query = session.createQuery("SELECT d, d.m_file, FROM TypeDeclarationMember m, DelegateDeclaration d " +
+							query = session.createQuery("SELECT d FROM TypeDeclarationMember m, DelegateDeclaration d " +
 								"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
 					
 							query.setString("id", root.getID());
@@ -332,8 +327,7 @@ public class SymbolQueryEngine
 								
 							for (Object obj : l)
 							{
-								Object[] r = (Object[])obj;
-								DelegateDeclaration d = (DelegateDeclaration)r[0];
+								DelegateDeclaration d = (DelegateDeclaration)obj;
 								
 								if (!Pattern.matches(delegate.getName(), d.m_name))
 									continue;
@@ -350,7 +344,7 @@ public class SymbolQueryEngine
 								SnapshotNode snapshot = new SnapshotNode(Type.DELEGATE, decl.m_name);
 
 								snapshot.setRefs(new ArrayList<Reference>());
-								snapshot.getRefs().add(new Reference(decl.getID(), ((SourceFile)r[1]).getID(), decl.m_left, decl.m_right));
+								snapshot.getRefs().add(new Reference(decl.getID(), d.getSourceFile().getID(), decl.m_left, decl.m_right));
 								
 								output.add(snapshot);
 							}							
@@ -390,58 +384,62 @@ public class SymbolQueryEngine
 				if (skip)
 					continue;
 				
-				skip = false;
-				
 				if (!filter.getAllBaseTypes())
-				{
-					for (BaseType base : filter.getBaseTypes())
-					{			
-						Set<com.sourcedimensions.server.ast.Type> types = new HashSet<com.sourcedimensions.server.ast.Type>();
-						BaseTypeCategory category = BaseTypeCategory.values()[base.getCategory()];
-						
-						for (com.sourcedimensions.server.ast.Type t : decl.m_baseTypes)
-						{							
-							if (t instanceof UserDefinedType)
-							{
-								if (Pattern.matches(base.getName(), t.getName()) && (category == BaseTypeCategory.CLASS || 
-									category == BaseTypeCategory.CLASSINTF))
-								{
-									types.add(t);
-								}
-							}
-							else if (t instanceof SimpleType)
+				{		
+					if (filter.getBaseTypes().size() == 0)
+					{
+						skip = (decl.m_baseTypes.size() != 0 || decl.m_baseInterfaces.size() != 0);
+					}
+					else
+					{
+						for (BaseType base : filter.getBaseTypes())
+						{															
+							Set<com.sourcedimensions.server.ast.Type> types = new HashSet<com.sourcedimensions.server.ast.Type>();
+							BaseTypeCategory category = BaseTypeCategory.values()[base.getCategory()];
+							
+							for (com.sourcedimensions.server.ast.Type t : decl.m_baseTypes)
 							{							
-								if (Pattern.matches(base.getName(), t.getName()) && category == BaseTypeCategory.INTEGRALTYPE)
+								if (t instanceof UserDefinedType)
 								{
-									types.add(t);
-								}									
-							}
-						}
-						
-						for (com.sourcedimensions.server.ast.Type t : decl.m_baseInterfaces)
-						{
-							if (t instanceof UserDefinedType)
-							{
-								if (Pattern.matches(base.getName(), t.getName()) && category == BaseTypeCategory.INTERFACE)
-								{
-									types.add(t);
+									if (Pattern.matches(base.getName(), t.getName()) && (category == BaseTypeCategory.CLASS || 
+										category == BaseTypeCategory.CLASSINTF))
+									{
+										types.add(t);
+									}
 								}
-							}	
-						}
-						
-						if (types.size() == 0)
-						{
-							skip = true;
-							break;
+								else if (t instanceof SimpleType)
+								{							
+									if (Pattern.matches(base.getName(), t.getName()) && category == BaseTypeCategory.INTEGRALTYPE)
+									{
+										types.add(t);
+									}									
+								}
+							}
+							
+							for (com.sourcedimensions.server.ast.Type t : decl.m_baseInterfaces)
+							{
+								if (t instanceof UserDefinedType)
+								{
+									if (Pattern.matches(base.getName(), t.getName()) && category == BaseTypeCategory.INTERFACE)
+									{
+										types.add(t);
+									}
+								}	
+							}
+							
+							if (types.size() == 0)
+							{
+								skip = true;
+								break;
+							}
 						}
 					}
 				}
-
+				
 				if (skip)
 					continue;
 								
-				if (!matchModifiers(session.createQuery("FROM Modifier d WHERE m_parent = :parent")
-						.setEntity("parent", decl).list(), filter.getModifiers()))
+				if (!matchModifiers(decl.m_modifiers, filter.getModifiers()))
 					continue;
 
 				SnapshotNode snapshot = null;
@@ -473,7 +471,7 @@ public class SymbolQueryEngine
 				}
 
 				snapshot.setRefs(new ArrayList<Reference>());
-				snapshot.getRefs().add(new Reference(decl.getID(), ((SourceFile)row[2]).getID(), decl.m_left, decl.m_right));
+				snapshot.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));
 				
 				output.add(snapshot);
 				
@@ -489,20 +487,24 @@ public class SymbolQueryEngine
 	{
 		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
 		
-		Query query = session.createQuery("SELECT a.m_parent, a.m_file FROM AstNode a WHERE a.m_id = :id").setString("id", root.getID());
+		Query query = session.createQuery("SELECT a FROM AstNode a INNER JOIN a.m_parent p INNER JOIN a.m_file " +
+			" WHERE p.m_id = :id").setString("id", root.getID());
 		
 		List list = query.list();
 		
 		for (Object o : list)
-		{
-			Object[] r = (Object[])o;
+		{			
+			AstNode node = (AstNode)o;
 			
-			if (o instanceof InstanceCreationExpression)
-			{
-				InstanceCreationExpression expr = (InstanceCreationExpression)r[0];
-				
+			if (node instanceof InstanceCreationExpression)
+			{				
+				InstanceCreationExpression expr = (InstanceCreationExpression)node;
+			
 				if (!filter.getAllBaseTypes())
-				{
+				{					
+					expr = (InstanceCreationExpression)session.createQuery("SELECT e FROM InstanceCreationExpression e " +
+						" INNER JOIN e.m_members WHERE e.m_id = :id").setString("id", node.getID()).uniqueResult();
+					
 					if (expr.m_members.size() > 0)
 					{
 						for (BaseType base : filter.getBaseTypes())
@@ -516,13 +518,13 @@ public class SymbolQueryEngine
 				SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, expr.getType().getName());
 
 				snapshot.setRefs(new ArrayList<Reference>());
-				snapshot.getRefs().add(new Reference(expr.getID(), ((SourceFile)r[1]).getID(), expr.m_left, expr.m_right));
+				snapshot.getRefs().add(new Reference(expr.getID(), node.getSourceFile().getID(), expr.m_left, expr.m_right));
 				
 				output.add(snapshot);
 			}
 			else
 			{
-				output.addAll(execAnonymClassFilter(session, (AstNode)r[0], filter));
+				output.addAll(execAnonymClassFilter(session, node, filter));
 			}
 		}
 		

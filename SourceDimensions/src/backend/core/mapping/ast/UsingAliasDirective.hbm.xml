@@ -6,7 +6,7 @@
 <hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
 
     <subclass name="UsingAliasDirective" extends="Directive" discriminator-value="73"> 
-	<list name="m_name" table="T_NAME" where="T_ROLE=0">
+	<list name="m_name" table="T_NAME" where="F_ROLE=0">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="Name"/>

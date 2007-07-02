@@ -6,30 +6,30 @@
 <hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
 
     <subclass name="FunctionalMember" extends="Member" discriminator-value="32">
-	<list name="m_name" table="T_NAME" where="T_ROLE=2">
+	<list name="m_name" table="T_NAME" where="F_ROLE=2">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="Name"/>
 	</list>
-	<list name="m_parameters" where="T_ROLE=3">
+	<list name="m_parameters" where="F_ROLE=3">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="Parameter"/>
 	</list>
-	<list name="m_typeParams" where="T_ROLE=4">
+	<list name="m_typeParams" where="F_ROLE=4">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="TypeParameter"/>
 	</list>
-	<set name="m_constraints" where="T_ROLE=5">
+	<set name="m_constraints" where="F_ROLE=5">
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="Constraint"/>
 	</set>
-	<set name="m_throwList" where="T_ROLE=6">
+	<set name="m_throwList" where="F_ROLE=6">
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="Type"/>
 	</set>
-	<list name="m_constrInit" where="T_ROLE=7">
+	<list name="m_constrInit" where="F_ROLE=7">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="MethodInvocationExpression"/>

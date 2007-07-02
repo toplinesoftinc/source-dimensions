@@ -6,12 +6,12 @@
 <hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
 
     <subclass name="EventMember" extends="Member" discriminator-value="23">
-	<list name="m_name" table="T_NAME" where="T_ROLE=2">
+	<list name="m_name" table="T_NAME" where="F_ROLE=2">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="Name"/>
 	</list>
-	<set name="m_declarators" where="T_ROLE=3">
+	<set name="m_declarators" where="F_ROLE=3">
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="Declarator"/>
 	</set>

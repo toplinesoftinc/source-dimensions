@@ -6,11 +6,11 @@
 <hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
 
     <subclass name="Parameter" extends="AstNode" discriminator-value="50">
-	<set name="m_modifiers" where="T_ROLE=0">
+	<set name="m_modifiers" where="F_ROLE=0">
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="Modifier"/>		
 	</set>
-	<set name="m_attributes" where="T_ROLE=1">
+	<set name="m_attributes" where="F_ROLE=1">
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="AttributeBlock"/>
 	</set>

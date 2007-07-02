@@ -6,7 +6,7 @@
 <hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
 
     <subclass name="Constraint" extends="AstNode" discriminator-value="15">
-	<list name="m_bounds" where="T_ROLE=0">
+	<list name="m_bounds" where="F_ROLE=0">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="ConstraintBound"/>

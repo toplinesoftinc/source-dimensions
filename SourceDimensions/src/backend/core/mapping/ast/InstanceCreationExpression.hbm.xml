@@ -11,7 +11,7 @@
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="Expression"/>
 	</list>
-	<set name="m_members" where="T_ROLE=1">
+	<set name="m_members" where="F_ROLE=1">
 		<key column="F_PARENT" foreign-key="none"/>
 		<one-to-many class="AbstractMember"/>
 	</set>

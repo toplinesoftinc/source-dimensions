@@ -6,12 +6,12 @@
 <hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
 
     <subclass name="ForStatement" extends="EmbeddedStatement" discriminator-value="31">   
-	<list name="m_initExprList" where="T_ROLE=0">
+	<list name="m_initExprList" where="F_ROLE=0">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="Expression"/>
 	</list>
-	<list name="m_iteration" where="T_ROLE=1">
+	<list name="m_iteration" where="F_ROLE=1">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="Expression"/>
