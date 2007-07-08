@@ -36,10 +36,10 @@ import com.sourcedimensions.server.ast.UserDefinedType;
 import com.sourcedimensions.server.ast.Modifier.ModifierKind;
 import com.sourcedimensions.server.ast.TypeDeclaration.TypeDeclKind;
 import com.sourcedimensions.server.sys.Project;
-import com.sourcedimensions.server.sys.SourceFile;
 import com.sourcedimensions.server.sys.profile.Database;
 import com.sourcedimensions.server.utils.DatabaseHelper;
 import com.sourcedimensions.server.ast.Parameter.ParamKind;
+
 
 public class SymbolQueryEngine 
 {
@@ -392,26 +392,25 @@ public class SymbolQueryEngine
 					}
 					else
 					{
+						int counter = 0;
+				
 						for (BaseType base : filter.getBaseTypes())
 						{															
-							Set<com.sourcedimensions.server.ast.Type> types = new HashSet<com.sourcedimensions.server.ast.Type>();
-							BaseTypeCategory category = BaseTypeCategory.values()[base.getCategory()];
-							
 							for (com.sourcedimensions.server.ast.Type t : decl.m_baseTypes)
 							{							
 								if (t instanceof UserDefinedType)
 								{
-									if (Pattern.matches(base.getName(), t.getName()) && (category == BaseTypeCategory.CLASS || 
-										category == BaseTypeCategory.CLASSINTF))
+									if (Pattern.matches(base.getName(), t.getName()) && (base.getCategory() == BaseTypeCategory.CLASS.value() || 
+										base.getCategory() == BaseTypeCategory.CLASSINTF.value()))
 									{
-										types.add(t);
+										counter++;
 									}
 								}
 								else if (t instanceof SimpleType)
 								{							
-									if (Pattern.matches(base.getName(), t.getName()) && category == BaseTypeCategory.INTEGRALTYPE)
+									if (Pattern.matches(base.getName(), t.getName()) && base.getCategory() == BaseTypeCategory.INTEGRALTYPE.value())
 									{
-										types.add(t);
+										counter++;
 									}									
 								}
 							}
@@ -420,14 +419,14 @@ public class SymbolQueryEngine
 							{
 								if (t instanceof UserDefinedType)
 								{
-									if (Pattern.matches(base.getName(), t.getName()) && category == BaseTypeCategory.INTERFACE)
+									if (Pattern.matches(base.getName(), t.getName()) && base.getCategory() == BaseTypeCategory.INTERFACE.value())
 									{
-										types.add(t);
+										counter++;
 									}
 								}	
 							}
 							
-							if (types.size() == 0)
+							if (counter == 0)
 							{
 								skip = true;
 								break;
