@@ -1458,7 +1458,11 @@ public class JavaImport extends AstImport
 					}
 					
 					ic.m_arguments.addAll(parseExpressions(node));
-					parseMembers(node, ic.m_members);
+					
+					XmlNode body = node.getNode("ClsBody");
+					
+					if (body != null)
+						parseMembers(body, ic.m_members);
 				}
 				break;
 				

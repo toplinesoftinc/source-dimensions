@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.Iterator;
 import java.util.regex.Pattern;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -263,6 +264,7 @@ public class SymbolQueryEngine
 	{
 		List<TypeFilter> typeFilter = new ArrayList<TypeFilter>();
 		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
+		Set<String> nameSet = new HashSet<String>();
 		
 		if (symQuery.getAllTypes())
 		{
@@ -407,7 +409,7 @@ public class SymbolQueryEngine
 									}
 								}
 								else if (t instanceof SimpleType)
-								{							
+								{			
 									if (Pattern.matches(base.getName(), t.getName()) && base.getCategory() == BaseTypeCategory.INTEGRALTYPE.value())
 									{
 										counter++;
@@ -419,7 +421,8 @@ public class SymbolQueryEngine
 							{
 								if (t instanceof UserDefinedType)
 								{
-									if (Pattern.matches(base.getName(), t.getName()) && base.getCategory() == BaseTypeCategory.INTERFACE.value())
+									if (Pattern.matches(base.getName(), t.getName()) && (base.getCategory() == BaseTypeCategory.INTERFACE.value() ||
+										base.getCategory() == BaseTypeCategory.CLASSINTF.value()))
 									{
 										counter++;
 									}
@@ -469,13 +472,19 @@ public class SymbolQueryEngine
 						snapshot = new SnapshotNode(Type.ANNOT, decl.m_name);
 				}
 
-				snapshot.setRefs(new ArrayList<Reference>());
-				snapshot.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));
 				
-				output.add(snapshot);
+				if (!nameSet.contains(decl.m_name))
+				{
+					snapshot.setRefs(new ArrayList<Reference>());
+					snapshot.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));
+					
+					output.add(snapshot);
 				
-				if (filter.getInnerTypes())
-					snapshot.setChildren(executeTypeFilter(session, decl, symQuery));
+					nameSet.add(decl.m_name);
+					
+					if (filter.getInnerTypes())
+						snapshot.setChildren(executeTypeFilter(session, decl, symQuery));
+				}
 			}
 		}
 		
@@ -486,9 +495,9 @@ public class SymbolQueryEngine
 	{
 		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
 		
-		Query query = session.createQuery("SELECT a FROM AstNode a INNER JOIN a.m_parent p INNER JOIN a.m_file " +
-			" WHERE p.m_id = :id").setString("id", root.getID());
-		
+		Query query = session.createQuery("SELECT a FROM AstNode a INNER JOIN a.m_parent INNER JOIN a.m_file LEFT JOIN a.m_children " +
+			" WHERE a.m_id = :id").setString("id", root.getID());
+				
 		List list = query.list();
 		
 		for (Object o : list)
