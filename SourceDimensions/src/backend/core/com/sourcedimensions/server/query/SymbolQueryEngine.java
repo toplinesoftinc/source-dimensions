@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.Iterator;
 import java.util.regex.Pattern;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -37,6 +36,7 @@ import com.sourcedimensions.server.ast.UserDefinedType;
 import com.sourcedimensions.server.ast.Modifier.ModifierKind;
 import com.sourcedimensions.server.ast.TypeDeclaration.TypeDeclKind;
 import com.sourcedimensions.server.sys.Project;
+import com.sourcedimensions.server.sys.SourceFile;
 import com.sourcedimensions.server.sys.profile.Database;
 import com.sourcedimensions.server.utils.DatabaseHelper;
 import com.sourcedimensions.server.ast.Parameter.ParamKind;
@@ -104,9 +104,10 @@ public class SymbolQueryEngine
 	
 	protected Collection<SnapshotNode> executeFromRoot(Session session, String projectId, TypeDeclaration root, SymbolQuery symQuery)
 	{
+		Set<Project> prjSpace = DatabaseHelper.getProjectSpace(session, projectId);
+		
 		if (root == null)
 		{
-			Set<Project> prjSpace = DatabaseHelper.getProjectSpace(session, projectId);
 			SortedMap<String, namespaceNode> nodeMap = new TreeMap<String, namespaceNode>();
 			List<String> namespaceFilter = new ArrayList<String>();
 			
@@ -249,18 +250,23 @@ public class SymbolQueryEngine
 					}
 				}
 			}
+			
+			if (symQuery.getGlobalNamespace())
+			{
+				output.addAll(executeTypeFilter(session, null, prjSpace, symQuery));
+			}
 				
 			return output;			
 		}
 		else if (root.getKind() == TypeDeclKind.NAMESPACE)
 		{
-			return executeTypeFilter(session, root, symQuery);
+			return executeTypeFilter(session, root, prjSpace, symQuery);
 		}
 		
 		return null;
 	}
 
-	protected List<SnapshotNode> executeTypeFilter(Session session, TypeDeclaration root, SymbolQuery symQuery)
+	protected List<SnapshotNode> executeTypeFilter(Session session, TypeDeclaration root, Set<Project> prjSpace, SymbolQuery symQuery)
 	{
 		List<TypeFilter> typeFilter = new ArrayList<TypeFilter>();
 		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
@@ -285,11 +291,23 @@ public class SymbolQueryEngine
 			typeFilter.addAll(symQuery.getTypeFilter());
 		}
 		
-		Query query = session.createQuery("SELECT DISTINCT d FROM TypeDeclarationMember m INNER JOIN m.m_parent mp, " +
-			"TypeDeclaration d INNER JOIN d.m_parent dp INNER JOIN d.m_project INNER JOIN d.m_file LEFT JOIN d.m_modifiers " +
-			"LEFT JOIN d.m_baseTypes LEFT JOIN d.m_baseInterfaces WHERE dp.m_id = m.m_id AND mp.m_id = :id");
+		Query query = null;
+		
+		if (root == null)
+		{
+			query = session.createQuery("SELECT DISTINCT d FROM TypeDeclaration d INNER JOIN d.m_parent dp INNER JOIN d.m_project INNER JOIN d.m_file " +
+				"LEFT JOIN d.m_modifiers LEFT JOIN d.m_baseTypes LEFT JOIN d.m_baseInterfaces WHERE dp.m_parent IS NULL AND d.m_project in (:projects)");
+			
+			query.setParameterList("projects", prjSpace);
+		}
+		else
+		{
+			query = session.createQuery("SELECT DISTINCT d FROM TypeDeclarationMember m INNER JOIN m.m_parent mp, " +
+				"TypeDeclaration d INNER JOIN d.m_parent dp INNER JOIN d.m_project INNER JOIN d.m_file LEFT JOIN d.m_modifiers " +
+				"LEFT JOIN d.m_baseTypes LEFT JOIN d.m_baseInterfaces WHERE dp.m_id = m.m_id AND mp.m_id = :id");
 
-		query.setString("id", root.getID());
+			query.setString("id", root.getID());		
+		}
 		
 		List list = query.list();		
 		
@@ -310,7 +328,7 @@ public class SymbolQueryEngine
 					case JAVA_15:
 						if ((filter.getCategories() & TypeCategory.ANONYMCLASS.value()) != 0)
 						{
-							output.addAll(execAnonymClassFilter(session, root, filter));
+							output.addAll(execAnonymClassFilter(session, root, decl.getSourceFile(), filter));
 						}
 						break;
 						
@@ -320,10 +338,20 @@ public class SymbolQueryEngine
 						{
 							Delegate delegate = filter.getDelegate();
 							
-							query = session.createQuery("SELECT d FROM TypeDeclarationMember m, DelegateDeclaration d " +
-								"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
-					
-							query.setString("id", root.getID());
+							if (root == null)
+							{
+								query = session.createQuery("SELECT d FROM DelegateDeclaration d INNER JOIN d.m_parent dp WHERE pd.m_parent IS NULL "+
+									" AND d.m_project in (:projects)");
+								
+								query.setParameterList("projects", prjSpace);
+							}
+							else
+							{
+								query = session.createQuery("SELECT d FROM TypeDeclarationMember m, DelegateDeclaration d " +
+									"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
+						
+								query.setString("id", root.getID());
+							}
 				
 							List l = query.list();
 								
@@ -483,7 +511,7 @@ public class SymbolQueryEngine
 					nameSet.add(decl.m_name);
 					
 					if (filter.getInnerTypes())
-						snapshot.setChildren(executeTypeFilter(session, decl, symQuery));
+						snapshot.setChildren(executeTypeFilter(session, decl, prjSpace, symQuery));
 				}
 			}
 		}
@@ -491,49 +519,48 @@ public class SymbolQueryEngine
 		return output;
 	}
 
-	protected List<SnapshotNode> execAnonymClassFilter(Session session, AstNode root, TypeFilter filter)
+	protected List<SnapshotNode> execAnonymClassFilter(Session session, AstNode root, SourceFile file, TypeFilter filter)
 	{
 		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
+	
+		Query query = session.createQuery("FROM InstanceCreationExpression e WHERE e.m_file = :file AND size(e.m_members) > 0").setEntity("file", file);
 		
-		Query query = session.createQuery("SELECT a FROM AstNode a INNER JOIN a.m_parent INNER JOIN a.m_file LEFT JOIN a.m_children " +
-			" WHERE a.m_id = :id").setString("id", root.getID());
-				
 		List list = query.list();
 		
 		for (Object o : list)
-		{			
-			AstNode node = (AstNode)o;
-			
-			if (node instanceof InstanceCreationExpression)
-			{				
-				InstanceCreationExpression expr = (InstanceCreationExpression)node;
-			
-				if (!filter.getAllBaseTypes())
-				{					
-					expr = (InstanceCreationExpression)session.createQuery("SELECT e FROM InstanceCreationExpression e " +
-						" INNER JOIN e.m_members WHERE e.m_id = :id").setString("id", node.getID()).uniqueResult();
-					
-					if (expr.m_members.size() > 0)
-					{
-						for (BaseType base : filter.getBaseTypes())
-						{
-							if (base.getCategory() != BaseTypeCategory.CLASS.value() || !Pattern.matches(base.getName(), expr.getType().getName()))
-								continue;
-						}
-					}
-				}
-					
-				SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, expr.getType().getName());
+		{
+			InstanceCreationExpression expr = (InstanceCreationExpression)o;
 
-				snapshot.setRefs(new ArrayList<Reference>());
-				snapshot.getRefs().add(new Reference(expr.getID(), node.getSourceFile().getID(), expr.m_left, expr.m_right));
+			if (root == null)
+			{
+				SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, expr.getType().getName());
 				
-				output.add(snapshot);
+				snapshot.setRefs(new ArrayList<Reference>());
+				snapshot.getRefs().add(new Reference(expr.getID(), file.getID(), expr.m_left, expr.m_right));
+				
+				output.add(snapshot);				
 			}
 			else
 			{
-				output.addAll(execAnonymClassFilter(session, node, filter));
-			}
+				AstNode node = expr;
+
+				query = session.createQuery("SELECT p FROM AstNode a LEFT JOIN a.m_parent p WHERE a.m_id = :id");
+
+				for (query.setString("id", node.getID()) ; (node = (AstNode)query.uniqueResult()) != null ; query.setString("id", node.getID()))
+				{
+					if (node.getID().equals(root.getID()))
+					{
+						SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, expr.getType().getName());
+	
+						snapshot.setRefs(new ArrayList<Reference>());
+						snapshot.getRefs().add(new Reference(expr.getID(), file.getID(), expr.m_left, expr.m_right));
+						
+						output.add(snapshot);
+	
+						break;
+					}
+				}
+			}			
 		}
 		
 		return output;
