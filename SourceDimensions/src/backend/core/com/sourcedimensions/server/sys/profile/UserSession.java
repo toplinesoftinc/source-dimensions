@@ -58,6 +58,11 @@ public class UserSession
 				session.delete(userSession);
 				valid = false;
 			}
+			else
+			{
+				userSession.m_lastHit = now;
+				session.update(userSession);
+			}
 		}
 		
 		session.getTransaction().commit();

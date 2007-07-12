@@ -2,6 +2,7 @@ package com.sourcedimensions.server.query;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import com.sourcedimensions.server.sys.SourceFile;
 import com.sourcedimensions.server.sys.profile.Database;
 import com.sourcedimensions.server.utils.DatabaseHelper;
 import com.sourcedimensions.server.ast.Parameter.ParamKind;
+import org.hibernate.proxy.LazyInitializer;
 
 
 public class SymbolQueryEngine 
@@ -324,14 +326,6 @@ public class SymbolQueryEngine
 				
 				switch (prj.getLanguage())
 				{
-					case JAVA_14:
-					case JAVA_15:
-						if ((filter.getCategories() & TypeCategory.ANONYMCLASS.value()) != 0)
-						{
-							output.addAll(execAnonymClassFilter(session, root, decl.getSourceFile(), filter));
-						}
-						break;
-						
 					case CSHARP_11:
 					case CSHARP_20:
 						if (filter.getDelegate() != null)
@@ -510,8 +504,18 @@ public class SymbolQueryEngine
 				
 					nameSet.add(decl.m_name);
 					
+					snapshot.setChildren(new ArrayList<SnapshotNode>());
+					
 					if (filter.getInnerTypes())
-						snapshot.setChildren(executeTypeFilter(session, decl, prjSpace, symQuery));
+						snapshot.getChildren().addAll(executeTypeFilter(session, decl, prjSpace, symQuery));
+					
+					switch (prj.getLanguage())
+					{
+						case JAVA_14:
+						case JAVA_15:
+							if ((filter.getCategories() & TypeCategory.ANONYMCLASS.value()) != 0)
+								snapshot.getChildren().addAll(execAnonymClassFilter(session, decl, decl.getSourceFile(), filter));
+					}					
 				}
 			}
 		}
@@ -519,9 +523,10 @@ public class SymbolQueryEngine
 		return output;
 	}
 
-	protected List<SnapshotNode> execAnonymClassFilter(Session session, AstNode root, SourceFile file, TypeFilter filter)
+	protected List<SnapshotNode> execAnonymClassFilter(Session session, TypeDeclaration root, SourceFile file, TypeFilter filter)
 	{
 		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
+		Map<String, Integer> nameCount = new HashMap<String, Integer>();
 	
 		Query query = session.createQuery("FROM InstanceCreationExpression e WHERE e.m_file = :file AND size(e.m_members) > 0").setEntity("file", file);
 		
@@ -530,37 +535,42 @@ public class SymbolQueryEngine
 		for (Object o : list)
 		{
 			InstanceCreationExpression expr = (InstanceCreationExpression)o;
+			AstNode node = expr;
 
-			if (root == null)
+			query = session.createQuery("SELECT p FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_id = :id");
+
+			for (query.setString("id", node.getID()) ; (node = (AstNode)query.uniqueResult()) != null ; query.setString("id", node.getID()))
 			{
-				SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, expr.getType().getName());
+				String name = expr.getType().getName();
 				
-				snapshot.setRefs(new ArrayList<Reference>());
-				snapshot.getRefs().add(new Reference(expr.getID(), file.getID(), expr.m_left, expr.m_right));
+				if (!Pattern.matches(filter.getName(), name))
+					continue;
 				
-				output.add(snapshot);				
-			}
-			else
-			{
-				AstNode node = expr;
-
-				query = session.createQuery("SELECT p FROM AstNode a LEFT JOIN a.m_parent p WHERE a.m_id = :id");
-
-				for (query.setString("id", node.getID()) ; (node = (AstNode)query.uniqueResult()) != null ; query.setString("id", node.getID()))
+				if (node instanceof TypeDeclaration)
 				{
 					if (node.getID().equals(root.getID()))
 					{
-						SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, expr.getType().getName());
+						Integer count = nameCount.get(name);
+						
+						if (count == null)
+							nameCount.put(name, 1);
+						else
+						{
+							count++;
+							name = name + ":" + Integer.toString(count);
+						}
+						
+						SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, name);
 	
 						snapshot.setRefs(new ArrayList<Reference>());
 						snapshot.getRefs().add(new Reference(expr.getID(), file.getID(), expr.m_left, expr.m_right));
 						
 						output.add(snapshot);
-	
-						break;
 					}
+					
+					break;						
 				}
-			}			
+			}
 		}
 		
 		return output;
