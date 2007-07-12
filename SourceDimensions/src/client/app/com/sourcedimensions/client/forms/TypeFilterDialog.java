@@ -306,6 +306,17 @@ public class TypeFilterDialog extends DialogBase
 					MessageDialog.openError(m_shell, "Incorrect input",	"Please select at least one Type Category");
 					return;
 				}
+
+				Language lang = ProjectView.getProject().language();
+				
+				if (m_delegateButton.getEnabled() && (lang == Language.CSHARP11 || lang == Language.CSHARP20))
+				{
+					if (m_delegate == null)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",	"Please enter delegate parameters");
+						return;
+					}
+				}				
 				
 				if (m_typeNameText.getEnabled())
 				{

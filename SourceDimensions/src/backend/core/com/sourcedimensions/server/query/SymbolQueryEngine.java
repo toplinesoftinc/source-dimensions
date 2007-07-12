@@ -326,15 +326,15 @@ public class SymbolQueryEngine
 						
 						if (root == null)
 						{
-							query = session.createQuery("SELECT d FROM DelegateDeclaration d INNER JOIN d.m_parent dp WHERE pd.m_parent IS NULL "+
-								" AND d.m_project in (:projects)");
+							query = session.createQuery("SELECT d FROM DelegateDeclaration d INNER JOIN d.m_parent dp LEFT JOIN d.m_parameters p " + 
+								" INNER JOIN p.m_type LEFT JOIN p.m_modifiers WHERE pd.m_parent IS NULL AND d.m_project in (:projects)");
 							
 							query.setParameterList("projects", prjSpace);
 						}
 						else
 						{
-							query = session.createQuery("SELECT d FROM TypeDeclarationMember m, DelegateDeclaration d " +
-								"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
+							query = session.createQuery("SELECT d FROM TypeDeclarationMember m, DelegateDeclaration d LEFT JOIN d.m_parameters p " +
+								" INNER JOIN p.m_type LEFT JOIN p.m_modifiers WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
 					
 							query.setString("id", root.getID());
 						}
@@ -343,26 +343,31 @@ public class SymbolQueryEngine
 							
 						for (Object obj : l)
 						{
-							DelegateDeclaration d = (DelegateDeclaration)obj;
+							DelegateDeclaration decl = (DelegateDeclaration)obj;
 							
-							if (!Pattern.matches(delegate.getName(), d.m_name))
+							if (nameSet.contains(decl.m_name))
 								continue;
 							
-							if (!matchType(session, delegate.getType(), d.getType(), true))
+							if (!Pattern.matches(delegate.getName(), decl.m_name))
+								continue;
+							
+							if (!matchType(session, delegate.getType(), decl.getType(), true))
 								continue;
 							
 							if (!delegate.getAnyParams())
 							{
-								if (!matchParams(session, delegate.getParamList(), d.m_parameters, true))
+								if (!matchParams(session, delegate.getParamList(), decl.m_parameters, true))
 									continue;
 							}
 							
-							SnapshotNode decl = new SnapshotNode(Type.DELEGATE, d.m_name);
+							SnapshotNode snapshot = new SnapshotNode(Type.DELEGATE, decl.m_name);
 
-							decl.setRefs(new ArrayList<Reference>());
-							decl.getRefs().add(new Reference(d.getID(), d.getSourceFile().getID(), d.m_left, d.m_right));
+							snapshot.setRefs(new ArrayList<Reference>());
+							snapshot.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));
 							
-							output.add(decl);
+							output.add(snapshot);
+							
+							nameSet.add(decl.m_name);
 						}							
 					}
 			}
@@ -370,7 +375,10 @@ public class SymbolQueryEngine
 			for (Object o : list)
 			{
 				TypeDeclaration decl = (TypeDeclaration)o;
-		
+
+				if (nameSet.contains(decl.m_name))
+					continue;
+				
 				if (!Pattern.matches(filter.getName(), decl.m_name))
 					continue;
 				
@@ -494,28 +502,25 @@ public class SymbolQueryEngine
 				}
 
 				
-				if (!nameSet.contains(decl.m_name))
-				{
-					snapshot.setRefs(new ArrayList<Reference>());
-					snapshot.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));
-					
-					output.add(snapshot);
+				snapshot.setRefs(new ArrayList<Reference>());
+				snapshot.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));
 				
-					nameSet.add(decl.m_name);
-					
-					snapshot.setChildren(new ArrayList<SnapshotNode>());
-					
-					if (filter.getInnerTypes())
-						snapshot.getChildren().addAll(executeTypeFilter(session, decl, prjSpace, symQuery));
-					
-					switch (prj.getLanguage())
-					{
-						case JAVA_14:
-						case JAVA_15:
-							if ((filter.getCategories() & TypeCategory.ANONYMCLASS.value()) != 0)
-								snapshot.getChildren().addAll(execAnonymClassFilter(session, decl, decl.getSourceFile(), filter));
-					}					
-				}
+				output.add(snapshot);
+			
+				nameSet.add(decl.m_name);
+				
+				snapshot.setChildren(new ArrayList<SnapshotNode>());
+				
+				if (filter.getInnerTypes())
+					snapshot.getChildren().addAll(executeTypeFilter(session, decl, prjSpace, symQuery));
+				
+				switch (prj.getLanguage())
+				{
+					case JAVA_14:
+					case JAVA_15:
+						if ((filter.getCategories() & TypeCategory.ANONYMCLASS.value()) != 0)
+							snapshot.getChildren().addAll(execAnonymClassFilter(session, decl, decl.getSourceFile(), filter));
+				}					
 			}
 		}
 		
@@ -820,6 +825,8 @@ public class SymbolQueryEngine
 	protected boolean matchParams(Session session, List<Parameter> filter, 
 		List<com.sourcedimensions.server.ast.Parameter> params, boolean isCSharp)
 	{
+		Set<Integer> posSet = new HashSet<Integer>();
+		
 		for (Parameter par : filter)
 		{
 			Set<Integer> pos = new HashSet<Integer>();
@@ -854,12 +861,16 @@ public class SymbolQueryEngine
 					pos.addAll(par.getPosList());
 					break;
 			}
-			
+		
 			boolean match = false;
+			int i;
 			
-			for (int i = 1; i <= params.size(); i++)
+			for (i = 0; i < params.size(); i++)
 			{
-				if (pos.contains(i))
+				if (posSet.contains(i))
+					continue;
+				
+				if (pos.contains(i+1))
 				{
 					com.sourcedimensions.server.ast.Parameter param = params.get(i);
 					
@@ -889,16 +900,15 @@ public class SymbolQueryEngine
 					
 					if (!matchType(session, par.getType(), param.getType(), isCSharp))
 						continue;
-					
+				
+					posSet.add(i);
 					match = true;
 					break;
 				}
-			}
-			
-			if (match)
-				break;
-			else
-				return false;			
+				
+				if (!match)
+					return false;
+			}			
 		}
 		
 		return true;
