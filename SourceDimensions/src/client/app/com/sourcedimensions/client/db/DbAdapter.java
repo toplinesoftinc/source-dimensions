@@ -1526,7 +1526,7 @@ public class DbAdapter
 								
 								int paramId = rs2.getInt("id");
 								
-								PreparedStatement ps3 = c.prepareStatement("SELECT position FROM delegate_param_id WHERE delegate_param_id = ?");
+								PreparedStatement ps3 = c.prepareStatement("SELECT position FROM delegate_param_pos WHERE delegate_param_id = ?");
 								
 								ps3.setInt(1, paramId);
 								
@@ -1811,7 +1811,7 @@ public class DbAdapter
 							for (Parameter p : delegate.getParamList())
 							{
 								ps = c.prepareStatement("INSERT INTO delegate_param(delegate_id, modifiers, type_props, " +
-									"type_name, name, position, pos_value, pos_min, pos_max) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+									"type_name, name, pos_type, pos_value, pos_min, pos_max) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 								
 								ps.setInt(1, delegateId);
 								ps.setLong(2, p.getModifiers().getValue());

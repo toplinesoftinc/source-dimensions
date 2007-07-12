@@ -41,7 +41,6 @@ import com.sourcedimensions.server.sys.SourceFile;
 import com.sourcedimensions.server.sys.profile.Database;
 import com.sourcedimensions.server.utils.DatabaseHelper;
 import com.sourcedimensions.server.ast.Parameter.ParamKind;
-import org.hibernate.proxy.LazyInitializer;
 
 
 public class SymbolQueryEngine 
@@ -315,65 +314,65 @@ public class SymbolQueryEngine
 		
 		for (TypeFilter filter : typeFilter)
 		{
+			Project prj = (Project)prjSpace.toArray()[0];
+			
+			switch (prj.getLanguage())
+			{
+				case CSHARP_11:
+				case CSHARP_20:
+					if (filter.getDelegate() != null)
+					{
+						Delegate delegate = filter.getDelegate();
+						
+						if (root == null)
+						{
+							query = session.createQuery("SELECT d FROM DelegateDeclaration d INNER JOIN d.m_parent dp WHERE pd.m_parent IS NULL "+
+								" AND d.m_project in (:projects)");
+							
+							query.setParameterList("projects", prjSpace);
+						}
+						else
+						{
+							query = session.createQuery("SELECT d FROM TypeDeclarationMember m, DelegateDeclaration d " +
+								"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
+					
+							query.setString("id", root.getID());
+						}
+			
+						List l = query.list();
+							
+						for (Object obj : l)
+						{
+							DelegateDeclaration d = (DelegateDeclaration)obj;
+							
+							if (!Pattern.matches(delegate.getName(), d.m_name))
+								continue;
+							
+							if (!matchType(session, delegate.getType(), d.getType(), true))
+								continue;
+							
+							if (!delegate.getAnyParams())
+							{
+								if (!matchParams(session, delegate.getParamList(), d.m_parameters, true))
+									continue;
+							}
+							
+							SnapshotNode decl = new SnapshotNode(Type.DELEGATE, d.m_name);
+
+							decl.setRefs(new ArrayList<Reference>());
+							decl.getRefs().add(new Reference(d.getID(), d.getSourceFile().getID(), d.m_left, d.m_right));
+							
+							output.add(decl);
+						}							
+					}
+			}
+			
 			for (Object o : list)
 			{
 				TypeDeclaration decl = (TypeDeclaration)o;
 		
 				if (!Pattern.matches(filter.getName(), decl.m_name))
 					continue;
-
-				Project prj = decl.getProject();
-				
-				switch (prj.getLanguage())
-				{
-					case CSHARP_11:
-					case CSHARP_20:
-						if (filter.getDelegate() != null)
-						{
-							Delegate delegate = filter.getDelegate();
-							
-							if (root == null)
-							{
-								query = session.createQuery("SELECT d FROM DelegateDeclaration d INNER JOIN d.m_parent dp WHERE pd.m_parent IS NULL "+
-									" AND d.m_project in (:projects)");
-								
-								query.setParameterList("projects", prjSpace);
-							}
-							else
-							{
-								query = session.createQuery("SELECT d FROM TypeDeclarationMember m, DelegateDeclaration d " +
-									"WHERE d.m_parent.id = m.m_id AND m.m_parent = :id");
-						
-								query.setString("id", root.getID());
-							}
-				
-							List l = query.list();
-								
-							for (Object obj : l)
-							{
-								DelegateDeclaration d = (DelegateDeclaration)obj;
-								
-								if (!Pattern.matches(delegate.getName(), d.m_name))
-									continue;
-								
-								if (!matchType(session, delegate.getType(), d.getType(), true))
-									continue;
-								
-								if (!delegate.getAnyParams())
-								{
-									if (!matchParams(session, delegate.getParamList(), d.m_parameters, true))
-										continue;
-								}
-								
-								SnapshotNode snapshot = new SnapshotNode(Type.DELEGATE, decl.m_name);
-
-								snapshot.setRefs(new ArrayList<Reference>());
-								snapshot.getRefs().add(new Reference(decl.getID(), d.getSourceFile().getID(), decl.m_left, decl.m_right));
-								
-								output.add(snapshot);
-							}							
-						}
-				}
 				
 				boolean skip = true;
 				

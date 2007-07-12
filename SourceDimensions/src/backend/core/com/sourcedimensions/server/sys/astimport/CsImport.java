@@ -878,7 +878,7 @@ public class CsImport extends AstImport
 	
 	protected void parseBaseTypes(XmlNode node, Set<Type> baseTypes) throws Exception
 	{
-		String[] tag = {"ClsType", "ClsIntfType"};
+		String[] tag = {"IntfType", "ClsIntfType"};
 		
 		for (String t : tag)
 		{
