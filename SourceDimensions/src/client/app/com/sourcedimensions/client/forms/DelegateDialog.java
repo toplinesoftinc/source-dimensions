@@ -288,7 +288,7 @@ public class DelegateDialog extends DialogBase
 		});
 		TableColumn column = new TableColumn(m_paramsTable, SWT.LEFT, 0);
 		double width = m_paramsTable.getBounds().width - 2 * m_paramsTable.getBorderWidth();
-		column.setText("Positions");
+		column.setText("Pos/Num");
 		column.setWidth((int) (0.13 * width));
 		column.setResizable(true);
 		column = new TableColumn(m_paramsTable, SWT.LEFT, 1);

@@ -51,11 +51,12 @@ public class Parameter
 	
 	public String positionToString()
 	{
+		String str = "";
+		
 		switch (m_posType)
 		{
 			case LIST:
 				{
-					String str = "";
 					Object[] items = m_posList.toArray();
 					
 					for (int i = 0; i < items.length; i++)
@@ -65,28 +66,37 @@ public class Parameter
 						
 						str += (Integer)items[i];
 					}
-					
-					return str;
 				}
+				break;
 				
 			case BETWEEN:
-				return m_posMin + " - " + m_posMax;
+				str = m_posMin + " - " + m_posMax;
+				break;
 				
 			case LESSEQ:
-				return "<= " + m_posMax;
+				str = "<= " + m_posMax;
+				break;
 				
 			case GREATEREQ:
-				return ">= " + m_posMin;
+				str = ">= " + m_posMin;
+				break;
 				
 			case EXACT:
-				return Integer.toString(m_posValue);
+				str = Integer.toString(m_posValue);
+				break;
 				
 			case ANY:
-				return "<ANY>";
+				str = "<ANY>";
+				break;
 				
 			default:
 				return "";
 		}
+		
+		if (m_quantitative)
+			return "[" + str + "]";
+		else
+			return str;
 	}
 	
 	public String modifiersToString()
@@ -121,6 +131,7 @@ public class Parameter
 	protected String m_name;
 	protected Position m_posType;
 	protected int m_posValue, m_posMin, m_posMax;
+	protected boolean m_quantitative;
 	protected Set<Integer> m_posList = new HashSet<Integer>();
 
 	public TriStateMask getModifiers()
@@ -191,6 +202,16 @@ public class Parameter
 	public void setPosMax(int posMax)
 	{
 		m_posMax = posMax;
+	}
+	
+	public boolean getQuantitative()
+	{
+		return m_quantitative;
+	}
+	
+	public void setQuantitative(boolean quantitative)
+	{
+		m_quantitative = quantitative;
 	}
 	
 	public Set<Integer> getPosList()

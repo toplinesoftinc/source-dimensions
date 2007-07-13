@@ -206,7 +206,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		column.setWidth((int)(0.13 * width));
 		column.setResizable(true);
 		column.setMoveable(true);
-		column.setText("Positions");
+		column.setText("Pos/Num");
 		column = new TableColumn(m_paramsTable, SWT.LEFT, 1);
 		column.setWidth((int)(0.17 * width));
 		column.setResizable(true);

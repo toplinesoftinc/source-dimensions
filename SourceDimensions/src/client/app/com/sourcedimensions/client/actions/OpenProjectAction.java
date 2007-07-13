@@ -17,6 +17,7 @@ import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.forms.ProjectListDialog;
 import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.client.views.ProjectView;
+import com.sourcedimensions.client.views.SnapshotView;
 import com.sourcedimensions.ws.consumer.WSConsumer;
 
 
@@ -136,6 +137,7 @@ public class OpenProjectAction implements IWorkbenchWindowActionDelegate
 				ProjectView view = (ProjectView)window.getActivePage().showView(ProjectView.ID);
 				view.setProject(prj);
 				CloseProjectAction.enableAction(true);
+				SnapshotView.closeAll();
 			}
 			catch (PartInitException e)
 			{

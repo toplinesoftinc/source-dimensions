@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -409,6 +410,14 @@ public class SnapshotView extends EditorPart
 		}
 		
 		m_viewerTable.remove(id);
+	}
+	
+	public static void closeAll()
+	{
+		Set<Integer> idSet = m_viewerTable.keySet();
+		
+		for (Integer id : idSet)
+			closeSnapshot(id);
 	}
 	
 	public static Map<Integer, List<SnapshotView>> getViewerTable()

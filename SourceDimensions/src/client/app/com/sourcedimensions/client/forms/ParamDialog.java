@@ -59,7 +59,8 @@ public class ParamDialog extends DialogBase
 	private Button m_cancelButton;
 	private Button m_exactRadioButton;
 	private Spinner m_exactPosSpinner;
-
+	private Button m_quantitativeCheckBox;
+	
 	private static Parameter.Modifier[] m_javaModifiers = new Parameter.Modifier[]
     {
 		Parameter.Modifier.FINAL,
@@ -78,7 +79,7 @@ public class ParamDialog extends DialogBase
 		Type.Property.ARRAY,
 		Type.Property.TYPEPARAM,
     };
-	
+
 	public ParamDialog(Shell parent, Parameter param)
 	{
 		createShell(parent);
@@ -125,6 +126,10 @@ public class ParamDialog extends DialogBase
 		}
 		
 		positionChanged();
+
+		m_quantitativeCheckBox.setSelection(param.getQuantitative());
+		
+		quantitativeSelectionChanged();
 		
 		for (int i = 0; i < m_typePropsList.getItemCount(); i++)
 		{
@@ -166,14 +171,15 @@ public class ParamDialog extends DialogBase
 		m_paramModifiersList.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_paramNameFilterLabel = new Label(getShell(), SWT.NONE);
 		m_paramNameFilterLabel.setText("Parameter Name Filter:");
-		m_paramNameFilterLabel.setLocation(new Point(132, 374));
+		m_paramNameFilterLabel.setLocation(new Point(130, 340));
 		m_paramNameFilterLabel.setSize(new Point(120, 13));
 		m_paramNameFilterText = new Text(getShell(), SWT.BORDER);
 		m_paramNameFilterText.setSize(new Point(230, 19));
-		m_paramNameFilterText.setLocation(new Point(132, 388));
+		m_paramNameFilterText.setLocation(new Point(130, 354));
 		m_paramModifiersList.setHeaderVisible(false);
 		m_paramModifiersList.setLinesVisible(false);
 		m_paramModifiersList.setBounds(new Rectangle(11, 354, 104, 53));
+		m_quantitativeCheckBox = new Button(getShell(), SWT.CHECK);
 		for (Parameter.Modifier m : getModifierArray())
 		{
 			new TableItem(m_paramModifiersList, 0).setText(m.toString().replace("_", ".").toLowerCase());
@@ -186,47 +192,50 @@ public class ParamDialog extends DialogBase
 		{
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
 			{
-				String val = m_typeNameText.getText().trim();
-				
-				if (val.length() == 0)
+				if (!m_quantitativeCheckBox.getSelection())
 				{
-					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
-					return;
-				}
-
-				try
-				{
-					Type.validateTypeName(val);
-				}
-				catch (Type.EmptyNameSectionException ex)
-				{
-					MessageDialog.openError(m_shell, "Incorrect input", "Type Name section cannot be empty (like \"com//abc\")");
-					return;					
-				}
-				catch (PatternSyntaxException ex)
-				{
-					MessageDialog.openError(m_shell, "Incorrect input",
-							"Type Name pattern \"" + ex.getPattern() + "\" has the following error: " + ex.getMessage());			
-					return;
-				}
-
-				val = m_paramNameFilterText.getText().trim();
-				
-				if (val.length() == 0)
-				{
-					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Parameter Name Filter");					
-					return;
-				}
-
-				try
-				{
-					Pattern.compile(val);
-				}
-				catch(PatternSyntaxException ex)
-				{
-					MessageDialog.openError(m_shell, "Incorrect input",
-						"Pattern for parameter name \"" + val + "\" has the following error: " + ex.getMessage());
-					return;
+					String val = m_typeNameText.getText().trim();
+					
+					if (val.length() == 0)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
+						return;
+					}
+	
+					try
+					{
+						Type.validateTypeName(val);
+					}
+					catch (Type.EmptyNameSectionException ex)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input", "Type Name section cannot be empty (like \"com//abc\")");
+						return;					
+					}
+					catch (PatternSyntaxException ex)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",
+								"Type Name pattern \"" + ex.getPattern() + "\" has the following error: " + ex.getMessage());			
+						return;
+					}
+	
+					val = m_paramNameFilterText.getText().trim();
+					
+					if (val.length() == 0)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Parameter Name Filter");					
+						return;
+					}
+	
+					try
+					{
+						Pattern.compile(val);
+					}
+					catch(PatternSyntaxException ex)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",
+							"Pattern for parameter name \"" + val + "\" has the following error: " + ex.getMessage());
+						return;
+					}
 				}
 				
 				if (m_listPosRadioButton.getSelection())
@@ -264,27 +273,40 @@ public class ParamDialog extends DialogBase
 				{
 					m_param.setPosType(Parameter.Position.ANY);
 				}
-				
-				m_param.getType().setName(m_typeNameText.getText());
-				
-				m_param.getType().getTypeProps().reset();
+								
+				if (m_quantitativeCheckBox.getSelection())
+				{
+					m_param.getType().setName("");
+					m_param.getType().getTypeProps().reset();
+					
+					m_param.setName("");
+					m_param.getModifiers().reset();
+				}
+				else
+				{
+					m_param.getType().setName(m_typeNameText.getText());
+					
+					m_param.getType().getTypeProps().reset();
+	
+					for (int i = 0; i < m_typePropsList.getItemCount(); i++)
+					{
+						m_param.getType().getTypeProps().setMask(getTypePropArray()[i].value(), 
+							getTriStateBoolValue(m_typePropsList.getItem(i)));
+					}
+					
+					m_param.setName(m_paramNameFilterText.getText());
+					
+					m_param.getModifiers().reset();
+					
+					for (int i = 0; i < m_paramModifiersList.getItemCount(); i++)
+					{
+						m_param.getModifiers().setMask(getModifierArray()[i].value(), 
+							getTriStateBoolValue(m_paramModifiersList.getItem(i)));
+					}
+				}
 
-				for (int i = 0; i < m_typePropsList.getItemCount(); i++)
-				{
-					m_param.getType().getTypeProps().setMask(getTypePropArray()[i].value(), 
-						getTriStateBoolValue(m_typePropsList.getItem(i)));
-				}
+				m_param.setQuantitative(m_quantitativeCheckBox.getSelection());
 				
-				m_param.setName(m_paramNameFilterText.getText());
-				
-				m_param.getModifiers().reset();
-				
-				for (int i = 0; i < m_paramModifiersList.getItemCount(); i++)
-				{
-					m_param.getModifiers().setMask(getModifierArray()[i].value(), 
-						getTriStateBoolValue(m_paramModifiersList.getItem(i)));
-				}
-										
 				m_cancel = false;
 				m_shell.close();
 			}
@@ -293,6 +315,15 @@ public class ParamDialog extends DialogBase
 		m_cancelButton.setLocation(new Point(289, 52));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
+		m_quantitativeCheckBox.setBounds(new Rectangle(130, 384, 106, 16));
+		m_quantitativeCheckBox.setText("&Quantitative filter");
+		m_quantitativeCheckBox.addSelectionListener(new SelectionAdapter() 
+		{
+			public void widgetSelected(SelectionEvent e) 
+			{
+				quantitativeSelectionChanged();
+			}
+		});
 		m_cancelButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
@@ -306,7 +337,7 @@ public class ParamDialog extends DialogBase
 		
 		super.createShell(parent);
 		
-		m_paramNameFilterText.setFocus();
+		m_typeNameText.setFocus();
 	}
 	
 	protected Shell getShell()
@@ -317,7 +348,7 @@ public class ParamDialog extends DialogBase
 	private void createParamPositionGroup() 
 	{
 		m_paramPositionGroup = new Group(getShell(), SWT.SHADOW_NONE);
-		m_paramPositionGroup.setText("Position");
+		m_paramPositionGroup.setText("Position/Number of parameters");
 		m_paramPositionGroup.setLayout(null);
 		m_paramPositionGroup.setBounds(new Rectangle(12, 12, 268, 190));
 		m_listPosRadioButton = new Button(m_paramPositionGroup, SWT.RADIO);
@@ -375,10 +406,11 @@ public class ParamDialog extends DialogBase
 			}
 		});
 		m_listPosSpinner = new Spinner(m_paramPositionGroup, SWT.BORDER);
-		m_listPosSpinner.setMinimum(1);
+		m_listPosSpinner.setMinimum(0);
 		m_listPosSpinner.setDigits(0);
 		m_listPosSpinner.setPageIncrement(1);
 		m_listPosSpinner.setEnabled(false);
+		m_listPosSpinner.setSelection(0);
 		m_listPosSpinner.setBounds(new Rectangle(77, 23, 49, 17));
 		m_addToListPosButton = new Button(m_paramPositionGroup, SWT.NONE);
 		m_posList = new List(m_paramPositionGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
@@ -386,14 +418,16 @@ public class ParamDialog extends DialogBase
 		m_notLessPosSpinner = new Spinner(m_paramPositionGroup, SWT.BORDER);
 		m_noMorePosSpinner = new Spinner(m_paramPositionGroup, SWT.BORDER);
 		m_rangeMinSpinner = new Spinner(m_paramPositionGroup, SWT.BORDER);
-		m_rangeMinSpinner.setMinimum(1);
+		m_rangeMinSpinner.setMinimum(0);
 		m_rangeMinSpinner.setPageIncrement(1);
 		m_rangeMinSpinner.setEnabled(false);
+		m_rangeMinSpinner.setSelection(0);
 		m_rangeMinSpinner.setBounds(new Rectangle(77, 107, 49, 17));
 		m_rangeMaxSpinner = new Spinner(m_paramPositionGroup, SWT.BORDER);
 		m_rangeMaxSpinner.setPageIncrement(1);
-		m_rangeMaxSpinner.setMinimum(1);
+		m_rangeMaxSpinner.setMinimum(0);
 		m_rangeMaxSpinner.setEnabled(false);
+		m_rangeMaxSpinner.setSelection(0);
 		m_rangeMaxSpinner.setBounds(new Rectangle(133, 107, 49, 17));
 		m_exactRadioButton.setSize(new Point(51, 16));
 		m_exactRadioButton.setLocation(new Point(12, 136));
@@ -408,16 +442,19 @@ public class ParamDialog extends DialogBase
 		m_exactPosSpinner = new Spinner(m_paramPositionGroup, SWT.BORDER);
 		m_exactPosSpinner.setLocation(new Point(77, 136));
 		m_exactPosSpinner.setPageIncrement(1);
-		m_exactPosSpinner.setMinimum(1);
+		m_exactPosSpinner.setMinimum(0);
 		m_exactPosSpinner.setEnabled(false);
+		m_exactPosSpinner.setSelection(0);
 		m_exactPosSpinner.setSize(new Point(49, 17));
 		m_noMorePosSpinner.setPageIncrement(1);
+		m_noMorePosSpinner.setSelection(0);
 		m_noMorePosSpinner.setEnabled(false);
-		m_noMorePosSpinner.setMinimum(1);
+		m_noMorePosSpinner.setMinimum(0);
 		m_noMorePosSpinner.setBounds(new Rectangle(77, 79, 49, 17));
 		m_notLessPosSpinner.setPageIncrement(1);
+		m_notLessPosSpinner.setSelection(0);
 		m_notLessPosSpinner.setEnabled(false);
-		m_notLessPosSpinner.setMinimum(1);
+		m_notLessPosSpinner.setMinimum(0);
 		m_notLessPosSpinner.setBounds(new Rectangle(77, 51, 49, 17));
 		m_addToListPosButton.setText(">>");
 		m_addToListPosButton.setEnabled(false);
@@ -573,4 +610,13 @@ public class ParamDialog extends DialogBase
 		
 	}
 	
+	protected void quantitativeSelectionChanged()
+	{
+		boolean sel = !m_quantitativeCheckBox.getSelection();
+		
+		m_typePropsList.setEnabled(sel);
+		m_typeNameText.setEnabled(sel);
+		m_paramModifiersList.setEnabled(sel);
+		m_paramNameFilterText.setEnabled(sel);
+	}
 }

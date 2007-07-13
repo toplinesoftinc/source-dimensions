@@ -1521,6 +1521,7 @@ public class DbAdapter
 								param.setPosValue(rs2.getInt("pos_value"));
 								param.setPosMin(rs2.getInt("pos_min"));
 								param.setPosMax(rs2.getInt("pos_max"));
+								param.setQuantitative(rs2.getShort("quantitative") != 0);
 								t.setTypeProps(new TriStateMask(rs2.getLong("type_props")));
 								t.setName(rs2.getString("type_name"));
 								
@@ -1612,6 +1613,7 @@ public class DbAdapter
 							param.setPosValue(rs2.getInt("pos_value"));
 							param.setPosMin(rs2.getInt("pos_min"));
 							param.setPosMax(rs2.getInt("pos_max"));
+							param.setQuantitative(rs2.getShort("quantitative") != 0);
 							
 							PreparedStatement ps3 = c.prepareStatement("SELECT position FROM member_param_pos WHERE member_param_id = ?");
 							
@@ -1811,7 +1813,7 @@ public class DbAdapter
 							for (Parameter p : delegate.getParamList())
 							{
 								ps = c.prepareStatement("INSERT INTO delegate_param(delegate_id, modifiers, type_props, " +
-									"type_name, name, pos_type, pos_value, pos_min, pos_max) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+									"type_name, name, pos_type, pos_value, pos_min, pos_max, quantitative) VALUES(?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 								
 								ps.setInt(1, delegateId);
 								ps.setLong(2, p.getModifiers().getValue());
@@ -1822,6 +1824,7 @@ public class DbAdapter
 								ps.setInt(7, p.getPosValue());
 								ps.setInt(8, p.getPosMin());
 								ps.setInt(9, p.getPosMax());
+								ps.setShort(10, (short)(p.getQuantitative() ? 1 : 0));
 		
 								ps.executeUpdate();
 		
@@ -1891,7 +1894,7 @@ public class DbAdapter
 						for (Parameter p : mf.getParamList())
 						{
 							ps = c.prepareStatement("INSERT INTO member_param(member_id, modifiers, type_props, " +
-									"type_name, name, pos_type, pos_value, pos_min, pos_max) VALUES(?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+									"type_name, name, pos_type, pos_value, pos_min, pos_max, quantitative) VALUES(?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 								
 							ps.setInt(1, memberId);
 							ps.setLong(2, p.getModifiers().getValue());
@@ -1902,6 +1905,7 @@ public class DbAdapter
 							ps.setInt(7, p.getPosValue());
 							ps.setInt(8, p.getPosMin());
 							ps.setInt(9, p.getPosMax());
+							ps.setShort(10, (short)(p.getQuantitative() ? 1 : 0));
 			
 							ps.executeUpdate();
 			
@@ -2397,12 +2401,13 @@ public class DbAdapter
 				"delegate_id INT NOT NULL",
 				"modifiers BIGINT",
 				"type_props BIGINT",
-				"type_name VARCHAR(1024) NOT NULL",
-				"name VARCHAR(1024) NOT NULL",
+				"type_name VARCHAR(1024)",
+				"name VARCHAR(1024)",
 				"pos_type INT",
 				"pos_value INT",
 				"pos_min INT",
 				"pos_max INT",
+				"quantitative SMALLINT",
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (delegate_id) REFERENCES DELEGATE ON DELETE CASCADE"
 			},
@@ -2443,12 +2448,13 @@ public class DbAdapter
 				"member_id INT NOT NULL",
 				"modifiers BIGINT",
 				"type_props BIGINT",
-				"type_name VARCHAR(1024) NOT NULL",
-				"name VARCHAR(1024) NOT NULL",
+				"type_name VARCHAR(1024)",
+				"name VARCHAR(1024)",
 				"pos_type INT",
 				"pos_value INT",
 				"pos_min INT",
 				"pos_max INT",
+				"quantitative SMALLINT",				
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (member_id) REFERENCES MEMBER_FILTER ON DELETE CASCADE"
 			},

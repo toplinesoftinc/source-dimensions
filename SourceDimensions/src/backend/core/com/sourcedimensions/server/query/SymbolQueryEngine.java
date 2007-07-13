@@ -834,7 +834,7 @@ public class SymbolQueryEngine
 			switch (par.getPosType())
 			{
 				case ANY:
-					for (int i = 1; i <= params.size(); i++)
+					for (int i = 0; i < params.size(); i++)
 						pos.add(i);
 					break;
 					
@@ -843,12 +843,12 @@ public class SymbolQueryEngine
 					break;
 					
 				case LESSEQ:
-					for (int i = 1; i <= par.getPosMax(); i++)
+					for (int i = 0; i < par.getPosMax(); i++)
 						pos.add(i);
 					break;
 					
 				case GREATEREQ:
-					for (int i = par.getPosMin(); i <= params.size(); i++)
+					for (int i = par.getPosMin(); i < params.size(); i++)
 						pos.add(i);
 					break;
 					
@@ -861,54 +861,61 @@ public class SymbolQueryEngine
 					pos.addAll(par.getPosList());
 					break;
 			}
-		
-			boolean match = false;
-			int i;
-			
-			for (i = 0; i < params.size(); i++)
-			{
-				if (posSet.contains(i))
-					continue;
-				
-				if (pos.contains(i+1))
-				{
-					com.sourcedimensions.server.ast.Parameter param = params.get(i);
-					
-					if (!Pattern.matches(par.getName(), params.get(i).m_name))
-						continue;
-					
-					if (isCSharp)
-					{
-						if (par.getModifiers().getMask(Parameter.Modifier.OUT.value()) == 
-								(param.getKind() == ParamKind.OUT ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
-							continue;
 
-						if (par.getModifiers().getMask(Parameter.Modifier.REF.value()) == 
-								(param.getKind() == ParamKind.REF ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
-							continue;
-					}
-					else
+			if (par.getQuantitative())
+			{
+				return (pos.contains(params.size()));
+			}
+			else
+			{
+				boolean match = false;
+				int i;
+				
+				for (i = 0; i < params.size(); i++)
+				{
+					if (posSet.contains(i))
+						continue;
+					
+					if (pos.contains(i))
 					{
-						if (par.getModifiers().getMask(Parameter.Modifier.FINAL.value()) == 
-								(param.m_finalParam ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
+						com.sourcedimensions.server.ast.Parameter param = params.get(i);
+						
+						if (!Pattern.matches(par.getName(), params.get(i).m_name))
 							continue;
+						
+						if (isCSharp)
+						{
+							if (par.getModifiers().getMask(Parameter.Modifier.OUT.value()) == 
+									(param.getKind() == ParamKind.OUT ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
+								continue;
+	
+							if (par.getModifiers().getMask(Parameter.Modifier.REF.value()) == 
+									(param.getKind() == ParamKind.REF ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
+								continue;
+						}
+						else
+						{
+							if (par.getModifiers().getMask(Parameter.Modifier.FINAL.value()) == 
+									(param.m_finalParam ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
+								continue;
+						}
+						
+						if (par.getModifiers().getMask(Parameter.Modifier.PARAMS.value()) == 
+								(param.m_varParam ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
+							continue;
+						
+						if (!matchType(session, par.getType(), param.getType(), isCSharp))
+							continue;
+					
+						posSet.add(i);
+						match = true;
+						break;
 					}
 					
-					if (par.getModifiers().getMask(Parameter.Modifier.PARAMS.value()) == 
-							(param.m_varParam ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
-						continue;
-					
-					if (!matchType(session, par.getType(), param.getType(), isCSharp))
-						continue;
-				
-					posSet.add(i);
-					match = true;
-					break;
+					if (!match)
+						return false;
 				}
-				
-				if (!match)
-					return false;
-			}			
+			}
 		}
 		
 		return true;
