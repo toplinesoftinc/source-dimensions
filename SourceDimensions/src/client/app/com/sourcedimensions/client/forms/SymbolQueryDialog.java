@@ -42,7 +42,7 @@ public class SymbolQueryDialog extends DialogBase
 	private Label m_snapshotNameLabel;
 	private TabFolder m_queryParamsTabFolder;
 	private Button m_execQueryButton;
-	private Button m_cancelButton;
+	private Button m_closeButton;
 	private Composite m_namespacesTab;
 	private Composite m_membersTab;
 	private Composite m_typesTab;
@@ -81,6 +81,7 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_queryBrowseButton;
 	private boolean m_forceClose;
 	private Button m_globalNamespaceCheckBox;
+	private Button m_saveBeforeExecCheckBox = null;
 
 	public SymbolQueryDialog(Shell parent)
 	{
@@ -155,7 +156,8 @@ public class SymbolQueryDialog extends DialogBase
 		m_shell.setLayout(null);
 		m_execQueryButton = new Button(m_shell, SWT.NONE);
 		m_saveButton = new Button(getShell(), SWT.NONE);
-		m_cancelButton = new Button(m_shell, SWT.NONE);
+		m_closeButton = new Button(m_shell, SWT.NONE);
+		m_saveBeforeExecCheckBox = new Button(getShell(), SWT.CHECK);
 		m_snapshotNameLabel = new Label(m_shell, SWT.NONE);
 		m_snapshotNameText = new Text(m_shell, SWT.BORDER | SWT.LEFT);
 		m_snapshotNameText.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
@@ -206,72 +208,29 @@ public class SymbolQueryDialog extends DialogBase
 			}
 		});
 		createQueryParamsTabFolder();
+		m_saveBeforeExecCheckBox.setBounds(new Rectangle(15, 47, 139, 16));
+		m_saveBeforeExecCheckBox.setSelection(true);
+		m_saveBeforeExecCheckBox.setText("Save &Before Execution");
 		m_queryNameLabel.setText("&Query Name:");
 		m_queryNameLabel.setLocation(new Point(334, 48));
 		m_queryNameLabel.setSize(new Point(69, 13));
-		m_saveButton.setLocation(new Point(110, 16));
+		m_saveButton.setLocation(new Point(110, 12));
 		m_saveButton.setSize(new Point(88, 25));
 		m_saveButton.setText("Sa&ve");
 		m_saveButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
-			{				
-				if (!validatePath(true))
-					return;
-			
-				String fullName = m_queryNameText.getText().trim();
-				
-				Object found;
-				
-				try
-				{
-					found = DbAdapter.findObject(ProjectView.getProject().getId(), fullName, true);
-				}
-				catch (Exception ex)
-				{
-					return;
-				}
-				
-				if (found != null)
-				{
-					if (!MessageDialog.openQuestion(m_shell, "Overwrite confirmation", "There is a query"  + 
-						" with the same name which will be deleted and re-created with new contents. Do you want to continue?" )) 
-					{
-						return;
-					}
-				}
-								
-				Integer queryId = null;
-							
-				if (found != null)
-				{		
-					queryId = ((QueryNode)found).m_id;
-					
-					try
-					{
-						DbAdapter.deleteQuery(queryId);
-					}
-					catch (Exception ex)
-					{
-						return;
-					}
-					
-					ProjectView.getQueryGroup().deleteObject(fullName.split(Folder.DIVIDER_REGEX));
-				}
-				
-				ProjectView.getQueryGroup().addQueryNode(createSymbolQuery(), queryId, fullName);
-				
-				m_forceClose = true;
-				m_shell.close();
+			{
+				saveQuery();
 			}
 		});
-		m_cancelButton.setToolTipText("Login");
-		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
-		m_cancelButton.setSize(new Point(88, 25));
-		m_cancelButton.setLocation(new Point(205, 16));
-		m_cancelButton.setText("&Cancel");
-		m_cancelButton.setSelection(true);
-		m_cancelButton.addSelectionListener(new SelectionAdapter()
+		m_closeButton.setToolTipText("Login");
+		m_closeButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
+		m_closeButton.setSize(new Point(88, 25));
+		m_closeButton.setLocation(new Point(205, 12));
+		m_closeButton.setText("&Close");
+		m_closeButton.setSelection(true);
+		m_closeButton.addSelectionListener(new SelectionAdapter()
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
@@ -282,13 +241,19 @@ public class SymbolQueryDialog extends DialogBase
 		m_execQueryButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 
 		m_execQueryButton.setSize(new Point(88, 25));
-		m_execQueryButton.setLocation(new Point(15, 16));
+		m_execQueryButton.setLocation(new Point(15, 12));
 		m_execQueryButton.setText("E&xecute");
 		m_execQueryButton.setSelection(true);
 		m_execQueryButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) 
 			{			
+				if (m_saveBeforeExecCheckBox.getSelection())
+				{
+					if (!saveQuery())
+						return;
+				}
+				
 				if (!validatePath(false))
 					return;
 			
@@ -1265,5 +1230,55 @@ public class SymbolQueryDialog extends DialogBase
 	{
 		m_forceClose = false;
 		super.open();
+	}
+	
+	protected boolean saveQuery()
+	{
+		if (!validatePath(true))
+			return false;
+	
+		String fullName = m_queryNameText.getText().trim();
+		
+		Object found;
+		
+		try
+		{
+			found = DbAdapter.findObject(ProjectView.getProject().getId(), fullName, true);
+		}
+		catch (Exception ex)
+		{
+			return false;
+		}
+		
+		if (found != null)
+		{
+			if (!MessageDialog.openQuestion(m_shell, "Overwrite confirmation", "There is a query"  + 
+				" with the same name which will be deleted and re-created with new contents. Do you want to continue?" )) 
+			{
+				return false;
+			}
+		}
+						
+		Integer queryId = null;
+					
+		if (found != null)
+		{		
+			queryId = ((QueryNode)found).m_id;
+			
+			try
+			{
+				DbAdapter.deleteQuery(queryId);
+			}
+			catch (Exception ex)
+			{
+				return false;
+			}
+			
+			ProjectView.getQueryGroup().deleteObject(fullName.split(Folder.DIVIDER_REGEX));
+		}
+		
+		ProjectView.getQueryGroup().addQueryNode(createSymbolQuery(), queryId, fullName);
+		
+		return true;
 	}
 }

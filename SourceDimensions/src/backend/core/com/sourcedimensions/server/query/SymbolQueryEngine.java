@@ -252,7 +252,7 @@ public class SymbolQueryEngine
 				}
 			}
 			
-			if (symQuery.getGlobalNamespace())
+			if (symQuery.getAllNamespaces() || symQuery.getGlobalNamespace())
 			{
 				output.addAll(executeTypeFilter(session, null, prjSpace, symQuery));
 			}
@@ -327,7 +327,7 @@ public class SymbolQueryEngine
 						if (root == null)
 						{
 							query = session.createQuery("SELECT d FROM DelegateDeclaration d INNER JOIN d.m_parent dp LEFT JOIN d.m_parameters p " + 
-								" INNER JOIN p.m_type LEFT JOIN p.m_modifiers WHERE pd.m_parent IS NULL AND d.m_project in (:projects)");
+								" INNER JOIN p.m_type LEFT JOIN p.m_modifiers WHERE dp.m_parent IS NULL AND d.m_project in (:projects)");
 							
 							query.setParameterList("projects", prjSpace);
 						}
