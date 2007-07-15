@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+
+import org.hibernate.Hibernate;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import com.sourcedimensions.client.model.BaseType;
@@ -539,18 +541,18 @@ public class SymbolQueryEngine
 		for (Object o : list)
 		{
 			InstanceCreationExpression expr = (InstanceCreationExpression)o;
-			AstNode node = expr;
+			String name = expr.getType().getName();
+			
+			if (!Pattern.matches(filter.getName(), name))
+				continue;			
 
+			AstNode node = expr;
+			
 			query = session.createQuery("SELECT p FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_id = :id");
 
 			for (query.setString("id", node.getID()) ; (node = (AstNode)query.uniqueResult()) != null ; query.setString("id", node.getID()))
-			{
-				String name = expr.getType().getName();
-				
-				if (!Pattern.matches(filter.getName(), name))
-					continue;
-				
-				if (node instanceof TypeDeclaration)
+			{										
+				if (TypeDeclaration.class.isAssignableFrom(Hibernate.getClass(node)))
 				{
 					if (node.getID().equals(root.getID()))
 					{
