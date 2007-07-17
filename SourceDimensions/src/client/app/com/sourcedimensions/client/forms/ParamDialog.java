@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Table;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.model.*;
+import com.sourcedimensions.client.model.Parameter.Position;
 
 public class ParamDialog extends DialogBase 
 {
@@ -240,7 +241,15 @@ public class ParamDialog extends DialogBase
 				
 				if (m_listPosRadioButton.getSelection())
 				{
-					m_param.setPosType(Parameter.Position.LIST);
+					if (m_posListSet.size() == 0)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",
+							"If position type \"List\" is selected then there should be at least one value specified for the list");
+						
+						return;
+					}
+					
+					m_param.setPosType(Position.LIST);
 					m_param.getPosList().clear();
 					
 					for (Integer i : m_posListSet)
@@ -250,28 +259,39 @@ public class ParamDialog extends DialogBase
 				}
 				else if (m_notLessRadioButton.getSelection())
 				{
-					m_param.setPosType(Parameter.Position.GREATEREQ);
+					m_param.setPosType(Position.GREATEREQ);
 					m_param.setPosMin(m_notLessPosSpinner.getSelection());
 				}
 				else if (m_noMoreRadioButton.getSelection())
 				{
-					m_param.setPosType(Parameter.Position.LESSEQ);
+					m_param.setPosType(Position.LESSEQ);
 					m_param.setPosMax(m_noMorePosSpinner.getSelection());
 				}
 				else if (m_exactRadioButton.getSelection())
 				{
-					m_param.setPosType(Parameter.Position.EXACT);
+					m_param.setPosType(Position.EXACT);
 					m_param.setPosValue(m_exactPosSpinner.getSelection());
 				}
 				else if (m_rangeRadioButton.getSelection())
 				{
-					m_param.setPosType(Parameter.Position.BETWEEN);
-					m_param.setPosMin(m_rangeMinSpinner.getSelection());
-					m_param.setPosMax(m_rangeMaxSpinner.getSelection());
+					int min = m_rangeMinSpinner.getSelection();
+					int max = m_rangeMaxSpinner.getSelection();
+					
+					if (min > max)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",
+							"If position type \"Range\" is selected then min.value cannot be greater than max.value");
+
+						return;
+					}
+					
+					m_param.setPosType(Position.BETWEEN);
+					m_param.setPosMin(min);
+					m_param.setPosMax(max);
 				}
 				else if (m_anyRadioButton.getSelection())
 				{
-					m_param.setPosType(Parameter.Position.ANY);
+					m_param.setPosType(Position.ANY);
 				}
 								
 				if (m_quantitativeCheckBox.getSelection())

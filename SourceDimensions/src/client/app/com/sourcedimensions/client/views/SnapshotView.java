@@ -174,6 +174,7 @@ public class SnapshotView extends EditorPart
 				case STRUCTREF:			return Util.getSharedImage(IImageKeys.IMG_STRUCT_REF);
 				case ENUMREF:				return Util.getSharedImage(IImageKeys.IMG_ENUM_REF);
 				case DELEGATEREF:			return Util.getSharedImage(IImageKeys.IMG_DELEGATE_REF);
+				case FIXEDSIZEBUFFER:		return Util.getSharedImage(IImageKeys.IMG_FIXEDSIZEBUF_DECL);
 			
 				default:
 					return null;

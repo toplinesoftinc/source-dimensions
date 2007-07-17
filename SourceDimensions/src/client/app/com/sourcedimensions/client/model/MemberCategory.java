@@ -16,7 +16,8 @@ public enum MemberCategory
 	INDEXERSET(1<<11, "INDEXER SET"),
 	OPERATOR(1<<12),
 	ENUMCONST(1<<13, "ENUM CONST."),
-	ALL(1<<14);
+	FIXEDSIZEBUF(1<<14, "FIXED SIZE BUFFER"),
+	ALL(1<<15);
 	
 	MemberCategory(int val)
 	{

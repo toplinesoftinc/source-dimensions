@@ -159,7 +159,8 @@ public class SnapshotNode
 		INTERFACEREF(31),
 		STRUCTREF(32),
 		ENUMREF(33),
-		DELEGATEREF(34);
+		DELEGATEREF(34),
+		FIXEDSIZEBUFFER(35);
 		
 		Type(int val)
 		{

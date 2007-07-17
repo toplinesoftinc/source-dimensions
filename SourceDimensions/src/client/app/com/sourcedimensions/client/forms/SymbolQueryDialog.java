@@ -776,7 +776,7 @@ public class SymbolQueryDialog extends DialogBase
 				if (str.length() > 0)
 					str += ",";
 				
-				str += CSharpMemberDialog.getOperatorName(op);
+				str += op.toString();
 			}
 		}
 		

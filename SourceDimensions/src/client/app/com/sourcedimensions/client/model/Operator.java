@@ -41,4 +41,40 @@ public enum Operator
 	{
 		return value;
 	}
+	
+	protected final static String[] m_operatorNames =
+	{
+		"+x",
+		"-x",
+		"!",
+		"~",
+		"++",
+		"--",
+		"true",
+		"false",
+		"x+y",
+		"x-y",
+		"*",
+		"/",
+		"%",
+		"&",
+		"|",
+		"^",
+		"<<",
+		">>",
+		"==",
+		"!=",
+		">",
+		"<",
+		">=",
+		"<=",
+		"Impl.Conversion",
+		"Expl.Conversion",
+		"ALL"
+	};
+
+	public String toString()
+	{
+		return m_operatorNames[(int)(Math.log(value)/Math.log(2.0))];
+	}
 }

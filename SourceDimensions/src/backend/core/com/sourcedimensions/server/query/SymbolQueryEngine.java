@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
-
 import org.hibernate.Hibernate;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -18,6 +18,7 @@ import com.sourcedimensions.client.model.BaseType;
 import com.sourcedimensions.client.model.BaseTypeCategory;
 import com.sourcedimensions.client.model.Delegate;
 import com.sourcedimensions.client.model.Folder;
+import com.sourcedimensions.client.model.MemberFilter;
 import com.sourcedimensions.client.model.Parameter;
 import com.sourcedimensions.client.model.SnapshotNode;
 import com.sourcedimensions.client.model.SymbolQuery;
@@ -28,10 +29,20 @@ import com.sourcedimensions.client.model.TypeFilter;
 import com.sourcedimensions.client.model.SnapshotNode.Reference;
 import com.sourcedimensions.client.model.SnapshotNode.Type;
 import com.sourcedimensions.client.model.Type.Property;
+import com.sourcedimensions.server.ast.AbstractMember;
 import com.sourcedimensions.server.ast.AstNode;
+import com.sourcedimensions.server.ast.DataMember;
+import com.sourcedimensions.server.ast.Declarator;
 import com.sourcedimensions.server.ast.DelegateDeclaration;
+import com.sourcedimensions.server.ast.EnumConstMember;
+import com.sourcedimensions.server.ast.EventMember;
+import com.sourcedimensions.server.ast.FixedSizeBufDeclarator;
+import com.sourcedimensions.server.ast.FixedSizeBufMember;
+import com.sourcedimensions.server.ast.FunctionalMember;
+import com.sourcedimensions.server.ast.IndexerMember;
 import com.sourcedimensions.server.ast.InstanceCreationExpression;
 import com.sourcedimensions.server.ast.Modifier;
+import com.sourcedimensions.server.ast.PropertyMember;
 import com.sourcedimensions.server.ast.SimpleType;
 import com.sourcedimensions.server.ast.TypeDeclaration;
 import com.sourcedimensions.server.ast.TypeDeclarationMember;
@@ -40,9 +51,13 @@ import com.sourcedimensions.server.ast.Modifier.ModifierKind;
 import com.sourcedimensions.server.ast.TypeDeclaration.TypeDeclKind;
 import com.sourcedimensions.server.sys.Project;
 import com.sourcedimensions.server.sys.SourceFile;
+import com.sourcedimensions.server.sys.Project.Language;
 import com.sourcedimensions.server.sys.profile.Database;
 import com.sourcedimensions.server.utils.DatabaseHelper;
 import com.sourcedimensions.server.ast.Parameter.ParamKind;
+import com.sourcedimensions.client.model.MemberCategory;
+import com.sourcedimensions.client.model.Operator;
+import com.sourcedimensions.server.ast.Name;
 
 
 public class SymbolQueryEngine 
@@ -111,7 +126,7 @@ public class SymbolQueryEngine
 		
 		if (root == null)
 		{
-			SortedMap<String, namespaceNode> nodeMap = new TreeMap<String, namespaceNode>();
+			SortedMap<String, NamespaceNode> nodeMap = new TreeMap<String, NamespaceNode>();
 			List<String> namespaceFilter = new ArrayList<String>();
 			
 			if (symQuery.getAllNamespaces())
@@ -238,7 +253,7 @@ public class SymbolQueryEngine
 				
 			List<SnapshotNode> output = new ArrayList<SnapshotNode>();
 			
-			for (namespaceNode n : nodeMap.values())
+			for (NamespaceNode n : nodeMap.values())
 			{
 				output.add(n.m_node);
 				
@@ -261,12 +276,10 @@ public class SymbolQueryEngine
 				
 			return output;			
 		}
-		else if (root.getKind() == TypeDeclKind.NAMESPACE)
+		else
 		{
 			return executeTypeFilter(session, root, prjSpace, symQuery);
 		}
-		
-		return null;
 	}
 
 	protected List<SnapshotNode> executeTypeFilter(Session session, TypeDeclaration root, Set<Project> prjSpace, SymbolQuery symQuery)
@@ -522,13 +535,610 @@ public class SymbolQueryEngine
 					case JAVA_15:
 						if ((filter.getCategories() & TypeCategory.ANONYMCLASS.value()) != 0)
 							snapshot.getChildren().addAll(execAnonymClassFilter(session, decl, decl.getSourceFile(), filter));
-				}					
+				}
+		
+				if (root != null && root.getKind() != TypeDeclKind.NAMESPACE)
+					output.addAll(executeMemberFilter(session, root, prjSpace, symQuery));
+				
+				snapshot.getChildren().addAll(executeMemberFilter(session, decl, prjSpace, symQuery));
 			}
 		}
 		
 		return output;
 	}
 
+	protected List<SnapshotNode> executeMemberFilter(Session session, TypeDeclaration root, Set<Project> prjSpace, SymbolQuery symQuery)
+	{
+		List<MemberFilter> memberFilter = new ArrayList<MemberFilter>();
+		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
+		Set<String> idSet = new HashSet<String>();
+		Project prj = (Project)prjSpace.toArray()[0];
+		boolean isCSharp = (prj.getLanguage() == Language.CSHARP_11 || prj.getLanguage() == Language.CSHARP_20);
+		Map<String, Integer> nameCount = new HashMap<String, Integer>();
+		Type snapshotType = null;
+		
+		if (symQuery.getAllMembers())
+		{
+			MemberFilter filter = new  MemberFilter();
+			com.sourcedimensions.client.model.Type type = new com.sourcedimensions.client.model.Type();
+			TriStateMask mask = new TriStateMask();
+			mask.setAny();
+							
+			filter.setCategories(~0);
+			filter.setModifiers(mask);
+			filter.setOperators(~0);
+			filter.setAnyParams(true);
+			filter.setAnyThrows(true);
+			filter.setName(".*");
+			
+			type.setTypeProps(mask);
+			type.setName(".*");
+			filter.setType(type);
+			
+			memberFilter.add(filter);
+		}
+		else
+		{
+			memberFilter.addAll(symQuery.getMemberFilter());
+		}
+		
+		Query query = session.createQuery("FROM AbstractMember INNER JOIN m_file WHERE m_parent = :parent");
+		query.setEntity("parent", root);
+		
+		List list = query.list();
+		
+		List<MemberEntry> members = new ArrayList<MemberEntry>(); 
+		List<MemberEntry> validMembers = new ArrayList<MemberEntry>();
+		
+		for (MemberFilter filter : memberFilter)
+		{
+			for (Object o : list)
+			{
+				Hibernate.initialize(o);
+				AbstractMember member = (AbstractMember)o;
+
+				if (idSet.contains(member.getID()))
+					continue;
+				
+				boolean skip = false;
+				
+				members.clear();
+				validMembers.clear();
+				
+				if (!matchModifiers(member.m_modifiers, filter.getModifiers()))
+					continue;
+
+				if (member instanceof DataMember)
+				{
+					DataMember m = (DataMember)member;
+					snapshotType = Type.FIELD;
+					
+					switch (m.getKind())
+					{
+						case FIELD:
+							if ((filter.getCategories() & MemberCategory.FIELD.value()) == 0)
+								skip = true;
+							break;
+							
+						case CONST:
+							if ((filter.getCategories() & MemberCategory.CONSTANT.value()) == 0)
+								skip = true;
+					}
+					
+					Iterator<Declarator> iter = m.m_declarators.iterator();
+					
+					while (iter.hasNext())
+					{
+						Declarator d = iter.next();
+						members.add(new MemberEntry(d.m_name, d));
+					}
+				}
+				else if (member instanceof FunctionalMember)
+				{
+					FunctionalMember m = (FunctionalMember)member;
+					
+					switch (m.getKind())
+					{
+						case CONSTRUCTOR:
+							if ((filter.getCategories() & MemberCategory.CONSTRUCTOR.value()) == 0)
+								skip = true;
+							else
+								validMembers.add(createMemberEntry(root.m_name, member, nameCount));
+							
+							snapshotType = Type.CONSTRUCTOR;
+							break;
+							
+						case DESTRUCTOR:
+							if ((filter.getCategories() & MemberCategory.DESTRUCTOR.value()) == 0)
+								skip = true;
+							else
+								validMembers.add(createMemberEntry("~" + root.m_name, member, nameCount));
+
+							snapshotType = Type.DESTRUCTOR;							
+							break;
+							
+						case METHOD:
+						case ABSTRACT_METHOD:
+							if ((filter.getCategories() & MemberCategory.METHOD.value()) == 0)
+								skip = true;
+							else
+								members.add(new MemberEntry(getQNameStr(m.m_name), member));
+							
+							snapshotType = Type.METHOD;
+							break;
+							
+						case UPLUS_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.UNARYPLUS.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.UNARYPLUS.toString(), member, nameCount));
+							
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case UMINUS_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.UNARYMINUS.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.UNARYMINUS.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case NOT_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.NOT.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.NOT.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case INV_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.COMPLEMENT.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.COMPLEMENT.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case INC_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.INCREMENT.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.INCREMENT.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case DEC_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.DECREMENT.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.DECREMENT.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case TRUE_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.TRUE.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.TRUE.toString(), member, nameCount));							
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case FALSE_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.FALSE.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.FALSE.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case PLUS_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.PLUS.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.PLUS.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case MINUS_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.MINUS.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.MINUS.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case MULT_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.MULT.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.MULT.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case DIV_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.DIVISION.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.DIVISION.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case REM_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.REMINDER.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.REMINDER.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case AND_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.BITWISEAND.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.BITWISEAND.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case OR_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.BITWISEOR.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.BITWISEOR.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case XOR_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.BITWISEXOR.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.BITWISEXOR.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case LSHIFT_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.LSHIFT.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.LSHIFT.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case RSHIFT_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.RSHIFT.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.RSHIFT.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case EQUAL_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.EQ.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.EQ.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case NOT_EQ_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.NOTEQ.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.NOTEQ.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case LESS_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.LESS.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.LESS.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case GT_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.GT.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.GT.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case LESS_EQ_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.LESSEQ.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.LESSEQ.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case GT_EQ_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.GTEQ.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.GTEQ.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case IMP_CONV_OPERATOR:
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.IMPLCONV.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.IMPLCONV.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+							break;
+							
+						case EXP_CONV_OPERATOR:					
+							if ((filter.getCategories() & MemberCategory.OPERATOR.value()) == 0)
+								skip = true;
+							else
+								if ((filter.getOperators() & Operator.EXPLCONV.value()) == 0)
+									skip = true;
+								else
+									validMembers.add(createMemberEntry(Operator.EXPLCONV.toString(), member, nameCount));
+
+							snapshotType = Type.OPERATOR;							
+					}
+					
+					if (!skip)
+					{
+						if (!isCSharp && !filter.getAnyThrows())
+						{
+							for (String fltr : filter.getThrowList())
+							{
+								skip = true;
+								
+								for (com.sourcedimensions.server.ast.Type t : m.m_throwList)
+								{
+									if (Pattern.matches(fltr, t.getName()))
+									{
+										skip = false;
+										break;
+									}
+								}
+								
+								if (skip)
+									break;
+							}
+						}
+						
+						if (!skip)
+							if (!matchParams(session, filter.getParamList(), m.m_parameters, isCSharp))
+								skip = true;
+					}
+				}
+				else if (member instanceof EventMember)
+				{
+					EventMember m = (EventMember)member;					
+
+					if ((filter.getCategories() & MemberCategory.EVENTADD.value()) == 0 &&
+							(filter.getCategories() & MemberCategory.EVENTREMOVE.value()) == 0)
+						skip = true;
+					else if ((filter.getCategories() & MemberCategory.EVENTADD.value()) != 0 && m.getAddAccessor() == null)
+						skip = true;
+					else if ((filter.getCategories() & MemberCategory.EVENTREMOVE.value()) != 0 && m.getRemoveAccessor() == null)
+						skip = true;
+					else
+					{
+						members.add(new MemberEntry(getQNameStr(m.m_name), member));
+						
+						if (m.getAddAccessor() == null)
+							snapshotType = Type.EVENTREMOVE;
+						else if (m.getRemoveAccessor() == null)
+							snapshotType = Type.EVENTREMOVE;
+						else
+							snapshotType = Type.EVENT;							
+					}
+				}
+				else if (member instanceof PropertyMember)
+				{
+					PropertyMember m = (PropertyMember)member;
+					
+					if ((filter.getCategories() & MemberCategory.PROPERTYGET.value()) == 0 &&
+							(filter.getCategories() & MemberCategory.PROPERTYSET.value()) == 0)
+						skip = true;
+					else if ((filter.getCategories() & MemberCategory.PROPERTYGET.value()) != 0 && m.getGetAccessor() == null)
+						skip = true;
+					else if ((filter.getCategories() & MemberCategory.PROPERTYSET.value()) != 0 && m.getSetAccessor() == null)
+						skip = true;
+					else
+					{
+						members.add(new MemberEntry(getQNameStr(m.m_name), member));
+						
+						if (m.getGetAccessor() == null)
+							snapshotType = Type.PROPERTYSET;
+						else if (m.getSetAccessor() == null)
+							snapshotType = Type.PROPERTYGET;
+						else
+							snapshotType = Type.PROPERTY;
+					}
+				}
+				else if (member instanceof IndexerMember)
+				{
+					IndexerMember m = (IndexerMember)member;
+					
+					if ((filter.getCategories() & MemberCategory.INDEXERGET.value()) == 0 &&
+							(filter.getCategories() & MemberCategory.INDEXERSET.value()) == 0)
+						skip = true;
+					else if ((filter.getCategories() & MemberCategory.INDEXERGET.value()) != 0 && m.getGetAccessor() == null)
+						skip = true;
+					else if ((filter.getCategories() & MemberCategory.INDEXERSET.value()) != 0 && m.getSetAccessor() == null)
+						skip = true;
+					
+					if (!skip)
+					{
+						if (!matchParams(session, filter.getParamList(), m.m_parameters, isCSharp))
+							skip = true;
+						else
+							members.add(new MemberEntry(getQNameStr(m.m_name), member));
+						
+						if (m.getGetAccessor() == null)
+							snapshotType = Type.INDEXERSET;
+						else if (m.getSetAccessor() == null)
+							snapshotType = Type.INDEXERGET;
+						else
+							snapshotType = Type.INDEXER;						
+					}
+				}
+				else if (member instanceof FixedSizeBufMember)
+				{
+					FixedSizeBufMember m = (FixedSizeBufMember)member;
+					
+					if ((filter.getCategories() & MemberCategory.FIXEDSIZEBUF.value()) != 0)
+						skip = true;
+					else
+					{
+						Iterator<FixedSizeBufDeclarator> iter = m.m_declarators.iterator();
+						
+						while (iter.hasNext())
+						{
+							FixedSizeBufDeclarator d = iter.next();
+							members.add(new MemberEntry(d.m_name, d));
+						}
+						
+						snapshotType = Type.FIXEDSIZEBUFFER;
+					}
+				}
+				else if (member instanceof EnumConstMember)
+				{
+					EnumConstMember m = (EnumConstMember)member;
+					
+					if ((filter.getCategories() & MemberCategory.ENUMCONST.value()) != 0)
+						skip = true;
+					else
+						members.add(new MemberEntry(m.m_name, member));
+					
+					snapshotType = Type.ENUMCONST;
+				}
+				
+				if (skip)
+					continue;
+				
+				for (MemberEntry m : members)
+				{
+					if (Pattern.matches(filter.getName(), m.m_name))
+						validMembers.add(createMemberEntry(m.m_name, m.m_node, nameCount));
+				}
+				
+				if (validMembers.size() == 0)
+					continue;
+				
+				for (MemberEntry m : validMembers)
+				{
+					idSet.add(m.m_node.getID());
+					
+					SnapshotNode snapshot = new SnapshotNode(snapshotType, m.m_name);
+					
+					snapshot.setRefs(new ArrayList<Reference>());
+					snapshot.getRefs().add(new Reference(m.m_node.getID(), m.m_node.getSourceFile().getID(), m.m_node.m_left, m.m_node.m_right));
+					
+					output.add(snapshot);					
+				}
+			}
+		}				
+		
+		return output;
+	}
+	
 	protected List<SnapshotNode> execAnonymClassFilter(Session session, TypeDeclaration root, SourceFile file, TypeFilter filter)
 	{
 		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
@@ -923,14 +1533,14 @@ public class SymbolQueryEngine
 		return true;
 	}
 	
-	protected void addNamespace(TypeDeclaration decl, String name, String fileId, Map<String, namespaceNode> nodeMap)
+	protected void addNamespace(TypeDeclaration decl, String name, String fileId, Map<String, NamespaceNode> nodeMap)
 	{
-		namespaceNode n = nodeMap.get(name);		
+		NamespaceNode n = nodeMap.get(name);		
 		Reference ref = new Reference(decl.getID(), fileId, decl.m_left, decl.m_right);
 		
 		if (n == null)
 		{
-			n = new namespaceNode();
+			n = new NamespaceNode();
 			
 			n.m_node = new SnapshotNode(Type.NAMESPACE, name);
 			nodeMap.put(name, n);
@@ -941,9 +1551,55 @@ public class SymbolQueryEngine
 		n.m_node.getRefs().add(ref);
 	}	
 	
-	protected class namespaceNode
+	
+	protected String getQNameStr(List<Name> name)
+	{
+		String qname = "";
+		
+		for (int i = 0; i < name.size(); i++)
+		{
+			if (i > 0)
+				qname += ".";
+			
+			qname += name.get(i);
+		}
+		
+		return qname;		
+	}
+	
+	protected MemberEntry createMemberEntry(String name, AstNode node, Map<String, Integer> nameCount)
+	{
+		MemberEntry entry = new MemberEntry(name, node);
+		Integer count = nameCount.get(name);
+		
+		if (count == null)
+		{
+			nameCount.put(name, 1);
+		}
+		else
+		{
+			count++;
+			entry.m_name += ":" + count.toString();
+		}
+		
+		return entry;
+	}
+	
+	protected class NamespaceNode
 	{
 		public SnapshotNode m_node;
 		public Set<TypeDeclaration> m_declSet = new HashSet<TypeDeclaration>();
+	}
+	
+	protected class MemberEntry
+	{
+		public MemberEntry(String name, AstNode node)
+		{
+			m_name = name;
+			m_node = node;
+		}
+		
+		public String m_name;
+		public AstNode m_node;
 	}
 }

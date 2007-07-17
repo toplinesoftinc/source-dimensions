@@ -45,4 +45,5 @@ public interface IImageKeys
 	public final static String IMG_STRUCT_REF = "icons/snapshot/struct_ref.png";
 	public final static String IMG_ENUM_REF = "icons/snapshot/enum_ref.png";
 	public final static String IMG_DELEGATE_REF = "icons/snapshot/delegate_ref.png";
+	public final static String IMG_FIXEDSIZEBUF_DECL = "icons/snapshot/fixedsizebuf_decl.png";	
 }

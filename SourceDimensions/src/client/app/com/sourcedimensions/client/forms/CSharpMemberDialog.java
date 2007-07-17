@@ -52,6 +52,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		MemberCategory.INDEXERGET,
 		MemberCategory.INDEXERSET,
 		MemberCategory.OPERATOR,
+		MemberCategory.FIXEDSIZEBUF,
 		MemberCategory.ALL
 	};
 	private final static Modifier[] m_modifierArray =
@@ -71,36 +72,6 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		Modifier.VOLATILE,
 		Modifier.UNSAFE,
 		Modifier.ALL
-	};
-	protected final static String[] m_operatorNames =
-	{
-		"+x",
-		"-x",
-		"!",
-		"~",
-		"++",
-		"--",
-		"true",
-		"false",
-		"x+y",
-		"x-y",
-		"*",
-		"/",
-		"%",
-		"&",
-		"|",
-		"^",
-		"<<",
-		">>",
-		"==",
-		"!=",
-		">",
-		"<",
-		">=",
-		"<=",
-		"Impl.Conversion",
-		"Expl.Conversion",
-		"ALL"
 	};
 
 	private Group m_typeGroup;
@@ -176,7 +147,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		
 		m_shell.setText("Member Filter");
 		m_shell.setImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/img16.gif")));
-		m_shell.setSize(new Point(638, 563));
+		m_shell.setSize(new Point(658, 563));
 		m_shell.setLayout(null);
 		m_memberCategoryLabel = new Label(getShell(), SWT.NONE);
 		m_memberCategoryLabel.setText("Member Cate&gories:");
@@ -185,7 +156,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_memberCategoryList = new Table(getShell(), SWT.HIDE_SELECTION | SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
 		m_memberCategoryList.setHeaderVisible(false);
 		m_memberCategoryList.setLinesVisible(false);
-		m_memberCategoryList.setBounds(new Rectangle(17, 22, 122, 233));
+		m_memberCategoryList.setBounds(new Rectangle(17, 22, 133, 248));
 		m_memberCategoryList.addSelectionListener(new AllItemsAdapter());
 		m_memberCategoryList.addSelectionListener(new SelectionAdapter() 
 		{
@@ -200,28 +171,28 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		{
 			new TableItem(m_memberCategoryList, 0, i).setText(m_categoryArray[i].toString());
 		}				
-		m_modifierListLabel.setBounds(new Rectangle(152, 8, 53, 13));
+		m_modifierListLabel.setBounds(new Rectangle(163, 8, 53, 13));
 		m_modifierListLabel.setText("Mo&difiers:");
 		m_modifierList.setHeaderVisible(false);
 		m_modifierList.setLinesVisible(false);
-		m_modifierList.setBounds(new Rectangle(151, 22, 107, 233));
+		m_modifierList.setBounds(new Rectangle(163, 22, 107, 248));
 		m_modifierList.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_modifierList.addSelectionListener(new AllItemsAdapter());
 		createTypeGroup();
 		m_memberNameLabel = new Label(getShell(), SWT.NONE);
 		m_memberNameLabel.setText("&Member Name Filter:");
-		m_memberNameLabel.setLocation(new Point(269, 194));
+		m_memberNameLabel.setLocation(new Point(281, 194));
 		m_memberNameLabel.setSize(new Point(106, 13));
 		m_memberNameText = new Text(getShell(), SWT.BORDER);
-		m_memberNameText.setBounds(new Rectangle(269, 209, 218, 19));
+		m_memberNameText.setBounds(new Rectangle(281, 210, 218, 19));
 		m_operatorsLabel = new Label(getShell(), SWT.NONE);
 		m_operatorsLabel.setText("&Operators:");
-		m_operatorsLabel.setLocation(new Point(499, 87));
+		m_operatorsLabel.setLocation(new Point(514, 86));
 		m_operatorsLabel.setSize(new Point(65, 13));
 		m_operatorList = new Table(getShell(), SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
 		m_operatorList.setHeaderVisible(false);
 		m_operatorList.setLinesVisible(false);
-		m_operatorList.setBounds(new Rectangle(499, 101, 116, 417));
+		m_operatorList.setBounds(new Rectangle(514, 101, 116, 417));
 		m_operatorList.addSelectionListener(new AllItemsAdapter());
 		m_anyParamsCheckBox = new Button(getShell(), SWT.CHECK);
 		m_anyParamsCheckBox.addSelectionListener(new SelectionAdapter() 
@@ -238,7 +209,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_paramsTable.setHeaderVisible(true);
 		m_paramsTable.setLinesVisible(true);
 		m_paramsTable.setEnabled(false);
-		m_paramsTable.setBounds(new Rectangle(17, 312, 470, 206));
+		m_paramsTable.setBounds(new Rectangle(17, 312, 482, 206));
 		double width = m_paramsTable.getBounds().width - 2 * m_paramsTable.getBorderWidth(); 
 		TableColumn column = new TableColumn(m_paramsTable, SWT.LEFT, 0);
 		column.setWidth((int)(0.13 * width));
@@ -276,7 +247,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 			}			
 		});		
 		m_addParamButton = new Button(getShell(), SWT.NONE);
-		m_addParamButton.setLocation(new Point(209, 284));
+		m_addParamButton.setLocation(new Point(221, 283));
 		m_addParamButton.setText("A&dd Filter...");
 		m_addParamButton.setEnabled(false);
 		m_addParamButton.setSize(new Point(88, 25));
@@ -288,7 +259,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 			}
 		});
 		m_editParamButton = new Button(getShell(), SWT.NONE);
-		m_editParamButton.setLocation(new Point(304, 284));
+		m_editParamButton.setLocation(new Point(316, 283));
 		m_editParamButton.setText("&Edit Filter...");
 		m_editParamButton.setEnabled(false);
 		m_editParamButton.setSize(new Point(88, 25));
@@ -300,7 +271,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 			}
 		});
 		m_removeParamButton = new Button(getShell(), SWT.NONE);
-		m_removeParamButton.setLocation(new Point(399, 284));
+		m_removeParamButton.setLocation(new Point(411, 283));
 		m_removeParamButton.setText("&Remove Filter");
 		m_removeParamButton.setEnabled(false);
 		m_removeParamButton.setSize(new Point(88, 25));
@@ -309,7 +280,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_okButton = new Button(getShell(), SWT.NONE);
 		m_okButton.setText("O&k");
 		m_okButton.setSize(new Point(88, 25));
-		m_okButton.setLocation(new Point(528, 22));
+		m_okButton.setLocation(new Point(543, 17));
 		m_okButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e)
@@ -431,7 +402,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_cancelButton = new Button(getShell(), SWT.NONE);
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setSize(new Point(88, 25));
-		m_cancelButton.setLocation(new Point(528, 57));
+		m_cancelButton.setLocation(new Point(543, 52));
 		m_cancelButton.addSelectionListener(new SelectionAdapter() 
 		{
 			public void widgetSelected(SelectionEvent e) 
@@ -439,13 +410,13 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 				cancelClose();
 			}
 		});
-		m_anyParamsCheckBox.setBounds(new Rectangle(269, 242, 104, 13));
+		m_anyParamsCheckBox.setBounds(new Rectangle(281, 241, 104, 13));
 		m_anyParamsCheckBox.setText("An&y Parameters");
 		m_anyParamsCheckBox.setSelection(true);
 	
 		for (Operator op : Operator.values())
 		{
-			new TableItem(m_operatorList, 0).setText(getOperatorName(op));
+			new TableItem(m_operatorList, 0).setText(op.toString());
 		}
 		
 		for (int i = 0; i < m_modifierArray.length; i++)
@@ -515,7 +486,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		m_typeGroup = new Group(getShell(), SWT.NONE);
 		m_typeGroup.setText("&Type/Return Type");
 		m_typeGroup.setLayout(null);
-		m_typeGroup.setLocation(new Point(270, 17));
+		m_typeGroup.setLocation(new Point(282, 18));
 		m_typeGroup.setSize(new Point(218, 159));
 		m_typePropsLabel = new Label(m_typeGroup, SWT.NONE);
 		m_typePropsList = new Table(m_typeGroup, SWT.HIDE_SELECTION | SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION);
@@ -535,10 +506,5 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		{
 			new TableItem(m_typePropsList, 0, i).setText(values[i].toString());
 		}					
-	}
-
-	public static String getOperatorName(Operator op)
-	{
-		return m_operatorNames[(int)(Math.log(op.value())/Math.log(2.0))];
 	}
 }
