@@ -704,7 +704,7 @@ public class DbAdapter
 			c = getConnection();
 			
 			PreparedStatement ps = c.prepareStatement("SELECT * FROM snapshot_node " +
-				"WHERE snapshot_id = ? AND (parent_id = ? OR (parent_id IS NULL AND ? IS NULL))");
+				"WHERE snapshot_id = ? AND (parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) ORDER BY type, label");
 			
 			ps.setInt(1, snapshotId);
 			
@@ -2278,8 +2278,8 @@ public class DbAdapter
 		String[][] spec = 
 		{
 			{
-				"PROJECT",
-				"id INT GENERATED ALWAYS AS IDENTITY",
+				"PROJECT",								/* Table name */
+				"id INT GENERATED ALWAYS AS IDENTITY",	/* Fields */
 				"ext_id VARCHAR(36)",
 				"name VARCHAR(1024) NOT NULL",
 				"language INT NOT NULL",
@@ -2477,12 +2477,43 @@ public class DbAdapter
 				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"
 			}
 		};
-	
+
+		String[][] indexes = 
+		{
+				{
+					"IDX_SNAPSHOT_NODE",	/* Index name */
+					"SNAPSHOT_NODE",		/* Table name */
+					"parent_id",			/* Index fields */
+					"type",
+					"label"
+				}
+		};
+		
 		for (String[] stmt : spec)
 		{
 			String sql = "CREATE TABLE " + stmt[0] + " (";
 			
 			for (int i = 1; i < stmt.length; i++)
+			{
+				sql += stmt[i];
+				
+				if (i < stmt.length - 1)
+					sql += ",";
+			}
+			
+			sql += ")";
+			
+			Statement s = c.createStatement();
+			s.execute(sql);
+			s.close();
+		}
+		
+		
+		for (String[] stmt : indexes)
+		{
+			String sql = "CREATE INDEX " + stmt[0] + " ON " + stmt[1] + "(";
+			
+			for (int i = 2; i < stmt.length; i++)
 			{
 				sql += stmt[i];
 				

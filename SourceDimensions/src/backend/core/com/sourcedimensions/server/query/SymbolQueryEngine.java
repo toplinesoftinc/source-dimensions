@@ -286,7 +286,7 @@ public class SymbolQueryEngine
 	{
 		List<TypeFilter> typeFilter = new ArrayList<TypeFilter>();
 		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
-		Set<String> nameSet = new HashSet<String>();
+		Set<String> idSet = new HashSet<String>();
 		
 		if (symQuery.getAllTypes())
 		{
@@ -360,7 +360,7 @@ public class SymbolQueryEngine
 						{
 							DelegateDeclaration decl = (DelegateDeclaration)obj;
 							
-							if (nameSet.contains(decl.m_name))
+							if (idSet.contains(decl.getID()))
 								continue;
 							
 							if (!Pattern.matches(delegate.getName(), decl.m_name))
@@ -382,7 +382,7 @@ public class SymbolQueryEngine
 							
 							output.add(snapshot);
 							
-							nameSet.add(decl.m_name);
+							idSet.add(decl.getID());
 						}							
 					}
 			}
@@ -391,7 +391,7 @@ public class SymbolQueryEngine
 			{
 				TypeDeclaration decl = (TypeDeclaration)o;
 
-				if (nameSet.contains(decl.m_name))
+				if (idSet.contains(decl.getID()))
 					continue;
 				
 				if (!Pattern.matches(filter.getName(), decl.m_name))
@@ -522,7 +522,7 @@ public class SymbolQueryEngine
 				
 				output.add(snapshot);
 			
-				nameSet.add(decl.m_name);
+				idSet.add(decl.getID());
 				
 				snapshot.setChildren(new ArrayList<SnapshotNode>());
 				
@@ -536,10 +536,7 @@ public class SymbolQueryEngine
 						if ((filter.getCategories() & TypeCategory.ANONYMCLASS.value()) != 0)
 							snapshot.getChildren().addAll(execAnonymClassFilter(session, decl, decl.getSourceFile(), filter));
 				}
-		
-				if (root != null && root.getKind() != TypeDeclKind.NAMESPACE)
-					output.addAll(executeMemberFilter(session, root, prjSpace, symQuery));
-				
+						
 				snapshot.getChildren().addAll(executeMemberFilter(session, decl, prjSpace, symQuery));
 			}
 		}
@@ -582,7 +579,7 @@ public class SymbolQueryEngine
 			memberFilter.addAll(symQuery.getMemberFilter());
 		}
 		
-		Query query = session.createQuery("FROM AbstractMember INNER JOIN m_file WHERE m_parent = :parent");
+		Query query = session.createQuery("SELECT m FROM AbstractMember m INNER JOIN m.m_file WHERE m.m_parent = :parent");
 		query.setEntity("parent", root);
 		
 		List list = query.list();
@@ -630,6 +627,10 @@ public class SymbolQueryEngine
 					while (iter.hasNext())
 					{
 						Declarator d = iter.next();
+						
+						if (idSet.contains(d.getID()))
+							break;
+						
 						members.add(new MemberEntry(d.m_name, d));
 					}
 				}
@@ -1001,7 +1002,7 @@ public class SymbolQueryEngine
 							}
 						}
 						
-						if (!skip)
+						if (!skip && !filter.getAnyParams())
 							if (!matchParams(session, filter.getParamList(), m.m_parameters, isCSharp))
 								skip = true;
 					}
@@ -1092,6 +1093,10 @@ public class SymbolQueryEngine
 						while (iter.hasNext())
 						{
 							FixedSizeBufDeclarator d = iter.next();
+							
+							if (idSet.contains(d.getID()))
+								break;
+							
 							members.add(new MemberEntry(d.m_name, d));
 						}
 						
@@ -1437,6 +1442,9 @@ public class SymbolQueryEngine
 	protected boolean matchParams(Session session, List<Parameter> filter, 
 		List<com.sourcedimensions.server.ast.Parameter> params, boolean isCSharp)
 	{
+		if (filter == null)
+			return false;
+		
 		Set<Integer> posSet = new HashSet<Integer>();
 		
 		for (Parameter par : filter)
@@ -1561,7 +1569,7 @@ public class SymbolQueryEngine
 			if (i > 0)
 				qname += ".";
 			
-			qname += name.get(i);
+			qname += name.get(i).m_name;
 		}
 		
 		return qname;		
