@@ -99,6 +99,18 @@ public class SymbolQueryDialog extends DialogBase
 
 		m_globalNamespaceCheckBox.setSelection(query.getGlobalNamespace());
 		
+		m_allNamespacesCheckBox.setSelection(query.getAllNamespaces());
+		allNamespacesSelectionChanged();
+		
+		m_allTypesCheckBox.setSelection(query.getAllTypes());
+		allTypesSelectionChanged();
+		
+		m_allMembersCheckBox.setSelection(query.getAllMembers());
+		allMembersSelectionChanged();
+		
+		m_allLocalDeclCheckBox.setSelection(query.getAllLocalDecls());
+		allLocalDeclSelectionChanged();
+		
 		if (query.getNamespaceFilter() != null)
 		{
 			for (String namespace : query.getNamespaceFilter())
@@ -394,13 +406,7 @@ public class SymbolQueryDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				boolean sel = m_allNamespacesCheckBox.getSelection();
-				
-				m_namespaceFilterTable.setEnabled(!sel);
-				m_addNamespaceFilterButton.setEnabled(!sel);
-				m_editNamespaceFilterButton.setEnabled(!sel);
-				m_removeNamespaceFilterButton.setEnabled(!sel);
-				m_globalNamespaceCheckBox.setEnabled(!sel);
+				allNamespacesSelectionChanged();				
 			}
 		});
 	}
@@ -417,12 +423,7 @@ public class SymbolQueryDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				boolean sel = m_allMembersCheckBox.getSelection();
-
-				m_memberFilterTable.setEnabled(!sel);
-				m_addMemberFilterButton.setEnabled(!sel);
-				m_editMemberFilterButton.setEnabled(!sel);
-				m_removeMemberFilterButton.setEnabled(!sel);
+				allMembersSelectionChanged();
 			}
 		});
 		m_memberFilterListLabel = new Label(m_membersTab, SWT.NONE);
@@ -574,12 +575,7 @@ public class SymbolQueryDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				boolean sel = m_allTypesCheckBox.getSelection();
-
-				m_typeFilterTable.setEnabled(!sel);
-				m_addTypeFilterButton.setEnabled(!sel);
-				m_editTypeFilterButton.setEnabled(!sel);
-				m_removeTypeFilterButton.setEnabled(!sel);
+				allTypesSelectionChanged();
 			}
 		});
 		m_typeFilterTable = new Table(m_typesTab, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
@@ -1137,12 +1133,7 @@ public class SymbolQueryDialog extends DialogBase
 		{
 			public void widgetSelected(SelectionEvent e) 
 			{
-				boolean sel = m_allLocalDeclCheckBox.getSelection();
-				
-				m_localDeclFilterTable.setEnabled(!sel);
-				m_addFilterButton.setEnabled(!sel);
-				m_editFilterButton.setEnabled(!sel);
-				m_removeFilterButton.setEnabled(!sel);
+				allLocalDeclSelectionChanged();
 			}
 		});
 		m_localDeclFilterTable = new Table(m_localDeclarationsTab, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
@@ -1280,5 +1271,47 @@ public class SymbolQueryDialog extends DialogBase
 		ProjectView.getQueryGroup().addQueryNode(createSymbolQuery(), queryId, fullName);
 		
 		return true;
+	}
+	
+	protected void allNamespacesSelectionChanged()
+	{
+		
+		boolean sel = m_allNamespacesCheckBox.getSelection();
+		
+		m_namespaceFilterTable.setEnabled(!sel);
+		m_addNamespaceFilterButton.setEnabled(!sel);
+		m_editNamespaceFilterButton.setEnabled(!sel);
+		m_removeNamespaceFilterButton.setEnabled(!sel);
+		m_globalNamespaceCheckBox.setEnabled(!sel);		
+	}
+	
+	protected void allTypesSelectionChanged()
+	{
+		boolean sel = m_allTypesCheckBox.getSelection();
+
+		m_typeFilterTable.setEnabled(!sel);
+		m_addTypeFilterButton.setEnabled(!sel);
+		m_editTypeFilterButton.setEnabled(!sel);
+		m_removeTypeFilterButton.setEnabled(!sel);		
+	}
+
+	protected void allMembersSelectionChanged()
+	{
+		boolean sel = m_allMembersCheckBox.getSelection();
+
+		m_memberFilterTable.setEnabled(!sel);
+		m_addMemberFilterButton.setEnabled(!sel);
+		m_editMemberFilterButton.setEnabled(!sel);
+		m_removeMemberFilterButton.setEnabled(!sel);
+	}
+		
+	protected void allLocalDeclSelectionChanged()
+	{
+		boolean sel = m_allLocalDeclCheckBox.getSelection();
+		
+		m_localDeclFilterTable.setEnabled(!sel);
+		m_addFilterButton.setEnabled(!sel);
+		m_editFilterButton.setEnabled(!sel);
+		m_removeFilterButton.setEnabled(!sel);		
 	}
 }

@@ -160,7 +160,8 @@ public class SnapshotNode
 		STRUCTREF(32),
 		ENUMREF(33),
 		DELEGATEREF(34),
-		FIXEDSIZEBUFFER(35);
+		FIXEDSIZEBUFFER(35),
+		INITBLOCK(36);
 		
 		Type(int val)
 		{

@@ -17,7 +17,8 @@ public enum MemberCategory
 	OPERATOR(1<<12),
 	ENUMCONST(1<<13, "ENUM CONST."),
 	FIXEDSIZEBUF(1<<14, "FIXED SIZE BUFFER"),
-	ALL(1<<15);
+	INIT_BLOCK(1<<15, "INIT.BLOCK"),
+	ALL(1<<16);
 	
 	MemberCategory(int val)
 	{

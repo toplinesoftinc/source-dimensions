@@ -660,9 +660,12 @@ public class JavaImport extends AstImport
 			parseModifiers(n, null, em.m_attributes);
 			em.m_name = getTermValue(n.getNode("ID"));
 			em.m_arguments.addAll(parseExpressions(n));
+
 			XmlNode b = n.getNode("ClsBody");
 			if (b != null)
 				parseMembers(b, em.m_members);
+			
+			members.add(em);
 		}
 	}
 	

@@ -40,6 +40,7 @@ import com.sourcedimensions.server.ast.FixedSizeBufDeclarator;
 import com.sourcedimensions.server.ast.FixedSizeBufMember;
 import com.sourcedimensions.server.ast.FunctionalMember;
 import com.sourcedimensions.server.ast.IndexerMember;
+import com.sourcedimensions.server.ast.InitBlockMember;
 import com.sourcedimensions.server.ast.InstanceCreationExpression;
 import com.sourcedimensions.server.ast.Modifier;
 import com.sourcedimensions.server.ast.PropertyMember;
@@ -1084,7 +1085,7 @@ public class SymbolQueryEngine
 				{
 					FixedSizeBufMember m = (FixedSizeBufMember)member;
 					
-					if ((filter.getCategories() & MemberCategory.FIXEDSIZEBUF.value()) != 0)
+					if ((filter.getCategories() & MemberCategory.FIXEDSIZEBUF.value()) == 0)
 						skip = true;
 					else
 					{
@@ -1107,12 +1108,23 @@ public class SymbolQueryEngine
 				{
 					EnumConstMember m = (EnumConstMember)member;
 					
-					if ((filter.getCategories() & MemberCategory.ENUMCONST.value()) != 0)
+					if ((filter.getCategories() & MemberCategory.ENUMCONST.value()) == 0)
 						skip = true;
 					else
 						members.add(new MemberEntry(m.m_name, member));
 					
 					snapshotType = Type.ENUMCONST;
+				}
+				else if (member instanceof InitBlockMember)
+				{
+					InitBlockMember m = (InitBlockMember)member;
+					
+					if ((filter.getCategories() & MemberCategory.INIT_BLOCK.value()) == 0)
+						skip = true;
+					else
+						members.add(new MemberEntry("{INIT.BLOCK}", member));
+					
+					snapshotType = Type.INITBLOCK;
 				}
 				
 				if (skip)

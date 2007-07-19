@@ -37,6 +37,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 	
 	private final static MemberCategory[] m_categoryArray = 
 	{
+		MemberCategory.INIT_BLOCK,
 		MemberCategory.FIELD,
 		MemberCategory.CONSTRUCTOR,
 		MemberCategory.METHOD,
