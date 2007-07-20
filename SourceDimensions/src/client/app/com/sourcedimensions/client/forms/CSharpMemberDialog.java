@@ -105,7 +105,6 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	{
 		createShell(parent);
 		m_memberNameText.setText(name);
-		m_typeNameText.setText(type.getName());
 		m_anyParamsCheckBox.setSelection(anyParams);
 		enableParamControls(!anyParams);
 		
@@ -130,12 +129,17 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		{
 			setTriStateBoolValue(m_modifierList.getItem(i), modifiers.getMask(m_modifierArray[i].value()));
 		}
-		
-		for (int i = 0; i < m_typePropsList.getItemCount(); i++)
+
+		if (type != null)
 		{
-			setTriStateBoolValue(m_typePropsList.getItem(i), 
-					type.getTypeProps().getMask(Type.Property.values()[i].value()));
-		}		
+			m_typeNameText.setText(type.getName());
+			
+			for (int i = 0; i < m_typePropsList.getItemCount(); i++)
+			{
+				setTriStateBoolValue(m_typePropsList.getItem(i), 
+						type.getTypeProps().getMask(Type.Property.values()[i].value()));
+			}
+		}
 	}
 	
 	protected void createShell(Shell parent) 
@@ -308,33 +312,37 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 					}
 				}				
 				
-				String val = m_typeNameText.getText().trim();
 				
-				if (val.length() == 0)
+				if (m_typeNameText.getEnabled())
 				{
-					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
-					return;
-				}
-
-				try
-				{
-					Type.validateTypeName(val);
-				}
-				catch (Type.EmptyNameSectionException ex)
-				{
-					MessageDialog.openError(m_shell, "Incorrect input", "Type Name section cannot be empty (like \"com//abc\")");
-					return;					
-				}
-				catch (PatternSyntaxException ex)
-				{
-					MessageDialog.openError(m_shell, "Incorrect input",
-							"Type Name pattern \"" + ex.getPattern() + "\" has the following error: " + ex.getMessage());			
-					return;
+					String val = m_typeNameText.getText().trim();
+					
+					if (val.length() == 0)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
+						return;
+					}
+	
+					try
+					{
+						Type.validateTypeName(val);
+					}
+					catch (Type.EmptyNameSectionException ex)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input", "Type Name section cannot be empty (like \"com//abc\")");
+						return;					
+					}
+					catch (PatternSyntaxException ex)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",
+								"Type Name pattern \"" + ex.getPattern() + "\" has the following error: " + ex.getMessage());			
+						return;
+					}
 				}
 				
 				if (m_memberNameText.getEnabled())
 				{
-					val = m_memberNameText.getText().trim();
+					String val = m_memberNameText.getText().trim();
 					
 					if (val.length() == 0 && ((m_memberCategories & ~(MemberCategory.CONSTRUCTOR.value() | 
 								MemberCategory.DESTRUCTOR.value() | MemberCategory.ANONYMMETHOD.value())) != 0))
@@ -382,13 +390,19 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 				}
 				
 				m_anyParams = m_anyParamsCheckBox.getSelection();
-				m_type.setName(m_typeNameText.getText());
-				m_type.getTypeProps().reset();
-				
-				for (int i = 0; i < m_typePropsList.getItemCount(); i++)
+
+				if (m_typeNameText.getEnabled())
 				{
-					m_type.getTypeProps().setMask(Type.Property.values()[i].value(), getTriStateBoolValue(m_typePropsList.getItem(i)));
+					m_type.setName(m_typeNameText.getText());
+					m_type.getTypeProps().reset();
+					
+					for (int i = 0; i < m_typePropsList.getItemCount(); i++)
+					{
+						m_type.getTypeProps().setMask(Type.Property.values()[i].value(), getTriStateBoolValue(m_typePropsList.getItem(i)));
+					}
 				}
+				else
+					m_type = null;
 				
 				if (!m_paramsTable.getEnabled())
 				{
@@ -457,7 +471,9 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 
 		boolean noname = (cat != 0) && ((cat & ~(MemberCategory.CONSTRUCTOR.value() 
 				| MemberCategory.DESTRUCTOR.value() | MemberCategory.ANONYMMETHOD.value())) == 0);
-		
+
+		boolean notype = (cat != 0) && ((cat & ~(MemberCategory.CONSTRUCTOR.value()	| MemberCategory.DESTRUCTOR.value())) == 0);
+	
 		m_memberNameText.setEnabled(!oper_only && !noname);
 		m_operatorList.setEnabled(oper);
 		m_anyParamsCheckBox.setEnabled(param);
@@ -470,6 +486,9 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 		{
 			enableParamControls(param);
 		}
+		
+		m_typeNameText.setEnabled(!notype);
+		m_typePropsList.setEnabled(!notype);
 	}
 	
 	

@@ -1557,10 +1557,9 @@ public class DbAdapter
 				while (rs.next())
 				{
 					MemberFilter filter = new MemberFilter();
-					Type type = new Type();
+					Type type = null;
 
 					query.getMemberFilter().add(filter);
-					filter.setType(type);
 					
 					filter.setCategories(rs.getInt("categories"));
 					filter.setModifiers(new TriStateMask(rs.getLong("modifiers")));
@@ -1568,8 +1567,18 @@ public class DbAdapter
 					filter.setAnyParams(rs.getShort("any_params") != 0);
 					filter.setAnyThrows(rs.getShort("any_throws") != 0);
 					filter.setName(rs.getString("name"));
-					type.setName(rs.getString("type_name"));
-					type.setTypeProps(new TriStateMask(rs.getLong("type_props")));
+					
+					String typeName = rs.getString("type_name");
+					
+					if (typeName != null)
+					{
+						type = new Type();
+						
+						type.setName(typeName);
+						type.setTypeProps(new TriStateMask(rs.getLong("type_props")));
+					}
+
+					filter.setType(type);
 					
 					int filterId = rs.getInt("id");
 					
@@ -1864,8 +1873,18 @@ public class DbAdapter
 					ps.setLong(3, mf.getModifiers().getValue());
 					ps.setInt(4, mf.getOperators());
 					ps.setShort(5, (short)(mf.getAnyParams() ? 1 : 0));
-					ps.setLong(6, mf.getType().getTypeProps().getValue());
-					ps.setString(7, mf.getType().getName());
+
+					if (mf.getType() == null)
+					{
+						ps.setNull(6, Types.BIGINT);
+						ps.setNull(7, Types.VARCHAR);
+					}
+					else
+					{
+						ps.setLong(6, mf.getType().getTypeProps().getValue());
+						ps.setString(7, mf.getType().getName());
+					}
+					
 					ps.setShort(8, (short)(mf.getAnyThrows() ? 1 : 0));
 					ps.setString(9, mf.getName());
 					
@@ -2428,7 +2447,7 @@ public class DbAdapter
 				"operators INT",
 				"any_params SMALLINT",
 				"type_props BIGINT",
-				"type_name VARCHAR(1024) NOT NULL",
+				"type_name VARCHAR(1024)",
 				"any_throws SMALLINT",
 				"name VARCHAR(1024) NOT NULL",
 				"PRIMARY KEY (id)",

@@ -98,9 +98,14 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		m_throwList = throwList;
 		createShell(parent);
 		m_memberNameText.setText(name);
-		setTriStateBoolValue(m_typePropsList.getItem(m_arrayItem), type.getTypeProps().getMask(Type.Property.ARRAY.value()));
-		setTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem), type.getTypeProps().getMask(Type.Property.TYPEPARAM.value()));
-		m_typeNameText.setText(type.getName());
+		
+		if (type != null)
+		{
+			setTriStateBoolValue(m_typePropsList.getItem(m_arrayItem), type.getTypeProps().getMask(Type.Property.ARRAY.value()));
+			setTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem), type.getTypeProps().getMask(Type.Property.TYPEPARAM.value()));
+			m_typeNameText.setText(type.getName());
+		}
+		
 		m_anyParamsCheckBox.setSelection(anyParams);
 		enableParamControls(!anyParams);
 		
@@ -299,33 +304,36 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 					}
 				}				
 
-				String val = m_typeNameText.getText().trim();
+				if (m_typeNameText.getEnabled())
+				{
+					String val = m_typeNameText.getText().trim();
+					
+					if (val.length() == 0)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
+						return;
+					}
+	
+					try
+					{
+						Type.validateTypeName(val);
+					}
+					catch (Type.EmptyNameSectionException ex)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input", "Type Name section cannot be empty (like \"com//abc\")");
+						return;					
+					}
+					catch (PatternSyntaxException ex)
+					{
+						MessageDialog.openError(m_shell, "Incorrect input",
+								"Type Name pattern \"" + ex.getPattern() + "\" has the following error: " + ex.getMessage());			
+						return;
+					}
+				}
 				
-				if (val.length() == 0 && ((m_memberCategories & ~MemberCategory.CONSTRUCTOR.value()) != 0))
-				{
-					MessageDialog.openError(m_shell, "Incorrect input",	"Please enter value for Type Name Filter");					
-					return;
-				}
-
-				try
-				{
-					Type.validateTypeName(val);
-				}
-				catch (Type.EmptyNameSectionException ex)
-				{
-					MessageDialog.openError(m_shell, "Incorrect input", "Type Name section cannot be empty (like \"com//abc\")");
-					return;					
-				}
-				catch (PatternSyntaxException ex)
-				{
-					MessageDialog.openError(m_shell, "Incorrect input",
-							"Type Name pattern \"" + ex.getPattern() + "\" has the following error: " + ex.getMessage());			
-					return;
-				}
-
 				if (m_memberNameText.getEnabled())
 				{
-					val = m_memberNameText.getText().trim();
+					String val = m_memberNameText.getText().trim();
 					
 					if (val.length() == 0 && ((m_memberCategories & ~MemberCategory.CONSTRUCTOR.value()) != 0))
 					{
@@ -357,10 +365,16 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 				m_name = m_memberNameText.getText();
 				m_anyParams = m_anyParamsCheckBox.getSelection();
 				m_anyThrow = m_anyThrowCheckBox.getSelection();
-				m_type.setName(m_typeNameText.getText());				
-				m_type.getTypeProps().reset();
-				m_type.getTypeProps().setMask(Type.Property.ARRAY.value(), getTriStateBoolValue(m_typePropsList.getItem(m_arrayItem)));
-				m_type.getTypeProps().setMask(Type.Property.TYPEPARAM.value(), getTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem)));
+				
+				if (m_typeNameText.getEnabled())
+				{
+					m_type.setName(m_typeNameText.getText());				
+					m_type.getTypeProps().reset();
+					m_type.getTypeProps().setMask(Type.Property.ARRAY.value(), getTriStateBoolValue(m_typePropsList.getItem(m_arrayItem)));
+					m_type.getTypeProps().setMask(Type.Property.TYPEPARAM.value(), getTriStateBoolValue(m_typePropsList.getItem(m_typeParamItem)));
+				}
+				else
+					m_type = null;
 				
 				if (!m_paramsTable.getEnabled())
 				{
@@ -443,10 +457,14 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		}				
 		
 		boolean func = (cat & (MemberCategory.CONSTRUCTOR.value() | MemberCategory.METHOD.value())) != 0;
-		boolean noname = (cat != 0) && ((cat & ~MemberCategory.CONSTRUCTOR.value()) == 0);
+		boolean noname = (cat != 0) && ((cat & ~(MemberCategory.CONSTRUCTOR.value() | MemberCategory.INIT_BLOCK.value())) == 0);
+		boolean notype = (cat != 0) && ((cat & ~(MemberCategory.CONSTRUCTOR.value() | MemberCategory.INIT_BLOCK.value() | MemberCategory.ENUMCONST.value())) == 0);
 		
 		m_anyParamsCheckBox.setEnabled(func);
 		m_anyThrowCheckBox.setEnabled(func);
+
+		m_typeNameText.setEnabled(!notype);		
+		m_typePropsList.setEnabled(!notype);
 		
 		if (func)
 		{

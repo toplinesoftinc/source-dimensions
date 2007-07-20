@@ -1046,8 +1046,12 @@ public class SymbolQueryDialog extends DialogBase
 		item.setText(0, memberCategoriesToString(filter.getCategories()));
 		item.setText(1, modifiersToString(filter.getModifiers()));
 		item.setText(2, filter.getName());
-		item.setText(3, filter.getType().getName());
-		item.setText(4, filter.getType().typePropsToString());		
+		
+		if (filter.getType() != null)
+		{
+			item.setText(3, filter.getType().getName());
+			item.setText(4, filter.getType().typePropsToString());
+		}
 	}
 	
 	protected void fillTypeFilterItem(TableItem item, TypeFilter filter)
