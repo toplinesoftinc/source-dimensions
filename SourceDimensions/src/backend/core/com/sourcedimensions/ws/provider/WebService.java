@@ -173,9 +173,7 @@ public class WebService implements IWebService
 	{
 		verifySession(sessionID);
 		verifyLanguage(sessionID, projectId);
-		
 		SymbolQueryEngine engine = new SymbolQueryEngine(sessionID);
-
 		Snapshot snapshot = new Snapshot();
 		snapshot.setRoot(engine.execute(projectId, query));
 		

@@ -42,6 +42,7 @@ import com.sourcedimensions.server.ast.FunctionalMember;
 import com.sourcedimensions.server.ast.IndexerMember;
 import com.sourcedimensions.server.ast.InitBlockMember;
 import com.sourcedimensions.server.ast.InstanceCreationExpression;
+import com.sourcedimensions.server.ast.Member;
 import com.sourcedimensions.server.ast.Modifier;
 import com.sourcedimensions.server.ast.PropertyMember;
 import com.sourcedimensions.server.ast.SimpleType;
@@ -586,7 +587,6 @@ public class SymbolQueryEngine
 		List list = query.list();
 		
 		List<MemberEntry> members = new ArrayList<MemberEntry>(); 
-		List<MemberEntry> validMembers = new ArrayList<MemberEntry>();
 		
 		for (MemberFilter filter : memberFilter)
 		{
@@ -594,14 +594,13 @@ public class SymbolQueryEngine
 			{
 				Hibernate.initialize(o);
 				AbstractMember member = (AbstractMember)o;
-
+				
 				if (idSet.contains(member.getID()))
 					continue;
 				
 				boolean skip = false;
 				
 				members.clear();
-				validMembers.clear();
 				
 				if (!matchModifiers(member.m_modifiers, filter.getModifiers()))
 					continue;
@@ -632,7 +631,7 @@ public class SymbolQueryEngine
 						if (idSet.contains(d.getID()))
 							break;
 						
-						members.add(new MemberEntry(d.m_name, d));
+						members.add(new MemberEntry(d.m_name, m.getType(), d));
 					}
 				}
 				else if (member instanceof FunctionalMember)
@@ -645,7 +644,7 @@ public class SymbolQueryEngine
 							if ((filter.getCategories() & MemberCategory.CONSTRUCTOR.value()) == 0)
 								skip = true;
 							else
-								validMembers.add(createMemberEntry(root.m_name, member, nameCount));
+								members.add(new MemberEntry(root.m_name, null, member, false));
 							
 							snapshotType = Type.CONSTRUCTOR;
 							break;
@@ -654,7 +653,7 @@ public class SymbolQueryEngine
 							if ((filter.getCategories() & MemberCategory.DESTRUCTOR.value()) == 0)
 								skip = true;
 							else
-								validMembers.add(createMemberEntry("~" + root.m_name, member, nameCount));
+								members.add(new MemberEntry("~" + root.m_name, null, member, false));
 
 							snapshotType = Type.DESTRUCTOR;							
 							break;
@@ -664,7 +663,7 @@ public class SymbolQueryEngine
 							if ((filter.getCategories() & MemberCategory.METHOD.value()) == 0)
 								skip = true;
 							else
-								members.add(new MemberEntry(getQNameStr(m.m_name), member));
+								members.add(new MemberEntry(getQNameStr(m.m_name), m.getType(), member));
 							
 							snapshotType = Type.METHOD;
 							break;
@@ -676,7 +675,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.UNARYPLUS.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.UNARYPLUS.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.UNARYPLUS.toString(), ((Member)member).getType(), member, false));
 							
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -688,7 +687,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.UNARYMINUS.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.UNARYMINUS.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.UNARYMINUS.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -700,7 +699,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.NOT.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.NOT.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.NOT.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -712,7 +711,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.COMPLEMENT.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.COMPLEMENT.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.COMPLEMENT.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -724,7 +723,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.INCREMENT.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.INCREMENT.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.INCREMENT.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -736,7 +735,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.DECREMENT.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.DECREMENT.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.DECREMENT.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -748,7 +747,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.TRUE.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.TRUE.toString(), member, nameCount));							
+									members.add(new MemberEntry(Operator.TRUE.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -760,7 +759,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.FALSE.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.FALSE.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.FALSE.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -772,7 +771,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.PLUS.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.PLUS.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.PLUS.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -784,7 +783,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.MINUS.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.MINUS.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.MINUS.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -796,7 +795,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.MULT.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.MULT.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.MULT.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -808,7 +807,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.DIVISION.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.DIVISION.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.DIVISION.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -820,7 +819,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.REMINDER.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.REMINDER.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.REMINDER.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -832,7 +831,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.BITWISEAND.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.BITWISEAND.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.BITWISEAND.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -844,7 +843,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.BITWISEOR.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.BITWISEOR.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.BITWISEOR.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -856,7 +855,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.BITWISEXOR.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.BITWISEXOR.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.BITWISEXOR.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -868,7 +867,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.LSHIFT.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.LSHIFT.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.LSHIFT.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -880,7 +879,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.RSHIFT.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.RSHIFT.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.RSHIFT.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -892,7 +891,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.EQ.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.EQ.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.EQ.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -904,7 +903,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.NOTEQ.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.NOTEQ.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.NOTEQ.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -916,7 +915,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.LESS.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.LESS.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.LESS.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -928,7 +927,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.GT.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.GT.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.GT.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -940,7 +939,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.LESSEQ.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.LESSEQ.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.LESSEQ.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -952,7 +951,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.GTEQ.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.GTEQ.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.GTEQ.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -964,7 +963,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.IMPLCONV.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.IMPLCONV.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.IMPLCONV.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -976,7 +975,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.EXPLCONV.value()) == 0)
 									skip = true;
 								else
-									validMembers.add(createMemberEntry(Operator.EXPLCONV.toString(), member, nameCount));
+									members.add(new MemberEntry(Operator.EXPLCONV.toString(), ((Member)member).getType(), member, false));
 
 							snapshotType = Type.OPERATOR;							
 					}
@@ -1004,8 +1003,10 @@ public class SymbolQueryEngine
 						}
 						
 						if (!skip && !filter.getAnyParams())
+						{
 							if (!matchParams(session, filter.getParamList(), m.m_parameters, isCSharp))
 								skip = true;
+						}
 					}
 				}
 				else if (member instanceof EventMember)
@@ -1021,7 +1022,7 @@ public class SymbolQueryEngine
 						skip = true;
 					else
 					{
-						members.add(new MemberEntry(getQNameStr(m.m_name), member));
+						members.add(new MemberEntry(getQNameStr(m.m_name), m.getType(), member));
 						
 						if (m.getAddAccessor() == null)
 							snapshotType = Type.EVENTREMOVE;
@@ -1044,7 +1045,7 @@ public class SymbolQueryEngine
 						skip = true;
 					else
 					{
-						members.add(new MemberEntry(getQNameStr(m.m_name), member));
+						members.add(new MemberEntry(getQNameStr(m.m_name), m.getType(), member));
 						
 						if (m.getGetAccessor() == null)
 							snapshotType = Type.PROPERTYSET;
@@ -1071,7 +1072,7 @@ public class SymbolQueryEngine
 						if (!matchParams(session, filter.getParamList(), m.m_parameters, isCSharp))
 							skip = true;
 						else
-							members.add(new MemberEntry(getQNameStr(m.m_name), member));
+							members.add(new MemberEntry(getQNameStr(m.m_name), m.getType(), member));
 						
 						if (m.getGetAccessor() == null)
 							snapshotType = Type.INDEXERSET;
@@ -1098,7 +1099,7 @@ public class SymbolQueryEngine
 							if (idSet.contains(d.getID()))
 								break;
 							
-							members.add(new MemberEntry(d.m_name, d));
+							members.add(new MemberEntry(d.m_name, m.getType(), d));
 						}
 						
 						snapshotType = Type.FIXEDSIZEBUFFER;
@@ -1111,29 +1112,54 @@ public class SymbolQueryEngine
 					if ((filter.getCategories() & MemberCategory.ENUMCONST.value()) == 0)
 						skip = true;
 					else
-						members.add(new MemberEntry(m.m_name, member));
+						members.add(new MemberEntry(m.m_name, null, member));
 					
 					snapshotType = Type.ENUMCONST;
 				}
 				else if (member instanceof InitBlockMember)
 				{
-					InitBlockMember m = (InitBlockMember)member;
-					
 					if ((filter.getCategories() & MemberCategory.INIT_BLOCK.value()) == 0)
 						skip = true;
 					else
-						members.add(new MemberEntry("{INIT.BLOCK}", member));
+						members.add(new MemberEntry("{INIT.BLOCK}", null, member, false));
 					
 					snapshotType = Type.INITBLOCK;
 				}
 				
 				if (skip)
 					continue;
+
+				List<MemberEntry> validMembers = new ArrayList<MemberEntry>();				
 				
 				for (MemberEntry m : members)
-				{
-					if (Pattern.matches(filter.getName(), m.m_name))
-						validMembers.add(createMemberEntry(m.m_name, m.m_node, nameCount));
+				{					
+					if (filter.getType() != null && m.m_type != null)
+					{					
+						if (!matchType(session, filter.getType(), m.m_type, isCSharp))
+							continue;
+					}
+					
+					boolean valid = true;
+					
+					if (m.m_checkName)
+						valid = Pattern.matches(filter.getName(), m.m_name);
+						
+					if (valid)
+					{
+						Integer count = nameCount.get(m.m_name);
+						
+						if (count == null)
+						{
+							nameCount.put(m.m_name, 1);
+						}
+						else
+						{
+							count++;
+							m.m_name += ":" + count.toString();
+						}
+						
+						validMembers.add(m);						
+					}
 				}
 				
 				if (validMembers.size() == 0)
@@ -1586,25 +1612,7 @@ public class SymbolQueryEngine
 		
 		return qname;		
 	}
-	
-	protected MemberEntry createMemberEntry(String name, AstNode node, Map<String, Integer> nameCount)
-	{
-		MemberEntry entry = new MemberEntry(name, node);
-		Integer count = nameCount.get(name);
-		
-		if (count == null)
-		{
-			nameCount.put(name, 1);
-		}
-		else
-		{
-			count++;
-			entry.m_name += ":" + count.toString();
-		}
-		
-		return entry;
-	}
-	
+
 	protected class NamespaceNode
 	{
 		public SnapshotNode m_node;
@@ -1613,13 +1621,22 @@ public class SymbolQueryEngine
 	
 	protected class MemberEntry
 	{
-		public MemberEntry(String name, AstNode node)
+		public MemberEntry(String name, com.sourcedimensions.server.ast.Type type, AstNode node)
+		{
+			this(name, type, node, true);
+		}
+		
+		public MemberEntry(String name, com.sourcedimensions.server.ast.Type type, AstNode node, boolean checkName)
 		{
 			m_name = name;
+			m_type = type;
 			m_node = node;
+			m_checkName = checkName;
 		}
 		
 		public String m_name;
 		public AstNode m_node;
+		public com.sourcedimensions.server.ast.Type m_type;
+		public boolean m_checkName;
 	}
 }

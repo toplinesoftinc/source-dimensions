@@ -220,7 +220,7 @@ public class SymbolQueryDialog extends DialogBase
 			}
 		});
 		createQueryParamsTabFolder();
-		m_saveBeforeExecCheckBox.setBounds(new Rectangle(15, 47, 139, 16));
+		m_saveBeforeExecCheckBox.setBounds(new Rectangle(16, 45, 139, 16));
 		m_saveBeforeExecCheckBox.setSelection(true);
 		m_saveBeforeExecCheckBox.setText("Save &Before Execution");
 		m_queryNameLabel.setText("&Query Name:");
