@@ -464,7 +464,7 @@ public class JavaImport extends AstImport
 					else
 						func.setType(parseType(resType));
 					
-					func.getType().m_rank = n.getNodeList("Dim").size();					
+					func.getType().m_rank += n.getNodeList("Dim").size();					
 				}
 				
 				func.m_name.add(parseName(n.getNode("ID")));
@@ -589,7 +589,7 @@ public class JavaImport extends AstImport
 					
 					parseTextPos(n, d);
 					d.m_name = getTermValue(n.getNode("ID"));
-					type.m_rank = n.getNodeList("Dim").size();
+					type.m_rank += n.getNodeList("Dim").size();
 					d.setInitializer(parseInits(n).get(0));
 					
 					mbr.m_declarators.add(d);
@@ -844,7 +844,7 @@ public class JavaImport extends AstImport
 				parseModifiers(n, par.m_modifiers, par.m_attributes);
 				
 				Type type = parseType(n);
-				type.m_rank = node.getNodeList("Dim").size();
+				type.m_rank += node.getNodeList("Dim").size();
 				par.setType(type);
 				
 				par.m_name = getTermValue(n.getNode("ID"));
@@ -973,7 +973,7 @@ public class JavaImport extends AstImport
 			
 			parseTextPos(n, d);
 			d.m_name = getTermValue(n.getNode("ID"));	
-			type.m_rank = n.getNodeList("Dim").size();
+			type.m_rank += n.getNodeList("Dim").size();
 			d.setInitializer(parseInits(n).get(0));
 			
 			var.m_declarators.add(d);
