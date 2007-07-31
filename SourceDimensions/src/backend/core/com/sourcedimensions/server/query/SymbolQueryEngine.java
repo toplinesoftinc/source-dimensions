@@ -581,7 +581,9 @@ public class SymbolQueryEngine
 			memberFilter.addAll(symQuery.getMemberFilter());
 		}
 		
-		Query query = session.createQuery("SELECT m FROM AbstractMember m INNER JOIN m.m_file WHERE m.m_parent = :parent");
+		Query query = session.createQuery("SELECT m FROM Member m INNER JOIN m.m_file LEFT JOIN FETCH m.m_type WHERE m.m_parent = :parent UNION " + 
+				"SELECT m FROM EnumConstMember m INNER JOIN m.m_file WHERE m.m_parent = :parent UNION " + 
+				"SELECT m FROM InitBlockMember m INNER JOIN m.m_file WHERE m.m_parent = :parent");
 		query.setEntity("parent", root);
 		
 		List list = query.list();
