@@ -581,12 +581,17 @@ public class SymbolQueryEngine
 			memberFilter.addAll(symQuery.getMemberFilter());
 		}
 		
-		Query query = session.createQuery("SELECT m FROM Member m INNER JOIN m.m_file LEFT JOIN FETCH m.m_type WHERE m.m_parent = :parent UNION " + 
-				"SELECT m FROM EnumConstMember m INNER JOIN m.m_file WHERE m.m_parent = :parent UNION " + 
-				"SELECT m FROM InitBlockMember m INNER JOIN m.m_file WHERE m.m_parent = :parent");
+		Query query = session.createQuery("SELECT m FROM Member m INNER JOIN m.m_file LEFT JOIN FETCH m.m_type WHERE m.m_parent = :parent");
+		
 		query.setEntity("parent", root);
 		
 		List list = query.list();
+		
+		query = session.createQuery("SELECT m FROM AbstractMember m INNER JOIN m.m_file WHERE m.class IN (EnumConstMember, InitBlockMember) AND m.m_parent = :parent");
+
+		query.setEntity("parent", root);
+
+		list.addAll(query.list());
 		
 		List<MemberEntry> members = new ArrayList<MemberEntry>(); 
 		
@@ -1157,6 +1162,7 @@ public class SymbolQueryEngine
 						else
 						{
 							count++;
+							nameCount.put(m.m_name, count);							
 							m.m_name += ":" + count.toString();
 						}
 						
@@ -1218,6 +1224,7 @@ public class SymbolQueryEngine
 						else
 						{
 							count++;
+							nameCount.put(name, count);							
 							name = name + ":" + Integer.toString(count);
 						}
 						
@@ -1233,7 +1240,7 @@ public class SymbolQueryEngine
 				}
 			}
 		}
-		
+				
 		return output;
 	}
 	
@@ -1571,10 +1578,10 @@ public class SymbolQueryEngine
 						match = true;
 						break;
 					}
-					
-					if (!match)
-						return false;
 				}
+				
+				if (!match)
+					return false;				
 			}
 		}
 		
