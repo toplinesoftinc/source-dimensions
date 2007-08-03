@@ -1046,9 +1046,11 @@ public class SymbolQueryEngine
 					if ((filter.getCategories() & MemberCategory.PROPERTYGET.value()) == 0 &&
 							(filter.getCategories() & MemberCategory.PROPERTYSET.value()) == 0)
 						skip = true;
-					else if ((filter.getCategories() & MemberCategory.PROPERTYGET.value()) != 0 && m.getGetAccessor() == null)
+					else if ((filter.getCategories() & MemberCategory.PROPERTYGET.value()) != 0 && 
+							 (filter.getCategories() & MemberCategory.PROPERTYSET.value()) == 0 && m.getGetAccessor() == null)
 						skip = true;
-					else if ((filter.getCategories() & MemberCategory.PROPERTYSET.value()) != 0 && m.getSetAccessor() == null)
+					else if ((filter.getCategories() & MemberCategory.PROPERTYSET.value()) != 0 && 
+							 (filter.getCategories() & MemberCategory.PROPERTYGET.value()) == 0 && m.getSetAccessor() == null)
 						skip = true;
 					else
 					{
@@ -1079,7 +1081,14 @@ public class SymbolQueryEngine
 						if (!matchParams(session, filter.getParamList(), m.m_parameters, isCSharp))
 							skip = true;
 						else
-							members.add(new MemberEntry(getQNameStr(m.m_name), m.getType(), member));
+						{
+							String name = getQNameStr(m.m_name);
+							
+							if (name == "")
+								name = "{INDEXER}";
+							
+							members.add(new MemberEntry(name, m.getType(), member));
+						}
 						
 						if (m.getGetAccessor() == null)
 							snapshotType = Type.INDEXERSET;

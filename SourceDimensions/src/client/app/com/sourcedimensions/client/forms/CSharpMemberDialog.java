@@ -96,7 +96,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	{
 		createShell(parent);
 		checkAllItems(m_memberCategoryList);
-		setAllItems(m_modifierList, TriStateBoolean.TRUE);
+		setAllItems(m_modifierList, TriStateBoolean.EITHER);
 		checkAllItems(m_operatorList);
 	}
 	
