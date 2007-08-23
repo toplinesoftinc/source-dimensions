@@ -17,7 +17,7 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	protected int m_operators;
 	protected Type m_type = new Type();  //  @jve:decl-index=0:
 	protected String m_name;
-	protected List<Parameter> m_paramList = new ArrayList<Parameter>();
+	protected List<Parameter> m_paramList = new ArrayList<Parameter>();  //  @jve:decl-index=0:
 	
 	
 	public TriStateMask getModifiers()
@@ -108,7 +108,6 @@ public abstract class TypeMemberDialogBase extends DialogBase
 	protected void populateParamList(Table table, List<Parameter> paramList)
 	{
 		table.removeAll();
-		m_paramList = paramList;
 		
 		for (Parameter param : paramList)
 		{		

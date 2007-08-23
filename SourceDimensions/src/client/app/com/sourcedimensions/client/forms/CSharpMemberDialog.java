@@ -103,6 +103,7 @@ public class CSharpMemberDialog extends TypeMemberDialogBase
 	public CSharpMemberDialog(Shell parent, String name, int categories, TriStateMask modifiers, 
 			Type type, boolean anyParams, int operators, List<Parameter> paramList)
 	{
+		m_paramList = paramList;
 		createShell(parent);
 		m_memberNameText.setText(name);
 		m_anyParamsCheckBox.setSelection(anyParams);

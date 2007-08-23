@@ -96,6 +96,7 @@ public class JavaMemberDialog extends TypeMemberDialogBase
 		Type type, boolean anyParams, List<Parameter> paramList, boolean anyThrow, List<String> throwList)
 	{
 		m_throwList = throwList;
+		m_paramList = paramList;
 		createShell(parent);
 		m_memberNameText.setText(name);
 		
