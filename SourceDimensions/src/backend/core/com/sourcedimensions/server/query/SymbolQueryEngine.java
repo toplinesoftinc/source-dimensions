@@ -1283,6 +1283,8 @@ public class SymbolQueryEngine
 						
 						entry.m_snapshot.getChildren().add(snapshot);
 						
+						m_nodeMap.put(expr.getID(), new NodeEntry(expr, snapshot));
+						
 						match = true;
 						break;
 					}
