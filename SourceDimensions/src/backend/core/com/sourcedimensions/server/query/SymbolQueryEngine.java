@@ -65,6 +65,11 @@ import com.sourcedimensions.server.ast.Name;
 public class SymbolQueryEngine 
 {
 	Database m_db;
+
+	protected Set<SourceFile> m_fileSet = new HashSet<SourceFile>();
+	protected Map<String, NodeEntry> m_nodeMap = new HashMap<String, NodeEntry>();
+	protected List<TypeFilter> m_anonymFilterList = new ArrayList<TypeFilter>();
+	
 	
 	public SymbolQueryEngine(String sessionId)
 	{
@@ -126,6 +131,22 @@ public class SymbolQueryEngine
 	{
 		Set<Project> prjSpace = DatabaseHelper.getProjectSpace(session, projectId);
 		
+		Collection<SnapshotNode> output = executeFromRoot(session, prjSpace, root, symQuery);		
+		
+		Project prj = (Project)prjSpace.toArray()[0];
+
+		switch (prj.getLanguage())
+		{
+			case JAVA_14:
+			case JAVA_15:
+				execAnonymClassFilter(session);
+		}
+		
+		return output;
+	}
+	
+	protected Collection<SnapshotNode> executeFromRoot(Session session, Set<Project> prjSpace, TypeDeclaration root, SymbolQuery symQuery)
+	{
 		if (root == null)
 		{
 			SortedMap<String, NamespaceNode> nodeMap = new TreeMap<String, NamespaceNode>();
@@ -191,7 +212,7 @@ public class SymbolQueryEngine
 								if (lookahead == null)
 								{
 									if (j == (parts.length - 1))
-										addNamespace(decl, name, decl.getSourceFile().getID(), nodeMap);
+										addNamespace(decl, name, decl.getSourceFile(), nodeMap);
 								}
 								else
 								{
@@ -214,7 +235,7 @@ public class SymbolQueryEngine
 											}
 											
 											if (w)
-												addNamespace(decl, name, decl.getSourceFile().getID(), nodeMap);
+												addNamespace(decl, name, decl.getSourceFile(), nodeMap);
 										}
 									}
 								}								
@@ -241,7 +262,7 @@ public class SymbolQueryEngine
 							if (Pattern.matches(fltr[i], parts[j]))
 							{
 								if (i == (fltr.length - 1) && j == (parts.length - 1))
-									addNamespace(decl, name, decl.getSourceFile().getID(), nodeMap);
+									addNamespace(decl, name, decl.getSourceFile(), nodeMap);
 							}
 							else
 								break;
@@ -261,7 +282,7 @@ public class SymbolQueryEngine
 				
 				for (TypeDeclaration decl : n.m_declSet)
 				{
-					Collection<SnapshotNode> result = executeFromRoot(session, projectId, decl, symQuery);
+					Collection<SnapshotNode> result = executeFromRoot(session, prjSpace, decl, symQuery);
 
 					if (result != null)
 					{
@@ -274,9 +295,9 @@ public class SymbolQueryEngine
 			if (symQuery.getAllNamespaces() || symQuery.getGlobalNamespace())
 			{
 				output.addAll(executeTypeFilter(session, null, prjSpace, symQuery));
-			}
-				
-			return output;			
+			}				
+
+			return output;
 		}
 		else
 		{
@@ -289,8 +310,6 @@ public class SymbolQueryEngine
 		List<TypeFilter> typeFilter = new ArrayList<TypeFilter>();
 		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
 		Set<String> idSet = new HashSet<String>();
-		Map<TypeDeclaration, SnapshotNode> declMap = new HashMap<TypeDeclaration, SnapshotNode>();
-		Set<SourceFile> fileSet = new HashSet<SourceFile>();
 		
 		if (symQuery.getAllTypes())
 		{
@@ -387,6 +406,9 @@ public class SymbolQueryEngine
 							output.add(snapshot);
 							
 							idSet.add(decl.getID());
+														
+							m_fileSet.add(decl.getSourceFile());
+							m_nodeMap.put(decl.getID(), new NodeEntry(decl, snapshot));
 						}							
 					}
 			}
@@ -526,26 +548,27 @@ public class SymbolQueryEngine
 				output.add(snapshot);
 			
 				idSet.add(decl.getID());				
-				fileSet.add(decl.getSourceFile());
 				
 				snapshot.setChildren(new ArrayList<SnapshotNode>());
 				
 				if (filter.getInnerTypes())
 					snapshot.getChildren().addAll(executeTypeFilter(session, decl, prjSpace, symQuery));
-
-				declMap.put(decl, snapshot);
 				
 				snapshot.getChildren().addAll(executeMemberFilter(session, decl, prjSpace, symQuery));
+
+				switch (prj.getLanguage())
+				{
+					case JAVA_14:
+					case JAVA_15:
+							if ((filter.getCategories() & TypeCategory.ANONYMCLASS.value()) != 0)	
+								m_anonymFilterList.add(filter);
+				}
+				
+				m_fileSet.add(decl.getSourceFile());
+				m_nodeMap.put(decl.getID(), new NodeEntry(decl, snapshot));
 			}			
 		}
 
-		switch (prj.getLanguage())
-		{
-			case JAVA_14:
-			case JAVA_15:
-					execAnonymClassFilter(session, declMap, fileSet, typeFilter);
-		}				
-		
 		return output;
 	}
 
@@ -1194,7 +1217,10 @@ public class SymbolQueryEngine
 					snapshot.setRefs(new ArrayList<Reference>());
 					snapshot.getRefs().add(new Reference(m.m_node.getID(), m.m_node.getSourceFile().getID(), m.m_node.m_left, m.m_node.m_right));
 					
-					output.add(snapshot);					
+					output.add(snapshot);
+					
+					m_fileSet.add(m.m_node.getSourceFile());
+					m_nodeMap.put(m.m_node.getID(), new NodeEntry(m.m_node, snapshot));
 				}
 			}
 		}				
@@ -1202,84 +1228,75 @@ public class SymbolQueryEngine
 		return output;
 	}
 	
-	protected void execAnonymClassFilter(Session session, Map<TypeDeclaration, SnapshotNode> declMap, Set<SourceFile> fileSet, List<TypeFilter> typeFilter)
+	protected void execAnonymClassFilter(Session session)
 	{
 		Map<String, Integer> nameCount = new HashMap<String, Integer>();
-		Set<AstNode> nodeSet = new HashSet<AstNode>();
 		
-		if (fileSet.size() == 0)
+		if (m_fileSet.size() == 0)
 			return;		
 		
 		Query query = session.createQuery("SELECT e FROM InstanceCreationExpression e INNER JOIN e.m_file f " +
-			" WHERE f IN (:fileset) AND size(e.m_members) > 0").setParameterList("fileset", fileSet);
-		
+			" WHERE f IN (:fileset) AND size(e.m_members) > 0").setParameterList("fileset", m_fileSet);
+	
 		List list = query.list();
 		
 		for (Object o : list)
 		{
 			boolean match = false;
+
+			InstanceCreationExpression expr = (InstanceCreationExpression)o;
+			String name = expr.getType().getName();
 			
-			for (TypeFilter filter : typeFilter)
+			for (TypeFilter filter : m_anonymFilterList)
 			{
-				if ((filter.getCategories() & TypeCategory.ANONYMCLASS.value()) != 0)
-				{	
-					InstanceCreationExpression expr = (InstanceCreationExpression)o;
-					String name = expr.getType().getName();
+				if (!Pattern.matches(filter.getName(), name))
+					continue;			
+	
+				AstNode node = expr;
+				
+				query = session.createQuery("SELECT p FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_id = :id");
 
-					if (nodeSet.contains(expr))
-						continue;
-					
-					if (!Pattern.matches(filter.getName(), name))
-						continue;			
-		
-					AstNode node = expr;
-					
-					query = session.createQuery("SELECT p FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_id = :id");
-		
-					for (query.setString("id", node.getID()) ; (node = (AstNode)query.uniqueResult()) != null ; query.setString("id", node.getID()))
-					{						
-						if (TypeDeclaration.class.isAssignableFrom(Hibernate.getClass(node)))
+				for (query.setString("id", node.getID()) ; (node = (AstNode)query.uniqueResult()) != null ; query.setString("id", node.getID()))
+				{						
+					if (TypeDeclaration.class.isAssignableFrom(Hibernate.getClass(node)))
+					{
+						NodeEntry entry = m_nodeMap.get(node.getID());
+						
+						if (entry != null)
 						{
-							Set<TypeDeclaration> keySet = declMap.keySet();
+							Integer count = nameCount.get(name);
 							
-							for (TypeDeclaration root : keySet)
+							if (count == null)
+								nameCount.put(name, 1);
+							else
 							{
-								if (node.getID().equals(root.getID()))
-								{
-									Integer count = nameCount.get(name);
-									
-									if (count == null)
-										nameCount.put(name, 1);
-									else
-									{
-										count++;
-										nameCount.put(name, count);							
-										name = name + ":" + Integer.toString(count);
-									}
-									
-									SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, name);
-
-									snapshot.setRefs(new ArrayList<Reference>());
-									snapshot.getRefs().add(new Reference(expr.getID(), expr.getSourceFile().getID(), expr.m_left, expr.m_right));
-									
-									declMap.get(root).getChildren().add(snapshot);
-
-									nodeSet.add(expr);
-									
-									match = true;
-									break;
-								}
+								count++;
+								nameCount.put(name, count);							
+								name = name + ":" + Integer.toString(count);
 							}
 							
-							if (match)
-								break;
-						}
+							SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, name);
+
+							snapshot.setRefs(new ArrayList<Reference>());
+							snapshot.getRefs().add(new Reference(expr.getID(), expr.getSourceFile().getID(), expr.m_left, expr.m_right));
+							
+							if (entry.m_snapshot.getChildren() == null)
+								entry.m_snapshot.setChildren(new ArrayList<SnapshotNode>());
+							
+							entry.m_snapshot.getChildren().add(snapshot);
+							
+							match = true;
+							break;
+						}						
 					}
 				}
+				
+				if (match)
+					break;				
 			}
-		}
+		}		
 	}
-	
+		
 	protected boolean matchType(Session session, com.sourcedimensions.client.model.Type filter, 
 		com.sourcedimensions.server.ast.Type type, boolean isCSharp)
 	{
@@ -1624,10 +1641,10 @@ public class SymbolQueryEngine
 		return true;
 	}
 	
-	protected void addNamespace(TypeDeclaration decl, String name, String fileId, Map<String, NamespaceNode> nodeMap)
+	protected void addNamespace(TypeDeclaration decl, String name, SourceFile file, Map<String, NamespaceNode> nodeMap)
 	{
 		NamespaceNode n = nodeMap.get(name);		
-		Reference ref = new Reference(decl.getID(), fileId, decl.m_left, decl.m_right);
+		Reference ref = new Reference(decl.getID(), file.getID(), decl.m_left, decl.m_right);
 		
 		if (n == null)
 		{
@@ -1640,6 +1657,9 @@ public class SymbolQueryEngine
 		n.m_declSet.add(decl);
 		n.m_node.setRefs(new ArrayList<Reference>());		
 		n.m_node.getRefs().add(ref);
+		
+		m_fileSet.add(file);
+		m_nodeMap.put(decl.getID(), new NodeEntry(decl, n.m_node));
 	}	
 	
 	
@@ -1662,6 +1682,18 @@ public class SymbolQueryEngine
 	{
 		public SnapshotNode m_node;
 		public Set<TypeDeclaration> m_declSet = new HashSet<TypeDeclaration>();
+	}
+
+	protected class NodeEntry
+	{
+		public NodeEntry(AstNode node, SnapshotNode snapshot)
+		{
+			m_node = node;
+			m_snapshot = snapshot;
+		}
+		
+		public AstNode m_node;
+		public SnapshotNode m_snapshot;
 	}
 	
 	protected class MemberEntry
