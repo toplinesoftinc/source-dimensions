@@ -1258,36 +1258,33 @@ public class SymbolQueryEngine
 
 				for (query.setString("id", node.getID()) ; (node = (AstNode)query.uniqueResult()) != null ; query.setString("id", node.getID()))
 				{						
-					if (TypeDeclaration.class.isAssignableFrom(Hibernate.getClass(node)))
+					NodeEntry entry = m_nodeMap.get(node.getID());
+					
+					if (entry != null)
 					{
-						NodeEntry entry = m_nodeMap.get(node.getID());
+						Integer count = nameCount.get(name);
 						
-						if (entry != null)
+						if (count == null)
+							nameCount.put(name, 1);
+						else
 						{
-							Integer count = nameCount.get(name);
-							
-							if (count == null)
-								nameCount.put(name, 1);
-							else
-							{
-								count++;
-								nameCount.put(name, count);							
-								name = name + ":" + Integer.toString(count);
-							}
-							
-							SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, name);
+							count++;
+							nameCount.put(name, count);							
+							name = name + ":" + Integer.toString(count);
+						}
+						
+						SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, name);
 
-							snapshot.setRefs(new ArrayList<Reference>());
-							snapshot.getRefs().add(new Reference(expr.getID(), expr.getSourceFile().getID(), expr.m_left, expr.m_right));
-							
-							if (entry.m_snapshot.getChildren() == null)
-								entry.m_snapshot.setChildren(new ArrayList<SnapshotNode>());
-							
-							entry.m_snapshot.getChildren().add(snapshot);
-							
-							match = true;
-							break;
-						}						
+						snapshot.setRefs(new ArrayList<Reference>());
+						snapshot.getRefs().add(new Reference(expr.getID(), expr.getSourceFile().getID(), expr.m_left, expr.m_right));
+						
+						if (entry.m_snapshot.getChildren() == null)
+							entry.m_snapshot.setChildren(new ArrayList<SnapshotNode>());
+						
+						entry.m_snapshot.getChildren().add(snapshot);
+						
+						match = true;
+						break;
 					}
 				}
 				

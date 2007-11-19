@@ -17,7 +17,7 @@ import com.sourcedimensions.client.Util;
 
 public abstract class DialogBase 
 {
-	protected boolean m_cancel;
+	protected boolean m_cancel = true;
 	protected static final String[] m_triStateText = { "Exclude", "Only", "Include"};
 	
 	protected abstract Shell getShell();

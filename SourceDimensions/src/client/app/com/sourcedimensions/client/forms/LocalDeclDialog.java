@@ -18,7 +18,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Button;
 import com.sourcedimensions.client.model.TriStateBoolean;
-import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.model.*;
 
@@ -66,10 +65,7 @@ public class LocalDeclDialog extends DialogBase
 					type.getTypeProps().getMask(Type.Property.values()[i].value()));
 		}		
 
-		if (m_finalCheckBox != null)
-		{
-			setTriStateBoolValue(m_finalCheckBox.getItem(0), finalFlag);
-		}
+		setTriStateBoolValue(m_finalCheckBox.getItem(0), finalFlag);
 	}	
 	
 	public LocalDeclDialog(Shell parent)
@@ -153,14 +149,7 @@ public class LocalDeclDialog extends DialogBase
 					m_type.getTypeProps().setMask(Type.Property.values()[i].value(), getTriStateBoolValue(m_typePropsList.getItem(i)));
 				}
 				
-				if (m_finalCheckBox != null)
-				{
-					m_final = getTriStateBoolValue(m_finalCheckBox.getItem(0));
-				}
-				else
-				{
-					m_final = null;
-				}
+				m_final = getTriStateBoolValue(m_finalCheckBox.getItem(0));
 				
 				m_cancel = false;
 				m_shell.close();				
@@ -178,17 +167,24 @@ public class LocalDeclDialog extends DialogBase
 			}
 		});
 		
-		Language lang = ProjectView.getProject().language();
-		if (lang == Language.JAVA14 || lang == Language.JAVA15)
-		{		
-			m_finalCheckBox = new Table(getShell(), SWT.BORDER | SWT.HIDE_SELECTION | SWT.CHECK);
-			m_finalCheckBox.setHeaderVisible(false);
-			m_finalCheckBox.setLinesVisible(false);
-			m_finalCheckBox.setBounds(new Rectangle(256, 198, 87, 20));
-			new TableItem(m_finalCheckBox, 0).setText("Final");
-			m_finalCheckBox.addSelectionListener(new TriStateCheckBoxAdapter());
-		}
+		m_finalCheckBox = new Table(getShell(), SWT.BORDER | SWT.HIDE_SELECTION | SWT.CHECK);
+		m_finalCheckBox.setHeaderVisible(false);
+		m_finalCheckBox.setLinesVisible(false);
+		m_finalCheckBox.setBounds(new Rectangle(256, 198, 87, 20));
 
+		switch (ProjectView.getProject().language())
+		{
+			case JAVA14:
+			case JAVA15:
+				new TableItem(m_finalCheckBox, 0).setText("Final");
+				break;
+				
+			case CSHARP11:
+			case CSHARP20:
+				new TableItem(m_finalCheckBox, 0).setText("Const");
+		}
+		
+		m_finalCheckBox.addSelectionListener(new TriStateCheckBoxAdapter());
 		m_shell.setDefaultButton(m_okButton);
 		
 		super.createShell(parent);
