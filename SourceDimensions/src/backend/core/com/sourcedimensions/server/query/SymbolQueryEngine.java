@@ -18,6 +18,7 @@ import com.sourcedimensions.client.model.BaseType;
 import com.sourcedimensions.client.model.BaseTypeCategory;
 import com.sourcedimensions.client.model.Delegate;
 import com.sourcedimensions.client.model.Folder;
+import com.sourcedimensions.client.model.LocalDeclFilter;
 import com.sourcedimensions.client.model.MemberFilter;
 import com.sourcedimensions.client.model.Parameter;
 import com.sourcedimensions.client.model.SnapshotNode;
@@ -42,6 +43,7 @@ import com.sourcedimensions.server.ast.FunctionalMember;
 import com.sourcedimensions.server.ast.IndexerMember;
 import com.sourcedimensions.server.ast.InitBlockMember;
 import com.sourcedimensions.server.ast.InstanceCreationExpression;
+import com.sourcedimensions.server.ast.LocalVariableDeclaration;
 import com.sourcedimensions.server.ast.Member;
 import com.sourcedimensions.server.ast.Modifier;
 import com.sourcedimensions.server.ast.PropertyMember;
@@ -134,13 +136,17 @@ public class SymbolQueryEngine
 		Collection<SnapshotNode> output = executeFromRoot(session, prjSpace, root, symQuery);		
 		
 		Project prj = (Project)prjSpace.toArray()[0];
+		boolean isCSharp = true;
 
 		switch (prj.getLanguage())
 		{
 			case JAVA_14:
 			case JAVA_15:
+				isCSharp = false;
 				execAnonymClassFilter(session);
 		}
+
+		execLocalDeclFilter(session, symQuery, isCSharp);
 		
 		return output;
 	}
@@ -1236,7 +1242,7 @@ public class SymbolQueryEngine
 			return;		
 		
 		Query query = session.createQuery("SELECT e FROM InstanceCreationExpression e INNER JOIN e.m_file f " +
-			" WHERE f IN (:fileset) AND size(e.m_members) > 0").setParameterList("fileset", m_fileSet);
+			"WHERE f IN (:fileset) AND size(e.m_members) > 0").setParameterList("fileset", m_fileSet);
 	
 		List list = query.list();
 		
@@ -1294,6 +1300,89 @@ public class SymbolQueryEngine
 					break;				
 			}
 		}		
+	}	
+	
+	protected void execLocalDeclFilter(Session session, SymbolQuery symQuery, boolean isCSharp)
+	{
+		if (m_fileSet.size() == 0)
+			return;		
+		
+		List<LocalDeclFilter> localDeclFilter = new ArrayList<LocalDeclFilter>();
+		
+		if (symQuery.getAllLocalDecls())
+		{
+			LocalDeclFilter filter = new LocalDeclFilter();
+			com.sourcedimensions.client.model.Type type = new com.sourcedimensions.client.model.Type();
+			TriStateMask mask = new TriStateMask();
+
+			mask.setAny();
+							
+			type.setTypeProps(mask);
+			type.setName(".*");
+			filter.setType(type);
+			
+			filter.setName(".*");
+			filter.setFinal(TriStateBoolean.EITHER);
+			
+			localDeclFilter.add(filter);
+		}
+		else
+			localDeclFilter.addAll(symQuery.getLocalDeclFilter());			
+	
+		if (localDeclFilter.size() == 0)
+			return;		
+		
+		Query query = session.createQuery("SELECT l FROM LocalVariableDeclaration l INNER JOIN l.m_file f " +
+			"WHERE f IN (:fileset)").setParameterList("fileset", m_fileSet);
+				
+		List list = query.list();
+		
+		for (Object o : list)
+		{
+			LocalVariableDeclaration decl = (LocalVariableDeclaration)o;
+			Set<Declarator> matchSet = new HashSet<Declarator>();
+			
+			for (LocalDeclFilter filter : localDeclFilter)
+			{
+				if (!matchType(session, filter.getType(), decl.getType(), isCSharp))
+					continue;
+				
+				for (Declarator dr : decl.m_declarators)
+				{
+					if (matchSet.contains(dr))
+						continue;
+					
+					if (!Pattern.matches(filter.getName(), dr.m_name))
+						continue;
+					
+					AstNode node = decl;
+					
+					query = session.createQuery("SELECT p FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_id = :id");
+
+					for (query.setString("id", node.getID()) ; (node = (AstNode)query.uniqueResult()) != null ; query.setString("id", node.getID()))
+					{
+						NodeEntry entry = m_nodeMap.get(node.getID());
+						
+						if (entry != null)
+						{
+							SnapshotNode snapshot = new SnapshotNode(Type.LOCAL, dr.m_name + ":" + decl.getType().getName());
+
+							snapshot.setRefs(new ArrayList<Reference>());
+							snapshot.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));
+							
+							if (entry.m_snapshot.getChildren() == null)
+								entry.m_snapshot.setChildren(new ArrayList<SnapshotNode>());
+							
+							entry.m_snapshot.getChildren().add(snapshot);
+			
+							matchSet.add(dr);
+							
+							break;
+						}						
+					}
+				}
+			}
+		}
 	}
 		
 	protected boolean matchType(Session session, com.sourcedimensions.client.model.Type filter, 
