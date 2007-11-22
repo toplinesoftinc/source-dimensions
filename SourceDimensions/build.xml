@@ -380,6 +380,7 @@
 				<include name="*.cfg.xml"/>
 				<include name="**/*.gif"/>
 				<include name="**/*.png"/>
+				<include name="*.properties"/>
 			</fileset>
 		</copy>
 
@@ -422,9 +423,6 @@
 			<fileset dir="${parser.obj.dir}">
 				<include name="${lib.prefix}parserlib${shlib.ext}"/>
 			</fileset>
-			<fileset dir="${backend.core.dir}">
-				<include name="*.properties"/>
-			</fileset>
 		</copy>
 
 	</target>
@@ -437,7 +435,6 @@
 			<fileset dir="${backend.bin.dir}">
 				<include name="*.jar"/>
 				<include name="*${shlib.ext}"/>
-				<include name="*.properties"/>
 			</fileset>
 		</copy>	
 

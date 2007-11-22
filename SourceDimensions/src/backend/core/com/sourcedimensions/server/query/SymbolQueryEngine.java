@@ -1301,7 +1301,8 @@ public class SymbolQueryEngine
 			}
 		}		
 	}	
-	
+
+	// TODO: Const/final modifiers match. Change in grammar might be necessary.
 	protected void execLocalDeclFilter(Session session, SymbolQuery symQuery, boolean isCSharp)
 	{
 		if (m_fileSet.size() == 0)
