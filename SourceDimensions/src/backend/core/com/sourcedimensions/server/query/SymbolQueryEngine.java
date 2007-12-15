@@ -335,6 +335,9 @@ public class SymbolQueryEngine
 		{
 			typeFilter.addAll(symQuery.getTypeFilter());
 		}
+
+		if (typeFilter.size() == 0)
+			return output;
 		
 		Project prj = (Project)prjSpace.toArray()[0];
 		
@@ -612,6 +615,9 @@ public class SymbolQueryEngine
 		{
 			memberFilter.addAll(symQuery.getMemberFilter());
 		}
+
+		if (memberFilter.size() == 0)
+			return output;
 		
 		Query query = session.createQuery("SELECT m FROM Member m INNER JOIN m.m_file LEFT JOIN FETCH m.m_type WHERE m.m_parent = :parent");
 		
