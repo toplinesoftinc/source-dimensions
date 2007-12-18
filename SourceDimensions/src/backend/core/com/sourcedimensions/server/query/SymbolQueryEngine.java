@@ -1242,10 +1242,13 @@ public class SymbolQueryEngine
 	
 	protected void execAnonymClassFilter(Session session)
 	{
-		Map<String, Integer> nameCount = new HashMap<String, Integer>();
+		if (m_anonymFilterList.size() == 0)
+			return;
 		
 		if (m_fileSet.size() == 0)
-			return;		
+			return;
+		
+		Map<String, Integer> nameCount = new HashMap<String, Integer>();
 		
 		Query query = session.createQuery("SELECT e FROM InstanceCreationExpression e INNER JOIN e.m_file f " +
 			"WHERE f IN (:fileset) AND size(e.m_members) > 0").setParameterList("fileset", m_fileSet);
