@@ -142,7 +142,8 @@ public class SymbolQueryEngine
 			case JAVA_14:
 			case JAVA_15:
 				isCSharp = false;
-				execAnonymClassFilter(session);
+				// TODO: rewrite execAnonymClassFilter function (do not use recursive queries!)
+				//execAnonymClassFilter(session);
 		}
 
 		execLocalDeclFilter(session, symQuery, isCSharp);
@@ -181,8 +182,9 @@ public class SymbolQueryEngine
 				
 		for (Object o : list)
 		{
-			TypeDeclaration decl = (TypeDeclaration)((Object[])o)[0];
-			rowMap.put(decl.getID(), (Object[])o);
+			Object[] row = (Object[])o;
+			TypeDeclaration decl = (TypeDeclaration)row[0];
+			rowMap.put(decl.getID(), row);
 		}
 		
 		for (String filter : namespaceFilter)
@@ -190,8 +192,9 @@ public class SymbolQueryEngine
 			for (Object o : list)
 			{
 				String[] fltr = filter.split(Folder.DIVIDER);
-				TypeDeclaration decl = (TypeDeclaration)((Object[])o)[0];
-				SourceFile file = (SourceFile)((Object[])o)[1];
+				Object[] row = (Object[])o;
+				TypeDeclaration decl = (TypeDeclaration)row[0];
+				SourceFile file = (SourceFile)row[1];
 
 				if (m_nodeMap.containsKey(decl.getID()))
 					continue;
@@ -200,9 +203,9 @@ public class SymbolQueryEngine
 
 				boolean skip = (root == null) ? false : true;
 				
-				for (Object[] row = (Object[])o; row != null; row = rowMap.get((String)row[2]))
+				for (Object[] r = row; r != null; r = rowMap.get((String)r[2]))
 				{
-					TypeDeclaration d = (TypeDeclaration)row[0];
+					TypeDeclaration d = (TypeDeclaration)r[0];
 					
 					if (root != null && d.getID().equals(root.getID()))
 						skip = false;
@@ -343,15 +346,15 @@ public class SymbolQueryEngine
 		
 		if (rootSet == null || rootSet.size() == 0)
 		{
-			query = session.createQuery("SELECT DISTINCT d FROM TypeDeclaration d INNER JOIN d.m_parent dp INNER JOIN d.m_project INNER JOIN d.m_file " +
+			query = session.createQuery("SELECT DISTINCT d, NULL, f FROM TypeDeclaration d INNER JOIN d.m_parent dp INNER JOIN d.m_project INNER JOIN d.m_file f" +
 				"LEFT JOIN d.m_modifiers LEFT JOIN d.m_baseTypes LEFT JOIN d.m_baseInterfaces WHERE dp.m_parent IS NULL AND d.m_project IN (:projects)");
 			
 			query.setParameterList("projects", prjSpace);
 		}
 		else
 		{	
-			query = session.createQuery("SELECT DISTINCT d FROM TypeDeclarationMember m INNER JOIN m.m_parent, " +
-				"TypeDeclaration d INNER JOIN d.m_parent dp INNER JOIN d.m_project INNER JOIN d.m_file LEFT JOIN d.m_modifiers " +
+			query = session.createQuery("SELECT DISTINCT d, p, f FROM TypeDeclarationMember m INNER JOIN m.m_parent p, " +
+				"TypeDeclaration d INNER JOIN d.m_parent dp INNER JOIN d.m_project INNER JOIN d.m_file f LEFT JOIN d.m_modifiers " +
 				"LEFT JOIN d.m_baseTypes LEFT JOIN d.m_baseInterfaces WHERE dp.m_id = m.m_id AND m.m_parent IN (:parents)");
 
 			query.setParameterList("parents", rootSet);		
@@ -371,24 +374,29 @@ public class SymbolQueryEngine
 						
 						if (rootSet == null || rootSet.size() == 0)
 						{
-							query = session.createQuery("SELECT DISTINCT d FROM DelegateDeclaration d INNER JOIN d.m_parent dp LEFT JOIN d.m_parameters p " + 
-								" INNER JOIN p.m_type LEFT JOIN p.m_modifiers WHERE dp.m_parent IS NULL AND d.m_project IN (:projects)");
+							query = session.createQuery("SELECT DISTINCT d, NULL, t, f FROM DelegateDeclaration d INNER JOIN d.m_parent dp LEFT JOIN d.m_parameters p " + 
+								" INNER JOIN p.m_type t INNER JOIN d.m_file f LEFT JOIN p.m_modifiers WHERE dp.m_parent IS NULL AND d.m_project IN (:projects)");
 							
 							query.setParameterList("projects", prjSpace);
 						}
 						else
 						{
-							query = session.createQuery("SELECT DISTINCT d FROM TypeDeclarationMember m INNER JOIN m.m_parent, DelegateDeclaration d LEFT JOIN d.m_parameters p " +
-								" INNER JOIN p.m_type LEFT JOIN p.m_modifiers WHERE d.m_parent.id = m.m_id AND m.m_parent IN (:parents)");
+							query = session.createQuery("SELECT DISTINCT d, mp, t, f FROM TypeDeclarationMember m INNER JOIN m.m_parent mp, DelegateDeclaration d LEFT JOIN d.m_parameters p " +
+								" INNER JOIN p.m_type t INNER JOIN d.m_file f LEFT JOIN p.m_modifiers WHERE d.m_parent.id = m.m_id AND m.m_parent IN (:parents)");
 					
 							query.setParameterList("parents", rootSet);
 						}
 			
 						List l = query.list();
 							
-						for (Object obj : l)
+						for (Object o : l)
 						{
-							DelegateDeclaration decl = (DelegateDeclaration)obj;
+							Object[] row = (Object[])o;
+							
+							DelegateDeclaration decl = (DelegateDeclaration)row[0];
+							AstNode parent = (AstNode)row[1];							
+							com.sourcedimensions.server.ast.Type type = (com.sourcedimensions.server.ast.Type)row[2];
+							SourceFile file = (SourceFile)row[3];
 							
 							if (m_nodeMap.containsKey(decl.getID()))
 								continue;
@@ -396,7 +404,7 @@ public class SymbolQueryEngine
 							if (!Pattern.matches(delegate.getName(), decl.m_name))
 								continue;
 							
-							if (!matchType(session, delegate.getType(), decl.getType(), true))
+							if (!matchType(session, delegate.getType(), type, true))
 								continue;
 							
 							if (!delegate.getAnyParams())
@@ -405,28 +413,24 @@ public class SymbolQueryEngine
 									continue;
 							}
 							
-							SnapshotNode snapshot = null;
+							SnapshotNode snapshot = new SnapshotNode(Type.DELEGATE, decl.m_name);;
 							
-							if (rootSet == null || rootSet.size() == 0)
+							if (rootSet != null && rootSet.size() > 0)
 							{
-								snapshot = new SnapshotNode(Type.DELEGATE, decl.m_name);
+								NodeEntry entry = m_nodeMap.get(parent.getID());
+								
+								if (entry.m_snapshot.getChildren() == null)
+									entry.m_snapshot.setChildren(new ArrayList<SnapshotNode>());
+								
+								entry.m_snapshot.getChildren().add(snapshot);
 							}
 							else
-							{
-								NodeEntry entry = m_nodeMap.get(decl.getParent().getID());
-								
-								if (entry == null)
-									snapshot = new SnapshotNode(Type.DELEGATE, decl.m_name);
-								else
-									snapshot = entry.m_snapshot;
-							}
+								output.add(snapshot);
 
 							snapshot.setRefs(new ArrayList<Reference>());
-							snapshot.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));
-							
-							output.add(snapshot);
+							snapshot.getRefs().add(new Reference(decl.getID(), file.getID(), decl.m_left, decl.m_right));													
 														
-							m_fileSet.add(decl.getSourceFile());
+							m_fileSet.add(file);
 							m_nodeMap.put(decl.getID(), new NodeEntry(decl, snapshot));
 						}							
 					}
@@ -434,7 +438,10 @@ public class SymbolQueryEngine
 			
 			for (Object o : list)
 			{
-				TypeDeclaration decl = (TypeDeclaration)o;
+				Object[] row = (Object[])o;
+				TypeDeclaration decl = (TypeDeclaration)row[0];
+				AstNode parent = (AstNode)row[1];
+				SourceFile file = (SourceFile)row[2];
 
 				if (m_nodeMap.containsKey(decl.getID()))
 					continue;
@@ -559,11 +566,11 @@ public class SymbolQueryEngine
 				}
 				
 				snapshot.setRefs(new ArrayList<Reference>());
-				snapshot.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));
+				snapshot.getRefs().add(new Reference(decl.getID(), file.getID(), decl.m_left, decl.m_right));
 					
 				if (rootSet != null && rootSet.size() > 0)
 				{
-					NodeEntry entry = m_nodeMap.get(decl.getParent().getID());
+					NodeEntry entry = m_nodeMap.get(parent.getID());
 					
 					if (entry.m_snapshot.getChildren() == null)
 						entry.m_snapshot.setChildren(new ArrayList<SnapshotNode>());
@@ -586,7 +593,7 @@ public class SymbolQueryEngine
 								m_anonymFilterList.add(filter);
 				}
 				
-				m_fileSet.add(decl.getSourceFile());
+				m_fileSet.add(file);
 				m_nodeMap.put(decl.getID(), new NodeEntry(decl, snapshot));
 			}			
 		}
@@ -637,13 +644,13 @@ public class SymbolQueryEngine
 		if (memberFilter.size() == 0)
 			return;
 		
-		Query query = session.createQuery("SELECT m FROM Member m INNER JOIN m.m_file LEFT JOIN FETCH m.m_type WHERE m.m_parent IN (:parents)");
+		Query query = session.createQuery("SELECT m, t, f FROM Member m INNER JOIN m.m_file f LEFT JOIN FETCH m.m_type t WHERE m.m_parent IN (:parents)");
 		
 		query.setParameterList("parents", rootSet);
 		
 		List list = query.list();
 		
-		query = session.createQuery("SELECT m FROM AbstractMember m INNER JOIN m.m_file WHERE m.class IN (EnumConstMember, InitBlockMember) AND m.m_parent IN (:parents)");
+		query = session.createQuery("SELECT m, NULL, f FROM AbstractMember m INNER JOIN m.m_file f WHERE m.class IN (EnumConstMember, InitBlockMember) AND m.m_parent IN (:parents)");
 
 		query.setParameterList("parents", rootSet);
 
@@ -656,7 +663,11 @@ public class SymbolQueryEngine
 			for (Object o : list)
 			{
 				Hibernate.initialize(o);
-				AbstractMember member = (AbstractMember)o;
+				
+				Object[] row = (Object[])o;
+				AbstractMember member = (AbstractMember)row[0];
+				com.sourcedimensions.server.ast.Type type = (com.sourcedimensions.server.ast.Type)row[1];
+				SourceFile file = (SourceFile)row[2];
 				
 				if (m_nodeMap.containsKey(member.getID()))
 					continue;
@@ -694,7 +705,7 @@ public class SymbolQueryEngine
 						if (m_nodeMap.containsKey(d.getID()))
 							break;
 						
-						members.add(new MemberEntry(d.m_name, m.getType(), d));
+						members.add(new MemberEntry(d.m_name, type, d));
 					}
 				}
 				else if (member instanceof FunctionalMember)
@@ -726,7 +737,7 @@ public class SymbolQueryEngine
 							if ((filter.getCategories() & MemberCategory.METHOD.value()) == 0)
 								skip = true;
 							else
-								members.add(new MemberEntry(getQNameStr(m.m_name), m.getType(), member));
+								members.add(new MemberEntry(getQNameStr(m.m_name), type, member));
 							
 							snapshotType = Type.METHOD;
 							break;
@@ -738,7 +749,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.UNARYPLUS.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.UNARYPLUS.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.UNARYPLUS.toString(), type, member, false));
 							
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -750,7 +761,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.UNARYMINUS.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.UNARYMINUS.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.UNARYMINUS.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -762,7 +773,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.NOT.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.NOT.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.NOT.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -774,7 +785,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.COMPLEMENT.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.COMPLEMENT.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.COMPLEMENT.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -786,7 +797,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.INCREMENT.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.INCREMENT.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.INCREMENT.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -798,7 +809,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.DECREMENT.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.DECREMENT.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.DECREMENT.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -810,7 +821,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.TRUE.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.TRUE.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.TRUE.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -822,7 +833,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.FALSE.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.FALSE.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.FALSE.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -834,7 +845,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.PLUS.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.PLUS.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.PLUS.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -846,7 +857,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.MINUS.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.MINUS.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.MINUS.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -858,7 +869,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.MULT.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.MULT.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.MULT.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -870,7 +881,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.DIVISION.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.DIVISION.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.DIVISION.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -882,7 +893,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.REMINDER.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.REMINDER.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.REMINDER.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -894,7 +905,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.BITWISEAND.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.BITWISEAND.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.BITWISEAND.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -906,7 +917,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.BITWISEOR.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.BITWISEOR.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.BITWISEOR.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -918,7 +929,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.BITWISEXOR.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.BITWISEXOR.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.BITWISEXOR.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -930,7 +941,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.LSHIFT.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.LSHIFT.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.LSHIFT.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -942,7 +953,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.RSHIFT.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.RSHIFT.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.RSHIFT.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -954,7 +965,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.EQ.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.EQ.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.EQ.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -966,7 +977,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.NOTEQ.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.NOTEQ.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.NOTEQ.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -978,7 +989,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.LESS.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.LESS.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.LESS.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -990,7 +1001,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.GT.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.GT.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.GT.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -1002,7 +1013,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.LESSEQ.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.LESSEQ.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.LESSEQ.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -1014,7 +1025,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.GTEQ.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.GTEQ.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.GTEQ.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -1026,7 +1037,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.IMPLCONV.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.IMPLCONV.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.IMPLCONV.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 							break;
@@ -1038,7 +1049,7 @@ public class SymbolQueryEngine
 								if ((filter.getOperators() & Operator.EXPLCONV.value()) == 0)
 									skip = true;
 								else
-									members.add(new MemberEntry(Operator.EXPLCONV.toString(), ((Member)member).getType(), member, false));
+									members.add(new MemberEntry(Operator.EXPLCONV.toString(), type, member, false));
 
 							snapshotType = Type.OPERATOR;							
 					}
@@ -1085,7 +1096,7 @@ public class SymbolQueryEngine
 						skip = true;
 					else
 					{
-						members.add(new MemberEntry(getQNameStr(m.m_name), m.getType(), member));
+						members.add(new MemberEntry(getQNameStr(m.m_name), type, member));
 						
 						if (m.getAddAccessor() == null)
 							snapshotType = Type.EVENTREMOVE;
@@ -1110,7 +1121,7 @@ public class SymbolQueryEngine
 						skip = true;
 					else
 					{
-						members.add(new MemberEntry(getQNameStr(m.m_name), m.getType(), member));
+						members.add(new MemberEntry(getQNameStr(m.m_name), type, member));
 						
 						if (m.getGetAccessor() == null)
 							snapshotType = Type.PROPERTYSET;
@@ -1143,7 +1154,7 @@ public class SymbolQueryEngine
 							if (name == "")
 								name = "{INDEXER}";
 							
-							members.add(new MemberEntry(name, m.getType(), member));
+							members.add(new MemberEntry(name, type, member));
 						}
 						
 						if (m.getGetAccessor() == null)
@@ -1171,7 +1182,7 @@ public class SymbolQueryEngine
 							if (m_nodeMap.containsKey(d.getID()))
 								break;
 							
-							members.add(new MemberEntry(d.m_name, m.getType(), d));
+							members.add(new MemberEntry(d.m_name, type, d));
 						}
 						
 						snapshotType = Type.FIXEDSIZEBUFFER;
