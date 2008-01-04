@@ -12,7 +12,6 @@
 	</set>
 	<join table="T_DATA_MEMBER">
 		<key column="F_ID" foreign-key="none"/>
-		<many-to-one name="m_type" column="F_TYPE" unique="true" foreign-key="none"/>
 		<property name="m_kind" column="F_KIND"/>
 	</join>
     </subclass>

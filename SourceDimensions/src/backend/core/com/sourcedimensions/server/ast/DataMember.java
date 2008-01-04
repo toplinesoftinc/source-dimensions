@@ -13,18 +13,6 @@ public class DataMember extends Member
 	
 	protected int m_kind;
 	public Set<Declarator> m_declarators = new AstHashSet<Declarator>(this, 2);
-	protected Type m_type;
-	
-	public Type getType()
-	{
-		return m_type;
-	}
-	
-	public void setType(Type type)
-	{
-		m_type = type;
-		addChild(type);
-	}
 	
 	public DataMemberKind getKind()
 	{
