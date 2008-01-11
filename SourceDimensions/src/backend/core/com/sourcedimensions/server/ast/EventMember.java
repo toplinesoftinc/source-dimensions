@@ -4,8 +4,8 @@ import java.util.*;
 
 public class EventMember extends Member 
 {
-	public List<Name> m_name = new AstArrayList<Name>(this, 2);
-	public Set<Declarator> m_declarators = new AstHashSet<Declarator>(this, 3);
+	public List<Name> m_eventName = new AstArrayList<Name>(this, 2);
+	public Set<Declarator> m_eventDeclarators = new AstHashSet<Declarator>(this, 3);
 	protected Accessor m_addAccessor, m_removeAccessor;
 	
 	public Accessor getAddAccessor()

@@ -90,7 +90,7 @@
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/syndiag2.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/versioncheck.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/xerces-2.6.2.jar"/>
-	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/c3p0-0.9.0.jar"/>
-	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/ehcache-1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/c3p0-0.9.1.jar"/>
+	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/ehcache-1.2.3.jar"/>
 	<classpathentry kind="output" path="output"/>
 </classpath>

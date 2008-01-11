@@ -4,8 +4,8 @@ import java.util.*;
 
 public class IndexerMember extends Member 
 {
-	public List<Name> m_name = new AstArrayList<Name>(this, 2);
-	public List<Parameter> m_parameters = new AstArrayList<Parameter>(this, 3);
+	public List<Name> m_indexerName = new AstArrayList<Name>(this, 2);
+	public List<Parameter> m_indexerParams = new AstArrayList<Parameter>(this, 3);
 	protected Accessor m_getAccessor, m_setAccessor;
 	protected Type m_interfaceType;
 	

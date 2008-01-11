@@ -11,7 +11,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
-import org.hibernate.Hibernate;
+
+import org.apache.log4j.Logger;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import com.sourcedimensions.client.model.BaseType;
@@ -60,17 +61,20 @@ import com.sourcedimensions.server.ast.Parameter.ParamKind;
 import com.sourcedimensions.client.model.MemberCategory;
 import com.sourcedimensions.client.model.Operator;
 import com.sourcedimensions.server.ast.Name;
+import com.sourcedimensions.server.utils.SystemProps;
 
 
 public class SymbolQueryEngine 
 {
-	Database m_db;
-
+	protected Database m_db;
+	
+	protected static Logger log4j = Logger.getLogger(SymbolQueryEngine.class.getPackage().getName());
+	
 	protected Set<SourceFile> m_fileSet = new HashSet<SourceFile>();
 	protected Map<String, NodeEntry> m_nodeMap = new HashMap<String, NodeEntry>();
 	protected List<TypeFilter> m_anonymFilterList = new ArrayList<TypeFilter>();
 	protected Set<TypeDeclaration> m_memberRoots = new HashSet<TypeDeclaration>();
-	
+
 	
 	public SymbolQueryEngine(String sessionId)
 	{
@@ -159,7 +163,7 @@ public class SymbolQueryEngine
 
 		if (root != null)
 			rootSet.add(root);
-		
+
 		SortedMap<String, SnapshotNode> nameMap = new TreeMap<String, SnapshotNode>();
 		List<String> namespaceFilter = new ArrayList<String>();
 		
@@ -179,8 +183,12 @@ public class SymbolQueryEngine
 
 		query.setInteger("kind", TypeDeclKind.NAMESPACE.value());
 		query.setParameterList("projects", prjSpace);		
+
+		long start = System.currentTimeMillis();
 		
 		List list = query.list();		
+		
+		logQueryStat(log4j, start);
 		
 		for (Object o : list)
 		{
@@ -198,7 +206,11 @@ public class SymbolQueryEngine
 		query.setInteger("kind", TypeDeclKind.NAMESPACE.value());
 		query.setParameterList("projects", prjSpace);
 		
+		start = System.currentTimeMillis();
+		
 		list.addAll(query.list());
+		
+		logQueryStat(log4j, start);
 		
 		for (String filter : namespaceFilter)
 		{
@@ -314,17 +326,17 @@ public class SymbolQueryEngine
 		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
 		
 		output.addAll(nameMap.values());
-		
+				
 		if (rootSet.size() > 0)
 			executeTypeFilter(session, prjSpace, rootSet, symQuery);
 		
 		if (symQuery.getAllNamespaces() || symQuery.getGlobalNamespace())
 			output.addAll(executeTypeFilter(session, prjSpace, null, symQuery));
-
+		
 		return output;
 	}
 
-	
+		
 	protected List<SnapshotNode> executeTypeFilter(Session session, Set<Project> prjSpace, Set<TypeDeclaration> rootSet, SymbolQuery symQuery)
 	{
 		List<TypeFilter> typeFilter = new ArrayList<TypeFilter>();
@@ -378,7 +390,11 @@ public class SymbolQueryEngine
 
 		query.setInteger("kind", TypeDeclKind.NAMESPACE.value());
 		
-		List list = query.list();		
+		long start = System.currentTimeMillis();
+		
+		List list = query.list();
+		
+		logQueryStat(log4j, start);
 		
 		for (TypeFilter filter : typeFilter)
 		{			
@@ -409,7 +425,11 @@ public class SymbolQueryEngine
 							query.setParameterList("parents", rootSet);
 						}
 			
+						start = System.currentTimeMillis();
+						
 						List l = query.list();
+						
+						logQueryStat(log4j, start);
 							
 						for (Object o : l)
 						{
@@ -644,16 +664,33 @@ public class SymbolQueryEngine
 		return output;
 	}
 
-	
 	protected void executeMemberFilter(Session session, Set<Project> prjSpace, SymbolQuery symQuery)
+	{
+		Set<TypeDeclaration> rootSet = new HashSet<TypeDeclaration>();
+		Iterator<TypeDeclaration> iter = m_memberRoots.iterator();
+		
+		while (iter.hasNext())
+		{			
+			rootSet.add(iter.next());
+			
+			if (rootSet.size() >= SystemProps.getQueryMemberBatchSize() || !iter.hasNext())
+			{
+				executeMemberFilter(session, prjSpace, symQuery, rootSet);
+				rootSet.clear();
+				System.gc();
+			}
+		}
+	}
+	
+	protected void executeMemberFilter(Session session, Set<Project> prjSpace, SymbolQuery symQuery, Set<TypeDeclaration> rootSet)
 	{
 		List<MemberFilter> memberFilter = new ArrayList<MemberFilter>();
 		Project prj = (Project)prjSpace.toArray()[0];
 		boolean isCSharp = (prj.getLanguage() == Language.CSHARP_11 || prj.getLanguage() == Language.CSHARP_20);
 		Map<String, Map<String, Integer>> nameCount = new HashMap<String, Map<String, Integer>>();
-		Type snapshotType = null;
+		Type snapshotType = null;		
 
-		if (m_memberRoots.size() == 0)
+		if (rootSet.size() == 0)
 			return;
 		
 		if (symQuery.getAllMembers())
@@ -683,75 +720,24 @@ public class SymbolQueryEngine
 
 		if (memberFilter.size() == 0)
 			return;
-		
-		Query query = session.createQuery("SELECT m, d, t FROM Member m FETCH ALL PROPERTIES LEFT JOIN m.m_type t FETCH ALL PROPERTIES LEFT JOIN FETCH t.m_name " +
-			"LEFT JOIN FETCH t.m_arguments LEFT JOIN FETCH m.m_modifiers LEFT JOIN FETCH m.m_declarators, TypeDeclaration d WHERE m.class != FunctionalMember AND m.m_parent = d AND m.m_parent IN (:parents)");
 
-		query.setParameterList("parents", m_memberRoots);				
+		Query query = session.createQuery("SELECT m, d FROM AbstractMember m INNER JOIN FETCH m.m_file LEFT JOIN FETCH m.m_modifiers LEFT JOIN FETCH m.m_type t " + 
+			"LEFT JOIN FETCH t.m_name LEFT JOIN FETCH t.m_arguments LEFT JOIN FETCH m.m_interfaceType it LEFT JOIN FETCH it.m_name " +
+			"LEFT JOIN FETCH it.m_arguments LEFT JOIN FETCH m.m_declarators LEFT JOIN FETCH m.m_eventDeclarators LEFT JOIN FETCH m.m_bufDeclarators " + 
+			"LEFT JOIN FETCH m.m_throwList tl LEFT JOIN FETCH tl.m_name LEFT JOIN FETCH tl.m_arguments LEFT JOIN FETCH m.m_eventName " +
+			"LEFT JOIN FETCH m.m_funcName LEFT JOIN FETCH m.m_indexerName LEFT JOIN FETCH m.m_propName LEFT JOIN FETCH m.m_parameters p " + 
+			"LEFT JOIN FETCH p.m_modifiers LEFT JOIN FETCH p.m_type pt LEFT JOIN FETCH pt.m_name LEFT JOIN FETCH pt.m_arguments " +
+			"LEFT JOIN FETCH m.m_indexerParams ip LEFT JOIN FETCH ip.m_modifiers LEFT JOIN FETCH ip.m_type ipt LEFT JOIN FETCH ipt.m_name " + 
+			"LEFT JOIN FETCH ipt.m_arguments, TypeDeclaration d WHERE m.m_parent = d AND m.m_parent IN (:parents)");
+		
+		query.setParameterList("parents", rootSet);
+		
+		long start = System.currentTimeMillis();
+		
 		List list = query.list();
 		
-		/*		
-		Query query = session.createQuery("SELECT m, d FROM DataMember m INNER JOIN FETCH m.m_file LEFT JOIN FETCH m.m_declarators " + 
-			"LEFT JOIN FETCH m.m_type t LEFT JOIN FETCH t.m_name LEFT JOIN FETCH m.m_modifiers, TypeDeclaration d WHERE m.m_parent = d AND m.m_parent IN (:parents)");
+		logQueryStat(log4j, start);
 		
-		query.setParameterList("parents", m_memberRoots);				
-		List list = query.list();
-
-
-		query = session.createQuery("SELECT m, d FROM FunctionalMember m INNER JOIN FETCH m.m_file LEFT JOIN FETCH m.m_name " +
-			"LEFT JOIN FETCH m.m_type LEFT JOIN FETCH m.m_throwList LEFT JOIN FETCH m.m_modifiers LEFT JOIN FETCH m.m_parameters p " + 
-			"LEFT JOIN FETCH p.m_modifiers LEFT JOIN FETCH p.m_type, TypeDeclaration d " +
-			"WHERE m.m_parent = d AND m.m_parent IN (:parents)");		
-		
-		query.setParameterList("parents", m_memberRoots);				
-		list.addAll(query.list());
-		
-		if (isCSharp)
-		{
-			query = session.createQuery("SELECT m, d FROM EventMember m INNER JOIN FETCH m.m_file LEFT JOIN FETCH m.m_name " +
-				"LEFT JOIN FETCH m.m_type LEFT JOIN FETCH m.m_modifiers LEFT JOIN FETCH m.m_declarators " + 
-				"LEFT JOIN FETCH m.addAccessor LEFT JOIN FETCH m.m_removeAccessor, TypeDeclaration d " +
-				"WHERE m.m_parent = d AND m.m_parent IN (:parents)");		
-				
-			query.setParameterList("parents", m_memberRoots);					
-			list.addAll(query.list());
-
-			query = session.createQuery("SELECT m, d FROM PropertyMember m INNER JOIN FETCH m.m_file LEFT JOIN FETCH m.m_name " +
-				"LEFT JOIN FETCH m.m_type LEFT JOIN FETCH m.m_modifiers LEFT JOIN FETCH m.addAccessor " +
-				"LEFT JOIN FETCH m.m_removeAccessor, TypeDeclaration d WHERE m.m_parent = d AND m.m_parent IN (:parents)");		
-				
-			query.setParameterList("parents", m_memberRoots);					
-			list.addAll(query.list());
-			
-			query = session.createQuery("SELECT m, d FROM IndexerMember m INNER JOIN FETCH m.m_file LEFT JOIN FETCH m.m_name " +
-				"LEFT JOIN FETCH m.m_type LEFT JOIN FETCH m.m_modifiers LEFT JOIN FETCH m.addAccessor LEFT JOIN FETCH m.m_removeAccessor, " +
-				"LEFT JOIN FETCH m.m_parameters p LEFT JOIN FETCH p.m_type LEFT JOIN FETCH p.m_modifiers " + 
-				"TypeDeclaration d WHERE m.m_parent = d AND m.m_parent IN (:parents)");
-
-			query.setParameterList("parents", m_memberRoots);					
-			list.addAll(query.list());					
-			
-			query = session.createQuery("SELECT m, d FROM FixedSizeBufMember m INNER JOIN FETCH m.m_file LEFT JOIN FETCH m.m_declarators " + 
-				"LEFT JOIN FETCH m.m_type LEFT JOIN FETCH m.m_modifiers, TypeDeclaration d WHERE m.m_parent = d AND m.m_parent IN (:parents)");		
-		
-			query.setParameterList("parents", m_memberRoots);				
-			list.addAll(query.list());
-			
-			query = session.createQuery("SELECT m, d FROM EnumConstMember m INNER JOIN FETCH m.m_file LEFT JOIN FETCH m.m_type " +
-				"LEFT JOIN FETCH m.m_modifiers, TypeDeclaration d WHERE m.m_parent = d AND m.m_parent IN (:parents)");		
-
-			query.setParameterList("parents", m_memberRoots);					
-			list.addAll(query.list());
-		}
-		else
-		{
-			query = session.createQuery("SELECT m, d FROM InitBlockMember m INNER JOIN FETCH m.m_file  " +
-				"LEFT JOIN FETCH m.m_modifiers, TypeDeclaration d WHERE m.m_parent = d AND m.m_parent IN (:parents)");
-			
-			query.setParameterList("parents", m_memberRoots);
-			list.addAll(query.list());
-		}
-*/			
 		List<MemberEntry> members = new ArrayList<MemberEntry>(); 
 		
 		for (MemberFilter filter : memberFilter)
@@ -760,7 +746,6 @@ public class SymbolQueryEngine
 			{				
 				Object[] row = (Object[])o;
 				
-				//Hibernate.initialize(row[0]);
 				AbstractMember member = (AbstractMember)row[0];
 				TypeDeclaration parent = (TypeDeclaration)row[1];
 				
@@ -813,7 +798,7 @@ public class SymbolQueryEngine
 							if ((filter.getCategories() & MemberCategory.CONSTRUCTOR.value()) == 0)
 								skip = true;
 							else
-								members.add(new MemberEntry(getQNameStr(m.m_name), null, member, false, parent));
+								members.add(new MemberEntry(getQNameStr(m.m_funcName), null, member, false, parent));
 							
 							snapshotType = Type.CONSTRUCTOR;
 							break;
@@ -822,7 +807,7 @@ public class SymbolQueryEngine
 							if ((filter.getCategories() & MemberCategory.DESTRUCTOR.value()) == 0)
 								skip = true;
 							else
-								members.add(new MemberEntry(getQNameStr(m.m_name), null, member, false, parent));
+								members.add(new MemberEntry(getQNameStr(m.m_funcName), null, member, false, parent));
 
 							snapshotType = Type.DESTRUCTOR;							
 							break;  						
@@ -832,7 +817,7 @@ public class SymbolQueryEngine
 							if ((filter.getCategories() & MemberCategory.METHOD.value()) == 0)
 								skip = true;
 							else
-								members.add(new MemberEntry(getQNameStr(m.m_name), m.getType(), member, parent));
+								members.add(new MemberEntry(getQNameStr(m.m_funcName), m.getType(), member, parent));
 							
 							snapshotType = Type.METHOD;
 							break;
@@ -1191,7 +1176,7 @@ public class SymbolQueryEngine
 						skip = true;
 					else
 					{
-						Iterator<Declarator> iter = m.m_declarators.iterator();
+						Iterator<Declarator> iter = m.m_eventDeclarators.iterator();
 						
 						while (iter.hasNext())
 						{
@@ -1226,7 +1211,7 @@ public class SymbolQueryEngine
 						skip = true;
 					else
 					{
-						members.add(new MemberEntry(getQNameStr(m.m_name), m.getType(), member, parent));
+						members.add(new MemberEntry(getQNameStr(m.m_propName), m.getType(), member, parent));
 						
 						if (m.getGetAccessor() == null)
 							snapshotType = Type.PROPERTYSET;
@@ -1250,11 +1235,11 @@ public class SymbolQueryEngine
 					
 					if (!skip)
 					{
-						if (!matchParams(session, filter.getParamList(), m.m_parameters, isCSharp))
+						if (!matchParams(session, filter.getParamList(), m.m_indexerParams, isCSharp))
 							skip = true;
 						else
 						{
-							String name = getQNameStr(m.m_name);
+							String name = getQNameStr(m.m_indexerName);
 							
 							if (name == "")
 								name = "{INDEXER}";
@@ -1278,7 +1263,7 @@ public class SymbolQueryEngine
 						skip = true;
 					else
 					{
-						Iterator<FixedSizeBufDeclarator> iter = m.m_declarators.iterator();
+						Iterator<FixedSizeBufDeclarator> iter = m.m_bufDeclarators.iterator();
 						
 						while (iter.hasNext())
 						{
@@ -1382,7 +1367,7 @@ public class SymbolQueryEngine
 					m_nodeMap.put(me.m_node.getID(), new NodeEntry(me.m_node, snapshot));
 				}
 			}
-		}				
+		}
 	}
 	
 	
@@ -1398,7 +1383,11 @@ public class SymbolQueryEngine
 		
 		query.setParameterList("fileset", m_fileSet);
 			
+		long start = System.currentTimeMillis();		
+		
 		List list = query.list();		
+		
+		logQueryStat(log4j, start);
 		
 		Map<String, String> parentMap = new HashMap<String, String>();
 		
@@ -1414,11 +1403,15 @@ public class SymbolQueryEngine
 		Map<String, Integer> nameCount = new HashMap<String, Integer>();
 		
 		query = session.createQuery("SELECT e FROM InstanceCreationExpression e INNER JOIN FETCH e.m_file f " +
-			"INNER JOIN FETCH m_type WHERE f IN (:fileset) AND size(e.m_members) > 0");
+			"INNER JOIN FETCH m_type t INNER JOIN FETCH t.m_name LEFT JOIN FETCH t.m_arguments WHERE f IN (:fileset) AND size(e.m_members) > 0");
 			
 		query.setParameterList("fileset", m_fileSet);
 	
+		start = System.currentTimeMillis();
+		
 		list = query.list();
+		
+		logQueryStat(log4j, start);
 		
 		for (Object o : list)
 		{
@@ -1508,7 +1501,11 @@ public class SymbolQueryEngine
 	
 		query.setParameterList("fileset", m_fileSet);
 			
-		List list = query.list();		
+		long start = System.currentTimeMillis();
+		
+		List list = query.list();
+		
+		logQueryStat(log4j, start);
 		
 		Map<String, String> parentMap = new HashMap<String, String>();
 		
@@ -1522,11 +1519,16 @@ public class SymbolQueryEngine
 		}
 				
 		query = session.createQuery("SELECT l FROM LocalVariableDeclaration l INNER JOIN FETCH l.m_file f " +
-			"INNER JOIN FETCH l.m_type INNER JOIN FETCH l.m_declarators WHERE f IN (:fileset)");
+			"INNER JOIN FETCH l.m_type t INNER JOIN FETCH t.m_name LEFT JOIN FETCH t.m_arguments " +
+			"INNER JOIN FETCH l.m_declarators WHERE f IN (:fileset)");
 		
 		query.setParameterList("fileset", m_fileSet);
 				
+		start = System.currentTimeMillis();
+		
 		list = query.list();
+		
+		logQueryStat(log4j, start);
 
 		for (Object o : list)
 		{
@@ -1598,11 +1600,14 @@ public class SymbolQueryEngine
 	}
 	
 	
-	protected boolean matchModifiers(Collection value, TriStateMask filter)
+	protected boolean matchModifiers(Set<Modifier> modifiers, TriStateMask filter)
 	{
 		Set<ModifierKind> enumSet = new HashSet<ModifierKind>();
 		
-		for (Object o : value)
+		if (modifiers == null)
+			modifiers = new HashSet<Modifier>();
+		
+		for (Object o : modifiers)
 		{
 			Modifier m = (Modifier)o;
 			enumSet.add(m.getKind());
@@ -1823,6 +1828,9 @@ public class SymbolQueryEngine
 		if (filter == null)
 			return false;
 		
+		if (params == null)
+			params = new ArrayList<com.sourcedimensions.server.ast.Parameter>();
+		
 		Set<Integer> posSet = new HashSet<Integer>();
 		
 		for (Parameter par : filter)
@@ -1991,5 +1999,23 @@ public class SymbolQueryEngine
 		public com.sourcedimensions.server.ast.Type m_type;
 		public boolean m_checkName;
 		public AstNode m_parent;
+	}
+
+	
+	private void logQueryStat(Logger logger, long start)
+	{
+		long elapsed = System.currentTimeMillis() - start;
+		
+		Runtime runtime = Runtime.getRuntime();
+		
+		long maxMemory = runtime.maxMemory();
+		long allocMemory = runtime.totalMemory();
+		long freeMemory = runtime.freeMemory();
+		
+		logger.info("Running time: " + elapsed + " ms");
+		logger.info("Free memory: " + freeMemory / 1024 + " Kb");
+		logger.info("Total free memory: " + (freeMemory + (maxMemory - allocMemory)) / 1024 + " Kb");
+		logger.info("Allocated memory: " + allocMemory / 1024 + " Kb");
+		logger.info("Max memory: " + maxMemory / 1024 + " Kb");
 	}
 }

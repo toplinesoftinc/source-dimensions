@@ -12,7 +12,7 @@ public class FunctionalMember extends Member
 	}
 
 	protected int m_kind;
-	public List<Name> m_name = new AstArrayList<Name>(this, 2);
+	public List<Name> m_funcName = new AstArrayList<Name>(this, 2);
 	public List<Parameter> m_parameters = new AstArrayList<Parameter>(this, 3);
 	public List<TypeParameter> m_typeParams = new AstArrayList<TypeParameter>(this, 4);
 	public Set<Constraint> m_constraints = new AstHashSet<Constraint>(this, 5);	

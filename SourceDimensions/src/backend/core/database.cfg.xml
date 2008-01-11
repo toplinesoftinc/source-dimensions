@@ -109,7 +109,7 @@
 	<mapping resource="mapping/ast/SyncStatement.hbm.xml"/>
 	<mapping resource="mapping/ast/TryStatement.hbm.xml"/>
 	<mapping resource="mapping/ast/Type.hbm.xml"/>
-	<mapping resource="mapping/ast/TypeArgument.hbm.xml"/>
+	<mapping resource="mapping/ast/TypeArgument.hbm.xml"/> 
 	<mapping resource="mapping/ast/TypeDeclaration.hbm.xml"/>
 	<mapping resource="mapping/ast/TypeDeclarationMember.hbm.xml"/>
 	<mapping resource="mapping/ast/TypeDeclarationStatement.hbm.xml"/>

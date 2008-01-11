@@ -1005,9 +1005,9 @@ public class CsImport extends AstImport
 				parseAttributes(n, method.m_attributes);
 				parseModifiers(n, method.m_modifiers);
 				if (n.getName().equals("MethodDecl"))
-					parseQName(n.getNode("QName"), method.m_name);
+					parseQName(n.getNode("QName"), method.m_funcName);
 				else
-					method.m_name.add(parseName(n.getNode("Id")));
+					method.m_funcName.add(parseName(n.getNode("Id")));
 				parseTypeParams(n, method.m_typeParams);
 				parseConstraints(n, method.m_constraints);
 				
@@ -1113,9 +1113,9 @@ public class CsImport extends AstImport
 				prop.setType(parseType(n.getNode("Type")));
 				
 				if (n.getName().equals("PropDecl"))
-					parseQName(n.getNode("QName"), prop.m_name);
+					parseQName(n.getNode("QName"), prop.m_propName);
 				else
-					prop.m_name.add(parseName(n.getNode("Id")));
+					prop.m_propName.add(parseName(n.getNode("Id")));
 				
 				XmlNode accessor = n.getNode("GetAcsrDecl");
 				
@@ -1158,13 +1158,13 @@ public class CsImport extends AstImport
 				{
 					if (n.getNode("QName") != null)
 					{
-						parseQName(n.getNode("QName"), event.m_name);
+						parseQName(n.getNode("QName"), event.m_eventName);
 						event.setAddAccessor(parseAccessor(n.getNode("AddAcsrDecl")));
 						event.setRemoveAccessor(parseAccessor(n.getNode("RemoveAcsrDecl")));
 					}
 					else
 					{
-						parseDeclarators(n, event.m_declarators);
+						parseDeclarators(n, event.m_eventDeclarators);
 					}
 					
 					event.setType(parseType(n.getNode("Type")));				
@@ -1172,7 +1172,7 @@ public class CsImport extends AstImport
 				else
 				{
 					event.setType(parseType(n.getNode("Type")));
-					event.m_name.add(parseName(n.getNode("Id")));
+					event.m_eventName.add(parseName(n.getNode("Id")));
 				}
 				
 				members.add(event);
@@ -1202,7 +1202,7 @@ public class CsImport extends AstImport
 				if (t != null)
 					m.setInterfaceType(parseClsIntfType(t));
 				
-				parseFormalParams(n, m.m_parameters);
+				parseFormalParams(n, m.m_indexerParams);
 				
 				XmlNode accessor = n.getNode("GetAcsrDecl");
 				
@@ -1289,7 +1289,7 @@ public class CsImport extends AstImport
 
 			parseAttributes(n, func.m_attributes);
 			parseModifiers(n, func.m_modifiers);
-			func.m_name.add(parseName(n.getNode("Id")));
+			func.m_funcName.add(parseName(n.getNode("Id")));
 			parseFormalParams(n, func.m_parameters);
 			
 			XmlNode init = n.getNode("ConstrInit");
@@ -1345,7 +1345,7 @@ public class CsImport extends AstImport
 				decl.m_name = parseId(n.getNode("Id"));
 				decl.setExpression(parseExpr(n));
 
-				m.m_declarators.add(decl);
+				m.m_bufDeclarators.add(decl);
 			}
 			
 			members.add(m);

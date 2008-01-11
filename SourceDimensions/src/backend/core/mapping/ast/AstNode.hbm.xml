@@ -6,9 +6,9 @@
 <hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
 
     <class name="AstNode" table="T_AST_NODE" discriminator-value="0">
-        <id name="m_id" length="32" column="F_ID">
-            <generator class="uuid.hex"/>
-        </id>
+	<id name="m_id" length="32" column="F_ID">
+      		<generator class="uuid.hex"/>
+	</id>
 	<discriminator type="integer" force="true">                                                  
 		<column name="F_CLASS" index="idx_project_class,idx_sourcefile_class"/>
 	</discriminator>

@@ -4,7 +4,7 @@ import java.util.*;
 
 public class PropertyMember extends Member 
 {
-	public List<Name> m_name = new AstArrayList<Name>(this, 2);
+	public List<Name> m_propName = new AstArrayList<Name>(this, 2);
 	protected Accessor m_getAccessor, m_setAccessor;
 	
 	public Accessor getGetAccessor()

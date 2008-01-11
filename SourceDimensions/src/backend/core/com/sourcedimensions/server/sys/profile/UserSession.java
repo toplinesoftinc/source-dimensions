@@ -4,6 +4,8 @@ import java.util.*;
 
 import org.hibernate.Session;
 
+import com.sourcedimensions.server.utils.SystemProps;
+
 public class UserSession 
 {
 	protected String m_id;
@@ -11,8 +13,7 @@ public class UserSession
 	public User m_user;
 	public Date m_created;
 	public Date m_lastHit;
-	
-	protected static final long m_sessionLifetime = 1000 * 1800; // in millisec.  
+
 	
 	public String getID()
 	{
@@ -53,7 +54,7 @@ public class UserSession
 		else
 		{
 			Date now = new Date();
-			if (now.getTime() - userSession.m_lastHit.getTime() > m_sessionLifetime)
+			if ((now.getTime() - userSession.m_lastHit.getTime()) > (1000 * SystemProps.getSessionLifetime()))
 			{
 				session.delete(userSession);
 				valid = false;

@@ -467,7 +467,7 @@ public class JavaImport extends AstImport
 					func.getType().m_rank += n.getNodeList("Dim").size();					
 				}
 				
-				func.m_name.add(parseName(n.getNode("ID")));
+				func.m_funcName.add(parseName(n.getNode("ID")));
 				func.m_parameters.addAll(parseFormalParams(n));
 				
 				XmlNode throwNode = n.getNode("Throws");

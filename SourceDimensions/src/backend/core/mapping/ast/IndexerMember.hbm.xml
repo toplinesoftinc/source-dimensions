@@ -6,12 +6,12 @@
 <hibernate-mapping package="com.sourcedimensions.server.ast" default-cascade="save-update" default-access="field">
 
     <subclass name="IndexerMember" extends="Member" discriminator-value="35">
-	<list name="m_name" table="T_NAME" where="F_ROLE=2">
+	<list name="m_indexerName" table="T_NAME" where="F_ROLE=2">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="Name"/>
 	</list>
-	<list name="m_parameters" where="F_ROLE=3">
+	<list name="m_indexerParams" where="F_ROLE=3">
 		<key column="F_PARENT" foreign-key="none"/>
 		<list-index column="F_ORDINAL_INDEX"/>
 		<one-to-many class="Parameter"/>

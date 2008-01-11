@@ -70,6 +70,7 @@
 		<property name="xfire.lib.dir" value="${backend.src.dir}/lib/xfire"/>
 		<property name="hibernate.lib.dir" value="${backend.src.dir}/lib/hibernate"/>
 		<property name="jdbc.lib.dir" value="${backend.src.dir}/lib/jdbc"/>
+		<property name="log4j.lib.dir" value="${backend.src.dir}/lib/log4j"/>
 
 		<property name="tomcat.webapp.dir" value="${tomcat.home.dir}/webapps"/>
 
@@ -369,7 +370,7 @@
 		 target="${java.target.vm}"
 		 debug="${debug}"
 		 optimize="on"
-		 classpath="${hibernate.lib.dir}/hibernate3.jar;${xfire.lib.dir}/xfire-core-1.2.2.jar"
+		 classpath="${hibernate.lib.dir}/hibernate3.jar;${xfire.lib.dir}/xfire-core-1.2.2.jar;${log4j.lib.dir}/log4j-1.2.15.jar"
 		 excludes="**/*.xml"
 		/>
 
