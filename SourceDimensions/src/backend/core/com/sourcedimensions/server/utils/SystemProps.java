@@ -15,11 +15,9 @@ public class SystemProps
 	protected static final String m_propSessionLifetime = "session.lifetime";
 	
 	protected static final int DEFAULT_IMPORT_THREADNUM = 5;
-	protected static final int DEFAULT_QUERY_MEMBER_BATCHSIZE = 100;
 	protected static final long DEFAULT_SESSION_LIFETIME = 1800;
 
 	protected static int m_importThreadNum = DEFAULT_IMPORT_THREADNUM;
-	protected static int m_queryMemberBatchSize = DEFAULT_QUERY_MEMBER_BATCHSIZE;
 	protected static long m_sessionLifetime = DEFAULT_SESSION_LIFETIME;
 	
 	protected static Logger log4j = Logger.getLogger(SystemProps.class.getPackage().getName());
@@ -46,11 +44,6 @@ public class SystemProps
 				if (val != null)
 					m_importThreadNum = Integer.parseInt(val);
 				
-				val = props.getProperty(m_propQueryMemberPageSize);
-	
-				if (val != null)
-					m_queryMemberBatchSize = Integer.parseInt(val);
-
 				val = props.getProperty(m_propSessionLifetime);
 				
 				if (val != null)
@@ -70,11 +63,6 @@ public class SystemProps
 		return m_importThreadNum;
 	}
 
-	public static int getQueryMemberBatchSize()
-	{
-		return m_queryMemberBatchSize;
-	}
-	
 	public static long getSessionLifetime()
 	{
 		return m_sessionLifetime;

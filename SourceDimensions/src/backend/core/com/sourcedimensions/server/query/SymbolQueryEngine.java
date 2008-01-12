@@ -61,7 +61,6 @@ import com.sourcedimensions.server.ast.Parameter.ParamKind;
 import com.sourcedimensions.client.model.MemberCategory;
 import com.sourcedimensions.client.model.Operator;
 import com.sourcedimensions.server.ast.Name;
-import com.sourcedimensions.server.utils.SystemProps;
 
 
 public class SymbolQueryEngine 
@@ -74,6 +73,8 @@ public class SymbolQueryEngine
 	protected Map<String, NodeEntry> m_nodeMap = new HashMap<String, NodeEntry>();
 	protected List<TypeFilter> m_anonymFilterList = new ArrayList<TypeFilter>();
 	protected Set<TypeDeclaration> m_memberRoots = new HashSet<TypeDeclaration>();
+	
+	protected boolean m_isCSharp;
 
 	
 	public SymbolQueryEngine(String sessionId)
@@ -134,24 +135,30 @@ public class SymbolQueryEngine
 	protected Collection<SnapshotNode> executeFromRoot(Session session, String projectId, TypeDeclaration root, SymbolQuery symQuery)
 	{
 		Set<Project> prjSpace = DatabaseHelper.getProjectSpace(session, projectId);
-		
-		Collection<SnapshotNode> output = executeNamespaceFilter(session, prjSpace, root, symQuery);		
-		
+
 		Project prj = (Project)prjSpace.toArray()[0];
-		boolean isCSharp = true;
 
 		switch (prj.getLanguage())
 		{
 			case JAVA_14:
 			case JAVA_15:
-				isCSharp = false;
-				// TODO: rewrite execAnonymClassFilter function (do not use recursive queries!)
-				//execAnonymClassFilter(session);
-		}
+				m_isCSharp = false;
+				break;
+				
+			default:
+				m_isCSharp = true;
+		}		
+
+		execAnonymClassFilter(session);
+		
+		Collection<SnapshotNode> output = executeNamespaceFilter(session, prjSpace, root, symQuery);		
+		
+		if (!m_isCSharp)
+			execAnonymClassFilter(session);
 
 		executeMemberFilter(session, prjSpace, symQuery);		
 		
-		execLocalDeclFilter(session, symQuery, isCSharp);
+		execLocalDeclFilter(session, symQuery);
 		
 		return output;
 	}
@@ -410,16 +417,16 @@ public class SymbolQueryEngine
 						{
 							query = session.createQuery("SELECT DISTINCT d FROM DelegateDeclaration d " +
 								"INNER JOIN FETCH d.m_file LEFT JOIN FETCH d.m_parameters p " + 
-								"INNER JOIN FETCH p.m_type LEFT JOIN FETCH p.m_modifiers, CompilationUnit u WHERE d.m_parent = u " + 
-								"AND d.m_project IN (:projects)");
+								"LEFT JOIN FETCH p.m_type LEFT JOIN FETCH p.m_modifiers LEFT JOIN FETCH p.m_arguments, " +
+								"CompilationUnit u WHERE d.m_parent = u AND d.m_project IN (:projects)");
 
 							query.setParameterList("projects", prjSpace);
 						}
 						else
 						{
 							query = session.createQuery("SELECT DISTINCT d1, d2 FROM DelegateDeclaration d1 " +
-								"INNER JOIN FETCH d1.m_file LEFT JOIN FETCH d1.m_parameters p INNER JOIN p.m_type " +
-								"LEFT JOIN p.m_modifiers, TypeDeclarationMember m, TypeDeclaration d2 " +
+								"INNER JOIN FETCH d1.m_file LEFT JOIN FETCH d1.m_parameters p LEFT JOIN p.m_type " +
+								"LEFT JOIN p.m_modifiers LEFT JOIN p.m_arguments, TypeDeclarationMember m, TypeDeclaration d2 " +
 								"WHERE d1.m_parent = m AND m.m_parent = d2 AND d2 IN (:parents)");
 
 							query.setParameterList("parents", rootSet);
@@ -454,12 +461,12 @@ public class SymbolQueryEngine
 							if (!Pattern.matches(delegate.getName(), decl.m_name))
 								continue;
 							
-							if (!matchType(session, delegate.getType(), decl.getType(), true))
+							if (!matchType(session, delegate.getType(), decl.getType()))
 								continue;
 							
 							if (!delegate.getAnyParams())
 							{
-								if (!matchParams(session, delegate.getParamList(), decl.m_parameters, true))
+								if (!matchParams(session, delegate.getParamList(), decl.m_parameters))
 									continue;
 							}
 							
@@ -664,33 +671,15 @@ public class SymbolQueryEngine
 		return output;
 	}
 
-	protected void executeMemberFilter(Session session, Set<Project> prjSpace, SymbolQuery symQuery)
-	{
-		Set<TypeDeclaration> rootSet = new HashSet<TypeDeclaration>();
-		Iterator<TypeDeclaration> iter = m_memberRoots.iterator();
-		
-		while (iter.hasNext())
-		{			
-			rootSet.add(iter.next());
-			
-			if (rootSet.size() >= SystemProps.getQueryMemberBatchSize() || !iter.hasNext())
-			{
-				executeMemberFilter(session, prjSpace, symQuery, rootSet);
-				rootSet.clear();
-				System.gc();
-			}
-		}
-	}
 	
-	protected void executeMemberFilter(Session session, Set<Project> prjSpace, SymbolQuery symQuery, Set<TypeDeclaration> rootSet)
+	protected void executeMemberFilter(Session session, Set<Project> prjSpace, SymbolQuery symQuery)
 	{
 		List<MemberFilter> memberFilter = new ArrayList<MemberFilter>();
 		Project prj = (Project)prjSpace.toArray()[0];
-		boolean isCSharp = (prj.getLanguage() == Language.CSHARP_11 || prj.getLanguage() == Language.CSHARP_20);
 		Map<String, Map<String, Integer>> nameCount = new HashMap<String, Map<String, Integer>>();
 		Type snapshotType = null;		
 
-		if (rootSet.size() == 0)
+		if (m_memberRoots.size() == 0)
 			return;
 		
 		if (symQuery.getAllMembers())
@@ -730,7 +719,7 @@ public class SymbolQueryEngine
 			"LEFT JOIN FETCH m.m_indexerParams ip LEFT JOIN FETCH ip.m_modifiers LEFT JOIN FETCH ip.m_type ipt LEFT JOIN FETCH ipt.m_name " + 
 			"LEFT JOIN FETCH ipt.m_arguments, TypeDeclaration d WHERE m.m_parent = d AND m.m_parent IN (:parents)");
 		
-		query.setParameterList("parents", rootSet);
+		query.setParameterList("parents", m_memberRoots);
 		
 		long start = System.currentTimeMillis();
 		
@@ -1136,7 +1125,7 @@ public class SymbolQueryEngine
 					
 					if (!skip)
 					{
-						if (!isCSharp && !filter.getAnyThrows())
+						if (!m_isCSharp && !filter.getAnyThrows())
 						{
 							for (String fltr : filter.getThrowList())
 							{
@@ -1158,7 +1147,7 @@ public class SymbolQueryEngine
 						
 						if (!skip && !filter.getAnyParams())
 						{
-							if (!matchParams(session, filter.getParamList(), m.m_parameters, isCSharp))
+							if (!matchParams(session, filter.getParamList(), m.m_parameters))
 								skip = true;
 						}
 					}
@@ -1235,7 +1224,7 @@ public class SymbolQueryEngine
 					
 					if (!skip)
 					{
-						if (!matchParams(session, filter.getParamList(), m.m_indexerParams, isCSharp))
+						if (!matchParams(session, filter.getParamList(), m.m_indexerParams))
 							skip = true;
 						else
 						{
@@ -1308,7 +1297,7 @@ public class SymbolQueryEngine
 				{					
 					if (filter.getType() != null && m.m_type != null)
 					{					
-						if (!matchType(session, filter.getType(), m.m_type, isCSharp))
+						if (!matchType(session, filter.getType(), m.m_type))
 							continue;
 					}
 					
@@ -1379,19 +1368,41 @@ public class SymbolQueryEngine
 		if (m_fileSet.size() == 0)
 			return;
 
-		Query query = session.createQuery("SELECT a.m_id, p.m_id FROM AstNode a INNER JOIN a.m_parent p WHERE f IN (:fileset)");
+		Set<SourceFile> fileSet = new HashSet<SourceFile>();
+
+		Query query = session.createQuery("SELECT e FROM InstanceCreationExpression e INNER JOIN FETCH e.m_file f " +
+			"INNER JOIN FETCH e.m_type t INNER JOIN FETCH t.m_name LEFT JOIN FETCH t.m_arguments WHERE f IN (:fileset) AND size(e.m_members) > 0");
 		
 		query.setParameterList("fileset", m_fileSet);
-			
-		long start = System.currentTimeMillis();		
+
+		long start = System.currentTimeMillis();
+	
+		List list = query.list();
+	
+		logQueryStat(log4j, start);
 		
-		List list = query.list();		
+		for (Object o : list)
+		{
+			InstanceCreationExpression expr = (InstanceCreationExpression)o;
+			fileSet.add(expr.getSourceFile());
+		}		
+		
+		if (fileSet.size() == 0)
+			return;
+		
+		query = session.createQuery("SELECT a.m_id, p.m_id FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_file IN (:fileset)");
+		
+		query.setParameterList("fileset", fileSet);
+			
+		start = System.currentTimeMillis();		
+		
+		List l = query.list();		
 		
 		logQueryStat(log4j, start);
 		
 		Map<String, String> parentMap = new HashMap<String, String>();
 		
-		for (Object o : list)
+		for (Object o : l)
 		{
 			Object[] row = (Object[])o;
 			String id = (String)row[0];
@@ -1400,19 +1411,8 @@ public class SymbolQueryEngine
 			parentMap.put(id, parentId);
 		}		
 		
-		Map<String, Integer> nameCount = new HashMap<String, Integer>();
-		
-		query = session.createQuery("SELECT e FROM InstanceCreationExpression e INNER JOIN FETCH e.m_file f " +
-			"INNER JOIN FETCH m_type t INNER JOIN FETCH t.m_name LEFT JOIN FETCH t.m_arguments WHERE f IN (:fileset) AND size(e.m_members) > 0");
-			
-		query.setParameterList("fileset", m_fileSet);
-	
-		start = System.currentTimeMillis();
-		
-		list = query.list();
-		
-		logQueryStat(log4j, start);
-		
+		Map<String, Map<String, Integer>> nameCount = new HashMap<String, Map<String, Integer>>();
+				
 		for (Object o : list)
 		{
 			boolean match = false;
@@ -1431,15 +1431,29 @@ public class SymbolQueryEngine
 					
 					if (entry != null)
 					{
-						Integer count = nameCount.get(name);
+						Map<String, Integer> map = nameCount.get(entry.m_node.getID());
 						
-						if (count == null)
-							nameCount.put(name, 1);
+						if (map == null)
+						{
+							map = new HashMap<String, Integer>();
+							map.put(name, 1);
+							
+							nameCount.put(entry.m_node.getID(), map);
+						}
 						else
 						{
-							count++;
-							nameCount.put(name, count);							
-							name = name + ":" + Integer.toString(count);
+							Integer count = map.get(name);
+							
+							if (count == null)
+							{
+								map.put(name, 1);
+							}
+							else
+							{
+								count++;
+								map.put(name, count);							
+								name = name + ":" + Integer.toString(count);
+							}
 						}
 						
 						SnapshotNode snapshot = new SnapshotNode(Type.ANONYMCLASS, name);
@@ -1463,11 +1477,11 @@ public class SymbolQueryEngine
 					break;				
 			}
 		}		
-	}	
-
+	}
+	
 	
 	// TODO: Const/final modifiers match. Change in grammar might be necessary.
-	protected void execLocalDeclFilter(Session session, SymbolQuery symQuery, boolean isCSharp)
+	protected void execLocalDeclFilter(Session session, SymbolQuery symQuery)
 	{
 		if (m_fileSet.size() == 0)
 			return;		
@@ -1497,7 +1511,7 @@ public class SymbolQueryEngine
 		if (localDeclFilter.size() == 0)
 			return;		
 
-		Query query = session.createQuery("SELECT a.m_id, p.m_id FROM AstNode a INNER JOIN a.m_parent p WHERE f IN (:fileset)");
+		Query query = session.createQuery("SELECT a.m_id, p.m_id FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_file IN (:fileset)");
 	
 		query.setParameterList("fileset", m_fileSet);
 			
@@ -1518,9 +1532,8 @@ public class SymbolQueryEngine
 			parentMap.put(id, parentId);
 		}
 				
-		query = session.createQuery("SELECT l FROM LocalVariableDeclaration l INNER JOIN FETCH l.m_file f " +
-			"INNER JOIN FETCH l.m_type t INNER JOIN FETCH t.m_name LEFT JOIN FETCH t.m_arguments " +
-			"INNER JOIN FETCH l.m_declarators WHERE f IN (:fileset)");
+		query = session.createQuery("SELECT l FROM LocalVariableDeclaration l INNER JOIN FETCH l.m_file f INNER JOIN FETCH m.m_modifiers " +
+			"INNER JOIN FETCH l.m_type t LEFT JOIN FETCH t.m_name LEFT JOIN FETCH t.m_arguments INNER JOIN FETCH l.m_declarators WHERE f IN (:fileset)");
 		
 		query.setParameterList("fileset", m_fileSet);
 				
@@ -1537,7 +1550,7 @@ public class SymbolQueryEngine
 			
 			for (LocalDeclFilter filter : localDeclFilter)
 			{
-				if (!matchType(session, filter.getType(), decl.getType(), isCSharp))
+				if (!matchType(session, filter.getType(), decl.getType()))
 					continue;
 				
 				for (Declarator dr : decl.m_declarators)
@@ -1575,8 +1588,7 @@ public class SymbolQueryEngine
 	}
 	
 	
-	protected boolean matchType(Session session, com.sourcedimensions.client.model.Type filter, 
-		com.sourcedimensions.server.ast.Type type, boolean isCSharp)
+	protected boolean matchType(Session session, com.sourcedimensions.client.model.Type filter, com.sourcedimensions.server.ast.Type type)
 	{
 		if (!Pattern.matches(filter.getName(), type.getName()))
 			return false;
@@ -1587,7 +1599,7 @@ public class SymbolQueryEngine
 		if (filter.getTypeProps().getMask(Property.TYPEPARAM.value()) == (type.m_arguments.size() == 0 ? TriStateBoolean.TRUE : TriStateBoolean.FALSE))
 			return false;
 
-		if (isCSharp)
+		if (m_isCSharp)
 		{
 			if (filter.getTypeProps().getMask(Property.NULLABLE.value()) == (type.m_nullable ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
 				return false;
@@ -1823,7 +1835,7 @@ public class SymbolQueryEngine
 
 	
 	protected boolean matchParams(Session session, List<Parameter> filter, 
-		List<com.sourcedimensions.server.ast.Parameter> params, boolean isCSharp)
+		List<com.sourcedimensions.server.ast.Parameter> params)
 	{
 		if (filter == null)
 			return false;
@@ -1889,7 +1901,7 @@ public class SymbolQueryEngine
 						if (!Pattern.matches(par.getName(), params.get(i).m_name))
 							continue;
 						
-						if (isCSharp)
+						if (m_isCSharp)
 						{
 							if (par.getModifiers().getMask(Parameter.Modifier.OUT.value()) == 
 									(param.getKind() == ParamKind.OUT ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
@@ -1910,7 +1922,7 @@ public class SymbolQueryEngine
 								(param.m_varParam ? TriStateBoolean.FALSE : TriStateBoolean.TRUE))
 							continue;
 						
-						if (!matchType(session, par.getType(), param.getType(), isCSharp))
+						if (!matchType(session, par.getType(), param.getType()))
 							continue;
 					
 						posSet.add(i);
