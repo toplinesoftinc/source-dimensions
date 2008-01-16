@@ -26,7 +26,7 @@
 	<target name="help">
 		<echo message="all                   - Build all projects"/>
 		<echo message="parser.util           - Standalone executable parsing utility"/>
-		<echo message="parse.lib             - Shared library of parsing component"/>
+		<echo message="parser.lib             - Shared library of parsing component"/>
 		<echo message="parser.tools          - Set of standalone utilities for lexer/parser generation"/>
 		<echo message="parser.test.java14    - Java 1.4 parser tests"/>
 		<echo message="parser.test.java15    - Java 1.5 parser tests"/>

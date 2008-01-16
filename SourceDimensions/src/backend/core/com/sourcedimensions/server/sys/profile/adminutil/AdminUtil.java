@@ -21,16 +21,19 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 
 import org.hibernate.Hibernate;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import com.sourcedimensions.server.sys.astimport.ImportManager;
 import com.sourcedimensions.server.sys.profile.Account;
 import com.sourcedimensions.server.sys.profile.Database;
+import com.sourcedimensions.server.sys.profile.Limit;
 import com.sourcedimensions.server.sys.profile.User;
 import com.sourcedimensions.server.sys.Project;
 
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,6 +59,8 @@ import java.io.File;
 import javax.swing.JList;
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
+
+
 
 public class AdminUtil extends JFrame
 {
@@ -85,9 +90,11 @@ public class AdminUtil extends JFrame
 	private List<String> m_dbIdList = null;  //  @jve:decl-index=0:
 	private List<String> m_accIdList = null;
 	private List<String> m_prjIdList = null;  //  @jve:decl-index=0:
+	private List<String> m_limitIdList = null;  //  @jve:decl-index=0:
 	private String m_curDbId = null;  //  @jve:decl-index=0:
 	private String m_curAccId = null;
 	private String m_curPrjId = null;
+	private String m_curLimitId = null;
 	private JComboBox m_dbAccComboBox = null;
 	private JLabel m_dbSelLabel = null;
 	private JScrollPane m_accScrlPane = null;
@@ -169,8 +176,30 @@ public class AdminUtil extends JFrame
 	private boolean m_dbValid = true;
 	private boolean m_prjEditMode = false;
 	
-	protected final static String m_tempPath = File.separator + "tmp";  //  @jve:decl-index=0:
+	private final static String m_tempPath = File.separator + "tmp";  //  @jve:decl-index=0:
+	private final static String[] m_limitNames = 
+	{
+		"Max. number of namespaces",
+		"Max. number of types",
+		"Max. number of members"
+	}; 
+	
+	
 	private JLabel m_procStatLabel = null;
+	private JPanel m_limitPanel = null;
+	private JScrollPane m_limitScrlPane = null;
+	private JTable m_limitTable = null;
+	private JButton m_limitAddButton = null;
+	private JButton m_limitEditButton = null;
+	private JButton m_limitDeleteButton = null;
+	private JDialog m_limitDialog = null;  //  @jve:decl-index=0:visual-constraint="668,977"
+	private JPanel m_limitDialogPane = null;
+	private JButton m_limitSaveButton = null;
+	private JButton m_limitCancelButton = null;
+	private JLabel m_limitTypeLabel = null;
+	private JComboBox m_limitTypeComboBox = null;
+	private JLabel m_limitValueLabel = null;
+	private JFormattedTextField m_limitValueField = null;
 	/**
 	 * This method initializes jTopLvlPanel	
 	 * 	
@@ -201,7 +230,9 @@ public class AdminUtil extends JFrame
 			m_mainTabPane.addTab("Databases", null, getDbPanel(), "Databases");
 			m_mainTabPane.addTab("Accounts", null, getAccPanel(), "Accounts");
 			m_mainTabPane.addTab("Projects", null, getPrjPanel(), "Projects");
+			m_mainTabPane.addTab("Limits", null, getLimitPanel(), "Limits");
 		}
+		
 		return m_mainTabPane;
 	}
 
@@ -2605,6 +2636,423 @@ public class AdminUtil extends JFrame
 	}
 
 	/**
+	 * This method initializes m_limitPanel	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getLimitPanel() 
+	{
+		if (m_limitPanel == null) 
+		{
+			m_limitPanel = new JPanel();
+			m_limitPanel.setLayout(null);
+			m_limitPanel.add(getLimitPane(), null);
+			m_limitPanel.add(getLimitAddButton(), null);
+			m_limitPanel.add(getLimitEditButton(), null);
+			m_limitPanel.add(getLimitDeleteButton(), null);
+		}
+		
+		return m_limitPanel;
+	}
+
+	/**
+	 * This method initializes m_limitTable	
+	 * 	
+	 * @return javax.swing.JTable	
+	 */
+
+	/**
+	 * This method initializes m_limitScrlPane	
+	 * 	
+	 * @return javax.swing.JScrollPane	
+	 */
+	private JScrollPane getLimitPane() 
+	{
+		if (m_limitScrlPane == null) 
+		{
+			m_limitScrlPane = new JScrollPane();
+			m_limitScrlPane.setSize(new Dimension(400, 139));
+			m_limitScrlPane.setLocation(new Point(15, 17));
+			m_limitScrlPane.setViewportView(getLimitTable());
+		}
+		
+		return m_limitScrlPane;
+	}
+
+	/**
+	 * This method initializes m_limitTable	
+	 * 	
+	 * @return javax.swing.JTable	
+	 */
+	private JTable getLimitTable() 
+	{
+		if (m_limitTable == null) 
+		{
+			Vector<String> headers = new Vector<String>();
+			headers.add("Limit name");
+			headers.add("Value");
+			
+			DefaultTableModel defaultTableModel = new DefaultTableModel()
+			{
+			  private static final long serialVersionUID = 1L;
+			
+			  public boolean isCellEditable(int rowIndex, int vColIndex)
+			  {
+			    return false;
+			  }
+			};
+			
+			defaultTableModel.setColumnCount(2);
+			defaultTableModel.setNumRows(0);
+			defaultTableModel.setColumnIdentifiers(headers);
+			
+			m_limitTable = new JTable();
+			m_limitTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+			m_limitTable.setRowSelectionAllowed(true);
+			m_limitTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			m_limitTable.setBounds(new Rectangle(0, 0, 432, 80));
+			m_limitTable.setModel(defaultTableModel);
+		}
+		
+		return m_limitTable;
+	}
+
+	/**
+	 * This method initializes m_limitAddButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getLimitAddButton() 
+	{
+		if (m_limitAddButton == null) 
+		{
+			m_limitAddButton = new JButton();
+			m_limitAddButton.setText("Add...");
+			m_limitAddButton.setLocation(new Point(459, 17));
+			m_limitAddButton.setSize(new Dimension(97, 26));
+			
+			m_limitAddButton.addActionListener(new java.awt.event.ActionListener()
+			{
+				public void actionPerformed(java.awt.event.ActionEvent e)
+				{
+					JDialog dialog = getLimitDialog();
+					
+					m_curLimitId = null;
+					
+					m_limitTypeComboBox.removeAllItems();
+					
+					for (String name : m_limitNames)
+					{
+						m_limitTypeComboBox.addItem(name);
+					}
+					
+					m_limitValueField.setValue(0);
+					m_limitTypeComboBox.setSelectedIndex(0);
+					
+					dialog.setVisible(true);
+				}
+			});			
+			
+		}
+		return m_limitAddButton;
+	}
+
+	/**
+	 * This method initializes m_limitEditButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getLimitEditButton() 
+	{
+		if (m_limitEditButton == null) 
+		{
+			m_limitEditButton = new JButton();
+			m_limitEditButton.setText("Edit...");
+			m_limitEditButton.setLocation(new Point(459, 72));
+			m_limitEditButton.setSize(new Dimension(97, 26));
+			
+			m_limitEditButton.addActionListener(new java.awt.event.ActionListener()
+			{
+				public void actionPerformed(java.awt.event.ActionEvent e)
+				{
+					int sel = m_limitTable.getSelectedRow();
+					
+					if (sel == -1)
+					{
+						JOptionPane.showMessageDialog(null, "No limit record is selected.", 
+								"Error", JOptionPane.ERROR_MESSAGE);
+					}
+					else
+					{
+						m_curLimitId = m_limitIdList.get(sel);
+						Limit limit = null;
+
+						try
+						{
+							Session session = Database.getProfileSessionFactory().getCurrentSession();
+							session.beginTransaction();
+							
+							limit = (Limit)session.createQuery("FROM Limit WHERE m_id = '" + m_curLimitId + "'").uniqueResult();					
+							
+							session.getTransaction().commit();
+						}
+						catch (Exception ex)
+						{
+							JOptionPane.showMessageDialog(null, "Cannot edit the limit.", "Error", JOptionPane.ERROR_MESSAGE);				
+							return;
+						}
+
+						JDialog dialog = getLimitDialog();
+												
+						m_limitValueField.setValue(limit.getValue());
+						
+						m_limitTypeComboBox.removeAllItems();
+						
+						for (String name : m_limitNames)
+						{
+							m_limitTypeComboBox.addItem(name);
+						}
+						
+						m_limitTypeComboBox.setSelectedIndex(limit.getType().value());
+						
+						dialog.setVisible(true);
+					}
+				}
+			});
+			
+		}
+		return m_limitEditButton;
+	}
+
+	/**
+	 * This method initializes m_limitDeleteButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getLimitDeleteButton() 
+	{
+		if (m_limitDeleteButton == null) 
+		{
+			m_limitDeleteButton = new JButton();
+			m_limitDeleteButton.setText("Delete");
+			m_limitDeleteButton.setLocation(new Point(459, 127));
+			m_limitDeleteButton.setSize(new Dimension(97, 26));
+			
+			m_limitDeleteButton.addActionListener(new java.awt.event.ActionListener()
+			{
+				public void actionPerformed(java.awt.event.ActionEvent e)
+				{
+					int sel = m_limitTable.getSelectedRow();
+					
+					if (sel == -1)
+					{
+						JOptionPane.showMessageDialog(null, "No limit record is selected.", 
+								"Error", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+					else
+					{
+						if (JOptionPane.showConfirmDialog(null, "Do you want to delete selected limit?", 
+								"Confirmation",  JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE) == JOptionPane.YES_OPTION)
+						{
+							String id = m_limitIdList.get(sel);
+							
+							Session session = Database.getProfileSessionFactory().getCurrentSession();
+							
+							session = Database.getProfileSessionFactory().getCurrentSession();
+							session.beginTransaction();
+							Limit limit = (Limit)session.createQuery("FROM Limit WHERE m_id = '" + id + "'").uniqueResult();
+							session.delete(limit);
+							session.getTransaction().commit();
+							refreshLimitList();
+						}
+					}
+				}
+			});
+			
+		}
+		return m_limitDeleteButton;
+	}
+
+	/**
+	 * This method initializes m_limitDialog	
+	 * 	
+	 * @return javax.swing.JDialog	
+	 */
+	private JDialog getLimitDialog() 
+	{
+		if (m_limitDialog == null) 
+		{
+			m_limitDialog = new JDialog(this);
+			m_limitDialog.setSize(new Dimension(268, 206));
+			centerWindow(m_limitDialog);
+			m_limitDialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+			m_limitDialog.setResizable(false);
+			m_limitDialog.setTitle("Limit");
+			m_limitDialog.setModal(true);
+			m_limitDialog.setContentPane(getLimitDialogPane());
+		}
+		return m_limitDialog;
+	}
+
+	/**
+	 * This method initializes m_limitPane	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getLimitDialogPane() 
+	{
+		if (m_limitDialogPane == null) 
+		{
+			m_limitValueLabel = new JLabel();
+			m_limitValueLabel.setBounds(new Rectangle(33, 84, 73, 16));
+			m_limitValueLabel.setText("Limit value:");
+			m_limitTypeLabel = new JLabel();
+			m_limitTypeLabel.setBounds(new Rectangle(32, 13, 75, 16));
+			m_limitTypeLabel.setText("Type of limit:");
+			m_limitDialogPane = new JPanel();
+			m_limitDialogPane.setLayout(null);
+			m_limitDialogPane.add(m_limitTypeLabel, null);
+			m_limitDialogPane.add(getLimitTypeComboBox(), null);
+			m_limitDialogPane.add(m_limitValueLabel, null);
+			m_limitDialogPane.add(getLimitValueField(), null);
+			m_limitDialogPane.add(getLimitCancelButton(), null);
+			m_limitDialogPane.add(getLimitSaveButton(), null);
+		}
+		return m_limitDialogPane;
+	}
+
+	/**
+	 * This method initializes m_limitSaveButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getLimitSaveButton() 
+	{
+		if (m_limitSaveButton == null) 
+		{
+			m_limitSaveButton = new JButton();
+			m_limitSaveButton.setText("Save");
+			m_limitSaveButton.setBounds(new Rectangle(30, 137, 87, 23));
+			m_limitSaveButton.addActionListener(new java.awt.event.ActionListener()
+			{
+				public void actionPerformed(java.awt.event.ActionEvent e)
+				{
+					if (m_limitValueField.getText().trim().length() == 0)
+					{
+						JOptionPane.showMessageDialog(null, "Please enter limit value.", 
+								"InputError", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+										
+					Session session = Database.getProfileSessionFactory().getCurrentSession();
+					
+					session.beginTransaction();
+
+					Limit limit = new Limit();			
+					
+					if (m_curLimitId == null)
+					{
+						Limit l = (Limit)session.createQuery("FROM Limit WHERE m_type = " + m_limitTypeComboBox.getSelectedIndex()).uniqueResult();
+						
+						if (l != null)
+						{
+							if (JOptionPane.showConfirmDialog(null, "Limit value for the specified type already exists. " +
+									"Do you want to overwrite it?", "Overwrite confirmation", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+							{
+								l.setValue(((Number)m_limitValueField.getValue()).longValue());
+								session.saveOrUpdate(l);
+								session.getTransaction().commit();
+								
+								refreshLimitList();
+
+								m_limitDialog.setVisible(false);
+								m_limitDialog = null;							
+							}
+							else
+							{
+								session.getTransaction().commit();
+								
+								return;								
+							}
+						}
+					}
+					
+					limit.m_id = m_curLimitId;
+					limit.setType(Limit.Type.values()[m_limitTypeComboBox.getSelectedIndex()]);
+					limit.setValue(((Number)m_limitValueField.getValue()).longValue());
+					
+					session.saveOrUpdate(limit);
+					
+					session.getTransaction().commit();
+					
+					m_limitDialog.setVisible(false);
+					m_limitDialog = null;
+					
+					refreshLimitList();
+				}
+			});					
+		}
+		return m_limitSaveButton;
+	}
+
+	/**
+	 * This method initializes m_limitCancelButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getLimitCancelButton() 
+	{
+		if (m_limitCancelButton == null) 
+		{
+			m_limitCancelButton = new JButton();
+			m_limitCancelButton.setBounds(new Rectangle(144, 137, 87, 23));
+			m_limitCancelButton.setText("Cancel");
+			m_limitCancelButton.addActionListener(new java.awt.event.ActionListener()
+			{
+				public void actionPerformed(java.awt.event.ActionEvent e)
+				{
+					m_limitDialog.setVisible(false);
+					m_limitDialog = null;
+				}
+			});			
+		}
+		return m_limitCancelButton;
+	}
+
+	/**
+	 * This method initializes m_limitTypeComboBox	
+	 * 	
+	 * @return javax.swing.JComboBox	
+	 */
+	private JComboBox getLimitTypeComboBox() 
+	{
+		if (m_limitTypeComboBox == null) 
+		{
+			m_limitTypeComboBox = new JComboBox();
+			m_limitTypeComboBox.setBounds(new Rectangle(32, 31, 197, 19));
+		}
+		return m_limitTypeComboBox;
+	}
+
+	/**
+	 * This method initializes m_limitValueField	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getLimitValueField() 
+	{
+		if (m_limitValueField == null) 
+		{
+			NumberFormat format = NumberFormat.getIntegerInstance();
+			format.setMaximumIntegerDigits(Long.toString(Long.MAX_VALUE).length() - 1);
+			m_limitValueField = new JFormattedTextField(format);
+			m_limitValueField.setBounds(new Rectangle(111, 79, 118, 21));
+		}
+		return m_limitValueField;
+	}
+
+	/**
 	 * @param args
 	 */
 	public static void main(String[] args)
@@ -2648,6 +3096,7 @@ public class AdminUtil extends JFrame
 
 		centerWindow(this);
 		refreshDbList();
+		refreshLimitList();
 	}
 	
 	protected void refreshDbList()
@@ -2674,6 +3123,28 @@ public class AdminUtil extends JFrame
 			m_dbPrjComboBox.addItem(db.getServerUrl() + "/" + db.getDatabaseName());
 		}
 	}
+
+	protected void refreshLimitList()
+	{
+		Session session = Database.getProfileSessionFactory().getCurrentSession();
+		
+		session.beginTransaction();
+		List list = session.createQuery("FROM Limit ORDER BY m_type").list();		
+		session.getTransaction().commit();
+		
+		((DefaultTableModel) m_limitTable.getModel()).setRowCount(list.size());
+		m_limitIdList = new ArrayList<String>(list.size());
+		
+		for (int i = 0; i < list.size(); i++)
+		{
+			Limit limit = (Limit)list.get(i);
+
+			m_limitIdList.add(i, limit.m_id);
+			m_limitTable.setValueAt(m_limitNames[limit.getType().value()], i, 0);
+			m_limitTable.setValueAt(NumberFormat.getIntegerInstance().format(limit.getValue()), i, 1);
+		}
+	}
+
 	
 	
 	protected void refreshAccList()

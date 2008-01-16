@@ -10,17 +10,17 @@
       		<generator class="uuid.hex"/>
 	</id>
 	<discriminator type="integer" force="true">                                                  
-		<column name="F_CLASS" index="idx_project_class,idx_sourcefile_class"/>
+		<column name="F_CLASS" index="idx_project_class,idx_file_class,idx_class_role,idx_parent_class,idx_parent_class_role"/>
 	</discriminator>
 	<many-to-one name="m_parent" column="F_PARENT" foreign-key="none"/>
 	<many-to-one name="m_project" column="F_PROJECT" foreign-key="none" cascade="none" not-null="true" index="idx_project,idx_project_class"/>
-	<many-to-one name="m_file" column="F_FILE" foreign-key="none" cascade="none" index="idx_sourcefile,idx_sourcefile_class"/>
+	<many-to-one name="m_file" column="F_FILE" foreign-key="none" cascade="none" index="idx_file,idx_file_class"/>
 	<property name="m_left" column="F_POS_LEFT"/>
 	<property name="m_right" column="F_POS_RIGHT"/>
-	<property name="m_role" column="F_ROLE"/>
+	<property name="m_role" column="F_ROLE" index="idx_class_role,idx_parent_class_role"/>
 	<set name="m_children" inverse="true">
 		<key foreign-key="none">
-			<column name="F_PARENT" index="idx_node_parent"/>
+			<column name="F_PARENT" index="idx_parent,idx_parent_class,idx_parent_class_role"/>
 		</key>
 		<one-to-many class="AstNode"/>	
 	</set>

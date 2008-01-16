@@ -36,6 +36,7 @@
 	<mapping resource="mapping/sys/profile/Account.hbm.xml"/>
 	<mapping resource="mapping/sys/profile/User.hbm.xml"/>
 	<mapping resource="mapping/sys/profile/UserSession.hbm.xml"/>
+	<mapping resource="mapping/sys/profile/Limit.hbm.xml"/>
     </session-factory>
 
 </hibernate-configuration>

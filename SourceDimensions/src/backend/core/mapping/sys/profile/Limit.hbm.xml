@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.sourcedimensions.server.sys.profile" default-cascade="save-update" default-access="field">
+
+    <class name="Limit" table="T_LIMIT">
+        <id name="m_id" length="32" column="F_ID">
+            <generator class="uuid.hex"/>
+        </id>
+        <property name="m_type" column="F_TYPE" unique="true"/>
+        <property name="m_value"  column="F_VALUE"/>
+    </class>
+
+</hibernate-mapping>
