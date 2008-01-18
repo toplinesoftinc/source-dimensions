@@ -26,6 +26,10 @@ public class WSConsumer
 	protected static final String m_sslPortPropName = "SSLPORT";
 		
 	protected static String m_serviceUrl;
+	
+	protected static String m_limitMsg = "Limiting value %s set for maximum number of %s satisfying specified criteria is exceeded on server side " +
+		"as a result of query execution. Please disable filters for all levels below %<s, execute this query again and use subqueries to get data for disabled levels " +
+		"or narrow criteria for %<s to bring the number of %<s below the limit.";
 
 	protected Client m_client;
 	protected boolean m_cancelled = false;
@@ -117,6 +121,21 @@ public class WSConsumer
 					MessageDialog.openWarning(null, "Project does not exist", "The project does not exist on the server.");
 					return null;
 				}
+				else if (fault.getRole() != null && fault.getRole().equals(IWebService.FaultValues.NAMESPACE_LIMIT_EXCEEDED.name()))
+				{
+					MessageDialog.openError(null, "Limit is exceeded", String.format(m_limitMsg, fault.getMessage(), "namespaces"));
+					return null;
+				}
+				else if (fault.getRole() != null && fault.getRole().equals(IWebService.FaultValues.TYPEDECL_LIMIT_EXCEEDED.name()))
+				{
+					MessageDialog.openError(null, "Limit is exceeded", String.format(m_limitMsg, fault.getMessage(), "type declarations"));
+					return null;
+				}
+				else if (fault.getRole() != null && fault.getRole().equals(IWebService.FaultValues.MEMBER_LIMIT_EXCEEDED.name()))
+				{
+					MessageDialog.openError(null, "Limit is exceeded", String.format(m_limitMsg, fault.getMessage(), "members"));
+					return null;
+				}				
 				else
 				{
 					throw fault;

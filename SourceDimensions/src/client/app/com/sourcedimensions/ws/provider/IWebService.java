@@ -15,7 +15,10 @@ public interface IWebService
 		LOGIN_FAILED,
 		LANG_ACCESS_DENIED,
 		PROJECT_NOT_FOUND,
-		SESSION_EXPIRED;
+		SESSION_EXPIRED, 
+		NAMESPACE_LIMIT_EXCEEDED,
+		TYPEDECL_LIMIT_EXCEEDED,
+		MEMBER_LIMIT_EXCEEDED;
 	}
 		
 	public String login(String userName, String password) throws XFireFault;

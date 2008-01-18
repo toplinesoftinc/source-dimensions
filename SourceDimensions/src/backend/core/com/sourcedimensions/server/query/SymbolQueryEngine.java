@@ -1,5 +1,6 @@
 package com.sourcedimensions.server.query;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.codehaus.xfire.fault.XFireFault;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import com.sourcedimensions.client.model.BaseType;
@@ -54,13 +56,14 @@ import com.sourcedimensions.server.ast.Modifier.ModifierKind;
 import com.sourcedimensions.server.ast.TypeDeclaration.TypeDeclKind;
 import com.sourcedimensions.server.sys.Project;
 import com.sourcedimensions.server.sys.SourceFile;
-import com.sourcedimensions.server.sys.Project.Language;
 import com.sourcedimensions.server.sys.profile.Database;
+import com.sourcedimensions.server.sys.profile.Limit;
 import com.sourcedimensions.server.utils.DatabaseHelper;
 import com.sourcedimensions.server.ast.Parameter.ParamKind;
 import com.sourcedimensions.client.model.MemberCategory;
 import com.sourcedimensions.client.model.Operator;
 import com.sourcedimensions.server.ast.Name;
+import com.sourcedimensions.ws.provider.IWebService.FaultValues;
 
 
 public class SymbolQueryEngine 
@@ -73,6 +76,7 @@ public class SymbolQueryEngine
 	protected Map<String, NodeEntry> m_nodeMap = new HashMap<String, NodeEntry>();
 	protected List<TypeFilter> m_anonymFilterList = new ArrayList<TypeFilter>();
 	protected Set<TypeDeclaration> m_memberRoots = new HashSet<TypeDeclaration>();
+	protected long m_memberCount;
 	
 	protected boolean m_isCSharp;
 
@@ -83,7 +87,7 @@ public class SymbolQueryEngine
 	}
 	
 	
-	public SnapshotNode execute(String projectId, SymbolQuery query)
+	public SnapshotNode execute(String projectId, SymbolQuery query) throws XFireFault
 	{
 		Session session = m_db.getDbSessionFactory().getCurrentSession();
 		
@@ -105,7 +109,7 @@ public class SymbolQueryEngine
 	}
 
 	
-	public SnapshotNode execute(String projectId, String rootId, SymbolQuery query)
+	public SnapshotNode execute(String projectId, String rootId, SymbolQuery query) throws XFireFault
 	{
 		Session session = m_db.getDbSessionFactory().getCurrentSession();
 		
@@ -132,7 +136,8 @@ public class SymbolQueryEngine
 	}
 
 	
-	protected Collection<SnapshotNode> executeFromRoot(Session session, String projectId, TypeDeclaration root, SymbolQuery symQuery)
+	protected Collection<SnapshotNode> executeFromRoot(Session session, String projectId, 
+									TypeDeclaration root, SymbolQuery symQuery) throws XFireFault
 	{
 		Set<Project> prjSpace = DatabaseHelper.getProjectSpace(session, projectId);
 
@@ -164,7 +169,8 @@ public class SymbolQueryEngine
 	}
 	
 	
-	protected Collection<SnapshotNode> executeNamespaceFilter(Session session, Set<Project> prjSpace, TypeDeclaration root, SymbolQuery symQuery)
+	protected Collection<SnapshotNode> executeNamespaceFilter(Session session, Set<Project> prjSpace, 
+												TypeDeclaration root, SymbolQuery symQuery) throws XFireFault
 	{
 		Set<TypeDeclaration> rootSet = new HashSet<TypeDeclaration>();
 
@@ -335,7 +341,12 @@ public class SymbolQueryEngine
 		output.addAll(nameMap.values());
 				
 		if (rootSet.size() > 0)
+		{
+			if (symQuery.getAllTypes() || symQuery.getTypeFilter().size() > 0)
+				checkLimits(Limit.Type.NAMESPACE, rootSet.size());
+			
 			executeTypeFilter(session, prjSpace, rootSet, symQuery);
+		}
 		
 		if (symQuery.getAllNamespaces() || symQuery.getGlobalNamespace())
 			output.addAll(executeTypeFilter(session, prjSpace, null, symQuery));
@@ -672,16 +683,15 @@ public class SymbolQueryEngine
 	}
 
 	
-	protected void executeMemberFilter(Session session, Set<Project> prjSpace, SymbolQuery symQuery)
+	protected void executeMemberFilter(Session session, Set<Project> prjSpace, SymbolQuery symQuery) throws XFireFault
 	{
 		List<MemberFilter> memberFilter = new ArrayList<MemberFilter>();
-		Project prj = (Project)prjSpace.toArray()[0];
 		Map<String, Map<String, Integer>> nameCount = new HashMap<String, Map<String, Integer>>();
 		Type snapshotType = null;		
 
 		if (m_memberRoots.size() == 0)
 			return;
-		
+				
 		if (symQuery.getAllMembers())
 		{
 			MemberFilter filter = new  MemberFilter();
@@ -710,7 +720,9 @@ public class SymbolQueryEngine
 		if (memberFilter.size() == 0)
 			return;
 
-		Query query = session.createQuery("SELECT m, d FROM AbstractMember m INNER JOIN FETCH m.m_file LEFT JOIN FETCH m.m_modifiers LEFT JOIN FETCH m.m_type t " + 
+		checkLimits(Limit.Type.TYPEDECL, m_memberRoots.size());		
+		
+		Query query = session.createQuery("SELECT DISTINCT m, d FROM AbstractMember m INNER JOIN FETCH m.m_file LEFT JOIN FETCH m.m_modifiers LEFT JOIN FETCH m.m_type t " + 
 			"LEFT JOIN FETCH t.m_name LEFT JOIN FETCH t.m_arguments LEFT JOIN FETCH m.m_interfaceType it LEFT JOIN FETCH it.m_name " +
 			"LEFT JOIN FETCH it.m_arguments LEFT JOIN FETCH m.m_declarators LEFT JOIN FETCH m.m_eventDeclarators LEFT JOIN FETCH m.m_bufDeclarators " + 
 			"LEFT JOIN FETCH m.m_throwList tl LEFT JOIN FETCH tl.m_name LEFT JOIN FETCH tl.m_arguments LEFT JOIN FETCH m.m_eventName " +
@@ -728,6 +740,8 @@ public class SymbolQueryEngine
 		logQueryStat(log4j, start);
 		
 		List<MemberEntry> members = new ArrayList<MemberEntry>(); 
+		
+		m_memberCount = 0;
 		
 		for (MemberFilter filter : memberFilter)
 		{
@@ -1337,6 +1351,8 @@ public class SymbolQueryEngine
 				
 				if (validMembers.size() == 0)
 					continue;
+		
+				m_memberCount += validMembers.size();
 				
 				for (MemberEntry me : validMembers)
 				{
@@ -1370,7 +1386,7 @@ public class SymbolQueryEngine
 
 		Set<SourceFile> fileSet = new HashSet<SourceFile>();
 
-		Query query = session.createQuery("SELECT e FROM InstanceCreationExpression e INNER JOIN FETCH e.m_file f " +
+		Query query = session.createQuery("SELECT DISTINCT e FROM InstanceCreationExpression e INNER JOIN FETCH e.m_file f " +
 			"INNER JOIN FETCH e.m_type t INNER JOIN FETCH t.m_name LEFT JOIN FETCH t.m_arguments WHERE f IN (:fileset) AND size(e.m_members) > 0");
 		
 		query.setParameterList("fileset", m_fileSet);
@@ -1390,7 +1406,7 @@ public class SymbolQueryEngine
 		if (fileSet.size() == 0)
 			return;
 		
-		query = session.createQuery("SELECT a.m_id, p.m_id FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_file IN (:fileset)");
+		query = session.createQuery("SELECT DISTINCT a.m_id, p.m_id FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_file IN (:fileset)");
 		
 		query.setParameterList("fileset", fileSet);
 			
@@ -1481,11 +1497,11 @@ public class SymbolQueryEngine
 	
 	
 	// TODO: Const/final modifiers match. Change in grammar might be necessary.
-	protected void execLocalDeclFilter(Session session, SymbolQuery symQuery)
+	protected void execLocalDeclFilter(Session session, SymbolQuery symQuery) throws XFireFault
 	{
 		if (m_fileSet.size() == 0)
 			return;		
-		
+				
 		List<LocalDeclFilter> localDeclFilter = new ArrayList<LocalDeclFilter>();
 		
 		if (symQuery.getAllLocalDecls())
@@ -1511,7 +1527,9 @@ public class SymbolQueryEngine
 		if (localDeclFilter.size() == 0)
 			return;		
 
-		Query query = session.createQuery("SELECT a.m_id, p.m_id FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_file IN (:fileset)");
+		checkLimits(Limit.Type.MEMBER, m_memberCount);		
+		
+		Query query = session.createQuery("SELECT DISTINCT a.m_id, p.m_id FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_file IN (:fileset)");
 	
 		query.setParameterList("fileset", m_fileSet);
 			
@@ -1532,7 +1550,7 @@ public class SymbolQueryEngine
 			parentMap.put(id, parentId);
 		}
 				
-		query = session.createQuery("SELECT l FROM LocalVariableDeclaration l INNER JOIN FETCH l.m_file f INNER JOIN FETCH m.m_modifiers " +
+		query = session.createQuery("SELECT DISTINCT l FROM LocalVariableDeclaration l INNER JOIN FETCH l.m_file f INNER JOIN FETCH m.m_modifiers " +
 			"INNER JOIN FETCH l.m_type t LEFT JOIN FETCH t.m_name LEFT JOIN FETCH t.m_arguments INNER JOIN FETCH l.m_declarators WHERE f IN (:fileset)");
 		
 		query.setParameterList("fileset", m_fileSet);
@@ -2029,5 +2047,44 @@ public class SymbolQueryEngine
 		logger.info("Total free memory: " + (freeMemory + (maxMemory - allocMemory)) / 1024 + " Kb");
 		logger.info("Allocated memory: " + allocMemory / 1024 + " Kb");
 		logger.info("Max memory: " + maxMemory / 1024 + " Kb");
+	}
+	
+	
+	private void checkLimits(Limit.Type type, long count) throws XFireFault
+	{
+		Session session = Database.getProfileSessionFactory().getCurrentSession();
+		
+		session.beginTransaction();
+		
+		Limit limit = (Limit)session.createQuery("FROM Limit WHERE m_type = " + type.value()).uniqueResult();
+		
+		if (limit != null)
+		{
+			if (limit.getValue() < count)
+			{
+				XFireFault fault = new XFireFault(new Exception());
+				
+				switch (type)
+				{
+					case NAMESPACE:
+						fault.setRole(FaultValues.NAMESPACE_LIMIT_EXCEEDED.name());
+						break;
+						
+					case TYPEDECL:
+						fault.setRole(FaultValues.TYPEDECL_LIMIT_EXCEEDED.name());
+						break;
+
+					case MEMBER:
+						fault.setRole(FaultValues.MEMBER_LIMIT_EXCEEDED.name());
+						break;
+				}
+				
+				fault.setMessage(NumberFormat.getIntegerInstance().format(limit.getValue()));
+				
+				throw fault;				
+			}
+		}
+				
+		session.getTransaction().commit();
 	}
 }

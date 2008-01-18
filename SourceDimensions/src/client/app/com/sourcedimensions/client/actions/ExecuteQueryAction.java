@@ -105,7 +105,9 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		
 		if (snapshot == null)
 		{
-			MessageDialog.openInformation(shell, "Query Results", "No item found for the specified query");
+			if (consumer.getFault() == null)
+				MessageDialog.openInformation(shell, "Query Results", "No item found for the specified query");
+
 			return true;
 		}
 		else
