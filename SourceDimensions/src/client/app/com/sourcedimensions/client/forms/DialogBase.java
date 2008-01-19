@@ -57,6 +57,8 @@ public abstract class DialogBase
 	{	
 		Shell shell = getShell();
 		
+		m_cancel = false;
+		
 		addKeyListener(shell, new KeyAdapter()
 		{
 			public void keyPressed(KeyEvent e)

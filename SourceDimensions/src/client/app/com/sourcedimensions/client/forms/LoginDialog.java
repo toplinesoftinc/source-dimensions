@@ -26,7 +26,7 @@ public class LoginDialog extends DialogBase
 	private Button m_loginButton;
 	private Button m_cancelButton;
 
-	private static String m_sessionID;
+	private static String m_sessionID;  //  @jve:decl-index=0:
 	
 	public LoginDialog(Shell parent)
 	{
@@ -40,6 +40,8 @@ public class LoginDialog extends DialogBase
 		
 		if (parent != null)
 			m_shell.setParent(parent);
+		
+		m_sessionID = null;
 		
 		m_shell.setText("Login");
 		m_shell.setLayout(null);

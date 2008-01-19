@@ -32,7 +32,7 @@ public class WSConsumer
 		"or narrow criteria for %<s to bring the number of %<s below the limit.";
 
 	protected Client m_client;
-	protected boolean m_cancelled = false;
+	protected boolean m_cancel = false;
 	protected XFireFault m_fault;
 
 	static
@@ -73,9 +73,12 @@ public class WSConsumer
 	{
 		if (LoginDialog.getSessionID() == null)
 		{
-			new LoginDialog(parent).open();
+			LoginDialog login = new LoginDialog(parent);
+			login.open();
 			
-			if (LoginDialog.getSessionID() == null)
+			m_cancel = login.isCancelled();
+			
+			if (LoginDialog.getSessionID() == null || login.isCancelled())
 				return null;
 		}
 		
@@ -104,9 +107,12 @@ public class WSConsumer
 				{
 					MessageDialog.openWarning(null, "Session expired", "You session is expired. Please re-login");
 			
-					new LoginDialog(parent).open();
+					LoginDialog login = new LoginDialog(parent);
+					login.open();
 					
-					if (LoginDialog.getSessionID() == null)
+					m_cancel = login.isCancelled();
+					
+					if (LoginDialog.getSessionID() == null || login.isCancelled())
 						return null;
 					
 					m_fault = null;
@@ -156,7 +162,7 @@ public class WSConsumer
 		m_client = ((XFireProxy) Proxy.getInvocationHandler(service)).getClient();
 		m_client.setProperty("mtom-enabled", "true");
 
-		m_cancelled = false;
+		m_cancel = false;
 		
 		WaitDialog waitDialog = new WaitDialog(this, parent);
 
@@ -184,13 +190,13 @@ public class WSConsumer
 			catch (Exception e) { }
 			
 			m_client = null;
-			m_cancelled = true;
+			m_cancel = true;
 		}
 	}
 	
 	public boolean wasCancelled()
 	{
-		return m_cancelled;
+		return m_cancel;
 	}
 	
 	public XFireFault getFault()

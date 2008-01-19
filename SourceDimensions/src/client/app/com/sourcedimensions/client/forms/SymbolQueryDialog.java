@@ -234,6 +234,8 @@ public class SymbolQueryDialog extends DialogBase
 			public void widgetSelected(SelectionEvent e) 
 			{
 				saveQuery();
+				m_forceClose = true;
+				m_shell.close();
 			}
 		});
 		m_closeButton.setToolTipText("Login");
@@ -316,9 +318,9 @@ public class SymbolQueryDialog extends DialogBase
 		tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
 		tabItem.setText("Members");
 		tabItem.setControl(m_membersTab);
-		TabItem tabItem4 = new TabItem(m_queryParamsTabFolder, SWT.NONE);
-		tabItem4.setText("Local Declarations");
-		tabItem4.setControl(m_localDeclarationsTab);
+		tabItem = new TabItem(m_queryParamsTabFolder, SWT.NONE);
+		tabItem.setText("Local Declarations");
+		tabItem.setControl(m_localDeclarationsTab);
 	}
 
 	private void createNamespacesTab()

@@ -52,7 +52,6 @@
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xfire-xmlbeans-1.2.2.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/xfire/xml-apis-1.0.b2.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/xfire/XmlSchema-1.1.jar"/>
-	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/jdbc/postgresql-8.3dev-600.jdbc4.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/xml-apis.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/ant-1.6.5.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/ant-antlr-1.6.5.jar"/>
@@ -92,5 +91,6 @@
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/xerces-2.6.2.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/c3p0-0.9.1.jar"/>
 	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/hibernate/ehcache-1.2.3.jar"/>
+	<classpathentry kind="lib" path="C:/Projects/SourceDimensions/src/backend/lib/jdbc/postgresql-8.2-507.jdbc4.jar"/>
 	<classpathentry kind="output" path="output"/>
 </classpath>

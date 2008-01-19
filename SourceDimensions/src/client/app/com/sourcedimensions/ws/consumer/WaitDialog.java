@@ -55,21 +55,21 @@ public class WaitDialog extends DialogBase
 		if (parent != null)
 			m_shell.setParent(parent);
 		m_shell.setText("");
-		m_shell.setSize(new Point(379, 125));
+		m_shell.setSize(new Point(381, 134));
 		m_shell.setLayout(null);
 		m_progressBar = new ProgressBar(m_shell, SWT.INDETERMINATE | SWT.SMOOTH | SWT.BORDER);
-		m_progressBar.setBounds(new Rectangle(12, 39, 348, 15));
+		m_progressBar.setBounds(new Rectangle(13, 36, 348, 15));
 		m_waitLabel = new Label(m_shell, SWT.CENTER);
-		m_waitLabel.setBounds(new Rectangle(12, 15, 348, 23));
+		m_waitLabel.setBounds(new Rectangle(13, 12, 348, 23));
 		m_waitLabel.setFont(new Font(Display.getDefault(), "Tahoma", 10, SWT.BOLD));
 		m_waitLabel.setText("Connecting to server...");
 		m_cancelButton = new Button(m_shell, SWT.NONE);
-		m_cancelButton.setLocation(new Point(143, 61));
+		m_cancelButton.setLocation(new Point(143, 70));
 		m_cancelButton.setText("&Cancel");
 		m_cancelButton.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_cancelButton.setSize(new Point(88, 25));
-		m_elapsedTimeLabel = new Label(getShell(), SWT.RIGHT);
-		m_elapsedTimeLabel.setBounds(new Rectangle(232, 55, 128, 15));
+		m_elapsedTimeLabel = new Label(getShell(), SWT.CENTER);
+		m_elapsedTimeLabel.setBounds(new Rectangle(13, 52, 348, 18));
 		m_elapsedTimeLabel.setText("Time elapsed: 00:00:00");
 		m_cancelButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() 
 		{

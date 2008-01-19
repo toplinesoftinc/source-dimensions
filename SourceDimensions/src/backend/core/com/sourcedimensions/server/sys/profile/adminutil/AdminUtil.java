@@ -3030,7 +3030,7 @@ public class AdminUtil extends JFrame
 		if (m_limitTypeComboBox == null) 
 		{
 			m_limitTypeComboBox = new JComboBox();
-			m_limitTypeComboBox.setBounds(new Rectangle(32, 31, 197, 19));
+			m_limitTypeComboBox.setBounds(new Rectangle(32, 31, 197, 22));
 		}
 		return m_limitTypeComboBox;
 	}

@@ -258,7 +258,8 @@ public class SymbolQueryEngine
 				if (skip)
 					continue;
 
-				String[] parts = name.split("\\.");
+				String[] parts = (name + ". ").split("\\.");
+				parts[parts.length - 1] = "";
 				
 				int i = 0, j = 0;
 				boolean wildcard = false;
@@ -270,37 +271,16 @@ public class SymbolQueryEngine
 					if (fltr[i].equals("**"))
 					{
 						if (wildcard)
-						{
-							if (lookahead == null)
+						{	
+							if (lookahead != null && Pattern.matches(parts[j], lookahead))
 							{
-								if (j == (parts.length - 1))
-									addNamespace(decl, name, decl.getSourceFile(), nameMap, rootSet);
+								wildcard = false;
+								i += step;
+
+								if (i >= fltr.length  && j >= (parts.length - 2))
+									addNamespace(decl, name, decl.getSourceFile(), nameMap, rootSet);							
 							}
-							else
-							{
-								if (parts[j].equals(lookahead))
-								{
-									wildcard = false;
-									i += step;
-									
-									if (j == (parts.length - 1))
-									{
-										boolean w = true;
-										
-										for (int k = i; k < fltr.length; k++)
-										{
-											if (!fltr[k].equals("**"))
-											{
-												w = false;
-												break;
-											}
-										}
-										
-										if (w)
-											addNamespace(decl, name, decl.getSourceFile(), nameMap, rootSet);
-									}
-								}
-							}								
+							
 							j++;								
 						}
 						else
@@ -323,7 +303,7 @@ public class SymbolQueryEngine
 					{
 						if (Pattern.matches(fltr[i], parts[j]))
 						{
-							if (i == (fltr.length - 1) && j == (parts.length - 1))
+							if (i == (fltr.length - 1) && j >= (parts.length - 2))
 								addNamespace(decl, name, decl.getSourceFile(), nameMap, rootSet);
 						}
 						else
@@ -333,6 +313,9 @@ public class SymbolQueryEngine
 						j++;
 					}
 				}
+				
+				if (wildcard && lookahead == null)
+					addNamespace(decl, name, decl.getSourceFile(), nameMap, rootSet);					
 			}
 		}
 			
@@ -448,7 +431,7 @@ public class SymbolQueryEngine
 						List l = query.list();
 						
 						logQueryStat(log4j, start);
-							
+					
 						for (Object o : l)
 						{
 							DelegateDeclaration decl = null;
@@ -503,7 +486,7 @@ public class SymbolQueryEngine
 						}							
 					}
 			}
-			
+						
 			for (Object o : list)
 			{
 				TypeDeclaration decl = null;
@@ -744,7 +727,7 @@ public class SymbolQueryEngine
 		m_memberCount = 0;
 		
 		for (MemberFilter filter : memberFilter)
-		{
+		{			
 			for (Object o : list)
 			{				
 				Object[] row = (Object[])o;
@@ -1427,7 +1410,7 @@ public class SymbolQueryEngine
 			parentMap.put(id, parentId);
 		}		
 		
-		Map<String, Map<String, Integer>> nameCount = new HashMap<String, Map<String, Integer>>();
+		Map<String, Map<String, Integer>> nameCount = new HashMap<String, Map<String, Integer>>();		
 				
 		for (Object o : list)
 		{
@@ -1496,7 +1479,6 @@ public class SymbolQueryEngine
 	}
 	
 	
-	// TODO: Const/final modifiers match. Change in grammar might be necessary.
 	protected void execLocalDeclFilter(Session session, SymbolQuery symQuery) throws XFireFault
 	{
 		if (m_fileSet.size() == 0)
@@ -1560,7 +1542,7 @@ public class SymbolQueryEngine
 		list = query.list();
 		
 		logQueryStat(log4j, start);
-
+		
 		for (Object o : list)
 		{
 			LocalVariableDeclaration decl = (LocalVariableDeclaration)o;
@@ -1579,6 +1561,20 @@ public class SymbolQueryEngine
 					if (!Pattern.matches(filter.getName(), dr.m_name))
 						continue;
 					
+					if (m_isCSharp)
+					{
+						if ((decl.m_const && filter.getFinal() == TriStateBoolean.FALSE) || (!decl.m_const && filter.getFinal() == TriStateBoolean.TRUE))
+							continue;
+					}
+					else
+					{
+						TriStateMask mask = new TriStateMask();
+						mask.setMask(com.sourcedimensions.client.model.Modifier.FINAL.value(), filter.getFinal());
+						
+						if (!matchModifiers(decl.m_modifiers, mask))
+							continue;
+					}
+						
 					for (String id = parentMap.get(decl.getID()) ; id != null ; id = parentMap.get(id))
 					{
 						NodeEntry entry = m_nodeMap.get(id);
