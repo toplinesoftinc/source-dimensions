@@ -17,7 +17,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Button;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.forms.DialogBase;
-import org.eclipse.swt.widgets.Text;
 
 public class WaitDialog extends DialogBase 
 {

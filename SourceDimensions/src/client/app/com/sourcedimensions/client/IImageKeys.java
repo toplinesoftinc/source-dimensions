@@ -10,7 +10,8 @@ public interface IImageKeys
 	public final static String IMG_FOLDER = "icons/folder.png";
 	public final static String IMG_QUERY_GROUP = "icons/querygroup.png";
 	public final static String IMG_SNAPSHOT = "icons/snapshot.png";
-	public final static String IMG_SYMBOL_QUERY = "icons/symbol.png";	
+	public final static String IMG_SYMBOL_QUERY = "icons/symbol.png";
+	public final static String IMG_GLOBAL_NAMESPACE_DECL = "icons/snapshot/global_namespace_decl.png";
 	public final static String IMG_NAMESPACE_DECL = "icons/snapshot/namespace_decl.png";
 	public final static String IMG_CLASS_DECL = "icons/snapshot/class_decl.png";
 	public final static String IMG_ANONYM_CLASS_DECL = "icons/snapshot/anonym_class_decl.png";

@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.codehaus.xfire.fault.XFireFault;
+import org.hibernate.Hibernate;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import com.sourcedimensions.client.model.BaseType;
@@ -25,6 +26,7 @@ import com.sourcedimensions.client.model.LocalDeclFilter;
 import com.sourcedimensions.client.model.MemberFilter;
 import com.sourcedimensions.client.model.Parameter;
 import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.SnapshotRootNode;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.client.model.TriStateBoolean;
 import com.sourcedimensions.client.model.TriStateMask;
@@ -73,13 +75,13 @@ public class SymbolQueryEngine
 	protected static Logger log4j = Logger.getLogger(SymbolQueryEngine.class.getPackage().getName());
 	
 	protected Set<SourceFile> m_fileSet = new HashSet<SourceFile>();
-	protected Map<String, NodeEntry> m_nodeMap = new HashMap<String, NodeEntry>();
+	protected Map<String, SnapshotNode> m_nodeMap = new HashMap<String, SnapshotNode>();
 	protected List<TypeFilter> m_anonymFilterList = new ArrayList<TypeFilter>();
 	protected Set<TypeDeclaration> m_memberRoots = new HashSet<TypeDeclaration>();
-	protected long m_memberCount;
+	protected Set<TypeDeclaration> m_typeRoots = new HashSet<TypeDeclaration>();
 	
+	protected long m_memberCount;	
 	protected boolean m_isCSharp;
-
 	
 	public SymbolQueryEngine(String sessionId)
 	{
@@ -87,58 +89,18 @@ public class SymbolQueryEngine
 	}
 	
 	
-	public SnapshotNode execute(String projectId, SymbolQuery query) throws XFireFault
+	public SnapshotRootNode execute(String projectId, SymbolQuery query) throws XFireFault
 	{
-		Session session = m_db.getDbSessionFactory().getCurrentSession();
-		
-		session.beginTransaction();
-		
-		SnapshotNode root = new SnapshotNode();
-		
-		Collection<SnapshotNode> result = executeFromRoot(session, projectId, null, query);
-
-		if (result != null)
-		{
-			root.setChildren(new ArrayList<SnapshotNode>());
-			root.getChildren().addAll(result);
-		}		
-		
-		session.getTransaction().commit();
-		
-		return root;
+		return execute(projectId, null, query);
 	}
 
 	
-	public SnapshotNode execute(String projectId, String rootId, SymbolQuery query) throws XFireFault
+	public SnapshotRootNode execute(String projectId, Set<SnapshotNode> rootSet, SymbolQuery symQuery) throws XFireFault
 	{
 		Session session = m_db.getDbSessionFactory().getCurrentSession();
-		
+
 		session.beginTransaction();
-		
-		TypeDeclaration typeDecl = (TypeDeclaration)session.createQuery("FROM TypeDeclaration " +
-			" WHERE m_id = :id").setString("id", rootId).uniqueResult();
-		
-		if (typeDecl == null)
-		{
-			session.getTransaction().commit();
-			return null;
-		}
 
-		SnapshotNode root = new SnapshotNode();
-		
-		m_nodeMap.put(typeDecl.getID(), new NodeEntry(typeDecl, root));
-		
-		executeFromRoot(session, projectId, typeDecl, query);
-		
-		session.getTransaction().commit();
-		
-		return root;
-	}
-
-	
-	protected Collection<SnapshotNode> executeFromRoot(Session session, String projectId, 
-									TypeDeclaration root, SymbolQuery symQuery) throws XFireFault
-	{
 		Set<Project> prjSpace = DatabaseHelper.getProjectSpace(session, projectId);
 
 		Project prj = (Project)prjSpace.toArray()[0];
@@ -152,31 +114,95 @@ public class SymbolQueryEngine
 				
 			default:
 				m_isCSharp = true;
-		}		
-
-		execAnonymClassFilter(session);
+		}				
 		
-		Collection<SnapshotNode> output = executeNamespaceFilter(session, prjSpace, root, symQuery);		
+		SnapshotNode global = null;
+		Set<String> idSet = new HashSet<String>();
+		
+		m_memberCount = 0;
+		m_fileSet.clear();
+		m_nodeMap.clear();
+		m_anonymFilterList.clear();
+		m_memberRoots.clear();
+		m_typeRoots.clear();
+		
+		if (rootSet != null && rootSet.size() > 0)
+		{			
+			for (SnapshotNode s : rootSet)
+			{
+				if (s.level() == SnapshotNode.Level.GLOBAL)
+					global = s;				
+				
+				if (s.getRefs() != null)
+				{
+					for (Reference r : s.getRefs())
+					{
+						idSet.add(r.getId());					
+						m_nodeMap.put(r.getId(), s);
+					}
+				}
+			}
+		}
+
+		if (idSet.size() > 0)
+		{
+			Query query = session.createQuery("FROM AstNode INNER JOIN FETCH m_file WHERE m_id IN (:idset)");
+			query.setParameterList("idset", idSet);
+			
+			List list = query.list();
+			
+			for (Object o : list)
+			{	
+				Hibernate.initialize(o);
+	
+				m_fileSet.add(((AstNode)o).getSourceFile());
+			
+				if (o instanceof TypeDeclaration)
+				{
+					TypeDeclaration decl = (TypeDeclaration)o;
+	
+					m_typeRoots.add(decl);
+	
+					if (decl.getKind() != TypeDeclaration.TypeDeclKind.NAMESPACE)
+						m_memberRoots.add(decl);
+				}
+			}
+		}
+		
+		SnapshotRootNode root = new SnapshotRootNode();
+		
+		root.setChildren(new ArrayList<SnapshotNode>());
+		root.setInternalRoots(rootSet);
+				
+		if (rootSet == null || rootSet.size() == 0 || global != null)
+			root.getChildren().addAll(executeNamespaceFilter(session, prjSpace, symQuery));
+		
+		if (symQuery.getAllNamespaces() || symQuery.getGlobalNamespace())		
+		{
+			if (global == null)
+				global = new SnapshotNode(Type.GLOBALNAMESPACE, ".(Global Namespace)");		
+			
+			root.getChildren().add(global);			
+			global.setChildren(new ArrayList<SnapshotNode>());
+			global.getChildren().addAll(executeTypeFilter(session, prjSpace, null, symQuery));
+		}
+										
+		executeTypeFilter(session, prjSpace, m_typeRoots, symQuery);		
+		
+		executeMemberFilter(session, prjSpace, symQuery);		
 		
 		if (!m_isCSharp)
 			execAnonymClassFilter(session);
-
-		executeMemberFilter(session, prjSpace, symQuery);		
 		
 		execLocalDeclFilter(session, symQuery);
-		
-		return output;
+				
+		return root;
 	}
-	
-	
-	protected Collection<SnapshotNode> executeNamespaceFilter(Session session, Set<Project> prjSpace, 
-												TypeDeclaration root, SymbolQuery symQuery) throws XFireFault
+
+		
+	protected Collection<SnapshotNode> executeNamespaceFilter(Session session, Set<Project> prjSpace, SymbolQuery symQuery) throws XFireFault
 	{
-		Set<TypeDeclaration> rootSet = new HashSet<TypeDeclaration>();
-
-		if (root != null)
-			rootSet.add(root);
-
+		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
 		SortedMap<String, SnapshotNode> nameMap = new TreeMap<String, SnapshotNode>();
 		List<String> namespaceFilter = new ArrayList<String>();
 		
@@ -186,7 +212,7 @@ public class SymbolQueryEngine
 			namespaceFilter.addAll(symQuery.getNamespaceFilter());			
 	
 		if (namespaceFilter.size() == 0)
-			return null;
+			return output;
 
 		Map<String, TypeDeclaration> parentMap = new HashMap<String, TypeDeclaration>();
 		
@@ -242,22 +268,14 @@ public class SymbolQueryEngine
 				
 				String name = null;
 
-				boolean skip = (root == null) ? false : true;
-				
 				for (TypeDeclaration d = decl; d != null; d = parentMap.get(d.getID()))
 				{					
-					if (root != null && d.getID().equals(root.getID()))
-						skip = false;
-					
 					if (name == null)
 						name = d.m_name;
 					else
 						name = d.m_name + "." + name;
 				}
 				
-				if (skip)
-					continue;
-
 				String[] parts = (name + ". ").split("\\.");
 				parts[parts.length - 1] = "";
 				
@@ -278,7 +296,7 @@ public class SymbolQueryEngine
 								i += step;
 
 								if (i >= fltr.length  && j >= (parts.length - 2))
-									addNamespace(decl, name, decl.getSourceFile(), nameMap, rootSet);							
+									addNamespace(decl, name, decl.getSourceFile(), nameMap, m_typeRoots);							
 							}
 							
 							j++;								
@@ -304,7 +322,7 @@ public class SymbolQueryEngine
 						if (Pattern.matches(fltr[i], parts[j]))
 						{
 							if (i == (fltr.length - 1) && j >= (parts.length - 2))
-								addNamespace(decl, name, decl.getSourceFile(), nameMap, rootSet);
+								addNamespace(decl, name, decl.getSourceFile(), nameMap, m_typeRoots);
 						}
 						else
 							break;
@@ -315,24 +333,14 @@ public class SymbolQueryEngine
 				}
 				
 				if (wildcard && lookahead == null)
-					addNamespace(decl, name, decl.getSourceFile(), nameMap, rootSet);					
+					addNamespace(decl, name, decl.getSourceFile(), nameMap, m_typeRoots);					
 			}
 		}
-			
-		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
 		
 		output.addAll(nameMap.values());
 				
-		if (rootSet.size() > 0)
-		{
-			if (symQuery.getAllTypes() || symQuery.getTypeFilter().size() > 0)
-				checkLimits(Limit.Type.NAMESPACE, rootSet.size());
-			
-			executeTypeFilter(session, prjSpace, rootSet, symQuery);
-		}
-		
-		if (symQuery.getAllNamespaces() || symQuery.getGlobalNamespace())
-			output.addAll(executeTypeFilter(session, prjSpace, null, symQuery));
+		if (symQuery.getAllTypes() || symQuery.getTypeFilter().size() > 0)
+			checkLimits(Limit.Type.NAMESPACE, m_typeRoots.size());
 		
 		return output;
 	}
@@ -363,14 +371,12 @@ public class SymbolQueryEngine
 			typeFilter.addAll(symQuery.getTypeFilter());
 		}
 
-		if (typeFilter.size() == 0)
+		if (typeFilter.size() == 0 || (rootSet != null && rootSet.size() == 0))
 			return output;
-		
-		Project prj = (Project)prjSpace.toArray()[0];
 		
 		Query query = null;
 		
-		if (rootSet == null || rootSet.size() == 0)
+		if (rootSet == null)
 		{
 			query = session.createQuery("SELECT DISTINCT d FROM TypeDeclaration d " +
 				"INNER JOIN FETCH d.m_file LEFT JOIN FETCH d.m_modifiers LEFT JOIN FETCH d.m_baseTypes " + 
@@ -399,92 +405,87 @@ public class SymbolQueryEngine
 		
 		for (TypeFilter filter : typeFilter)
 		{			
-			switch (prj.getLanguage())
+			if (m_isCSharp && filter.getDelegate() != null)
 			{
-				case CSHARP_11:
-				case CSHARP_20:
-					if (filter.getDelegate() != null)
-					{
-						Delegate delegate = filter.getDelegate();
-						
-						if (rootSet == null || rootSet.size() == 0)
-						{
-							query = session.createQuery("SELECT DISTINCT d FROM DelegateDeclaration d " +
-								"INNER JOIN FETCH d.m_file LEFT JOIN FETCH d.m_parameters p " + 
-								"LEFT JOIN FETCH p.m_type LEFT JOIN FETCH p.m_modifiers LEFT JOIN FETCH p.m_arguments, " +
-								"CompilationUnit u WHERE d.m_parent = u AND d.m_project IN (:projects)");
+				Delegate delegate = filter.getDelegate();
+				
+				if (rootSet == null || rootSet.size() == 0)
+				{
+					query = session.createQuery("SELECT DISTINCT d FROM DelegateDeclaration d " +
+						"INNER JOIN FETCH d.m_file LEFT JOIN FETCH d.m_parameters p " + 
+						"LEFT JOIN FETCH p.m_type LEFT JOIN FETCH p.m_modifiers LEFT JOIN FETCH p.m_arguments, " +
+						"CompilationUnit u WHERE d.m_parent = u AND d.m_project IN (:projects)");
 
-							query.setParameterList("projects", prjSpace);
-						}
-						else
-						{
-							query = session.createQuery("SELECT DISTINCT d1, d2 FROM DelegateDeclaration d1 " +
-								"INNER JOIN FETCH d1.m_file LEFT JOIN FETCH d1.m_parameters p LEFT JOIN p.m_type " +
-								"LEFT JOIN p.m_modifiers LEFT JOIN p.m_arguments, TypeDeclarationMember m, TypeDeclaration d2 " +
-								"WHERE d1.m_parent = m AND m.m_parent = d2 AND d2 IN (:parents)");
+					query.setParameterList("projects", prjSpace);
+				}
+				else
+				{
+					query = session.createQuery("SELECT DISTINCT d1, d2 FROM DelegateDeclaration d1 " +
+						"INNER JOIN FETCH d1.m_file LEFT JOIN FETCH d1.m_parameters p LEFT JOIN p.m_type " +
+						"LEFT JOIN p.m_modifiers LEFT JOIN p.m_arguments, TypeDeclarationMember m, TypeDeclaration d2 " +
+						"WHERE d1.m_parent = m AND m.m_parent = d2 AND d2 IN (:parents)");
 
-							query.setParameterList("parents", rootSet);
-						}
+					query.setParameterList("parents", rootSet);
+				}
+	
+				start = System.currentTimeMillis();
+				
+				List l = query.list();
+				
+				logQueryStat(log4j, start);
 			
-						start = System.currentTimeMillis();
-						
-						List l = query.list();
-						
-						logQueryStat(log4j, start);
+				for (Object o : l)
+				{
+					DelegateDeclaration decl = null;
+					AstNode parent = null;
 					
-						for (Object o : l)
-						{
-							DelegateDeclaration decl = null;
-							AstNode parent = null;
-							
-							if (o instanceof DelegateDeclaration)
-							{
-								decl = (DelegateDeclaration)o;
-								parent = null;
-							}
-							else
-							{
-								Object[] row = (Object[])o;							
-								decl = (DelegateDeclaration)row[0];
-								parent = (AstNode)row[1];
-							}
-							
-							if (m_nodeMap.containsKey(decl.getID()))
-								continue;
-							
-							if (!Pattern.matches(delegate.getName(), decl.m_name))
-								continue;
-							
-							if (!matchType(session, delegate.getType(), decl.getType()))
-								continue;
-							
-							if (!delegate.getAnyParams())
-							{
-								if (!matchParams(session, delegate.getParamList(), decl.m_parameters))
-									continue;
-							}
-							
-							SnapshotNode snapshot = new SnapshotNode(Type.DELEGATE, decl.m_name);
-							
-							if (rootSet != null && rootSet.size() > 0)
-							{
-								NodeEntry entry = m_nodeMap.get(parent.getID());
-								
-								if (entry.m_snapshot.getChildren() == null)
-									entry.m_snapshot.setChildren(new ArrayList<SnapshotNode>());
-								
-								entry.m_snapshot.getChildren().add(snapshot);
-							}
-							else
-								output.add(snapshot);
-
-							snapshot.setRefs(new ArrayList<Reference>());
-							snapshot.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));													
-														
-							m_fileSet.add(decl.getSourceFile());
-							m_nodeMap.put(decl.getID(), new NodeEntry(decl, snapshot));
-						}							
+					if (o instanceof DelegateDeclaration)
+					{
+						decl = (DelegateDeclaration)o;
+						parent = null;
 					}
+					else
+					{
+						Object[] row = (Object[])o;							
+						decl = (DelegateDeclaration)row[0];
+						parent = (AstNode)row[1];
+					}
+					
+					if (m_nodeMap.containsKey(decl.getID()))
+						continue;
+					
+					if (!Pattern.matches(delegate.getName(), decl.m_name))
+						continue;
+					
+					if (!matchType(session, delegate.getType(), decl.getType()))
+						continue;
+					
+					if (!delegate.getAnyParams())
+					{
+						if (!matchParams(session, delegate.getParamList(), decl.m_parameters))
+							continue;
+					}
+					
+					SnapshotNode snapshot = new SnapshotNode(Type.DELEGATE, decl.m_name);
+					
+					if (rootSet != null && rootSet.size() > 0)
+					{
+						SnapshotNode s = m_nodeMap.get(parent.getID());
+						
+						if (s.getChildren() == null)
+							s.setChildren(new ArrayList<SnapshotNode>());
+						
+						s.getChildren().add(snapshot);
+					}
+					else
+						output.add(snapshot);
+
+					snapshot.setRefs(new ArrayList<Reference>());
+					snapshot.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));													
+												
+					m_fileSet.add(decl.getSourceFile());
+					m_nodeMap.put(decl.getID(), snapshot);
+				}							
 			}
 						
 			for (Object o : list)
@@ -631,12 +632,12 @@ public class SymbolQueryEngine
 					
 				if (rootSet != null && rootSet.size() > 0)
 				{
-					NodeEntry entry = m_nodeMap.get(parent.getID());
+					SnapshotNode s= m_nodeMap.get(parent.getID());
 					
-					if (entry.m_snapshot.getChildren() == null)
-						entry.m_snapshot.setChildren(new ArrayList<SnapshotNode>());
+					if (s.getChildren() == null)
+						s.setChildren(new ArrayList<SnapshotNode>());
 					
-					entry.m_snapshot.getChildren().add(snapshot);
+					s.getChildren().add(snapshot);
 				}
 				else					
 					output.add(snapshot);
@@ -646,16 +647,11 @@ public class SymbolQueryEngine
 				
 				m_memberRoots.add(decl);
 
-				switch (prj.getLanguage())
-				{
-					case JAVA_14:
-					case JAVA_15:
-						if ((filter.getCategories() & TypeCategory.ANONYMCLASS.value()) != 0)	
-							m_anonymFilterList.add(filter);
-				}
+				if (!m_isCSharp && (filter.getCategories() & TypeCategory.ANONYMCLASS.value()) != 0)
+					m_anonymFilterList.add(filter);
 				
 				m_fileSet.add(decl.getSourceFile());
-				m_nodeMap.put(decl.getID(), new NodeEntry(decl, snapshot));
+				m_nodeMap.put(decl.getID(), snapshot);
 			}			
 		}
 
@@ -723,9 +719,7 @@ public class SymbolQueryEngine
 		logQueryStat(log4j, start);
 		
 		List<MemberEntry> members = new ArrayList<MemberEntry>(); 
-		
-		m_memberCount = 0;
-		
+			
 		for (MemberFilter filter : memberFilter)
 		{			
 			for (Object o : list)
@@ -1344,7 +1338,7 @@ public class SymbolQueryEngine
 					snapshot.setRefs(new ArrayList<Reference>());
 					snapshot.getRefs().add(new Reference(me.m_node.getID(), me.m_node.getSourceFile().getID(), me.m_node.m_left, me.m_node.m_right));
 
-					SnapshotNode parentSnapshot = m_nodeMap.get(parent.getID()).m_snapshot;
+					SnapshotNode parentSnapshot = m_nodeMap.get(parent.getID());
 					
 					if (parentSnapshot.getChildren() == null)
 						parentSnapshot.setChildren(new ArrayList<SnapshotNode>());
@@ -1352,7 +1346,7 @@ public class SymbolQueryEngine
 					parentSnapshot.getChildren().add(snapshot);
 					
 					m_fileSet.add(me.m_node.getSourceFile());
-					m_nodeMap.put(me.m_node.getID(), new NodeEntry(me.m_node, snapshot));
+					m_nodeMap.put(me.m_node.getID(), snapshot);
 				}
 			}
 		}
@@ -1426,18 +1420,18 @@ public class SymbolQueryEngine
 	
 				for (String id = parentMap.get(expr.getID()) ; id != null ; id = parentMap.get(id))
 				{						
-					NodeEntry entry = m_nodeMap.get(id);
+					SnapshotNode s = m_nodeMap.get(id);
 					
-					if (entry != null)
+					if (s != null)
 					{
-						Map<String, Integer> map = nameCount.get(entry.m_node.getID());
+						Map<String, Integer> map = nameCount.get(id);
 						
 						if (map == null)
 						{
 							map = new HashMap<String, Integer>();
 							map.put(name, 1);
 							
-							nameCount.put(entry.m_node.getID(), map);
+							nameCount.put(id, map);
 						}
 						else
 						{
@@ -1460,12 +1454,12 @@ public class SymbolQueryEngine
 						snapshot.setRefs(new ArrayList<Reference>());
 						snapshot.getRefs().add(new Reference(expr.getID(), expr.getSourceFile().getID(), expr.m_left, expr.m_right));
 						
-						if (entry.m_snapshot.getChildren() == null)
-							entry.m_snapshot.setChildren(new ArrayList<SnapshotNode>());
+						if (s.getChildren() == null)
+							s.setChildren(new ArrayList<SnapshotNode>());
 						
-						entry.m_snapshot.getChildren().add(snapshot);
+						s.getChildren().add(snapshot);
 						
-						m_nodeMap.put(expr.getID(), new NodeEntry(expr, snapshot));
+						m_nodeMap.put(expr.getID(), snapshot);
 						
 						match = true;
 						break;
@@ -1485,6 +1479,7 @@ public class SymbolQueryEngine
 			return;		
 				
 		List<LocalDeclFilter> localDeclFilter = new ArrayList<LocalDeclFilter>();
+		Set<SourceFile> fileSet = new HashSet<SourceFile>();
 		
 		if (symQuery.getAllLocalDecls())
 		{
@@ -1510,20 +1505,40 @@ public class SymbolQueryEngine
 			return;		
 
 		checkLimits(Limit.Type.MEMBER, m_memberCount);		
-		
-		Query query = session.createQuery("SELECT DISTINCT a.m_id, p.m_id FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_file IN (:fileset)");
+
+		Query query = session.createQuery("SELECT DISTINCT l FROM LocalVariableDeclaration l INNER JOIN FETCH l.m_file f INNER JOIN FETCH m.m_modifiers " +
+			"INNER JOIN FETCH l.m_type t LEFT JOIN FETCH t.m_name LEFT JOIN FETCH t.m_arguments INNER JOIN FETCH l.m_declarators WHERE f IN (:fileset)");
 	
 		query.setParameterList("fileset", m_fileSet);
-			
+				
 		long start = System.currentTimeMillis();
 		
 		List list = query.list();
 		
 		logQueryStat(log4j, start);
 		
+		for (Object o : list)
+		{
+			LocalVariableDeclaration var = (LocalVariableDeclaration)o;
+			fileSet.add(var.getSourceFile());
+		}
+		
+		if (fileSet.size() == 0)
+			return;
+			
+		query = session.createQuery("SELECT DISTINCT a.m_id, p.m_id FROM AstNode a INNER JOIN a.m_parent p WHERE a.m_file IN (:fileset)");
+	
+		query.setParameterList("fileset", fileSet);
+			
+		start = System.currentTimeMillis();
+		
+		List l = query.list();
+		
+		logQueryStat(log4j, start);
+		
 		Map<String, String> parentMap = new HashMap<String, String>();
 		
-		for (Object o : list)
+		for (Object o : l)
 		{
 			Object[] row = (Object[])o;
 			String id = (String)row[0];
@@ -1531,18 +1546,7 @@ public class SymbolQueryEngine
 			
 			parentMap.put(id, parentId);
 		}
-				
-		query = session.createQuery("SELECT DISTINCT l FROM LocalVariableDeclaration l INNER JOIN FETCH l.m_file f INNER JOIN FETCH m.m_modifiers " +
-			"INNER JOIN FETCH l.m_type t LEFT JOIN FETCH t.m_name LEFT JOIN FETCH t.m_arguments INNER JOIN FETCH l.m_declarators WHERE f IN (:fileset)");
-		
-		query.setParameterList("fileset", m_fileSet);
-				
-		start = System.currentTimeMillis();
-		
-		list = query.list();
-		
-		logQueryStat(log4j, start);
-		
+						
 		for (Object o : list)
 		{
 			LocalVariableDeclaration decl = (LocalVariableDeclaration)o;
@@ -1577,19 +1581,19 @@ public class SymbolQueryEngine
 						
 					for (String id = parentMap.get(decl.getID()) ; id != null ; id = parentMap.get(id))
 					{
-						NodeEntry entry = m_nodeMap.get(id);
+						SnapshotNode s = m_nodeMap.get(id);
 						
-						if (entry != null)
+						if (s != null)
 						{
 							SnapshotNode snapshot = new SnapshotNode(Type.LOCAL, dr.m_name + ":" + decl.getType().getName());
 
 							snapshot.setRefs(new ArrayList<Reference>());
 							snapshot.getRefs().add(new Reference(decl.getID(), decl.getSourceFile().getID(), decl.m_left, decl.m_right));
 							
-							if (entry.m_snapshot.getChildren() == null)
-								entry.m_snapshot.setChildren(new ArrayList<SnapshotNode>());
+							if (s.getChildren() == null)
+								s.setChildren(new ArrayList<SnapshotNode>());
 							
-							entry.m_snapshot.getChildren().add(snapshot);
+							s.getChildren().add(snapshot);
 			
 							matchSet.add(dr);
 							
@@ -1956,22 +1960,22 @@ public class SymbolQueryEngine
 	
 	protected void addNamespace(TypeDeclaration decl, String name, SourceFile file, Map<String, SnapshotNode> nameMap, Set<TypeDeclaration> rootSet)
 	{
-		SnapshotNode s = nameMap.get(name);		
+		SnapshotNode snapshot = nameMap.get(name);		
 		Reference ref = new Reference(decl.getID(), file.getID(), decl.m_left, decl.m_right);
 		
-		if (s == null)
+		if (snapshot == null)
 		{
-			s = new SnapshotNode(Type.NAMESPACE, name);
-			nameMap.put(name, s);
+			snapshot = new SnapshotNode(Type.NAMESPACE, name);
+			nameMap.put(name, snapshot);
 		}
 
-		s.setRefs(new ArrayList<Reference>());		
-		s.getRefs().add(ref);
+		snapshot.setRefs(new ArrayList<Reference>());		
+		snapshot.getRefs().add(ref);
 	
 		rootSet.add(decl);
 		
 		m_fileSet.add(file);
-		m_nodeMap.put(decl.getID(), new NodeEntry(decl, s));
+		m_nodeMap.put(decl.getID(), snapshot);
 	}	
 	
 	
@@ -1988,19 +1992,6 @@ public class SymbolQueryEngine
 		}
 		
 		return qname;		
-	}
-
-
-	protected class NodeEntry
-	{
-		public NodeEntry(AstNode node, SnapshotNode snapshot)
-		{
-			m_node = node;
-			m_snapshot = snapshot;
-		}
-		
-		public AstNode m_node;
-		public SnapshotNode m_snapshot;
 	}
 	
 	

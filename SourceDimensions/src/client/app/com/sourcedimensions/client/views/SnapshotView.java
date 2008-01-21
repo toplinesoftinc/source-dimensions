@@ -141,23 +141,24 @@ public class SnapshotView extends EditorPart
 		{
 			switch (SnapshotNode.Type.values()[m_type])
 			{
-				case NAMESPACE:		return Util.getSharedImage(IImageKeys.IMG_NAMESPACE_DECL);
-				case CLASS:			return Util.getSharedImage(IImageKeys.IMG_CLASS_DECL);
-				case ANONYMCLASS:	return Util.getSharedImage(IImageKeys.IMG_ANONYM_CLASS_DECL);
-				case INTERFACE:		return Util.getSharedImage(IImageKeys.IMG_INTERFACE_DECL);
+				case GLOBALNAMESPACE:	return Util.getSharedImage(IImageKeys.IMG_GLOBAL_NAMESPACE_DECL);			
+				case NAMESPACE:			return Util.getSharedImage(IImageKeys.IMG_NAMESPACE_DECL);
+				case CLASS:				return Util.getSharedImage(IImageKeys.IMG_CLASS_DECL);
+				case ANONYMCLASS:		return Util.getSharedImage(IImageKeys.IMG_ANONYM_CLASS_DECL);
+				case INTERFACE:			return Util.getSharedImage(IImageKeys.IMG_INTERFACE_DECL);
 				case DELEGATE:			return Util.getSharedImage(IImageKeys.IMG_DELEGATE_DECL);
 				case ENUM:				return Util.getSharedImage(IImageKeys.IMG_ENUM_DECL);
 				case STRUCT:			return Util.getSharedImage(IImageKeys.IMG_STRUCT_DECL);
-				case ANNOT:			return Util.getSharedImage(IImageKeys.IMG_ANNOT_DECL);
-				case ANONYMMETHOD:	return Util.getSharedImage(IImageKeys.IMG_ANONYM_METHOD_DECL);
-				case CONST:			return Util.getSharedImage(IImageKeys.IMG_CONST_DECL);
+				case ANNOT:				return Util.getSharedImage(IImageKeys.IMG_ANNOT_DECL);
+				case ANONYMMETHOD:		return Util.getSharedImage(IImageKeys.IMG_ANONYM_METHOD_DECL);
+				case CONST:				return Util.getSharedImage(IImageKeys.IMG_CONST_DECL);
 				case CONSTRUCTOR:		return Util.getSharedImage(IImageKeys.IMG_CONSTRUCTOR_DECL);
 				case DESTRUCTOR:		return Util.getSharedImage(IImageKeys.IMG_DESTRUCTOR_DECL);
-				case ENUMCONST:		return Util.getSharedImage(IImageKeys.IMG_ENUM_CONST_DECL);
-				case EVENT:			return Util.getSharedImage(IImageKeys.IMG_EVENT_DECL);
-				case EVENTADD:		return Util.getSharedImage(IImageKeys.IMG_EVENT_ADD_DECL); 
+				case ENUMCONST:			return Util.getSharedImage(IImageKeys.IMG_ENUM_CONST_DECL);
+				case EVENT:				return Util.getSharedImage(IImageKeys.IMG_EVENT_DECL);
+				case EVENTADD:			return Util.getSharedImage(IImageKeys.IMG_EVENT_ADD_DECL); 
 				case EVENTREMOVE:		return Util.getSharedImage(IImageKeys.IMG_EVENT_REMOVE_DECL);
-				case FIELD:			return Util.getSharedImage(IImageKeys.IMG_FIELD_DECL);
+				case FIELD:				return Util.getSharedImage(IImageKeys.IMG_FIELD_DECL);
 				case INDEXER:			return Util.getSharedImage(IImageKeys.IMG_INDEXER_DECL);
 				case INDEXERGET:		return Util.getSharedImage(IImageKeys.IMG_INDEXER_GET_DECL);
 				case INDEXERSET:		return Util.getSharedImage(IImageKeys.IMG_INDEXER_SET_DECL);
@@ -168,14 +169,14 @@ public class SnapshotView extends EditorPart
 				case PROPERTYSET:		return Util.getSharedImage(IImageKeys.IMG_PROPERTY_SET_DECL);
 				case BASECLASS:			return Util.getSharedImage(IImageKeys.IMG_BASE_CLASS);
 				case BASEINTERFACE:		return Util.getSharedImage(IImageKeys.IMG_BASE_INTERFACE);
-				case LOCAL:			return Util.getSharedImage(IImageKeys.IMG_LOCAL_DECL);
-				case CLASSREF:				return Util.getSharedImage(IImageKeys.IMG_CLASS_REF);
-				case INTERFACEREF:			return Util.getSharedImage(IImageKeys.IMG_INTERFACE_REF);
+				case LOCAL:				return Util.getSharedImage(IImageKeys.IMG_LOCAL_DECL);
+				case CLASSREF:			return Util.getSharedImage(IImageKeys.IMG_CLASS_REF);
+				case INTERFACEREF:		return Util.getSharedImage(IImageKeys.IMG_INTERFACE_REF);
 				case STRUCTREF:			return Util.getSharedImage(IImageKeys.IMG_STRUCT_REF);
-				case ENUMREF:				return Util.getSharedImage(IImageKeys.IMG_ENUM_REF);
-				case DELEGATEREF:			return Util.getSharedImage(IImageKeys.IMG_DELEGATE_REF);
-				case FIXEDSIZEBUFFER:		return Util.getSharedImage(IImageKeys.IMG_FIXEDSIZEBUF_DECL);
-				case INITBLOCK:				return Util.getSharedImage(IImageKeys.IMG_INIT_BLOCK);
+				case ENUMREF:			return Util.getSharedImage(IImageKeys.IMG_ENUM_REF);
+				case DELEGATEREF:		return Util.getSharedImage(IImageKeys.IMG_DELEGATE_REF);
+				case FIXEDSIZEBUFFER:	return Util.getSharedImage(IImageKeys.IMG_FIXEDSIZEBUF_DECL);
+				case INITBLOCK:			return Util.getSharedImage(IImageKeys.IMG_INIT_BLOCK);
 			
 				default:
 					return null;

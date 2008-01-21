@@ -723,11 +723,9 @@ public class DbAdapter
 			
 			while (rs.next())
 			{
-				SnapshotNode node = new SnapshotNode();
+				SnapshotNode node = new SnapshotNode(SnapshotNode.Type.values()[rs.getInt("type")], rs.getString("label"));
 				
 				node.m_id = rs.getInt("id");
-				node.setLabel(rs.getString("label"));
-				node.setType(SnapshotNode.Type.values()[rs.getInt("type")]);
 				
 				list.add(node);
 			}

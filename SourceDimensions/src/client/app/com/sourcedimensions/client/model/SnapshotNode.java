@@ -10,7 +10,7 @@ public class SnapshotNode
 	protected List<Reference> m_refs;
 	
 	public Integer m_id;
-
+	
 	public SnapshotNode()
 	{
 		m_type = Type.ROOT;
@@ -60,6 +60,55 @@ public class SnapshotNode
 	public void setRefs(List<Reference> refs)
 	{
 		m_refs = refs;
+	}
+	
+	public Level level()
+	{
+		switch (m_type)
+		{
+			case GLOBALNAMESPACE:
+				return Level.GLOBAL;
+				
+			case NAMESPACE:
+				return Level.NAMESPACE;
+				
+			case CLASS:
+			case ANONYMCLASS:
+			case INTERFACE:
+			case DELEGATE:
+			case ENUM:
+			case STRUCT:
+			case ANNOT:
+				return Level.TYPEDECL;
+				
+			case ANONYMMETHOD:
+			case CONST:
+			case CONSTRUCTOR:
+			case DESTRUCTOR:
+			case ENUMCONST:
+			case EVENT:
+			case EVENTADD: 
+			case EVENTREMOVE:
+			case FIELD:
+			case INDEXER:
+			case INDEXERGET:
+			case INDEXERSET:
+			case METHOD:
+			case OPERATOR:
+			case PROPERTY:
+			case PROPERTYGET:
+			case PROPERTYSET:
+			case FIXEDSIZEBUFFER:
+			case INITBLOCK:
+				return Level.MEMBER;
+				
+			case LOCAL:
+			case PARAM:
+				return Level.LOCALDECL;
+				
+			default:
+				return Level.NONE; 
+		}		
 	}
 	
 	public static class Reference
@@ -123,45 +172,74 @@ public class SnapshotNode
 		}
 	}
 	
+	public enum Level
+	{
+		NONE(0),
+		GLOBAL(1),
+		NAMESPACE(2),
+		TYPEDECL(3),
+		MEMBER(4),
+		LOCALDECL(5);
+		
+		Level(int val)
+		{
+			value = val;
+		}
+		
+		private final int value;
+		
+		public int value()
+		{
+			return value;
+		}
+		
+		public String toString()
+		{
+			return name().replace('_', ' ');
+		}		
+	}
+	
 	public enum Type
 	{
 		ROOT(0),
-		NAMESPACE(1),
-		CLASS(2),
-		ANONYMCLASS(3),
-		INTERFACE(4),
-		DELEGATE(5),
-		ENUM(6),
-		STRUCT(7),
-		ANNOT(8),
-		ANONYMMETHOD(9),
-		CONST(10),
-		CONSTRUCTOR(11),
-		DESTRUCTOR(12),
-		ENUMCONST(13),
-		EVENT(14),
-		EVENTADD(15), 
-		EVENTREMOVE(16),
-		FIELD(17),
-		INDEXER(18),
-		INDEXERGET(19),
-		INDEXERSET(20),
-		METHOD(21),
-		OPERATOR(22),
-		PROPERTY(23),
-		PROPERTYGET(24),
-		PROPERTYSET(25),
-		LOCAL(26),
-		PARAM(27),
-		BASECLASS(28),
-		BASEINTERFACE(29),
-		CLASSREF(30),
-		INTERFACEREF(31),
-		STRUCTREF(32),
-		ENUMREF(33),
-		DELEGATEREF(34),
-		FIXEDSIZEBUFFER(35),
-		INITBLOCK(36);
+		GLOBALNAMESPACE(1),
+		NAMESPACE(2),
+		CLASS(3),
+		ANONYMCLASS(4),
+		INTERFACE(5),
+		DELEGATE(6),
+		ENUM(7),
+		STRUCT(8),
+		ANNOT(9),
+		ANONYMMETHOD(10),
+		CONST(11),
+		CONSTRUCTOR(12),
+		DESTRUCTOR(13),
+		ENUMCONST(14),
+		EVENT(15),
+		EVENTADD(16), 
+		EVENTREMOVE(17),
+		FIELD(18),
+		INDEXER(19),
+		INDEXERGET(20),
+		INDEXERSET(21),
+		METHOD(22),
+		OPERATOR(23),
+		PROPERTY(24),
+		PROPERTYGET(25),
+		PROPERTYSET(26),
+		FIXEDSIZEBUFFER(27),
+		INITBLOCK(28),
+		LOCAL(29),
+		PARAM(30),
+		BASECLASS(31),
+		BASEINTERFACE(32),
+		CLASSREF(33),
+		INTERFACEREF(34),
+		STRUCTREF(35),
+		ENUMREF(36),
+		DELEGATEREF(37);
+	
 		
 		Type(int val)
 		{
