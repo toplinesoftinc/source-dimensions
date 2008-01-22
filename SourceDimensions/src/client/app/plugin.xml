@@ -89,17 +89,7 @@
                    enablesFor="1">
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotGroup"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>                 
-               </action>
-               <action
-                   class="com.sourcedimensions.client.actions.OpenSnapshotAction"
-                   icon="icons/open.png"
-                   id="com.sourcedimensions.client.openSnapshot"
-                   label="&amp;Open"
-                   menubarPath="snapshot/additions_snapshot"
-                   toolbarPath="additions_snapshot"
-                   enablesFor="1">
-                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
-               </action>
+               </action> 
                <action
                    class="com.sourcedimensions.client.actions.ExecuteQueryAction"
                    icon="icons/execute.png"
@@ -123,7 +113,7 @@
                <action
                    class="com.sourcedimensions.client.actions.CreateSymbolQueryAction"
                    icon="icons/symbol.png"
-                   id="com.sourcedimensions.client.createSymbolQuery2"
+                   id="com.sourcedimensions.client.createSymbolQuery"
                    label="&amp;New Symbol Query..."
                    menubarPath="query/additions_query"
                    toolbarPath="additions_query">
@@ -135,7 +125,7 @@
                    label="&amp;Delete"
                    menubarPath="project/additions_object"
                    toolbarPath="additions_object"
-                   enablesFor="1">
+                   enablesFor="+">
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/>
@@ -161,7 +151,7 @@
                    label="&amp;Copy"
                    menubarPath="project/additions_object"
                    toolbarPath="additions_object"
-                   enablesFor="1">
+                   enablesFor="+">
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/>
@@ -173,7 +163,7 @@
                    label="Cu&amp;t"
                    menubarPath="project/additions_object"
                    toolbarPath="additions_object"
-                   enablesFor="1">
+                   enablesFor="+">
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/>
@@ -187,6 +177,26 @@
                  <selection class="com.sourcedimensions.client.views.ProjectView$FolderObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
                  <selection class="com.sourcedimensions.client.views.ProjectView$QueryObject"/>
+               </action>
+               <action
+                   class="com.sourcedimensions.client.actions.SubqueryAction"
+                   icon="icons/subquery.png"
+                   id="com.sourcedimensions.client.subquery"
+                   label="&amp;Subquery..."
+                   menubarPath="snapshot/additions_snapshot"
+                   toolbarPath="additions_snapshot"
+                   enablesFor="+">
+                 <selection class="com.sourcedimensions.client.views.SnapshotView$SnapshotNodeObject"/>
+               </action>
+               <action
+                   class="com.sourcedimensions.client.actions.OpenSnapshotAction"
+                   icon="icons/open.png"
+                   id="com.sourcedimensions.client.openSnapshot"
+                   label="&amp;Open"
+                   menubarPath="snapshot/additions_snapshot"
+                   toolbarPath="additions_snapshot"
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.ProjectView$SnapshotObject"/>
                </action>
                <action
                    class="com.sourcedimensions.client.actions.SwitchToSnapshotAction"
@@ -261,7 +271,7 @@
                <action
                    class="com.sourcedimensions.client.actions.PasteObjectAction"
                    icon="icons/paste_edit.gif"
-                   id="com.sourcedimensions.client.pasteObject2"
+                   id="com.sourcedimensions.client.pasteObject"
                    menubarPath="additions_object"                   
                    label="Paste"/>              
               <action
@@ -290,7 +300,7 @@
                <action
                    class="com.sourcedimensions.client.actions.PasteObjectAction"
                    icon="icons/paste_edit.gif"
-                   id="com.sourcedimensions.client.pasteObject3"
+                   id="com.sourcedimensions.client.pasteObject"
                    menubarPath="additions_object"                   
                    label="Paste"/>              
               <action
@@ -313,7 +323,7 @@
               <action
                    class="com.sourcedimensions.client.actions.OpenSnapshotAction"
                    icon="icons/open.png"                   
-                   id="com.sourcedimensions.client.openSnapshot2"
+                   id="com.sourcedimensions.client.openSnapshot"
                    menubarPath="additions_snapshot"
                    label="Open"/>
               <action
@@ -378,18 +388,28 @@
                    icon="icons/editquery.png"
                    id="com.sourcedimensions.client.editQuery"
                    menubarPath="additions_query"
-                   label="Edit..."/>                   
+                   label="Edit..."/>                 
          </objectContribution>         
+         <objectContribution
+              adaptable="false"
+              id="com.sourcedimensions.client.snapshotNodeContributions"
+              objectClass="com.sourcedimensions.client.views.SnapshotView$SnapshotNodeObject">
+              <action
+                   class="com.sourcedimensions.client.actions.SubqueryAction"
+                   icon="icons/subquery.png"
+                   id="com.sourcedimensions.client.subquery"
+                   menubarPath="additions_subquery"
+                   label="Subquery..."/>
+         </objectContribution>
          <objectContribution
               adaptable="false"
               id="com.sourcedimensions.client.projectContributions"
               objectClass="com.sourcedimensions.client.views.ProjectView$RootGroup">
-                 <action
-                     class="com.sourcedimensions.client.actions.CloseProjectAction"
-                     id="com.sourcedimensions.client.closeProject"
-                     label="Close"/>
+               <action
+                   class="com.sourcedimensions.client.actions.CloseProjectAction"
+                   id="com.sourcedimensions.client.closeProject"
+                   label="Close"/>
          </objectContribution>
-         
    </extension>
 
 </plugin>

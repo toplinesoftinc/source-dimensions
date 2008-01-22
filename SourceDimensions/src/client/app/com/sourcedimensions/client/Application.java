@@ -30,7 +30,7 @@ public class Application implements IPlatformRunnable
 				
 				MessageDialog.openError(null, "Error", "\nAnother instance of the program has probably started on this computer. " +
 					"The application cannot have more than one instance running on the same computer." +
-					"\n\n(MESSAGE: " + e.getMessage() + ")");
+					"\n\n(Original error: " + e.getMessage() + ")");
 				
 				return IPlatformRunnable.EXIT_OK;
 			}

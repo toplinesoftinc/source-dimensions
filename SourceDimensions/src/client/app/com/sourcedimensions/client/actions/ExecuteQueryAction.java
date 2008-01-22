@@ -132,7 +132,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 				SnapshotView.closeSnapshot(existing.m_id);
 			}
 			
-			ProjectView.getSnapshotGroup().addSnapshotNode(snapshot, dest);
+			ProjectView.getSnapshotGroup().addSnapshot(snapshot, dest);
 		}
 		
 		return true;

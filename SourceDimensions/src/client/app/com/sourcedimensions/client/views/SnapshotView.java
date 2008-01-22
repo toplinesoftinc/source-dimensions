@@ -8,6 +8,8 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -17,9 +19,11 @@ import org.eclipse.swt.SWT;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IPersistableElement;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 
@@ -186,10 +190,7 @@ public class SnapshotView extends EditorPart
 		public void addChild(SnapshotNodeObject object)
 		{
 			if (m_children == null)
-			{
 				m_children = new ArrayList<SnapshotNodeObject>();
-				load();
-			}
 			
 			m_children.add(object);
 			object.setParent(this);		
@@ -246,14 +247,12 @@ public class SnapshotView extends EditorPart
 				return;
 			}
 			
-			m_children = new ArrayList<SnapshotNodeObject>();
-			
 			for (SnapshotNode node : list)
 			{
 				SnapshotNodeObject obj = new SnapshotNodeObject(node.m_id,
 					node.getType().value(), node.getLabel());
 				
-				m_children.add(obj);
+				addChild(obj);
 			}
 		}
 	}
@@ -370,12 +369,18 @@ public class SnapshotView extends EditorPart
 	
 	public void createPartControl(Composite parent) 
 	{	
-		m_viewer = new TreeViewer(parent, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+		m_viewer = new TreeViewer(parent, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		
 		m_viewer.setContentProvider(new SnapshotContentProvider());
 		getSite().setSelectionProvider(m_viewer);
 		m_viewer.setLabelProvider(new SnapshotLabelProvider());
-		m_viewer.setInput(getEditorSite());		
+		m_viewer.setInput(getEditorSite());
+		
+		MenuManager menuMgr = new MenuManager("");
+		menuMgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS + "_subquery"));
+		Menu menu = menuMgr.createContextMenu(m_viewer.getControl());
+		m_viewer.getControl().setMenu(menu);
+		getSite().registerContextMenu(menuMgr, m_viewer);		
 	}
 
 	public void setFocus() 

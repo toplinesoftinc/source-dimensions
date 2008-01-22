@@ -21,7 +21,7 @@
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   sodipodi:modified="TRUE">
+   sodipodi:modified="true">
   <defs
      id="defs4">
     <linearGradient
@@ -64,7 +64,7 @@
        x2="7.9421091"
        y2="12.065614"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(0,0.1804511)" />
+       gradientTransform="matrix(0.856079,0,0,0.856079,1.6840368,0.9043559)" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -86,7 +86,7 @@
      showgrid="true"
      inkscape:window-width="1400"
      inkscape:window-height="994"
-     inkscape:window-x="0"
+     inkscape:window-x="110"
      inkscape:window-y="22"
      inkscape:grid-bbox="false" />
   <metadata
@@ -116,14 +116,15 @@
        transform="matrix(1.1243961,0,0,1.1370114,-1.3220608,-0.1373548)" />
     <text
        xml:space="preserve"
-       style="font-size:12px;font-style:normal;font-weight:bold;fill:url(#linearGradient5119);fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Arial"
-       x="3.6442573"
-       y="12.246065"
-       id="text24813"><tspan
+       style="font-size:10.27294827px;font-style:normal;font-weight:bold;fill:url(#linearGradient5119);fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Arial"
+       x="4.8038087"
+       y="11.233475"
+       id="text24813"
+       transform="scale(0.9515892,1.0508737)"><tspan
          sodipodi:role="line"
          id="tspan24815"
-         x="3.6442573"
-         y="12.246065"
+         x="4.8038087"
+         y="11.233475"
          style="fill:url(#linearGradient5119);fill-opacity:1">N</tspan></text>
   </g>
 </svg>

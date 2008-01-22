@@ -579,7 +579,7 @@ public class ProjectView extends ViewPart
 			}
 		}
 		
-		public void addSnapshotNode(Snapshot snapshot, String name)
+		public void addSnapshot(Snapshot snapshot, String name)
 		{		
 			List<FolderObject> segments = makeFolderPath(name, false);
 			Integer folderId = (segments.size() == 0) ? null : segments.get(segments.size() - 1).getID();			
