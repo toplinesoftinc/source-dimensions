@@ -1,5 +1,7 @@
 package com.sourcedimensions.client.actions;
 
+import java.util.List;
+
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -11,13 +13,16 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import com.sourcedimensions.client.forms.SymbolQueryDialog;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.views.ProjectView.FolderObject;
+import com.sourcedimensions.client.views.ProjectView.QueryGroup;
 import com.sourcedimensions.client.views.ProjectView.TreeObject;
+import com.sourcedimensions.client.views.SnapshotView.SnapshotNodeTreeItem;
 
 public class CreateSymbolQueryAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate
 {
  	protected IStructuredSelection m_selection;
  	protected IWorkbenchWindow m_window;
 
+ 	
  	public void init(IWorkbenchWindow window)
  	{
  		m_window = window;
@@ -25,16 +30,15 @@ public class CreateSymbolQueryAction implements IWorkbenchWindowActionDelegate, 
 
  	public void run(IAction action)
  	{
- 		Shell shell = m_window.getShell();
- 
- 		SymbolQueryDialog dialog = new SymbolQueryDialog(shell);
- 		
+ 		SymbolQueryDialog dialog = null; 		
  		Object sel = m_selection.getFirstElement();
  		
  		if (sel instanceof FolderObject)
  		{
  			FolderObject folder = (FolderObject)sel;
  			String name = "";
+
+ 			dialog = new SymbolQueryDialog(m_window.getShell());
  			
  			for (TreeObject cur = folder; cur instanceof FolderObject; cur = cur.getParent())
  			{
@@ -43,8 +47,18 @@ public class CreateSymbolQueryAction implements IWorkbenchWindowActionDelegate, 
  			
  			dialog.setQueryName(name);
  		}
- 		
- 		dialog.open();
+ 		else if (sel instanceof QueryGroup)
+ 		{
+ 			dialog = new SymbolQueryDialog(m_window.getShell());
+ 		}
+ 		else if (sel instanceof SnapshotNodeTreeItem)
+ 		{
+ 			List selection = m_selection.toList(); 			
+ 			dialog = new SymbolQueryDialog(m_window.getShell(), selection);
+ 		}
+
+ 		if (dialog != null)
+ 			dialog.open();
  	}
 
  	public void setActivePart(IAction action, IWorkbenchPart targetPart)

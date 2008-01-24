@@ -42,15 +42,11 @@ public class EditQueryAction implements IWorkbenchWindowActionDelegate, IObjectA
 			return;
 		}
 		
-		runQueryEdit(shell, query);
+		SymbolQueryDialog dialog = new SymbolQueryDialog(shell, query);		
+	
+		dialog.open();
 	}
 	
-	public static void runQueryEdit(Shell shell, SymbolQuery query)
-	{
-		SymbolQueryDialog dialog = new SymbolQueryDialog(shell, query);		
-		dialog.open();
-	}	
-
 	public void setActivePart(IAction action, IWorkbenchPart targetPart) 
 	{
 		m_window = targetPart.getSite().getWorkbenchWindow();	

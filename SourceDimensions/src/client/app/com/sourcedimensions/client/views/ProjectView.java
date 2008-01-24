@@ -48,7 +48,7 @@ public class ProjectView extends ViewPart
 	protected static TreeGroup m_root;
 	protected static SnapshotGroup m_snapshotGroup;
 	protected static QueryGroup m_queryGroup;
-	protected List<TreeObject> m_selection = new Vector<TreeObject>();
+
 	
 	public abstract static class TreeObject implements IAdaptable 
 	{
@@ -832,27 +832,24 @@ public class ProjectView extends ViewPart
 		m_viewer.setLabelProvider(new ProjectLabelProvider());
 		m_viewer.setInput(getViewSite());
 		
-		m_viewer.addDragSupport(DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer()}, new DragSourceAdapter()
+		m_viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_LINK, new Transfer[] { LocalSelectionTransfer.getTransfer()}, new DragSourceAdapter()
 		{
 			public void dragStart(DragSourceEvent event)
 			{
 				TreeSelection selection = (TreeSelection)m_viewer.getSelection();
-				
-				m_selection.clear();
-				
 				List list = selection.toList();
+				int count = 0;
 				
 				for (Object o : list)
 				{
-					if (o instanceof FolderObject ||
-						o instanceof SnapshotObject ||
-						o instanceof QueryObject)
-					{
-						m_selection.add((TreeObject)o);
-					}
+					if (o instanceof FolderObject || o instanceof SnapshotObject || o instanceof QueryObject)
+						count++;
 				}
 				
-				event.doit = (m_selection.size() > 0);
+				event.doit = (count > 0);
+				
+				if (event.doit)
+					LocalSelectionTransfer.getTransfer().setSelection(m_viewer.getSelection());
 			}
 		});
 		
@@ -879,9 +876,18 @@ public class ProjectView extends ViewPart
 			{
 				boolean success = true;
 				
-				TreeGroup dest = (TreeGroup)((TreeItem)event.item).getData();
+				TreeGroup dest = (TreeGroup)event.item.getData();
+				TreeSelection selection = (TreeSelection)event.data;
+				List list = selection.toList();
+				List<TreeObject> srcList = new Vector<TreeObject>();
 				
-				for (TreeObject src : m_selection)
+				for (Object o : list)
+				{
+					if (o instanceof FolderObject || o instanceof SnapshotObject || o instanceof QueryObject)
+						srcList.add((TreeObject)o);
+				}
+								
+				for (TreeObject src : srcList)
 				{
 					if (src.isQueryGroup() != dest.isQueryGroup())
 					{
@@ -895,7 +901,7 @@ public class ProjectView extends ViewPart
 				
 				if (success)
 				{
-					for (TreeObject src : m_selection)
+					for (TreeObject src : srcList)
 					{
 						success = PasteObjectAction.pasteObject(getSite().getWorkbenchWindow(), src, dest, true);
 						

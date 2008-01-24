@@ -16,10 +16,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import com.sourcedimensions.client.actions.ExecuteQueryAction;
+import com.sourcedimensions.client.actions.SubqueryAction;
 import com.sourcedimensions.client.db.DbAdapter;
 import com.sourcedimensions.client.model.Project.Language;
 import com.sourcedimensions.client.model.Type.EmptyNameSectionException;
 import com.sourcedimensions.client.views.ProjectView;
+import com.sourcedimensions.client.views.SnapshotView.SnapshotNodeTreeItem;
+
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Rectangle;
@@ -81,15 +84,30 @@ public class SymbolQueryDialog extends DialogBase
 	private Button m_queryBrowseButton;
 	private boolean m_forceClose;
 	private Button m_globalNamespaceCheckBox;
-	private Button m_saveBeforeExecCheckBox = null;
+	private Button m_saveBeforeExecCheckBox;
+	private List<SnapshotNodeTreeItem> m_selection;
+
 
 	public SymbolQueryDialog(Shell parent)
 	{
 		createShell(parent);
 	}
-
+	
+	public SymbolQueryDialog(Shell parent, List<SnapshotNodeTreeItem> selection)
+	{
+		m_selection = selection;		
+		createShell(parent);
+	}
+	
 	public SymbolQueryDialog(Shell parent, SymbolQuery query)
 	{
+		this(parent, query, null);
+	}
+
+	public SymbolQueryDialog(Shell parent, SymbolQuery query, List<SnapshotNodeTreeItem> selection)
+	{
+		m_selection = selection;
+		
 		createShell(parent);
 		
 		TableItem item;
@@ -175,6 +193,7 @@ public class SymbolQueryDialog extends DialogBase
 		m_snapshotNameText.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_snapshotNameText.setSize(new Point(251, 18));
 		m_snapshotNameText.setLocation(new Point(334, 23));
+		m_snapshotNameText.setEnabled(m_selection == null);
 		m_snapshotNameLabel.setBounds(new Rectangle(334, 8, 148, 14));
 		m_snapshotNameLabel.setFont(new Font(Display.getDefault(), "Tahoma", 8, SWT.NORMAL));
 		m_snapshotNameLabel.setText("&Destination Snapshot Name:");
@@ -197,6 +216,7 @@ public class SymbolQueryDialog extends DialogBase
 				}
 			}
 		});
+		m_snapshotBrowseButton.setEnabled(m_selection == null);
 		m_queryNameLabel = new Label(getShell(), SWT.NONE);
 		m_queryNameText = new Text(getShell(), SWT.BORDER);
 		m_queryNameText.setBounds(new Rectangle(334, 62, 251, 19));
@@ -268,13 +288,24 @@ public class SymbolQueryDialog extends DialogBase
 						return;
 				}
 				
-				if (!validatePath(false))
-					return;
-			
-				if (ExecuteQueryAction.executeQuery(getShell(), createSymbolQuery()))
+				if (m_selection == null)
 				{
-					m_forceClose = true;
-					m_shell.close();
+					if (!validatePath(false))
+						return;
+				
+					if (ExecuteQueryAction.executeQuery(getShell(), createSymbolQuery()))
+					{
+						m_forceClose = true;
+						m_shell.close();
+					}
+				}
+				else
+				{
+					if (SubqueryAction.executeQuery(getShell(), m_selection, createSymbolQuery()))
+					{
+						m_forceClose = true;
+						m_shell.close();
+					}
 				}
 			}			
 		});

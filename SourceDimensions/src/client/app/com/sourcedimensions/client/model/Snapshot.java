@@ -6,7 +6,7 @@ public class Snapshot
 	
 	protected String m_name;
 	protected String m_fullName;
-	protected SnapshotRootNode m_root;
+	protected SnapshotNode m_root;
 	
 	public String getName()
 	{
@@ -28,12 +28,12 @@ public class Snapshot
 		m_fullName = fullName;
 	}
 	
-	public void setRoot(SnapshotRootNode root)
+	public void setRoot(SnapshotNode root)
 	{
 		m_root = root;
 	}
 	
-	public SnapshotRootNode getRoot()
+	public SnapshotNode getRoot()
 	{
 		return m_root;
 	}

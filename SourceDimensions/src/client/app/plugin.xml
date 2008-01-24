@@ -186,7 +186,7 @@
                    menubarPath="snapshot/additions_snapshot"
                    toolbarPath="additions_snapshot"
                    enablesFor="+">
-                 <selection class="com.sourcedimensions.client.views.SnapshotView$SnapshotNodeObject"/>
+                 <selection class="com.sourcedimensions.client.views.SnapshotView$SnapshotNodeTreeItem"/>
                </action>
                <action
                    class="com.sourcedimensions.client.actions.OpenSnapshotAction"
@@ -393,13 +393,25 @@
          <objectContribution
               adaptable="false"
               id="com.sourcedimensions.client.snapshotNodeContributions"
-              objectClass="com.sourcedimensions.client.views.SnapshotView$SnapshotNodeObject">
+              objectClass="com.sourcedimensions.client.views.SnapshotView$SnapshotNodeTreeItem">
+              <action
+                   class="com.sourcedimensions.client.actions.CreateSymbolQueryAction"
+                   icon="icons/symbol.png"
+                   id="com.sourcedimensions.client.createSymbolQueryAction"
+                   menubarPath="additions_subquery"
+                   label="New Symbol Query..."/>
               <action
                    class="com.sourcedimensions.client.actions.SubqueryAction"
                    icon="icons/subquery.png"
                    id="com.sourcedimensions.client.subquery"
                    menubarPath="additions_subquery"
                    label="Subquery..."/>
+              <action
+                   class="com.sourcedimensions.client.actions.DeleteSnapshotNodeAction"
+                   icon="icons/delete.png"
+                   id="com.sourcedimensions.client.deleteSnapshotNode"
+                   menubarPath="additions_object"
+                   label="Delete"/>
          </objectContribution>
          <objectContribution
               adaptable="false"

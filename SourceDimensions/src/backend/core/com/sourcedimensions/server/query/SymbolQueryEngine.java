@@ -26,7 +26,6 @@ import com.sourcedimensions.client.model.LocalDeclFilter;
 import com.sourcedimensions.client.model.MemberFilter;
 import com.sourcedimensions.client.model.Parameter;
 import com.sourcedimensions.client.model.SnapshotNode;
-import com.sourcedimensions.client.model.SnapshotRootNode;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.client.model.TriStateBoolean;
 import com.sourcedimensions.client.model.TriStateMask;
@@ -89,13 +88,20 @@ public class SymbolQueryEngine
 	}
 	
 	
-	public SnapshotRootNode execute(String projectId, SymbolQuery query) throws XFireFault
+	public SnapshotNode execute(String projectId, SymbolQuery query) throws XFireFault
 	{
-		return execute(projectId, null, query);
+		Set<SnapshotNode> rootSet = execute(projectId, null, query);
+		
+		SnapshotNode root = new SnapshotNode();
+		
+		root.setChildren(new ArrayList<SnapshotNode>());
+		root.getChildren().addAll(rootSet);
+		
+		return root;
 	}
 
 	
-	public SnapshotRootNode execute(String projectId, Set<SnapshotNode> rootSet, SymbolQuery symQuery) throws XFireFault
+	public Set<SnapshotNode> execute(String projectId, Set<SnapshotNode> rootSet, SymbolQuery symQuery) throws XFireFault
 	{
 		Session session = m_db.getDbSessionFactory().getCurrentSession();
 
@@ -146,7 +152,7 @@ public class SymbolQueryEngine
 
 		if (idSet.size() > 0)
 		{
-			Query query = session.createQuery("FROM AstNode INNER JOIN FETCH m_file WHERE m_id IN (:idset)");
+			Query query = session.createQuery("FROM AstNode a INNER JOIN FETCH a.m_file WHERE a.m_id IN (:idset)");
 			query.setParameterList("idset", idSet);
 			
 			List list = query.list();
@@ -169,20 +175,20 @@ public class SymbolQueryEngine
 			}
 		}
 		
-		SnapshotRootNode root = new SnapshotRootNode();
+		Set<SnapshotNode> output = new HashSet<SnapshotNode>();
 		
-		root.setChildren(new ArrayList<SnapshotNode>());
-		root.setInternalRoots(rootSet);
+		if (rootSet != null)
+			output.addAll(rootSet);
 				
-		if (rootSet == null || rootSet.size() == 0 || global != null)
-			root.getChildren().addAll(executeNamespaceFilter(session, prjSpace, symQuery));
+		if (rootSet == null || global != null)
+			output.addAll(executeNamespaceFilter(session, prjSpace, symQuery));
 		
-		if (symQuery.getAllNamespaces() || symQuery.getGlobalNamespace())		
+		if (rootSet == null && (symQuery.getAllNamespaces() || symQuery.getGlobalNamespace()))		
 		{
 			if (global == null)
 				global = new SnapshotNode(Type.GLOBALNAMESPACE, ".(Global Namespace)");		
 			
-			root.getChildren().add(global);			
+			output.add(global);			
 			global.setChildren(new ArrayList<SnapshotNode>());
 			global.getChildren().addAll(executeTypeFilter(session, prjSpace, null, symQuery));
 		}
@@ -196,7 +202,7 @@ public class SymbolQueryEngine
 		
 		execLocalDeclFilter(session, symQuery);
 				
-		return root;
+		return output;
 	}
 
 		
@@ -1969,7 +1975,9 @@ public class SymbolQueryEngine
 			nameMap.put(name, snapshot);
 		}
 
-		snapshot.setRefs(new ArrayList<Reference>());		
+		if (snapshot.getRefs() == null)
+			snapshot.setRefs(new ArrayList<Reference>());
+		
 		snapshot.getRefs().add(ref);
 	
 		rootSet.add(decl);

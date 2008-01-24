@@ -36,14 +36,15 @@ public class ProjectBrowserDialog extends DialogBase
 	private boolean m_isQuery;
 	private Map<TreeItem,ItemProps> m_itemMap = new HashMap<TreeItem,ItemProps>();  //  @jve:decl-index=0:
 	private String m_resultPath;
+	private Integer m_resultID;
 	private Tree m_viewer;
+	
 	
 	public ProjectBrowserDialog(Shell parent, boolean isQuery)
 	{
 		m_isQuery = isQuery;
 		createShell(parent);
 	}
-
 	
 	public ProjectBrowserDialog(Shell parent, boolean isQuery, String path)
 	{
@@ -119,6 +120,11 @@ public class ProjectBrowserDialog extends DialogBase
 	{
 		return m_resultPath;
 	}
+
+	public Integer getResultID()
+	{
+		return m_resultID;
+	}
 	
 	protected void createShell(Shell parent) 
 	{
@@ -145,13 +151,9 @@ public class ProjectBrowserDialog extends DialogBase
 			public void widgetSelected(SelectionEvent e) 
 			{
 				if (m_viewer.getSelectionCount() == 0)
-				{
-					MessageDialog.openWarning(m_shell, "Selection", "Please select filter");
-				}
+					MessageDialog.openWarning(m_shell, "Selection", "Please make selection");
 				else
-				{
 					makeSelection();
-				}
 			}
 		});
 
@@ -277,30 +279,28 @@ public class ProjectBrowserDialog extends DialogBase
 		return m_shell;
 	}
 	
-	public void makeSelection()
+	protected void makeSelection()
 	{
 		TreeItem selected = m_viewer.getSelection()[0];
 		ItemProps props = m_itemMap.get(selected);
+		
+		m_resultID = props.getID();
 		m_resultPath = "";
 		
 		while (props.getType() != ItemType.ROOT)
 		{					
 			if (props.getType() == ItemType.FOLDER)
-			{
 				m_resultPath = Folder.DIVIDER + m_resultPath;
-			}
 		
 			m_resultPath = selected.getText() + m_resultPath;
 			
 			selected = props.getParent();
 			props = m_itemMap.get(selected);
 		}
-		
-		
+				
 		m_cancel = false;
 		getShell().close();			
 	}
-	
 	
 	
 	protected enum ItemType

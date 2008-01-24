@@ -12,6 +12,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import com.sourcedimensions.client.db.DbAdapter;
+import com.sourcedimensions.client.forms.SymbolQueryDialog;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SymbolQuery;
@@ -47,6 +48,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		{
 			return;
 		}
+		
 		executeQuery(shell, query);
  	}
 
@@ -59,11 +61,12 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		
 		if (dest.trim().length() == 0 || Pattern.matches(".*" + Folder.DIVIDER_REGEX, dest))
 		{
-			MessageDialog.openError(shell, "Destination not specified", "The query does not have destination "+
-				"snapshot name specified or path specified does not include snapshot name. Please enter " + 
+			MessageDialog.openError(shell, "Destination not specified", "The query does not have destination " +
+				"snapshot name specified or path does not include snapshot name. Please enter " + 
 				"destination name and execute this query again.");
 			
-			EditQueryAction.runQueryEdit(shell, query);
+			SymbolQueryDialog dialog = new SymbolQueryDialog(shell, query);		
+			dialog.open();
 			
 			return false;
 		}
@@ -81,11 +84,9 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		
 		if (existing != null)
 		{
-			if (!MessageDialog.openQuestion(shell, "Overwrite confirmation", "There is a snapshot"  + 
-				" with the same name which will be deleted and re-created with new contents. Do you want to continue?")) 
-			{
+			if (!MessageDialog.openQuestion(shell, "Overwrite confirmation", "There is a snapshot with the same name " +
+					"which will be deleted and re-created with new contents. Do you want to continue?")) 
 				return false;
-			}
 		}
 		
 		try

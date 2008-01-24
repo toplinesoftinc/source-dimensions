@@ -7,9 +7,8 @@ public class SnapshotNode
 	protected Type m_type;
 	protected String m_label;
 	protected List<SnapshotNode> m_children;
-	protected List<Reference> m_refs;
-	
-	public Integer m_id;
+	protected List<Reference> m_refs;	
+	protected Integer m_id;
 	
 	public SnapshotNode()
 	{
@@ -20,6 +19,16 @@ public class SnapshotNode
 	{
 		m_type = type;
 		m_label = label;
+	}
+		
+	public Integer getID()
+	{
+		return m_id;
+	}
+	
+	public void setID(Integer id)
+	{
+		m_id = id;
 	}
 	
 	public Type getType()

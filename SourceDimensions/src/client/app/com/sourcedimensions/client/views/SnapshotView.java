@@ -10,13 +10,20 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
@@ -30,8 +37,11 @@ import org.eclipse.ui.part.EditorPart;
 import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
 import com.sourcedimensions.client.db.DbAdapter;
+import com.sourcedimensions.client.forms.SymbolQueryDialog;
 import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.SymbolQuery;
+import com.sourcedimensions.client.views.ProjectView.QueryObject;
 import com.sourcedimensions.client.views.ProjectView.SnapshotObject;
 
 
@@ -42,7 +52,7 @@ public class SnapshotView extends EditorPart
 	
 	protected static Map<Integer, List<SnapshotView>> m_viewerTable = new HashMap<Integer, List<SnapshotView>>();
 	protected TreeViewer m_viewer;
-	protected SnapshotNodeObject[] m_root = new SnapshotNodeObject[0];
+	protected SnapshotNodeTreeItem[] m_root = new SnapshotNodeTreeItem[0];
 	protected Snapshot m_snapshot;
 	
 	public void doSave(IProgressMonitor monitor) 
@@ -86,19 +96,19 @@ public class SnapshotView extends EditorPart
 	}
 
 	
-	public class SnapshotNodeObject implements IAdaptable 
+	public class SnapshotNodeTreeItem implements IAdaptable 
 	{
-		protected String m_name;
-		protected SnapshotNodeObject m_parent;
-		protected List<SnapshotNodeObject> m_children;
 		protected Integer m_id;
-		protected int m_type;
+		protected String m_name;
+		protected SnapshotNode.Type m_type;
+		protected SnapshotNodeTreeItem m_parent;
+		protected List<SnapshotNodeTreeItem> m_children;
 
-		public SnapshotNodeObject(int id, int type, String name) 
+		public SnapshotNodeTreeItem(SnapshotNode node) 
 		{
-			m_id = id;
-			m_type = type;
-			m_name = name;
+			m_id = node.getID();
+			m_name = node.getLabel();
+			m_type = node.getType();
 		}
 
 		public Integer getID()
@@ -106,7 +116,7 @@ public class SnapshotView extends EditorPart
 			return m_id;
 		}
 
-		public int getType()
+		public SnapshotNode.Type getType()
 		{
 			return m_type;
 		}
@@ -121,12 +131,22 @@ public class SnapshotView extends EditorPart
 			m_name = name;
 		}
 		
-		public SnapshotNodeObject getParent() 
+		public TreeViewer getViewer()
+		{
+			return m_viewer;
+		}
+		
+		public SnapshotView getSnapshotView()
+		{
+			return SnapshotView.this;
+		}
+		
+		public SnapshotNodeTreeItem getParent() 
 		{
 			return m_parent;
 		}
 		
-		public void setParent(SnapshotNodeObject parent)
+		public void setParent(SnapshotNodeTreeItem parent)
 		{
 			m_parent = parent; 
 		}
@@ -143,7 +163,7 @@ public class SnapshotView extends EditorPart
 		
 		public Image getImage()
 		{
-			switch (SnapshotNode.Type.values()[m_type])
+			switch (m_type)
 			{
 				case GLOBALNAMESPACE:	return Util.getSharedImage(IImageKeys.IMG_GLOBAL_NAMESPACE_DECL);			
 				case NAMESPACE:			return Util.getSharedImage(IImageKeys.IMG_NAMESPACE_DECL);
@@ -187,16 +207,16 @@ public class SnapshotView extends EditorPart
 			}
 		}
 		
-		public void addChild(SnapshotNodeObject object)
+		public void addChild(SnapshotNodeTreeItem object)
 		{
 			if (m_children == null)
-				m_children = new ArrayList<SnapshotNodeObject>();
+				m_children = new ArrayList<SnapshotNodeTreeItem>();
 			
 			m_children.add(object);
 			object.setParent(this);		
 		}
 		
-		public void deleteChild(SnapshotNodeObject object)
+		public void deleteChild(SnapshotNodeTreeItem object)
 		{
 			if (m_children == null)
 				return;
@@ -212,15 +232,20 @@ public class SnapshotView extends EditorPart
 			m_children.clear();
 		}
 		
-		public SnapshotNodeObject[] getChildren() 
+		public void invalidate()
+		{
+			m_children = null;
+		}
+		
+		public SnapshotNodeTreeItem[] getChildren() 
 		{
 			if (m_children == null)
 			{
-				m_children = new ArrayList<SnapshotNodeObject>();
+				m_children = new ArrayList<SnapshotNodeTreeItem>();
 				load();
 			}
 			
-			return m_children.toArray(new SnapshotNodeObject[0]);
+			return m_children.toArray(new SnapshotNodeTreeItem[0]);
 		}
 		
 		public boolean hasChildren() 
@@ -240,7 +265,7 @@ public class SnapshotView extends EditorPart
 			
 			try
 			{
-				list = DbAdapter.getSnapshotNodeList(m_snapshot.m_id, m_id);
+				list = DbAdapter.getSnapshotNodeChildList(m_snapshot.m_id, getID());
 			}
 			catch (Exception e)
 			{
@@ -249,23 +274,28 @@ public class SnapshotView extends EditorPart
 			
 			for (SnapshotNode node : list)
 			{
-				SnapshotNodeObject obj = new SnapshotNodeObject(node.m_id,
-					node.getType().value(), node.getLabel());
+				SnapshotNodeTreeItem obj = new SnapshotNodeTreeItem(node);
 				
 				addChild(obj);
 			}
 		}
 	}
 	
+	
 	public void setSnapshot(Snapshot snapshot)
+	{
+		m_snapshot = snapshot;
+		refreshView();
+	}
+
+	
+	public void refreshView()
 	{
 		List<SnapshotNode> root;
 		
-		m_snapshot = snapshot;
-		
 		try
 		{
-			root = DbAdapter.getSnapshotNodeList(m_snapshot.m_id, null);
+			root = DbAdapter.getSnapshotNodeChildList(m_snapshot.m_id, null);
 		}
 		catch (Exception e)
 		{
@@ -278,25 +308,24 @@ public class SnapshotView extends EditorPart
 
 			try
 			{
-				list = DbAdapter.getSnapshotNodeList(m_snapshot.m_id, root.get(0).m_id);
+				list = DbAdapter.getSnapshotNodeChildList(m_snapshot.m_id, root.get(0).getID());
 			}
 			catch (Exception e)
 			{
 				return;
 			}
 			
-			m_root = new SnapshotNodeObject[list.size()];
+			m_root = new SnapshotNodeTreeItem[list.size()];
 			
 			for (int i = 0; i < list.size(); i++)
 			{
 				SnapshotNode node = list.get(i);
 				
-				m_root[i] = new SnapshotNodeObject(node.m_id,
-					node.getType().value(), node.getLabel());
+				m_root[i] = new SnapshotNodeTreeItem(node);
 			}
 		}
 				
-		m_viewer.refresh();
+		m_viewer.refresh();		
 	}
 	
 	
@@ -322,9 +351,9 @@ public class SnapshotView extends EditorPart
 	
 		public Object getParent(Object child) 
 		{
-			if (child instanceof SnapshotNodeObject) 
+			if (child instanceof SnapshotNodeTreeItem) 
 			{
-				return ((SnapshotNodeObject)child).getParent();
+				return ((SnapshotNodeTreeItem)child).getParent();
 			}
 			
 			return null;
@@ -332,9 +361,9 @@ public class SnapshotView extends EditorPart
 
 		public Object[] getChildren(Object parent) 
 		{
-			if (parent instanceof SnapshotNodeObject) 
+			if (parent instanceof SnapshotNodeTreeItem) 
 			{
-				return ((SnapshotNodeObject)parent).getChildren();
+				return ((SnapshotNodeTreeItem)parent).getChildren();
 			}
 			
 			return new Object[0];
@@ -342,8 +371,8 @@ public class SnapshotView extends EditorPart
 		
 		public boolean hasChildren(Object parent) 
 		{
-			if (parent instanceof SnapshotNodeObject)
-				return ((SnapshotNodeObject)parent).hasChildren();
+			if (parent instanceof SnapshotNodeTreeItem)
+				return ((SnapshotNodeTreeItem)parent).hasChildren();
 			else
 				return false;
 		}
@@ -359,8 +388,8 @@ public class SnapshotView extends EditorPart
 		
 		public Image getImage(Object obj) 
 		{
-			if (obj instanceof SnapshotNodeObject)
-				return ((SnapshotNodeObject)obj).getImage();
+			if (obj instanceof SnapshotNodeTreeItem)
+				return ((SnapshotNodeTreeItem)obj).getImage();
 			else
 				return null;
 		}
@@ -376,8 +405,52 @@ public class SnapshotView extends EditorPart
 		m_viewer.setLabelProvider(new SnapshotLabelProvider());
 		m_viewer.setInput(getEditorSite());
 		
+		m_viewer.addDropSupport(DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer()}, new DropTargetAdapter()
+		{
+			public void dragOver(DropTargetEvent event)
+			{
+				TreeSelection selection = (TreeSelection)LocalSelectionTransfer.getTransfer().getSelection();
+				
+				if (selection.size() == 1)
+				{
+					if (selection.toArray()[0] instanceof QueryObject)
+						event.detail = DND.DROP_MOVE;
+					else
+						event.detail = DND.DROP_NONE;
+				}
+				else
+					event.detail = DND.DROP_NONE;
+			}
+			
+			public void drop(DropTargetEvent event)
+			{
+				TreeSelection selection = (TreeSelection)event.data;
+				QueryObject obj = (QueryObject)selection.toArray()[0];
+				SnapshotNodeTreeItem item = (SnapshotNodeTreeItem)event.item.getData();
+				SymbolQuery query;
+				
+				try
+				{
+					query = DbAdapter.getSymbolQuery(obj.m_id);
+				}
+				catch (Exception e)
+				{
+					return;
+				}
+				
+				List<SnapshotNodeTreeItem> sel = new ArrayList<SnapshotNodeTreeItem>();
+				sel.add(item);
+				
+				SymbolQueryDialog dialog = new SymbolQueryDialog(getSite().getShell(), query, sel);
+				dialog.open();
+			}
+		});
+		
+		
 		MenuManager menuMgr = new MenuManager("");
 		menuMgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS + "_subquery"));
+		menuMgr.add(new Separator());
+		menuMgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS + "_object"));		
 		Menu menu = menuMgr.createContextMenu(m_viewer.getControl());
 		m_viewer.getControl().setMenu(menu);
 		getSite().registerContextMenu(menuMgr, m_viewer);		

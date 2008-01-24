@@ -379,8 +379,10 @@ public class DbAdapter
 			if (rs.wasNull())
 				parentId = null;
 			
+			Integer projectId = rs.getInt("project_id");
+			
 			ps = c.prepareStatement("SELECT * FROM folder WHERE (parent_id = ? OR " +
-				"(parent_id IS NULL AND ? IS NULL)) AND name = ? and id <> ?");
+				"(parent_id IS NULL AND ? IS NULL)) AND name = ? AND id <> ? AND project_id = ?");
 					
 			if (parentId == null)
 			{
@@ -395,6 +397,7 @@ public class DbAdapter
 			
 			ps.setString(3, name);
 			ps.setInt(4, id);
+			ps.setInt(5, projectId);
 			
 			rs = ps.executeQuery();
 			
@@ -435,9 +438,19 @@ public class DbAdapter
 		try
 		{
 			c = getConnection();			
+						
+			PreparedStatement ps = c.prepareStatement("SELECT project_id FROM folder WHERE id = ?");
 			
-			PreparedStatement ps = c.prepareStatement("SELECT * FROM folder WHERE (parent_id = ? " +
-				"OR (parent_id IS NULL AND ? IS NULL)) AND name = ? AND id <> ?");
+			ps.setInt(1, id);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			
+			Integer projectId = rs.getInt("project_id");
+			
+			ps = c.prepareStatement("SELECT * FROM folder WHERE (parent_id = ? " +
+				"OR (parent_id IS NULL AND ? IS NULL)) AND name = ? AND id <> ? AND project_id = ?");
 						
 			if (parentId == null)
 			{
@@ -452,8 +465,9 @@ public class DbAdapter
 			
 			ps.setString(3, name);
 			ps.setInt(4, id);
+			ps.setInt(5, projectId);
 			
-			ResultSet rs = ps.executeQuery();
+			rs = ps.executeQuery();
 			
 			if (rs.next())
 				throw new DuplicateNameException();
@@ -531,7 +545,9 @@ public class DbAdapter
 			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
 			
 			ps.setString(1, projectId);
+						
 			ResultSet rs = ps.executeQuery();
+			
 			rs.next();
 			
 			int prjId = rs.getInt("id");		
@@ -605,6 +621,50 @@ public class DbAdapter
 	}
 
 	
+	public static void saveSnapshotNodeChildren(SnapshotNode node) throws Exception
+	{
+		Connection c = null;
+
+		try
+		{
+			c = getConnection();			
+	
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE id = ?");
+			
+			ps.setInt(1, node.getID());
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			
+			int projectId = rs.getInt("project_id");
+			int snapshotId = rs.getInt("snapshot_id");
+		
+			
+			ps = c.prepareStatement("INSERT INTO snapshot(folder_id, project_id, name) "+ 
+					"VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS);
+			
+			if (node.getChildren() != null)
+			{
+				for (SnapshotNode s : node.getChildren())
+					saveSnapshotNode(c, projectId, snapshotId, node.getID(), s);
+			}
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+	}
+	
+	
+	
 	protected static void saveSnapshotNode(Connection c, int projectId, int snapshotId, Integer parentId, SnapshotNode node) throws Exception
 	{
 		PreparedStatement ps = c.prepareStatement("INSERT INTO snapshot_node(project_id, snapshot_id, parent_id, label, type)" +
@@ -643,7 +703,7 @@ public class DbAdapter
 				ps = c.prepareStatement("INSERT INTO REFERENCE(snapshot_node_id, ext_id, file_id, " +
 					"start_pos, end_pos) VALUES (?,?,?,?,?)");
 				
-				ps.setInt(1, snapshotId);
+				ps.setInt(1, id);
 				ps.setString(2, ref.getId());
 				ps.setString(3,	ref.getFileId());
 				ps.setInt(4, ref.getStartPos());
@@ -655,25 +715,43 @@ public class DbAdapter
 	}
 
 
-	public static List<Reference> getSnapshotNodeRefs(int snapshotNodeId) throws Exception
+	public static SnapshotNode getSnapshotNode(int snapshotNodeId) throws Exception
 	{
 		Connection c = null;
-		List<Reference> list = new ArrayList<Reference>();
+		SnapshotNode node = null;
 		
 		try
 		{
 			c = getConnection();
 			
-			PreparedStatement ps = c.prepareStatement("SELECT * FROM reference WHERE snapshot_node_id = ?");
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE id = ?");
 			
 			ps.setInt(1, snapshotNodeId);
-						
+			
 			ResultSet rs = ps.executeQuery();
 			
-			while (rs.next())
-			{				
-				list.add(new Reference(rs.getString("ext_id"), rs.getString("file_id"), 
-					rs.getInt("start_pos"), rs.getInt("end_pos")));
+			if (rs.next())
+			{
+				node = new SnapshotNode();
+				
+				node.setID(rs.getInt("id"));
+				node.setType(SnapshotNode.Type.values()[rs.getInt("type")]);
+				node.setLabel(rs.getString("label"));
+			
+				ps = c.prepareStatement("SELECT * FROM reference WHERE snapshot_node_id = ?");
+				
+				ps.setInt(1, snapshotNodeId);
+							
+				ResultSet r = ps.executeQuery();
+				
+				while (r.next())
+				{				
+					if (node.getRefs() == null)
+						node.setRefs(new ArrayList<Reference>());
+					
+					node.getRefs().add(new Reference(rs.getString("ext_id"), rs.getString("file_id"), 
+						rs.getInt("start_pos"), rs.getInt("end_pos")));
+				}
 			}
 			
 			c.commit();
@@ -690,11 +768,127 @@ public class DbAdapter
 			closeConn(c);
 		}
 		
-		return list;
+		return node;
 	}
 	
 	
-	public static List<SnapshotNode> getSnapshotNodeList(int snapshotId, Integer parentId) throws Exception
+	public static boolean hasSnapshotNodeChildren(int snapshotNodeId) throws Exception
+	{
+		Connection c = null;
+		boolean hasChildren = false;
+		
+		try
+		{
+			c = getConnection();
+			
+			PreparedStatement ps = c.prepareStatement("SELECT COUNT(*) FROM snapshot_node " +
+				"WHERE parent_id = ? ");
+			
+			ps.setInt(1, snapshotNodeId);
+						
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			
+			hasChildren = (rs.getInt(1) > 0);			
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+		
+		return hasChildren;		
+	}
+	
+	public static List<SnapshotNode> getSnapshotNodeList(Set<Integer> idSet) throws Exception
+	{
+		Connection c = null;
+		List<SnapshotNode> output = new ArrayList<SnapshotNode>();
+		
+		try
+		{
+			c = getConnection();
+			
+			String paramList = "";
+			
+			for (int i = 0; i < idSet.size(); i++)
+			{
+				if (i == 0)
+					paramList += "?";
+				else
+					paramList += ",?";
+			}
+			
+			PreparedStatement ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE id IN (" + paramList + ")");
+						
+			Iterator<Integer> iter = idSet.iterator();
+			
+			for (int i = 1; i <= idSet.size(); i++)
+				ps.setInt(i, iter.next());
+					
+			ResultSet rs = ps.executeQuery();
+			
+			Map<Integer, SnapshotNode> nodeMap = new HashMap<Integer, SnapshotNode>();
+			
+			while (rs.next())
+			{
+				SnapshotNode node = new SnapshotNode(SnapshotNode.Type.values()[rs.getInt("type")], rs.getString("label"));
+				
+				node.setID(rs.getInt("id"));
+
+				nodeMap.put(node.getID(), node);
+			}
+			
+			ps = c.prepareStatement("SELECT * FROM reference WHERE snapshot_node_id IN (" + paramList + ")");
+			
+			iter = idSet.iterator();
+			
+			for (int i = 1; i <= idSet.size(); i++)
+				ps.setInt(i, iter.next());
+						
+			rs = ps.executeQuery();
+			
+			while (rs.next())
+			{				
+				SnapshotNode node = nodeMap.get(rs.getInt("snapshot_node_id"));
+				
+				if (node.getRefs() == null)
+					node.setRefs(new ArrayList<Reference>());
+				
+				node.getRefs().add(new Reference(rs.getString("ext_id"), rs.getString("file_id"), 
+					rs.getInt("start_pos"), rs.getInt("end_pos")));
+			}
+
+			output.addAll(nodeMap.values());
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+		
+		return output;
+	}
+	
+	
+	public static List<SnapshotNode> getSnapshotNodeChildList(int snapshotId, Integer parentId) throws Exception
 	{
 		Connection c = null;
 		List<SnapshotNode> list = new ArrayList<SnapshotNode>();
@@ -703,8 +897,18 @@ public class DbAdapter
 		{
 			c = getConnection();
 			
-			PreparedStatement ps = c.prepareStatement("SELECT * FROM snapshot_node " +
-				"WHERE snapshot_id = ? AND (parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) ORDER BY type, label");
+			PreparedStatement ps = c.prepareStatement("SELECT project_id FROM snapshot WHERE id = ?");
+			
+			ps.setInt(1, snapshotId);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			
+			Integer projectId = rs.getInt("project_id");
+			
+			ps = c.prepareStatement("SELECT * FROM snapshot_node WHERE snapshot_id = ? " + 
+				"AND (parent_id = ? OR (parent_id IS NULL AND ? IS NULL)) AND project_id = ? ORDER BY type, label");
 			
 			ps.setInt(1, snapshotId);
 			
@@ -719,14 +923,16 @@ public class DbAdapter
 				ps.setInt(3, parentId);
 			}
 			
-			ResultSet rs = ps.executeQuery();
+			ps.setInt(4, projectId);
+			
+			rs = ps.executeQuery();
 			
 			while (rs.next())
 			{
 				SnapshotNode node = new SnapshotNode(SnapshotNode.Type.values()[rs.getInt("type")], rs.getString("label"));
 				
-				node.m_id = rs.getInt("id");
-				
+				node.setID(rs.getInt("id"));
+								
 				list.add(node);
 			}
 			
@@ -863,7 +1069,7 @@ public class DbAdapter
 		{
 			c = getConnection();			
 			
-			PreparedStatement ps = c.prepareStatement("SELECT folder_id FROM snapshot WHERE id = ?");
+			PreparedStatement ps = c.prepareStatement("SELECT project_id, folder_id FROM snapshot WHERE id = ?");
 			
 			ps.setInt(1, id);
 			ResultSet rs = ps.executeQuery();
@@ -874,9 +1080,11 @@ public class DbAdapter
 			
 			if (rs.wasNull())
 				parentId = null;
+			
+			Integer projectId = rs.getInt("project_id");
 
 			ps = c.prepareStatement("SELECT * FROM snapshot WHERE " +
-				"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL)) AND name = ? and id <> ?");
+				"(folder_id = ? OR (folder_id IS NULL AND ? IS NULL)) AND name = ? AND id <> ? AND project_id = ?");
 			
 			if (parentId == null)
 			{
@@ -890,6 +1098,7 @@ public class DbAdapter
 			}
 			ps.setString(3, name);
 			ps.setInt(4, id);
+			ps.setInt(5, projectId);
 			
 			rs = ps.executeQuery();
 			
@@ -978,8 +1187,18 @@ public class DbAdapter
 		{
 			c = getConnection();			
 			
-			PreparedStatement ps = c.prepareStatement("SELECT * FROM snapshot WHERE (folder_id = ? " +
-				"OR (folder_id IS NULL AND ? IS NULL)) AND name = ? AND id <> ?");
+			PreparedStatement ps = c.prepareStatement("SELECT project_id FROM snapshot WHERE id = ?");
+			
+			ps.setInt(1, id);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			
+			Integer projectId = rs.getInt("project_id");
+			
+			ps = c.prepareStatement("SELECT * FROM snapshot WHERE (folder_id = ? " +
+				"OR (folder_id IS NULL AND ? IS NULL)) AND name = ? AND id <> ? AND project_id = ?");
 						
 			if (parentId == null)
 			{
@@ -994,8 +1213,9 @@ public class DbAdapter
 			
 			ps.setString(3, name);
 			ps.setInt(4, id);
+			ps.setInt(5, projectId);
 			
-			ResultSet rs = ps.executeQuery();
+			rs = ps.executeQuery();
 			
 			if (rs.next())
 				throw new DuplicateNameException();
@@ -1339,7 +1559,65 @@ public class DbAdapter
 			closeConn(c);
 		}
 	}
+
+
+	public static void deleteSnapshotNode(int id) throws Exception
+	{
+		Connection c = null;
 		
+		try
+		{
+			c = getConnection();			
+	
+			PreparedStatement ps = c.prepareStatement("DELETE FROM snapshot_node WHERE id = ?");
+			
+			ps.setInt(1, id);			
+			ps.executeUpdate();
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+	}	
+	
+
+	public static void deleteSnapshotNodeChildren(int id) throws Exception
+	{
+		Connection c = null;
+		
+		try
+		{
+			c = getConnection();			
+	
+			PreparedStatement ps = c.prepareStatement("DELETE FROM snapshot_node WHERE parent_id = ?");
+			
+			ps.setInt(1, id);			
+			ps.executeUpdate();
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+	}
+	
 	
 	protected static Connection getConnection() throws SQLException, IOException
 	{	
@@ -2002,7 +2280,7 @@ public class DbAdapter
 		{
 			c = getConnection();			
 			
-			PreparedStatement ps = c.prepareStatement("SELECT folder_id FROM query WHERE id = ?");
+			PreparedStatement ps = c.prepareStatement("SELECT project_id, folder_id FROM query WHERE id = ?");
 			
 			ps.setInt(1, id);
 			ResultSet rs = ps.executeQuery();
@@ -2013,9 +2291,11 @@ public class DbAdapter
 			
 			if (rs.wasNull())
 				parentId = null;
+	
+			Integer projectId = rs.getInt("project_id");							
 			
 			ps = c.prepareStatement("SELECT * FROM query WHERE (folder_id = ? " +
-				"OR (folder_id IS NULL AND ? IS NULL)) AND name = ? and id <> ?");
+				"OR (folder_id IS NULL AND ? IS NULL)) AND name = ? AND id <> ? AND project_id = ?");
 			
 			if (parentId == null)
 			{
@@ -2030,6 +2310,7 @@ public class DbAdapter
 				
 			ps.setString(3, name);
 			ps.setInt(4, id);
+			ps.setInt(5, projectId);
 			
 			rs = ps.executeQuery();
 			
@@ -2070,10 +2351,20 @@ public class DbAdapter
 		
 		try
 		{
-			c = getConnection();		
+			c = getConnection();
 			
-			PreparedStatement ps = c.prepareStatement("SELECT * FROM query WHERE (folder_id = ? " +
-				"OR (folder_id IS NULL AND ? IS NULL)) AND name = ?");
+			PreparedStatement ps = c.prepareStatement("SELECT project_id FROM query WHERE id = ?");
+			
+			ps.setInt(1, id);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			
+			Integer projectId = rs.getInt("project_id");
+			
+			ps = c.prepareStatement("SELECT * FROM query WHERE (folder_id = ? " +
+				"OR (folder_id IS NULL AND ? IS NULL)) AND name = ? AND project_id = ?");
 						
 			if (parentId == null)
 			{
@@ -2087,8 +2378,9 @@ public class DbAdapter
 			}
 			
 			ps.setString(3, name);
+			ps.setInt(4, projectId);
 			
-			ResultSet rs = ps.executeQuery();
+			rs = ps.executeQuery();
 		
 			if (rs.next())
 				throw new DuplicateNameException();
@@ -2354,7 +2646,9 @@ public class DbAdapter
 				"ext_id VARCHAR(36) NOT NULL",
 				"file_id VARCHAR(36) NOT NULL",
 				"start_pos INT NOT NULL",
-				"end_pos INT NOT NULL"
+				"end_pos INT NOT NULL",
+				"PRIMARY KEY (id)",
+				"FOREIGN KEY (snapshot_node_id) REFERENCES SNAPSHOT_NODE ON DELETE CASCADE"
 			},
 			{
 				"QUERY",
@@ -2491,6 +2785,7 @@ public class DbAdapter
 				"type_props BIGINT",
 				"type_name VARCHAR(1024) NOT NULL",
 				"name VARCHAR(1024) NOT NULL",
+				"PRIMARY KEY (id)",
 				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"
 			}
 		};

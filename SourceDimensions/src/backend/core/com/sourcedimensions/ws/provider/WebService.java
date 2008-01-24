@@ -5,6 +5,7 @@ import org.codehaus.xfire.fault.XFireFault;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import com.sourcedimensions.client.model.Snapshot;
+import com.sourcedimensions.client.model.SnapshotNode;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.server.query.SymbolQueryEngine;
 import com.sourcedimensions.server.sys.Project.Language;
@@ -179,4 +180,12 @@ public class WebService implements IWebService
 		
 		return snapshot;
 	}
+	
+	public Set<SnapshotNode> runSymbolSubquery(String sessionID, String projectId, Set<SnapshotNode> rootSet, SymbolQuery query) throws XFireFault
+	{
+		verifySession(sessionID);
+		verifyLanguage(sessionID, projectId);
+		SymbolQueryEngine engine = new SymbolQueryEngine(sessionID);
+		return engine.execute(projectId, rootSet, query);
+	}	
 }
