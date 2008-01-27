@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.compare.Splitter;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -19,12 +21,13 @@ import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
+
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IEditorInput;
@@ -51,9 +54,14 @@ public class SnapshotView extends EditorPart
 	public static final String ID = "com.sourcedimensions.client.views.SnapshotView";
 	
 	protected static Map<Integer, List<SnapshotView>> m_viewerTable = new HashMap<Integer, List<SnapshotView>>();
-	protected TreeViewer m_viewer;
+	protected TreeViewer m_treeViewer;
 	protected SnapshotNodeTreeItem[] m_root = new SnapshotNodeTreeItem[0];
 	protected Snapshot m_snapshot;
+	protected TextViewer m_textViewer;
+	protected Splitter m_topSplitter;
+	protected Splitter m_textAreaSplitter;
+	protected org.eclipse.swt.widgets.List m_fileList;
+	
 	
 	public void doSave(IProgressMonitor monitor) 
 	{
@@ -131,9 +139,9 @@ public class SnapshotView extends EditorPart
 			m_name = name;
 		}
 		
-		public TreeViewer getViewer()
+		public TreeViewer getTreeViewer()
 		{
-			return m_viewer;
+			return m_treeViewer;
 		}
 		
 		public SnapshotView getSnapshotView()
@@ -325,7 +333,7 @@ public class SnapshotView extends EditorPart
 			}
 		}
 				
-		m_viewer.refresh();		
+		m_treeViewer.refresh();		
 	}
 	
 	
@@ -398,14 +406,21 @@ public class SnapshotView extends EditorPart
 	
 	public void createPartControl(Composite parent) 
 	{	
-		m_viewer = new TreeViewer(parent, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		m_topSplitter = new Splitter(parent, SWT.BORDER);
+		m_topSplitter.setOrientation(SWT.HORIZONTAL);
+		FillLayout layout = new FillLayout();
+		layout.marginWidth = 0;
+		layout.marginHeight = 0;
+		m_topSplitter.setLayout(layout);
+
+		m_treeViewer = new TreeViewer(m_topSplitter, SWT.MULTI);
 		
-		m_viewer.setContentProvider(new SnapshotContentProvider());
-		getSite().setSelectionProvider(m_viewer);
-		m_viewer.setLabelProvider(new SnapshotLabelProvider());
-		m_viewer.setInput(getEditorSite());
+		m_treeViewer.setContentProvider(new SnapshotContentProvider());
+		getSite().setSelectionProvider(m_treeViewer);
+		m_treeViewer.setLabelProvider(new SnapshotLabelProvider());
+		m_treeViewer.setInput(getEditorSite());
 		
-		m_viewer.addDropSupport(DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer()}, new DropTargetAdapter()
+		m_treeViewer.addDropSupport(DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer()}, new DropTargetAdapter()
 		{
 			public void dragOver(DropTargetEvent event)
 			{
@@ -446,14 +461,23 @@ public class SnapshotView extends EditorPart
 			}
 		});
 		
+		m_textAreaSplitter = new Splitter(m_topSplitter, SWT.NONE);
+		m_textAreaSplitter.setOrientation(SWT.VERTICAL);
+		m_textAreaSplitter.setLayout(layout);
+		m_topSplitter.setVisible(m_textAreaSplitter, false);
+		
+		m_textViewer = new TextViewer(m_textAreaSplitter, SWT.BORDER);
+		m_fileList = new org.eclipse.swt.widgets.List(m_textAreaSplitter, SWT.SINGLE | SWT.BORDER);
+
+		m_textAreaSplitter.setWeights(new int[] {80, 20});
 		
 		MenuManager menuMgr = new MenuManager("");
 		menuMgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS + "_subquery"));
 		menuMgr.add(new Separator());
 		menuMgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS + "_object"));		
-		Menu menu = menuMgr.createContextMenu(m_viewer.getControl());
-		m_viewer.getControl().setMenu(menu);
-		getSite().registerContextMenu(menuMgr, m_viewer);		
+		Menu menu = menuMgr.createContextMenu(m_treeViewer.getControl());
+		m_treeViewer.getControl().setMenu(menu);
+		getSite().registerContextMenu(menuMgr, m_treeViewer);
 	}
 
 	public void setFocus() 

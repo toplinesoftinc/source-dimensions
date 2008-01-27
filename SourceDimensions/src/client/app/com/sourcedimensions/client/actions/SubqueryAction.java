@@ -172,7 +172,7 @@ public class SubqueryAction implements IWorkbenchWindowActionDelegate, IObjectAc
 
 			n.invalidate();
 			
-			TreeViewer viewer = n.getViewer();
+			TreeViewer viewer = n.getTreeViewer();
 			
 			viewer.refresh(n);
 			viewer.setExpandedState(n, false);

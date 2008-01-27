@@ -19,13 +19,7 @@ import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.views.ProjectView;
 import com.sourcedimensions.client.views.SnapshotView;
-import com.sourcedimensions.client.views.ProjectView.FolderObject;
-import com.sourcedimensions.client.views.ProjectView.QueryGroup;
-import com.sourcedimensions.client.views.ProjectView.QueryObject;
-import com.sourcedimensions.client.views.ProjectView.SnapshotGroup;
-import com.sourcedimensions.client.views.ProjectView.SnapshotObject;
-import com.sourcedimensions.client.views.ProjectView.TreeGroup;
-import com.sourcedimensions.client.views.ProjectView.TreeObject;
+
 import com.sourcedimensions.client.views.SnapshotView.SnapshotNodeTreeItem;
 
 
@@ -73,7 +67,7 @@ public class DeleteSnapshotNodeAction implements IWorkbenchWindowActionDelegate,
 			return false;
 		}
 		
-		TreeViewer viewer = selected.getViewer();
+		TreeViewer viewer = selected.getTreeViewer();
 		
 		if (parent == null)
 		{

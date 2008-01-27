@@ -11,7 +11,7 @@
         <property name="connection.driver_class">org.postgresql.Driver</property>
 
         <!-- JDBC connection pool (use the built-in) -->
-        <property name="connection.pool_size">20</property>
+        <property name="connection.pool_size">50</property>
 
         <!-- SQL dialect -->
         <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property>

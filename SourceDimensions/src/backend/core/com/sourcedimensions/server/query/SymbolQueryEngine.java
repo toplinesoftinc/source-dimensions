@@ -201,6 +201,8 @@ public class SymbolQueryEngine
 			execAnonymClassFilter(session);
 		
 		execLocalDeclFilter(session, symQuery);
+		
+		session.getTransaction().commit();
 				
 		return output;
 	}

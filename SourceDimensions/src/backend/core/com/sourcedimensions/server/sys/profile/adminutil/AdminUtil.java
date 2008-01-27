@@ -21,7 +21,6 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 
 import org.hibernate.Hibernate;
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 

@@ -55,10 +55,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     	MenuManager snapshotMenu = new MenuManager("&Snapshot", "snapshot");
     	snapshotMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_snapshot"));
     	
-    	MenuManager winMenu = new MenuManager("&Window", "window");
-    	winMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_window"));
+    	MenuManager winMenu = new MenuManager("&Window", "_window");
+    	winMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "window"));
     	
-    	MenuManager helpMenu = new MenuManager("&Help", "help");
+    	MenuManager helpMenu = new MenuManager("&Help", "_help");
     	helpMenu.add(aboutAction);
     	
     	menuBar.add(prjMenu);
@@ -76,6 +76,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_folder"));    	
     	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_query"));
     	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_snapshot"));
-    	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_object"));    	
+    	coolBar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS + "_object"));
     }
 }

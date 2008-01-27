@@ -1,8 +1,10 @@
 package com.sourcedimensions.server.sys.profile;
 
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.*;
@@ -19,11 +21,14 @@ public class Database
 	protected String m_databaseName;
 	protected String m_userName;
 	protected String m_password;
-	protected static SessionFactory m_profileSessionFactory;
-	protected static Configuration m_config = new Configuration().configure(m_databaseConfigFile);
 	protected SessionFactory m_dbSessionFactory;
 	
+	protected static SessionFactory m_profileSessionFactory;
+	protected static Configuration m_config = new Configuration().configure(m_databaseConfigFile);
+	protected static Map<String, SessionFactory> m_sessionFactoryCache = new HashMap<String, SessionFactory>();
+		
 	protected Set<Account> m_accounts = new HashSet<Account>();	
+	
 	
 	static 
     {
@@ -36,6 +41,7 @@ public class Database
     		throw new ExceptionInInitializerError(ex);
     	}
     }
+	
 	
 	public static SessionFactory getProfileSessionFactory()
 	{
@@ -107,9 +113,15 @@ public class Database
 	
 	protected void createDbSessionFactory()
 	{
-		m_config.setProperty(Environment.URL, "jdbc:postgresql://" + m_serverUrl + "/" + m_databaseName + 
-				"?user=" + m_userName + "&password=" + m_password);
-		m_dbSessionFactory = m_config.buildSessionFactory();
+		String key = "jdbc:postgresql://" + m_serverUrl + "/" + m_databaseName + "?user=" + m_userName + "&password=" + m_password;
+		m_dbSessionFactory = m_sessionFactoryCache.get(key);
+		
+		if (m_dbSessionFactory == null)
+		{
+			m_config.setProperty(Environment.URL, key);		
+			m_dbSessionFactory = m_config.buildSessionFactory();
+			m_sessionFactoryCache.put(key, m_dbSessionFactory);
+		}
 	}
 	
 	public SessionFactory getDbSessionFactory()

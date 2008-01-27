@@ -14,6 +14,8 @@ import com.sourcedimensions.client.model.SnapshotNode.Reference;
 
 public class DbAdapter 
 {
+	protected static final String m_csDbFolder = "db";
+	protected static final String m_csSrcFolder = "src";
 
 	static
 	{
@@ -1625,10 +1627,7 @@ public class DbAdapter
 		String path = Platform.getInstallLocation().getURL().getPath();
 		Connection c = null;
 		
-		if (path.startsWith(Folder.DIVIDER))
-			path = path.substring(1);
-		
-		path += "db";
+		path += m_csDbFolder;
 			
 		File f = new File(path);
 		
@@ -2502,6 +2501,77 @@ public class DbAdapter
 	}
 
 	
+	protected String getBaseSrcPath(String projectId)
+	{
+		return Platform.getInstallLocation().getURL().getPath() + 
+			m_csDbFolder + Folder.DIVIDER + projectId + Folder.DIVIDER;
+	}
+	
+	
+	protected void cleanupFileRefs(String projectId) throws Exception
+	{
+		Connection c = null;
+		List<String> fileList = new ArrayList<String>();
+		
+		try
+		{
+			c = getConnection();			
+
+			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
+			
+			ps.setString(1, projectId);
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			
+			int prjId = rs.getInt("id");			
+			
+			ps = c.prepareStatement("SELECT ext_id FROM source_file_ref s WHERE NOT EXISTS " +
+				"(SELECT 1 FROM reference WHERE ext_id = s.ext_id) AND s.project_id = ?");
+
+			ps.setInt(1, prjId);
+			
+			rs = ps.executeQuery();
+			
+			while (rs.next())
+				fileList.add(rs.getString("ext_id"));
+
+			ps = c.prepareStatement("DELETE FROM source_file_ref s WHERE NOT EXISTS " +
+				"(SELECT 1 FROM reference WHERE ext_id = s.ext_id) AND s.project_id = ?");
+
+			ps.setInt(1, prjId);			
+			ps.executeUpdate();
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);
+		}
+		
+		String path = getBaseSrcPath(projectId);
+		File root = new File(path);
+		
+		for (String name : fileList)
+		{
+			File file = new File(path + name);
+			file.delete();
+			
+			for (File parent = file.getParentFile(); parent != null && parent.compareTo(root) != 0; parent = parent.getParentFile())
+			{
+				if (parent.list().length == 0)
+					parent.delete();
+			}
+		}		
+	}
+	
+	
 	public static String getFolderPath(int folderId) throws Exception
 	{
 		Connection c = null;
@@ -2515,16 +2585,14 @@ public class DbAdapter
 			
 			while (true)
 			{
-				PreparedStatement ps = c.prepareStatement("SELECT parent_id, name FROM folder WHERE id = ?");
-			
-				ps.setInt(1, curId);
-				
+				PreparedStatement ps = c.prepareStatement("SELECT parent_id, name FROM folder WHERE id = ?");			
+
+				ps.setInt(1, curId);				
 				ResultSet rs = ps.executeQuery();
 			
 				rs.next();
 			
 				path = rs.getString("name") + Folder.DIVIDER + path;
-
 				curId = rs.getInt("parent_id");				
 				
 				if (rs.wasNull())
@@ -2787,17 +2855,79 @@ public class DbAdapter
 				"name VARCHAR(1024) NOT NULL",
 				"PRIMARY KEY (id)",
 				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"
+			},
+			{
+				"SOURCE_FILE_REF",
+				"id INT GENERATED ALWAYS AS IDENTITY",
+				"project_id INT NOT NULL",
+				"ext_id VARCHAR(36) NOT NULL",				
+				"name VARCHAR(8000) NOT NULL"
 			}
 		};
 
 		String[][] indexes = 
 		{
 				{
-					"IDX_SNAPSHOT_NODE",	/* Index name */
-					"SNAPSHOT_NODE",		/* Table name */
-					"parent_id",			/* Index fields */
+					"IDX_PROJECT",			/* Index name   */
+					"PROJECT",				/* Table name   */
+					"ext_id"				/* Index fields */
+				},
+				{
+					"IDX_DEPENDENT_PROJECT",
+					"DEPENDENT_PROJECT",
+					"parent_id"
+				},
+				{
+					"IDX_FOLDER",
+					"FOLDER",
+					"project_id",
+					"parent_id"
+				},
+				{
+					"IDX_SNAPSHOT",
+					"SNAPSHOT",
+					"project_id",
+					"folder_id"
+				},
+				{
+					"IDX_REFERENCE",
+					"REFERENCE",
+					"snapshot_node_id"
+				},
+				{
+					"IDX_REFERENCE_EXTID",
+					"REFERENCE",
+					"ext_id"
+				},
+				{
+					"IDX_SNAPSHOT_NODE",
+					"SNAPSHOT_NODE",
+					"snapshot_id",
+					"parent_id"
+				},
+				{
+					"IDX_SNAPSHOT_NODE_SORT",
+					"SNAPSHOT_NODE",
+					"parent_id",
 					"type",
 					"label"
+				},
+				{
+					"IDX_SNAPSHOT_NODE_PARENT",
+					"SNAPSHOT_NODE",
+					"parent_id"
+				},
+				{
+					"IDX_SNAPSHOT_NODE_PROJECT",
+					"SNAPSHOT_NODE",
+					"snapshot_id",
+					"parent_id",
+					"project_id"
+				},
+				{
+					"IDX_SOURCE_FILE_REF",
+					"SOURCE_FILE_REF",
+					"ext_id"
 				}
 		};
 		
