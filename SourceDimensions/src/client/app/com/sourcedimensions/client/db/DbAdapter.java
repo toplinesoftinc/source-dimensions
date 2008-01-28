@@ -1,6 +1,10 @@
 package com.sourcedimensions.client.db;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
@@ -1628,7 +1632,10 @@ public class DbAdapter
 		Connection c = null;
 		
 		path += m_csDbFolder;
-			
+		
+		if (path.startsWith(File.separator))
+			path = path.substring(1);		
+		
 		File f = new File(path);
 		
 		if (!f.exists())
@@ -2501,12 +2508,204 @@ public class DbAdapter
 	}
 
 	
-	protected String getBaseSrcPath(String projectId)
+	public static byte[] getSourceFile(String fileId) throws Exception
 	{
-		return Platform.getInstallLocation().getURL().getPath() + 
-			m_csDbFolder + Folder.DIVIDER + projectId + Folder.DIVIDER;
+		Connection c = null;
+		String fileName;
+		String prjId;
+		
+		try
+		{
+			c = getConnection();
+			
+			PreparedStatement ps = c.prepareStatement("SELECT name, project_id FROM source_file_set WHERE ext_id = ?");		
+			ps.setString(1, fileId);						
+
+			ResultSet rs = ps.executeQuery();			
+			rs.next();
+			
+			fileName = rs.getString("name");			
+			int projectId = rs.getInt("project_id");
+			
+			ps = c.prepareStatement("SELECT ext_id FROM project WHERE id = ?");
+
+			ps.setInt(1, projectId);
+			rs = ps.executeQuery();
+			rs.next();
+			
+			prjId = rs.getString("ext_id");
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);			
+		}
+		
+		String path = Platform.getInstallLocation().getURL().getPath();
+		
+		if (!path.endsWith(File.separator))
+			path += File.separator;
+		
+		path += (m_csSrcFolder + File.separator + prjId);
+
+		if (fileName.startsWith(File.separator))
+			path += File.separator;
+		
+		path += fileName;
+		
+		ByteArrayOutputStream bufStream = new ByteArrayOutputStream();
+		byte[] buffer = new byte[4096];
+		FileInputStream in = new FileInputStream(path);
+		
+		for (int read = in.read(buffer, 0, buffer.length); read != -1; read = in.read(buffer, 0, buffer.length))
+		{
+			bufStream.write(buffer, 0, read);
+		}
+		
+		return bufStream.toByteArray();
 	}
 	
+	
+	public static void writeSourceFile(int projectId, String fileId, String name, byte[] contents) throws Exception
+	{
+		Connection c = null;
+		String prjId = "";
+		
+		try
+		{
+			c = getConnection();
+			
+			PreparedStatement ps = c.prepareStatement("SELECT ext_id FROM project WHERE id = ?");
+			
+			ps.setInt(1, projectId);
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			
+			prjId = rs.getString("ext_id");			
+			
+			ps = c.prepareStatement("SELECT id FROM source_file_ref WHERE ext_id = ?");
+			
+			ps.setString(1, fileId);
+			rs = ps.executeQuery();
+			
+			if (rs.next())
+			{
+				ps = c.prepareStatement("UPDATE source_file_set SET name = ? WHERE ext_id = ?");
+				
+				ps.setString(1, name);
+				ps.setString(2, fileId);
+			}
+			else
+			{
+				ps = c.prepareStatement("INSERT INTO source_file_set(ext_id, project_id, name) VALUES(?, ?, ?)");
+				
+				ps.setString(1, fileId);
+				ps.setInt(2, projectId);
+				ps.setString(3, name);
+			}
+			
+			ps.executeUpdate();
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);			
+		}
+
+		String path = Platform.getInstallLocation().getURL().getPath();
+		
+		if (!path.endsWith(File.separator))
+			path += File.separator;
+		
+		path += (m_csSrcFolder + File.separator + prjId);
+
+		File dir = new File(path);
+		
+		if (!dir.exists())
+			dir.mkdirs();
+			
+		if (name.startsWith(File.separator))
+			path += File.separator;
+		
+		path += name;
+
+		File file = new File(path);
+		
+		if (file.exists())
+			file.delete();
+		
+		FileOutputStream out = new FileOutputStream(file);
+		out.write(contents);
+		out.close();
+	}
+	
+	
+	public static Map<String,String> getFileNames(int snapshotNodeId) throws Exception
+	{
+		Connection c = null;
+		Map<String,String> output = new HashMap<String,String>();
+		
+		try
+		{
+			c = getConnection();
+
+			PreparedStatement ps = c.prepareStatement("SELECT r.file_id, s.name FROM reference r " +
+				"LEFT JOIN source_file_ref s ON r.file_id = s.ext_id WHERE r.snapshot_node_id = ?");			
+			
+			ps.setInt(1, snapshotNodeId);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			while (rs.next())
+				output.put(rs.getString(1), rs.getString(2));
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;
+		}
+		finally
+		{
+			closeConn(c);			
+		}
+		
+		return output;
+	}
+	
+		
+	protected int getPathLevel(String path)
+	{
+		int level = 0;
+		
+		for (int i = 0; i < path.length(); i++)
+		{
+			if (path.charAt(i) == File.separatorChar)
+				level++;
+		}
+		
+		return level;
+	}
+		
 	
 	protected void cleanupFileRefs(String projectId) throws Exception
 	{
@@ -2555,18 +2754,31 @@ public class DbAdapter
 			closeConn(c);
 		}
 		
-		String path = getBaseSrcPath(projectId);
-		File root = new File(path);
+		String path = Platform.getInstallLocation().getURL().getPath();
 		
+		if (!path.endsWith(File.separator))
+			path += File.separator;
+		
+		path += m_csSrcFolder;
+		
+		int level = getPathLevel(path);
+		
+		path += File.separator + projectId;
+
 		for (String name : fileList)
 		{
+			if (!name.startsWith(File.separator))
+				path += File.separator;
+			
 			File file = new File(path + name);
 			file.delete();
 			
-			for (File parent = file.getParentFile(); parent != null && parent.compareTo(root) != 0; parent = parent.getParentFile())
+			for (File parent = file.getParentFile(); parent != null && getPathLevel(parent.getCanonicalPath()) > level; parent = parent.getParentFile())
 			{
 				if (parent.list().length == 0)
 					parent.delete();
+				else
+					break;
 			}
 		}		
 	}
@@ -2893,11 +3105,6 @@ public class DbAdapter
 					"IDX_REFERENCE",
 					"REFERENCE",
 					"snapshot_node_id"
-				},
-				{
-					"IDX_REFERENCE_EXTID",
-					"REFERENCE",
-					"ext_id"
 				},
 				{
 					"IDX_SNAPSHOT_NODE",
