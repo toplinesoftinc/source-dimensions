@@ -6,7 +6,8 @@ import com.sourcedimensions.server.ast.*;
 public class SourceFile extends FileSystemElement 
 {
 	protected CompilationUnit m_unit;
-
+	protected String m_fullName;
+	
 	public boolean m_binary;	
 	
 	SourceFile() { }
@@ -27,6 +28,16 @@ public class SourceFile extends FileSystemElement
 			unit.setSourceFile(this);
 		
 		m_unit = unit;
+	}
+	
+	public String getFullName()
+	{
+		return m_fullName;
+	}
+	
+	public void setFullName(String fullName)
+	{
+		m_fullName = fullName;
 	}
 	
 	public void delete()

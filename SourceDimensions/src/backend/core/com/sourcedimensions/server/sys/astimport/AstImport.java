@@ -22,8 +22,6 @@ import org.hibernate.*;
 
 public abstract class AstImport
 {
-	protected static final String c_sPathDelimiter = "/";
-	
 	protected Session m_session;
 	protected SAXParser m_parser = null;
 	protected Project m_project;
@@ -128,7 +126,7 @@ public abstract class AstImport
 	
 	protected static synchronized SourceFile getSourceFile(Project project, Session session, String fullFileName, boolean createFile) throws Exception
 	{
-		String[] path = fullFileName.split(c_sPathDelimiter);
+		String[] path = fullFileName.split(com.sourcedimensions.client.model.Folder.DIVIDER);
 		
 		if (path.length == 0)
 			throw new InvalidFileNameException(fullFileName);
@@ -153,7 +151,7 @@ public abstract class AstImport
 					for (int j = i; j < path.length - 1; j++)
 						parent = parent.addFolder(path[j]);
 					
-					SourceFile srcfile = parent.addFile(fileName);
+					SourceFile srcfile = parent.addFile(fileName, fullFileName);
 					
 					ss.saveOrUpdate(parent);
 					ss.getTransaction().commit();
@@ -175,7 +173,7 @@ public abstract class AstImport
 		SourceFile srcfile = (SourceFile)q.uniqueResult();
 		
 		if (srcfile == null && createFile)
-			srcfile = parent.addFile(fileName);
+			srcfile = parent.addFile(fileName, fullFileName);
 			
 		ss.saveOrUpdate(parent);
 		ss.getTransaction().commit();

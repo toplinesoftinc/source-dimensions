@@ -1,9 +1,19 @@
 package com.sourcedimensions.ws.provider;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import org.codehaus.xfire.fault.XFireFault;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+
+import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SnapshotNode;
 import com.sourcedimensions.client.model.SymbolQuery;
@@ -11,6 +21,7 @@ import com.sourcedimensions.server.query.SymbolQueryEngine;
 import com.sourcedimensions.server.sys.Project.Language;
 import com.sourcedimensions.server.sys.profile.*;
 import com.sourcedimensions.server.sys.Project;
+import com.sourcedimensions.server.sys.SourceFile;
 import com.sourcedimensions.server.utils.DatabaseHelper;
 
 
@@ -187,5 +198,54 @@ public class WebService implements IWebService
 		verifyLanguage(sessionID, projectId);
 		SymbolQueryEngine engine = new SymbolQueryEngine(sessionID);
 		return engine.execute(projectId, rootSet, query);
-	}	
+	}
+	
+	public byte[] getSourceFiles(String sessionID, String projectId, Set<String> fileIdSet) throws XFireFault, IOException
+	{
+		verifySession(sessionID);
+		verifyLanguage(sessionID, projectId);
+		
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		ZipOutputStream zip = new ZipOutputStream(output);
+		byte[] buffer = new byte[4096];
+		
+		Session session = DatabaseHelper.getDbBySessionID(sessionID).getDbSessionFactory().getCurrentSession();
+		
+		for (String fileId : fileIdSet)
+		{
+			Query query = session.createQuery("FROM SourceFile s INNER JOIN FETCH m_project WHERE s.m_id = :id");			
+			query.setString("id", fileId);
+			
+			SourceFile file = (SourceFile)query.list().get(0);			
+			String filePath = file.getFullName().replace(Folder.DIVIDER_CHAR, File.separatorChar);
+			String rootPath = file.getProject().m_rootPath;
+			String fullPath = "";
+			
+			if (rootPath.endsWith(File.separator))
+				fullPath = rootPath.substring(0, rootPath.length() - 1);
+			else
+				fullPath = rootPath;
+			
+			if (!rootPath.startsWith(File.separator))
+				fullPath += File.separator;
+			
+			fullPath += filePath;
+			
+			zip.putNextEntry(new ZipEntry(file.getFullName()));
+			
+			FileInputStream srcFile = new FileInputStream(fullPath);
+			
+			for (int read = srcFile.read(buffer); read != -1; read = srcFile.read(buffer))
+			{
+				zip.write(buffer, 0, read);
+			}
+			
+			zip.closeEntry();
+		}
+		
+		zip.flush();
+		zip.close();
+		
+		return output.toByteArray();
+	}
 }

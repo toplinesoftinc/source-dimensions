@@ -1,6 +1,5 @@
 package com.sourcedimensions.client.db;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -2725,7 +2724,7 @@ public class DbAdapter
 			int prjId = rs.getInt("id");			
 			
 			ps = c.prepareStatement("SELECT ext_id FROM source_file_ref s WHERE NOT EXISTS " +
-				"(SELECT 1 FROM reference WHERE ext_id = s.ext_id) AND s.project_id = ?");
+				"(SELECT 1 FROM reference WHERE ext_id = s.ext_id) AND s.project_id = ?)");
 
 			ps.setInt(1, prjId);
 			
@@ -2735,7 +2734,7 @@ public class DbAdapter
 				fileList.add(rs.getString("ext_id"));
 
 			ps = c.prepareStatement("DELETE FROM source_file_ref s WHERE NOT EXISTS " +
-				"(SELECT 1 FROM reference WHERE ext_id = s.ext_id) AND s.project_id = ?");
+				"(SELECT 1 FROM reference WHERE ext_id = s.ext_id) AND s.project_id = ?)");
 
 			ps.setInt(1, prjId);			
 			ps.executeUpdate();

@@ -79,7 +79,7 @@ public class SymbolQueryEngine
 	protected Set<TypeDeclaration> m_memberRoots = new HashSet<TypeDeclaration>();
 	protected Set<TypeDeclaration> m_typeRoots = new HashSet<TypeDeclaration>();
 	
-	protected long m_memberCount;	
+	protected long m_memberCount;
 	protected boolean m_isCSharp;
 	
 	public SymbolQueryEngine(String sessionId)

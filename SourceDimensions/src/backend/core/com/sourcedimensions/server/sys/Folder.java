@@ -26,7 +26,7 @@ public class Folder extends FileSystemElement
 		return folder;
 	}
 	
-	public SourceFile addFile(String name) throws DuplicateFileNameException
+	public SourceFile addFile(String name, String fullName) throws DuplicateFileNameException
 	{
 		SourceFile file = new SourceFile(m_project);	
 
@@ -34,6 +34,8 @@ public class Folder extends FileSystemElement
 			addFileSystemElement(name, file);
 		else
 			throw new DuplicateFileNameException(name);
+		
+		file.setFullName(fullName);
 
 		return file;
 	}
