@@ -16,6 +16,7 @@ import org.hibernate.SessionFactory;
 import com.sourcedimensions.client.model.Folder;
 import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.SourceFilePackage;
 import com.sourcedimensions.client.model.SymbolQuery;
 import com.sourcedimensions.server.query.SymbolQueryEngine;
 import com.sourcedimensions.server.sys.Project.Language;
@@ -200,20 +201,27 @@ public class WebService implements IWebService
 		return engine.execute(projectId, rootSet, query);
 	}
 	
-	public byte[] getSourceFiles(String sessionID, String projectId, Set<String> fileIdSet) throws XFireFault, IOException
+	public SourceFilePackage getSourceFiles(String sessionID, String projectId, Set<String> fileIdSet) throws XFireFault, IOException
 	{
 		verifySession(sessionID);
 		verifyLanguage(sessionID, projectId);
 		
+		SourceFilePackage pack = new SourceFilePackage();
+		
+		pack.setFileMap(new HashMap<String,String>());
+		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		ZipOutputStream zip = new ZipOutputStream(output);
+
 		byte[] buffer = new byte[4096];
 		
 		Session session = DatabaseHelper.getDbBySessionID(sessionID).getDbSessionFactory().getCurrentSession();
 		
+		session.beginTransaction();
+		
 		for (String fileId : fileIdSet)
 		{
-			Query query = session.createQuery("FROM SourceFile s INNER JOIN FETCH m_project WHERE s.m_id = :id");			
+			Query query = session.createQuery("FROM SourceFile s INNER JOIN FETCH s.m_project WHERE s.m_id = :id");			
 			query.setString("id", fileId);
 			
 			SourceFile file = (SourceFile)query.list().get(0);			
@@ -231,21 +239,28 @@ public class WebService implements IWebService
 			
 			fullPath += filePath;
 			
-			zip.putNextEntry(new ZipEntry(file.getFullName()));
+			ZipEntry entry = new ZipEntry(file.getID());
+			
+			zip.putNextEntry(entry);			
+			pack.getFileMap().put(file.getID(), file.getFullName());
 			
 			FileInputStream srcFile = new FileInputStream(fullPath);
 			
 			for (int read = srcFile.read(buffer); read != -1; read = srcFile.read(buffer))
-			{
 				zip.write(buffer, 0, read);
-			}
 			
 			zip.closeEntry();
 		}
-		
+				
 		zip.flush();
-		zip.close();
 		
-		return output.toByteArray();
+		if (fileIdSet.size() > 0)
+			zip.close();
+		
+		session.getTransaction().commit();
+		
+		pack.setData(output.toByteArray());
+		
+		return pack;
 	}
 }

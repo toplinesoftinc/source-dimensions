@@ -3,6 +3,7 @@ package com.sourcedimensions.ws.provider;
 import com.sourcedimensions.client.model.Project;
 import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SnapshotNode;
+import com.sourcedimensions.client.model.SourceFilePackage;
 import com.sourcedimensions.client.model.SymbolQuery;
 
 import java.io.IOException;
@@ -27,5 +28,5 @@ public interface IWebService
 	public Set<Project> getProjectList(String sessionID) throws XFireFault;
 	public Snapshot runSymbolQuery(String sessionID, String projectId, SymbolQuery query) throws XFireFault;
 	public Set<SnapshotNode> runSymbolSubquery(String sessionID, String projectId, Set<SnapshotNode> rootSet, SymbolQuery query) throws XFireFault;
-	public byte[] getSourceFiles(String sessionID, String projectId, Set<String> fileIdSet) throws XFireFault, IOException;
+	public SourceFilePackage getSourceFiles(String sessionID, String projectId, Set<String> fileIdSet) throws XFireFault, IOException;
 }

@@ -188,6 +188,16 @@
                    enablesFor="+">
                  <selection class="com.sourcedimensions.client.views.SnapshotView$SnapshotNodeTreeItem"/>
                </action>
+              <action
+                   class="com.sourcedimensions.client.actions.ShowSourceAction"
+                   icon="icons/source_file.png"
+                   id="com.sourcedimensions.client.showSourceAction"
+                   menubarPath="snapshot/additions_snapshot"
+                   toolbarPath="additions_snapshot"
+                   label="Show Source"
+                   enablesFor="1">
+                 <selection class="com.sourcedimensions.client.views.SnapshotView$SnapshotNodeTreeItem"/>
+              </action>
                <action
                    class="com.sourcedimensions.client.actions.OpenSnapshotAction"
                    icon="icons/open.png"
@@ -406,6 +416,12 @@
                    id="com.sourcedimensions.client.subquery"
                    menubarPath="additions_subquery"
                    label="Subquery..."/>
+              <action
+                   class="com.sourcedimensions.client.actions.ShowSourceAction"
+                   icon="icons/source_file.png"
+                   id="com.sourcedimensions.client.showSourceAction"
+                   menubarPath="additions_subquery"
+                   label="Show Source"/>
               <action
                    class="com.sourcedimensions.client.actions.DeleteSnapshotNodeAction"
                    icon="icons/delete.png"

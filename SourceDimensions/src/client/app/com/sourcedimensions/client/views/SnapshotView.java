@@ -1,5 +1,6 @@
 package com.sourcedimensions.client.views;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +13,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -25,11 +28,17 @@ import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IPersistableElement;
@@ -39,11 +48,13 @@ import org.eclipse.ui.part.EditorPart;
 
 import com.sourcedimensions.client.IImageKeys;
 import com.sourcedimensions.client.Util;
+import com.sourcedimensions.client.actions.ShowSourceAction;
+import com.sourcedimensions.client.actions.SubqueryAction;
 import com.sourcedimensions.client.db.DbAdapter;
-import com.sourcedimensions.client.forms.SymbolQueryDialog;
 import com.sourcedimensions.client.model.Snapshot;
 import com.sourcedimensions.client.model.SnapshotNode;
 import com.sourcedimensions.client.model.SymbolQuery;
+import com.sourcedimensions.client.model.SnapshotNode.Reference;
 import com.sourcedimensions.client.views.ProjectView.QueryObject;
 import com.sourcedimensions.client.views.ProjectView.SnapshotObject;
 
@@ -61,6 +72,8 @@ public class SnapshotView extends EditorPart
 	protected Splitter m_topSplitter;
 	protected Splitter m_textAreaSplitter;
 	protected org.eclipse.swt.widgets.List m_fileList;
+	protected Map<String, Reference> m_refMap;
+	protected List<String> m_fileIDs;
 	
 	
 	public void doSave(IProgressMonitor monitor) 
@@ -420,6 +433,39 @@ public class SnapshotView extends EditorPart
 		m_treeViewer.setLabelProvider(new SnapshotLabelProvider());
 		m_treeViewer.setInput(getEditorSite());
 		
+		Tree tree = m_treeViewer.getTree();
+
+		tree.addSelectionListener(new SelectionAdapter()
+		{
+			public void widgetSelected(SelectionEvent e)
+			{
+				setTextAreaVisible(false);				
+			}
+		});	
+		
+		tree.addMouseListener(new MouseAdapter()
+		{
+			public void mouseDoubleClick(MouseEvent e) 
+			{
+				TreeSelection selection = (TreeSelection)m_treeViewer.getSelection();
+				
+				if (selection.size() > 0)
+				{
+					SnapshotNodeTreeItem item = (SnapshotNodeTreeItem)selection.getFirstElement();
+					Shell shell = getSite().getShell();
+					
+					try
+					{
+						ShowSourceAction.showSource(shell, item);
+					}
+					catch (Exception ex)
+					{
+						MessageDialog.openError(shell, "Show Source Error", ex.getMessage());
+					}
+				}
+			}
+		});
+		
 		m_treeViewer.addDropSupport(DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer()}, new DropTargetAdapter()
 		{
 			public void dragOver(DropTargetEvent event)
@@ -453,22 +499,44 @@ public class SnapshotView extends EditorPart
 					return;
 				}
 				
-				List<SnapshotNodeTreeItem> sel = new ArrayList<SnapshotNodeTreeItem>();
-				sel.add(item);
+				Shell shell = getSite().getShell();
 				
-				SymbolQueryDialog dialog = new SymbolQueryDialog(getSite().getShell(), query, sel);
-				dialog.open();
+				if (MessageDialog.openQuestion(shell, "Subquery confirmation", "Do you want to run query \"" +
+						query.getFullName() + "\" on item \"" + item.getName() + "\"?"))
+				{
+					List<SnapshotNodeTreeItem> sel = new ArrayList<SnapshotNodeTreeItem>();
+					sel.add(item);
+					
+					SubqueryAction.executeQuery(shell, sel, query);
+				}
 			}
 		});
 		
 		m_textAreaSplitter = new Splitter(m_topSplitter, SWT.NONE);
 		m_textAreaSplitter.setOrientation(SWT.VERTICAL);
 		m_textAreaSplitter.setLayout(layout);
-		m_topSplitter.setVisible(m_textAreaSplitter, false);
 		
-		m_textViewer = new TextViewer(m_textAreaSplitter, SWT.BORDER);
-		m_fileList = new org.eclipse.swt.widgets.List(m_textAreaSplitter, SWT.SINGLE | SWT.BORDER);
-
+		setTextAreaVisible(false);
+		
+		m_textViewer = new TextViewer(m_textAreaSplitter, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+		m_textViewer.setEditable(false);
+		
+		m_fileList = new org.eclipse.swt.widgets.List(m_textAreaSplitter, SWT.SINGLE | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+		m_fileList.addSelectionListener(new SelectionAdapter()
+		{
+			public void widgetSelected(SelectionEvent e)
+			{
+				try
+				{
+					loadFileItem(m_fileList.getSelectionIndex());
+				}
+				catch (Exception ex)
+				{
+					MessageDialog.openError(getSite().getShell(), "Error", "Error loading file item: " + ex.getMessage());
+				}
+			}
+		});
+		
 		m_textAreaSplitter.setWeights(new int[] {80, 20});
 		
 		MenuManager menuMgr = new MenuManager("");
@@ -479,7 +547,96 @@ public class SnapshotView extends EditorPart
 		m_treeViewer.getControl().setMenu(menu);
 		getSite().registerContextMenu(menuMgr, m_treeViewer);
 	}
+	
+	public void setSelectedItem(SnapshotNodeTreeItem item, Map<String,String> fileNames)
+	{
+		if (fileNames.size() == 0)
+			return;
+		
+		SnapshotNode node;
+		
+		try
+		{
+			node = DbAdapter.getSnapshotNode(item.getID());
+		}
+		catch(Exception e)
+		{
+			return;
+		}
+		
+		if (m_refMap == null)
+			m_refMap = new HashMap<String, Reference>();
+		else
+			m_refMap.clear();
+		
+		for (Reference ref : node.getRefs())
+			m_refMap.put(ref.getFileId(), ref);
+		
+		if (m_fileIDs == null)
+			 m_fileIDs = new ArrayList<String>();
+		else
+			m_fileIDs.clear();
+		
+		m_fileList.removeAll();
+		
+		for (Map.Entry<String,String> entry : fileNames.entrySet())
+		{
+			m_fileIDs.add(entry.getKey());
+			m_fileList.add(entry.getValue());
+		}
 
+		m_fileList.select(0);
+		
+		try
+		{
+			loadFileItem(0);
+		}
+		catch (Exception ex)
+		{
+			MessageDialog.openError(getSite().getShell(), "Error", "Error loading file item: " + ex.getMessage());
+		}		
+		
+		setTextAreaVisible(true);
+		setFileListVisible(fileNames.size() > 1);
+	}
+		
+	
+	protected void loadFileItem(int pos) throws Exception
+	{
+		String fileID = m_fileIDs.get(pos);
+		ByteArrayOutputStream contents;
+		
+		try
+		{
+			contents = DbAdapter.getSourceFile(fileID);
+		}
+		catch (Exception e)
+		{
+			return;
+		}
+		
+		if (m_textViewer.getDocument() == null)
+			m_textViewer.setDocument(new Document());		
+
+		Reference ref = m_refMap.get(fileID);
+		int start = ref.getStartPos();
+		int length = (ref.getEndPos() - start) + 1;
+				
+		m_textViewer.getDocument().set(contents.toString("UTF-8"));
+		m_textViewer.revealRange(start, length);
+		m_textViewer.setSelectedRange(start, length);
+	}
+	
+	protected void setTextAreaVisible(boolean visible)
+	{
+		m_topSplitter.setVisible(m_textAreaSplitter, visible);
+	}
+
+	protected void setFileListVisible(boolean visible)
+	{
+		m_textAreaSplitter.setVisible(m_fileList, visible);
+	}
+	
 	public void setFocus() 
 	{
 	}

@@ -81,9 +81,7 @@ public class SubqueryAction implements IWorkbenchWindowActionDelegate, IObjectAc
 				return;
 			}
 			
-			SymbolQueryDialog dialog = new SymbolQueryDialog(m_window.getShell(), query, selection);
-			
-			dialog.open();
+			executeQuery(m_window.getShell(), selection, query);
 		}
  	}
  	

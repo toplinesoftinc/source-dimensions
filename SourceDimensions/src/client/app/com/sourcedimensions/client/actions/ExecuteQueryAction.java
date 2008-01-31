@@ -100,9 +100,7 @@ public class ExecuteQueryAction implements IWorkbenchWindowActionDelegate, IObje
 		}
 		
 		if (consumer.wasCancelled())
-		{
 			return true;
-		}
 		
 		if (snapshot == null)
 		{

@@ -32,11 +32,13 @@ public class DbAdapter
 		}
 	}
 
+	
 	public static void tryConnection() throws SQLException, IOException
 	{
 		Connection c = getConnection();
 		closeConn(c);
 	}
+
 	
 	public static List<Project> getProjectList() throws Exception
 	{
@@ -65,7 +67,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " + e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -123,7 +125,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -203,7 +205,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;			
@@ -264,7 +266,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -352,7 +354,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -425,7 +427,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -435,6 +437,7 @@ public class DbAdapter
 			closeConn(c);
 		}
 	}
+
 	
 	public static void moveFolder(int id, Integer parentId, String name) throws Exception, DuplicateNameException
 	{
@@ -498,7 +501,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -527,7 +530,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -614,7 +617,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -657,7 +660,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -668,8 +671,7 @@ public class DbAdapter
 		}
 	}
 	
-	
-	
+		
 	protected static void saveSnapshotNode(Connection c, int projectId, int snapshotId, Integer parentId, SnapshotNode node) throws Exception
 	{
 		PreparedStatement ps = c.prepareStatement("INSERT INTO snapshot_node(project_id, snapshot_id, parent_id, label, type)" +
@@ -754,8 +756,8 @@ public class DbAdapter
 					if (node.getRefs() == null)
 						node.setRefs(new ArrayList<Reference>());
 					
-					node.getRefs().add(new Reference(rs.getString("ext_id"), rs.getString("file_id"), 
-						rs.getInt("start_pos"), rs.getInt("end_pos")));
+					node.getRefs().add(new Reference(r.getString("ext_id"), r.getString("file_id"), 
+						r.getInt("start_pos"), r.getInt("end_pos")));
 				}
 			}
 			
@@ -763,7 +765,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -801,7 +803,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -879,7 +881,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -945,7 +947,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -1005,7 +1007,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -1126,7 +1128,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -1170,7 +1172,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -1246,7 +1248,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -1309,7 +1311,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -1373,7 +1375,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -1523,7 +1525,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -1540,12 +1542,21 @@ public class DbAdapter
 	public static void deleteSnapshot(int id) throws Exception
 	{
 		Connection c = null;
+		int projectId;
 		
 		try
 		{
 			c = getConnection();			
 	
-			PreparedStatement ps = c.prepareStatement("DELETE FROM snapshot WHERE id = ?");
+			PreparedStatement ps = c.prepareStatement("SELECT project_id FROM snapshot WHERE id = ?");
+			
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			projectId = rs.getInt("project_id");
+			
+			ps = c.prepareStatement("DELETE FROM snapshot WHERE id = ?");
 			
 			ps.setInt(1, id);			
 			ps.executeUpdate();
@@ -1554,7 +1565,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -1563,18 +1574,29 @@ public class DbAdapter
 		{
 			closeConn(c);
 		}
+		
+		cleanupFileRefs(projectId);
 	}
 
 
 	public static void deleteSnapshotNode(int id) throws Exception
 	{
 		Connection c = null;
+		int projectId;
 		
 		try
 		{
 			c = getConnection();			
-	
-			PreparedStatement ps = c.prepareStatement("DELETE FROM snapshot_node WHERE id = ?");
+
+			PreparedStatement ps = c.prepareStatement("SELECT project_id FROM snapshot_node WHERE id = ?");
+			
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			projectId = rs.getInt("project_id");
+						
+			ps = c.prepareStatement("DELETE FROM snapshot_node WHERE id = ?");
 			
 			ps.setInt(1, id);			
 			ps.executeUpdate();
@@ -1583,7 +1605,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -1592,18 +1614,29 @@ public class DbAdapter
 		{
 			closeConn(c);
 		}
+		
+		cleanupFileRefs(projectId);
 	}	
 	
 
 	public static void deleteSnapshotNodeChildren(int id) throws Exception
 	{
 		Connection c = null;
+		int projectId;
 		
 		try
 		{
 			c = getConnection();			
 	
-			PreparedStatement ps = c.prepareStatement("DELETE FROM snapshot_node WHERE parent_id = ?");
+			PreparedStatement ps = c.prepareStatement("SELECT project_id FROM snapshot_node WHERE id = ?");
+			
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();
+			projectId = rs.getInt("project_id");			
+			
+			ps = c.prepareStatement("DELETE FROM snapshot_node WHERE parent_id = ?");
 			
 			ps.setInt(1, id);			
 			ps.executeUpdate();
@@ -1612,7 +1645,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -1621,6 +1654,8 @@ public class DbAdapter
 		{
 			closeConn(c);
 		}
+	
+		cleanupFileRefs(projectId);
 	}
 	
 	
@@ -1632,7 +1667,7 @@ public class DbAdapter
 		
 		path += m_csDbFolder;
 		
-		if (path.startsWith(File.separator))
+		if (path.startsWith("/"))
 			path = path.substring(1);		
 		
 		File f = new File(path);
@@ -1951,7 +1986,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -2265,7 +2300,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());	
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());	
 			rollbackTrans(c);
 			
 			throw e;
@@ -2338,7 +2373,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -2411,7 +2446,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -2440,7 +2475,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -2495,7 +2530,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -2507,17 +2542,19 @@ public class DbAdapter
 	}
 
 	
-	public static byte[] getSourceFile(String fileId) throws Exception
+	public static ByteArrayOutputStream getSourceFile(String fileId) throws Exception
 	{
+		ByteArrayOutputStream bufStream = new ByteArrayOutputStream();
 		Connection c = null;
-		String fileName;
-		String prjId;
 		
 		try
 		{
+			String fileName;
+			String prjId;
+			
 			c = getConnection();
 			
-			PreparedStatement ps = c.prepareStatement("SELECT name, project_id FROM source_file_set WHERE ext_id = ?");		
+			PreparedStatement ps = c.prepareStatement("SELECT name, project_id FROM source_file_ref WHERE ext_id = ?");		
 			ps.setString(1, fileId);						
 
 			ResultSet rs = ps.executeQuery();			
@@ -2535,10 +2572,31 @@ public class DbAdapter
 			prjId = rs.getString("ext_id");
 			
 			c.commit();
+
+			String path = Platform.getInstallLocation().getURL().getPath();
+		
+			if (path.startsWith("/"))
+				path = path.substring(1);		
+			
+			if (!path.endsWith("/"))
+				path += "/";
+			
+			path += (m_csSrcFolder + "/" + prjId);
+	
+			if (!fileName.endsWith("/"))
+				path += "/";
+			
+			path += fileName;
+			
+			byte[] buffer = new byte[4096];
+			FileInputStream in = new FileInputStream(path);
+			
+			for (int read = in.read(buffer, 0, buffer.length); read != -1; read = in.read(buffer, 0, buffer.length))
+				bufStream.write(buffer, 0, read);
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -2547,48 +2605,26 @@ public class DbAdapter
 		{
 			closeConn(c);			
 		}
-		
-		String path = Platform.getInstallLocation().getURL().getPath();
-		
-		if (!path.endsWith(File.separator))
-			path += File.separator;
-		
-		path += (m_csSrcFolder + File.separator + prjId);
-
-		if (fileName.startsWith(File.separator))
-			path += File.separator;
-		
-		path += fileName;
-		
-		ByteArrayOutputStream bufStream = new ByteArrayOutputStream();
-		byte[] buffer = new byte[4096];
-		FileInputStream in = new FileInputStream(path);
-		
-		for (int read = in.read(buffer, 0, buffer.length); read != -1; read = in.read(buffer, 0, buffer.length))
-		{
-			bufStream.write(buffer, 0, read);
-		}
-		
-		return bufStream.toByteArray();
+				
+		return bufStream;
 	}
 	
 	
-	public static void writeSourceFile(int projectId, String fileId, String name, byte[] contents) throws Exception
+	public static void writeSourceFile(String projectId, String fileId, String name, byte[] contents) throws Exception
 	{
 		Connection c = null;
-		String prjId = "";
 		
 		try
 		{
 			c = getConnection();
 			
-			PreparedStatement ps = c.prepareStatement("SELECT ext_id FROM project WHERE id = ?");
+			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
 			
-			ps.setInt(1, projectId);
+			ps.setString(1, projectId);
 			ResultSet rs = ps.executeQuery();
 			rs.next();
 			
-			prjId = rs.getString("ext_id");			
+			int prjId = rs.getInt("id");			
 			
 			ps = c.prepareStatement("SELECT id FROM source_file_ref WHERE ext_id = ?");
 			
@@ -2597,27 +2633,58 @@ public class DbAdapter
 			
 			if (rs.next())
 			{
-				ps = c.prepareStatement("UPDATE source_file_set SET name = ? WHERE ext_id = ?");
+				ps = c.prepareStatement("UPDATE source_file_ref SET name = ? WHERE ext_id = ?");
 				
 				ps.setString(1, name);
 				ps.setString(2, fileId);
 			}
 			else
 			{
-				ps = c.prepareStatement("INSERT INTO source_file_set(ext_id, project_id, name) VALUES(?, ?, ?)");
+				ps = c.prepareStatement("INSERT INTO source_file_ref(ext_id, project_id, name) VALUES(?, ?, ?)");
 				
 				ps.setString(1, fileId);
-				ps.setInt(2, projectId);
+				ps.setInt(2, prjId);
 				ps.setString(3, name);
 			}
 			
 			ps.executeUpdate();
 			
 			c.commit();
+
+			String path = Platform.getInstallLocation().getURL().getPath();
+			
+			if (path.startsWith("/"))
+				path = path.substring(1);
+			
+			if (!path.endsWith("/"))
+				path += "/";
+			
+			path += (m_csSrcFolder + "/" + projectId);
+	
+			if (!name.endsWith("/"))
+				path += "/";
+			
+			path += name;
+	
+			File file = new File(path);
+			File dir = file.getParentFile();
+			
+			if (dir != null && !dir.exists())
+				dir.mkdirs();
+			
+			if (file.exists())
+				file.delete();
+			
+			file.createNewFile();
+			
+			FileOutputStream out = new FileOutputStream(file);
+			
+			out.write(contents);
+			out.close();
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -2627,31 +2694,6 @@ public class DbAdapter
 			closeConn(c);			
 		}
 
-		String path = Platform.getInstallLocation().getURL().getPath();
-		
-		if (!path.endsWith(File.separator))
-			path += File.separator;
-		
-		path += (m_csSrcFolder + File.separator + prjId);
-
-		File dir = new File(path);
-		
-		if (!dir.exists())
-			dir.mkdirs();
-			
-		if (name.startsWith(File.separator))
-			path += File.separator;
-		
-		path += name;
-
-		File file = new File(path);
-		
-		if (file.exists())
-			file.delete();
-		
-		FileOutputStream out = new FileOutputStream(file);
-		out.write(contents);
-		out.close();
 	}
 	
 	
@@ -2678,7 +2720,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -2692,7 +2734,7 @@ public class DbAdapter
 	}
 	
 		
-	protected int getPathLevel(String path)
+	protected static int getPathLevel(String path)
 	{
 		int level = 0;
 		
@@ -2706,7 +2748,7 @@ public class DbAdapter
 	}
 		
 	
-	protected void cleanupFileRefs(String projectId) throws Exception
+	protected static void cleanupFileRefs(int projectId) throws Exception
 	{
 		Connection c = null;
 		List<String> fileList = new ArrayList<String>();
@@ -2715,35 +2757,61 @@ public class DbAdapter
 		{
 			c = getConnection();			
 
-			PreparedStatement ps = c.prepareStatement("SELECT id FROM project WHERE ext_id = ?");
-			
-			ps.setString(1, projectId);
-			ResultSet rs = ps.executeQuery();
-			rs.next();
-			
-			int prjId = rs.getInt("id");			
-			
-			ps = c.prepareStatement("SELECT ext_id FROM source_file_ref s WHERE NOT EXISTS " +
-				"(SELECT 1 FROM reference WHERE ext_id = s.ext_id) AND s.project_id = ?)");
+			PreparedStatement ps = c.prepareStatement("SELECT ext_id FROM source_file_ref s WHERE NOT EXISTS " +
+				"(SELECT 1 FROM reference WHERE ext_id = s.ext_id) AND s.project_id = ?");
 
-			ps.setInt(1, prjId);
+			ps.setInt(1, projectId);
 			
-			rs = ps.executeQuery();
+			ResultSet rs = ps.executeQuery();
 			
 			while (rs.next())
 				fileList.add(rs.getString("ext_id"));
 
 			ps = c.prepareStatement("DELETE FROM source_file_ref s WHERE NOT EXISTS " +
-				"(SELECT 1 FROM reference WHERE ext_id = s.ext_id) AND s.project_id = ?)");
+				"(SELECT 1 FROM reference WHERE ext_id = s.ext_id) AND s.project_id = ?");
 
-			ps.setInt(1, prjId);			
+			ps.setInt(1, projectId);			
 			ps.executeUpdate();
 			
 			c.commit();
+		
+			String path = Platform.getInstallLocation().getURL().getPath();
+			
+			if (path.startsWith("/"))
+				path = path.substring(1);			
+			
+			if (!path.endsWith("/"))
+				path += "/";
+			
+			path += m_csSrcFolder;
+			
+			int level = getPathLevel(path);
+			
+			path += "/" + projectId;
+	
+			for (String name : fileList)
+			{
+				if (!name.startsWith("/"))
+					path += "/";
+				
+				File file = new File(path + name);
+				file.delete();
+				
+				for (File parent = file.getParentFile(); parent != null && getPathLevel(parent.getCanonicalPath()) > level; parent = parent.getParentFile())
+				{
+					if (parent.isDirectory())
+					{
+						if (parent.list().length == 0)
+							parent.delete();
+						else
+							break;
+					}
+				}
+			}		
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -2752,34 +2820,6 @@ public class DbAdapter
 		{
 			closeConn(c);
 		}
-		
-		String path = Platform.getInstallLocation().getURL().getPath();
-		
-		if (!path.endsWith(File.separator))
-			path += File.separator;
-		
-		path += m_csSrcFolder;
-		
-		int level = getPathLevel(path);
-		
-		path += File.separator + projectId;
-
-		for (String name : fileList)
-		{
-			if (!name.startsWith(File.separator))
-				path += File.separator;
-			
-			File file = new File(path + name);
-			file.delete();
-			
-			for (File parent = file.getParentFile(); parent != null && getPathLevel(parent.getCanonicalPath()) > level; parent = parent.getParentFile())
-			{
-				if (parent.list().length == 0)
-					parent.delete();
-				else
-					break;
-			}
-		}		
 	}
 	
 	
@@ -2814,7 +2854,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 			rollbackTrans(c);
 			
 			throw e;
@@ -2840,7 +2880,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 		}		
 	}
 	
@@ -2856,7 +2896,7 @@ public class DbAdapter
 		}
 		catch (Exception e)
 		{
-			MessageDialog.openError(null, "Error", "Database layer exception " + e.getMessage());
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
 		}
 	}
 	
