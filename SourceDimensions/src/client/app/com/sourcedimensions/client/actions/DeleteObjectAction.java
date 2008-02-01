@@ -74,12 +74,12 @@ public class DeleteObjectAction implements IWorkbenchWindowActionDelegate, IObje
 			}
 			else if (selected instanceof QueryGroup)
 			{
-				DbAdapter.deleteAll(ProjectView.getProject().getId(), true);
+				DbAdapter.deleteAllProjectItems(ProjectView.getProject().getId(), true);
 			}
 			else if (selected instanceof SnapshotGroup)
 			{
 				closeSnapshots(null);
-				DbAdapter.deleteAll(ProjectView.getProject().getId(), false);
+				DbAdapter.deleteAllProjectItems(ProjectView.getProject().getId(), false);
 			}
 		}
 		catch (Exception e)

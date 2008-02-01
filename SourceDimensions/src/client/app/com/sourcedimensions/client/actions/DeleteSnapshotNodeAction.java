@@ -49,7 +49,12 @@ public class DeleteSnapshotNodeAction implements IWorkbenchWindowActionDelegate,
 			}
 			
 			if (updateView.size() > 0)
-				updateView.iterator().next().refreshView();
+			{
+				SnapshotView view = updateView.iterator().next();
+				
+				view.setTextAreaVisible(false);
+				view.refreshView();				
+			}
 		}
 	}
 	
@@ -78,7 +83,6 @@ public class DeleteSnapshotNodeAction implements IWorkbenchWindowActionDelegate,
 			parent.invalidate();
 			viewer.refresh(parent);					
 		}
-
 		
 		return true;
 	}

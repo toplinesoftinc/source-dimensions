@@ -2487,7 +2487,7 @@ public class DbAdapter
 	}
 
 	
-	public static void deleteAll(String projectId, boolean isQuery) throws Exception
+	public static void deleteAllProjectItems(String projectId, boolean isQuery) throws Exception
 	{
 		Connection c = null;
 		
@@ -2734,13 +2734,14 @@ public class DbAdapter
 	}
 	
 		
-	protected static int getPathLevel(String path)
+	protected static int getURLPathLevel(String path)
 	{
 		int level = 0;
 		
 		for (int i = 0; i < path.length(); i++)
 		{
-			if (path.charAt(i) == File.separatorChar)
+			char cur = path.charAt(i);
+			if (cur == '/' || cur == File.separatorChar)
 				level++;
 		}
 		
@@ -2752,25 +2753,32 @@ public class DbAdapter
 	{
 		Connection c = null;
 		List<String> fileList = new ArrayList<String>();
+		String prjId;
 		
 		try
 		{
 			c = getConnection();			
 
-			PreparedStatement ps = c.prepareStatement("SELECT ext_id FROM source_file_ref s WHERE NOT EXISTS " +
-				"(SELECT 1 FROM reference WHERE ext_id = s.ext_id) AND s.project_id = ?");
-
+			PreparedStatement ps = c.prepareStatement("SELECT ext_id FROM project WHERE id = ?");
+			
 			ps.setInt(1, projectId);
 			
 			ResultSet rs = ps.executeQuery();
+			rs.next();
+			
+			prjId = rs.getString("ext_id");
+			
+			ps = c.prepareStatement("SELECT name FROM source_file_ref s WHERE NOT EXISTS " +
+				"(SELECT 1 FROM reference WHERE file_id = s.ext_id)");
+
+			rs = ps.executeQuery();
 			
 			while (rs.next())
-				fileList.add(rs.getString("ext_id"));
+				fileList.add(rs.getString("name"));
 
 			ps = c.prepareStatement("DELETE FROM source_file_ref s WHERE NOT EXISTS " +
-				"(SELECT 1 FROM reference WHERE ext_id = s.ext_id) AND s.project_id = ?");
+				"(SELECT 1 FROM reference WHERE file_id = s.ext_id)");
 
-			ps.setInt(1, projectId);			
 			ps.executeUpdate();
 			
 			c.commit();
@@ -2785,9 +2793,9 @@ public class DbAdapter
 			
 			path += m_csSrcFolder;
 			
-			int level = getPathLevel(path);
+			int level = getURLPathLevel(path);
 			
-			path += "/" + projectId;
+			path += "/" + prjId;
 	
 			for (String name : fileList)
 			{
@@ -2797,7 +2805,7 @@ public class DbAdapter
 				File file = new File(path + name);
 				file.delete();
 				
-				for (File parent = file.getParentFile(); parent != null && getPathLevel(parent.getCanonicalPath()) > level; parent = parent.getParentFile())
+				for (File parent = file.getParentFile(); parent != null && getURLPathLevel(parent.getCanonicalPath()) > level; parent = parent.getParentFile())
 				{
 					if (parent.isDirectory())
 					{

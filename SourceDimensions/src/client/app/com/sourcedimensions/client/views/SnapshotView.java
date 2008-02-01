@@ -627,7 +627,7 @@ public class SnapshotView extends EditorPart
 		m_textViewer.setSelectedRange(start, length);
 	}
 	
-	protected void setTextAreaVisible(boolean visible)
+	public void setTextAreaVisible(boolean visible)
 	{
 		m_topSplitter.setVisible(m_textAreaSplitter, visible);
 	}
