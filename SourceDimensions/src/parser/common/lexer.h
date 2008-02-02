@@ -72,6 +72,7 @@ public:
 	long GetLeftPos() const;
 	long GetRightPos() const;
 	long GetLineNum() const;
+	const char *GetEncoding() const;
 	virtual bool IsEOF();
 
 	virtual void Mark();
@@ -101,6 +102,7 @@ protected:
 	UChar32 GetNextChar();
 	virtual void ReadBlock();
 
+	const char* m_chEncoding;
 	istream *m_pStream;
 	bool m_bCharIgnored;
 	bool m_bLastBlock;

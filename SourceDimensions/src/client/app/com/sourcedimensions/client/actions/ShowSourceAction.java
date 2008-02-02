@@ -104,10 +104,11 @@ public class ShowSourceAction implements IWorkbenchWindowActionDelegate, IObject
 			
 				String fileId = entry.getName();
 				String fileName = pack.getFileMap().get(fileId);
+				String encoding = pack.getEncodingMap().get(fileId);
 				
 				try
 				{
-					DbAdapter.writeSourceFile(projectId, fileId, fileName, output.toByteArray());
+					DbAdapter.writeSourceFile(projectId, fileId, fileName, output.toByteArray(), encoding);
 				}
 				catch (Exception e)
 				{

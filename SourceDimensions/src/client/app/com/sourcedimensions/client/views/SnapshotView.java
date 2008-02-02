@@ -32,10 +32,13 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
@@ -519,7 +522,8 @@ public class SnapshotView extends EditorPart
 		setTextAreaVisible(false);
 		
 		m_textViewer = new TextViewer(m_textAreaSplitter, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
-		m_textViewer.setEditable(false);
+		m_textViewer.getControl().setFont(new Font(Display.getDefault(), "Courier New", 10, SWT.NORMAL));
+		m_textViewer.setEditable(false);		
 		
 		m_fileList = new org.eclipse.swt.widgets.List(m_textAreaSplitter, SWT.SINGLE | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		m_fileList.addSelectionListener(new SelectionAdapter()
@@ -605,10 +609,12 @@ public class SnapshotView extends EditorPart
 	{
 		String fileID = m_fileIDs.get(pos);
 		ByteArrayOutputStream contents;
+		String encoding;
 		
 		try
 		{
-			contents = DbAdapter.getSourceFile(fileID);
+			contents = DbAdapter.getSourceFileContents(fileID);
+			encoding = DbAdapter.getSourceFileEncoding(fileID);
 		}
 		catch (Exception e)
 		{
@@ -622,7 +628,7 @@ public class SnapshotView extends EditorPart
 		int start = ref.getStartPos();
 		int length = (ref.getEndPos() - start) + 1;
 				
-		m_textViewer.getDocument().set(contents.toString("UTF-8"));
+		m_textViewer.getDocument().set(contents.toString(encoding));
 		m_textViewer.revealRange(start, length);
 		m_textViewer.setSelectedRange(start, length);
 	}

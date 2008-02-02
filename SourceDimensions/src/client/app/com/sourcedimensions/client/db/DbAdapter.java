@@ -2541,8 +2541,41 @@ public class DbAdapter
 		}
 	}
 
+	public static String getSourceFileEncoding(String fileId) throws Exception
+	{
+		Connection c = null;
+		String encoding = "";
+		
+		try
+		{
+			c = getConnection();
+			
+			PreparedStatement ps = c.prepareStatement("SELECT encoding FROM source_file WHERE ext_id = ?");		
+			ps.setString(1, fileId);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			if (rs.next())
+				encoding = rs.getString("encoding");
+			
+			c.commit();
+		}
+		catch (Exception e)
+		{
+			MessageDialog.openError(null, "Error", "Database layer exception in " + Thread.currentThread().getStackTrace()[1].getMethodName() + ": " +  e.getMessage());
+			rollbackTrans(c);
+			
+			throw e;			
+		}
+		finally
+		{
+			closeConn(c);
+		}
+		
+		return encoding;
+	}
 	
-	public static ByteArrayOutputStream getSourceFile(String fileId) throws Exception
+	public static ByteArrayOutputStream getSourceFileContents(String fileId) throws Exception
 	{
 		ByteArrayOutputStream bufStream = new ByteArrayOutputStream();
 		Connection c = null;
@@ -2554,7 +2587,7 @@ public class DbAdapter
 			
 			c = getConnection();
 			
-			PreparedStatement ps = c.prepareStatement("SELECT name, project_id FROM source_file_ref WHERE ext_id = ?");		
+			PreparedStatement ps = c.prepareStatement("SELECT name, project_id FROM source_file WHERE ext_id = ?");		
 			ps.setString(1, fileId);						
 
 			ResultSet rs = ps.executeQuery();			
@@ -2610,7 +2643,7 @@ public class DbAdapter
 	}
 	
 	
-	public static void writeSourceFile(String projectId, String fileId, String name, byte[] contents) throws Exception
+	public static void writeSourceFile(String projectId, String fileId, String name, byte[] contents, String encoding) throws Exception
 	{
 		Connection c = null;
 		
@@ -2626,25 +2659,27 @@ public class DbAdapter
 			
 			int prjId = rs.getInt("id");			
 			
-			ps = c.prepareStatement("SELECT id FROM source_file_ref WHERE ext_id = ?");
+			ps = c.prepareStatement("SELECT id FROM source_file WHERE ext_id = ?");
 			
 			ps.setString(1, fileId);
 			rs = ps.executeQuery();
 			
 			if (rs.next())
 			{
-				ps = c.prepareStatement("UPDATE source_file_ref SET name = ? WHERE ext_id = ?");
+				ps = c.prepareStatement("UPDATE source_file SET name = ?, encoding = ? WHERE ext_id = ?");
 				
 				ps.setString(1, name);
 				ps.setString(2, fileId);
+				ps.setString(3, encoding);
 			}
 			else
 			{
-				ps = c.prepareStatement("INSERT INTO source_file_ref(ext_id, project_id, name) VALUES(?, ?, ?)");
+				ps = c.prepareStatement("INSERT INTO source_file(ext_id, project_id, name, encoding) VALUES(?, ?, ?, ?)");
 				
 				ps.setString(1, fileId);
 				ps.setInt(2, prjId);
 				ps.setString(3, name);
+				ps.setString(4, encoding);
 			}
 			
 			ps.executeUpdate();
@@ -2707,7 +2742,7 @@ public class DbAdapter
 			c = getConnection();
 
 			PreparedStatement ps = c.prepareStatement("SELECT r.file_id, s.name FROM reference r " +
-				"LEFT JOIN source_file_ref s ON r.file_id = s.ext_id WHERE r.snapshot_node_id = ?");			
+				"LEFT JOIN source_file s ON r.file_id = s.ext_id WHERE r.snapshot_node_id = ?");			
 			
 			ps.setInt(1, snapshotNodeId);
 			
@@ -2768,7 +2803,7 @@ public class DbAdapter
 			
 			prjId = rs.getString("ext_id");
 			
-			ps = c.prepareStatement("SELECT name FROM source_file_ref s WHERE NOT EXISTS " +
+			ps = c.prepareStatement("SELECT name FROM source_file s WHERE NOT EXISTS " +
 				"(SELECT 1 FROM reference WHERE file_id = s.ext_id)");
 
 			rs = ps.executeQuery();
@@ -2776,7 +2811,7 @@ public class DbAdapter
 			while (rs.next())
 				fileList.add(rs.getString("name"));
 
-			ps = c.prepareStatement("DELETE FROM source_file_ref s WHERE NOT EXISTS " +
+			ps = c.prepareStatement("DELETE FROM source_file s WHERE NOT EXISTS " +
 				"(SELECT 1 FROM reference WHERE file_id = s.ext_id)");
 
 			ps.executeUpdate();
@@ -3116,11 +3151,12 @@ public class DbAdapter
 				"FOREIGN KEY (query_id) REFERENCES QUERY ON DELETE CASCADE"
 			},
 			{
-				"SOURCE_FILE_REF",
+				"SOURCE_FILE",
 				"id INT GENERATED ALWAYS AS IDENTITY",
 				"project_id INT NOT NULL",
 				"ext_id VARCHAR(36) NOT NULL",				
-				"name VARCHAR(8000) NOT NULL"
+				"name VARCHAR(8000) NOT NULL",
+				"encoding VARCHAR(10) NOT NULL"
 			}
 		};
 
@@ -3179,8 +3215,8 @@ public class DbAdapter
 					"project_id"
 				},
 				{
-					"IDX_SOURCE_FILE_REF",
-					"SOURCE_FILE_REF",
+					"IDX_SOURCE_FILE",
+					"SOURCE_FILE",
 					"ext_id"
 				}
 		};

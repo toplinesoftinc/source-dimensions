@@ -7,8 +7,9 @@ public class SourceFile extends FileSystemElement
 {
 	protected CompilationUnit m_unit;
 	protected String m_fullName;
+	protected String m_encoding;	
+	protected boolean m_binary;	
 	
-	public boolean m_binary;	
 	
 	SourceFile() { }
 	
@@ -38,6 +39,26 @@ public class SourceFile extends FileSystemElement
 	public void setFullName(String fullName)
 	{
 		m_fullName = fullName;
+	}
+	
+	public String getEncoding()
+	{
+		return m_encoding;
+	}
+	
+	public void setEncoding(String encoding)
+	{
+		m_encoding = encoding; 
+	}
+	
+	public boolean getBinary()
+	{
+		return m_binary;
+	}
+	
+	public void setBinary(boolean binary)
+	{
+		m_binary = binary;
 	}
 	
 	public void delete()

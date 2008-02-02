@@ -166,7 +166,7 @@ sw:
 					delete last_err;
 
 				if (ostr)
-					parse_stack.back()->Serialize(this, *ostr, infilename);
+					parse_stack.back()->Serialize(this, *ostr, infilename, lexer->GetEncoding());
 
 				delete lexer;
 				delete parse_stack.back();

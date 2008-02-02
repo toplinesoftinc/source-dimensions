@@ -150,6 +150,7 @@ void CBnf2Xsd::WriteXsd(char *filename)
 		fs << "\t</xs:sequence>\n";
 		fs << "\t<xs:attribute name=\"language\" type=\"xs:string\" use=\"optional\" />\n";
 		fs << "\t<xs:attribute name=\"file\" type=\"xs:string\" use=\"required\" />\n";
+		fs << "\t<xs:attribute name=\"encoding\" type=\"xs:string\" use=\"required\" />\n";
 		fs << "\t<xs:attribute name=\"delete\" type=\"xs:boolean\" use=\"optional\" />\n";
 		fs << "\t<xs:attribute name=\"binary\" type=\"xs:boolean\" use=\"optional\" />\n";
 		fs << "</xs:complexType>\n\n";

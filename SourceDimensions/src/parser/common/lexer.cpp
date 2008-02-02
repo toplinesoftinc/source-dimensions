@@ -8,6 +8,11 @@
 
 #define ZERO_UCHAR "\\u0"
 
+
+static const char *defaultEncoding = "UTF-8";
+
+
+
 CLexer::CLexer()
 {
 	mContext.eof = false;
@@ -29,15 +34,14 @@ void CLexer::SetInputStream(istream &istr)
 	m_pConverter = NULL;
 	m_pStream = &istr;
 	ReadBlock();
-	const char *encoding = ucnv_detectUnicodeSignature(m_chSourceBuf, 
-		mContext.source_len, (int32_t*)&m_nSignatureLength, &err);
+	m_chEncoding = ucnv_detectUnicodeSignature(m_chSourceBuf, mContext.source_len, (int32_t*)&m_nSignatureLength, &err);
 
 	if (U_SUCCESS(err))
 	{
-		if (encoding == NULL)
-			m_pConverter = ucnv_open("UTF-8", &err);
-		else
-			m_pConverter = ucnv_open(encoding, &err);
+		if (m_chEncoding == NULL)
+			m_chEncoding = defaultEncoding;	
+
+		m_pConverter = ucnv_open(m_chEncoding, &err);
 
 		if (U_FAILURE(err))
 			throw new CInputConversionErrorException();
@@ -97,6 +101,12 @@ istream *CLexer::GetInputStream()
 int CLexer::GetCurToken() const
 {
 	return mContext.token;
+}
+
+
+const char *CLexer::GetEncoding() const
+{
+	return m_chEncoding;
 }
 
 

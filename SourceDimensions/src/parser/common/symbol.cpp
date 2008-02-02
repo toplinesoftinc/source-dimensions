@@ -40,10 +40,10 @@ CSymbol::CSymbol(CLexer &lexer) :
 }
 
 
-void CSymbol::Serialize(CParser *parser, ostream &ostr, const char *filename)
+void CSymbol::Serialize(CParser *parser, ostream &ostr, const char *filename, const char *encoding)
 {
 	ostr << header << "<SourceFile language=\"" << language[parser->GetLanguageCode()]
-			<< "\" file=\"" << filename << "\">";
+			<< "\" file=\"" << filename << "\" " << "encoding=\"" << encoding << "\">";
 	SerializeNode(parser, ostr);
 	ostr << "</SourceFile>";
 }

@@ -15,7 +15,7 @@ public:
 	CSymbol(CLexer &lexer);
 	CSymbol(int nt);
 
-	void Serialize(CParser *parser, ostream &ostr, const char *filename);
+	void Serialize(CParser *parser, ostream &ostr, const char *filename, const char *encoding);
 
 	~CSymbol();
 

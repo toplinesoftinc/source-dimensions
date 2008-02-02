@@ -209,6 +209,7 @@ public class WebService implements IWebService
 		SourceFilePackage pack = new SourceFilePackage();
 		
 		pack.setFileMap(new HashMap<String,String>());
+		pack.setEncodingMap(new HashMap<String,String>());
 		
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		ZipOutputStream zip = new ZipOutputStream(output);
@@ -243,6 +244,7 @@ public class WebService implements IWebService
 			
 			zip.putNextEntry(entry);			
 			pack.getFileMap().put(file.getID(), file.getFullName());
+			pack.getEncodingMap().put(file.getID(), file.getEncoding());
 			
 			FileInputStream srcFile = new FileInputStream(fullPath);
 			

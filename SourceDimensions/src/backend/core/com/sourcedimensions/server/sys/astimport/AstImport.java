@@ -58,7 +58,8 @@ public abstract class AstImport
 				
 				String bin = root.getAttribute("binary");
 				
-				m_file.m_binary = (bin.equals("true") || bin.equals("1"));
+				m_file.setBinary(bin.equals("true") || bin.equals("1"));
+				m_file.setEncoding(root.getAttribute("encoding"));
 				
 				deleteSyntaxTree(m_session, m_file);
 				
