@@ -1,2 +1,4 @@
 SourceDimensions/thirdparty/eclipse/eclipse-SDK-3.2.2-win32.zip filter=lfs diff=lfs merge=lfs -text
 SourceDimensions/thirdparty/* linguist-vendored
+*.java linguist-language=Java
+*.cpp linguist-language=C++
