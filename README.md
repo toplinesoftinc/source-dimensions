@@ -6,6 +6,6 @@ Very powerful LALR(k) arbitrary lookahead syntax parser builder JikesPG made it 
 
 C#/Java AST nodes were mapped to common denonimators (for example, Java annotations and C# attributes are the same thing - metadata) and stored in PostgreSQL using Hibernate ORM for Java.  
 
-Eclipse was chosen as a hosting IDE. Parsers were using C++ interop to connect to Eclipse Java SDK. 
+Eclipse was chosen as a hosting IDE. Parsers were using C++ interop to work with Eclipse Java SDK. 
 
 The project is not completed - it was stopped on stage where C# or Java code is fully parsed, stored in PostgreSQL and shown inside of Eclipse as a tree.
